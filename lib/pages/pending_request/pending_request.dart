@@ -20,7 +20,7 @@ class _PendingRequestState extends State<PendingRequest> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.lightBlue,
         title: Text('Pending Request'),
       ),
       body: Center(
@@ -39,7 +39,7 @@ class _PendingRequestState extends State<PendingRequest> {
                     onTap: _startWebSocketServer,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.orangeAccent,
+                        color: Colors.lightBlue,
                           borderRadius: BorderRadius.circular(10.0),
                        ),
                       margin: EdgeInsets.only(left: 20),
@@ -70,7 +70,7 @@ class _PendingRequestState extends State<PendingRequest> {
                     onTap: _startSocketClient,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.orangeAccent,
+                        color: Colors.lightBlue,
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       margin: EdgeInsets.only(left: 20),
@@ -101,7 +101,7 @@ class _PendingRequestState extends State<PendingRequest> {
                   onTap: _startHttpsService,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.orangeAccent,
+                      color: Colors.lightBlue,
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     padding: EdgeInsets.symmetric(
@@ -130,7 +130,7 @@ class _PendingRequestState extends State<PendingRequest> {
                   onTap: _connectHttpsService,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.orangeAccent,
+                      color: Colors.lightBlue,
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     padding: EdgeInsets.symmetric(

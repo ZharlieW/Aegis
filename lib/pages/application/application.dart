@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Application extends StatefulWidget {
+  const Application({super.key});
+
   @override
   _ApplicationState createState() => _ApplicationState();
 }
@@ -11,13 +13,13 @@ class _ApplicationState extends State<Application> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: Text('Application'),
+        backgroundColor: Colors.lightBlue,
+        title: const Text('Home'),
       ),
       body: Center(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 50),
-          child: Column(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 50),
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
@@ -31,7 +33,7 @@ class _ApplicationState extends State<Application> {
                 height: 20,
               ),
               Text(
-                'You can now start using Nostr applications through Amber. When necessary, Amber will launch and request approval permissions.',
+                'You can now start using Nostr applications through Aegis. When necessary, Aegis will launch and request approval permissions.',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,

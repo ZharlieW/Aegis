@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
       ),
       home: BottomTabBarExample(),
@@ -55,14 +55,14 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  child: Text('Start the websocket service'),
+                  child: const Text('Start the websocket service'),
                 ),
                 GestureDetector(
                   onTap: _startWebsocketService,
                   child: Container(
-                    margin: EdgeInsets.only(left: 20),
+                    margin: const EdgeInsets.only(left: 20),
                     color: Colors.red,
-                    child: Center(
+                    child: const Center(
                       child: Text('start'),
                     ),
                   ),
@@ -72,16 +72,14 @@ class _MyHomePageState extends State<MyHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 100),
-                Container(
-                  child: Text('Connect the websocket service'),
-                ),
+                const SizedBox(height: 100),
+                const Text('Connect the websocket service'),
                 GestureDetector(
                   onTap: _connectWebsocketService,
                   child: Container(
-                    margin: EdgeInsets.only(left: 20),
+                    margin: const EdgeInsets.only(left: 20),
                     color: Colors.red,
-                    child: Center(
+                    child: const Center(
                       child: Text('connect'),
                     ),
                   ),
@@ -91,16 +89,14 @@ class _MyHomePageState extends State<MyHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 100),
-                Container(
-                  child: Text('Start the http service'),
-                ),
+                const SizedBox(height: 100),
+                const Text('Start the http service'),
                 GestureDetector(
                   onTap: _startHttpsService,
                   child: Container(
-                    margin: EdgeInsets.only(left: 20),
+                    margin: const EdgeInsets.only(left: 20),
                     color: Colors.red,
-                    child: Center(
+                    child: const Center(
                       child: Text('Start'),
                     ),
                   ),
@@ -110,16 +106,14 @@ class _MyHomePageState extends State<MyHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 100),
-                Container(
-                  child: Text('Connect the http service'),
-                ),
+                const SizedBox(height: 100),
+                const Text('Connect the http service'),
                 GestureDetector(
                   onTap: _connectHttpsService,
                   child: Container(
-                    margin: EdgeInsets.only(left: 20),
+                    margin: const EdgeInsets.only(left: 20),
                     color: Colors.red,
-                    child: Center(
+                    child: const Center(
                       child: Text('connect'),
                     ),
                   ),
@@ -159,7 +153,7 @@ class BottomTabBarExample extends StatefulWidget {
 class _BottomTabBarExampleState extends State<BottomTabBarExample> {
   int _selectedIndex = 0;
 
-  static List<Widget> _widgetOptions = <Widget>[
+  static final List<Widget> _widgetOptions = <Widget>[
     Application(),
     PendingRequest(),
     Setting(),
@@ -181,24 +175,24 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> {
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            backgroundColor: Colors.orange,
+            backgroundColor: Colors.lightBlue,
             icon: Icon(Icons.home),
-            label: 'application',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            backgroundColor: Colors.orange,
+            backgroundColor: Colors.lightBlue,
             icon: Icon(Icons.book_sharp),
             label: 'pending request',
           ),
           BottomNavigationBarItem(
-            backgroundColor: Colors.orange,
+            backgroundColor: Colors.lightBlue,
             icon: Icon(Icons.dataset),
             label: 'setting',
           ),
           BottomNavigationBarItem(
-            backgroundColor: Colors.orange,
+            backgroundColor: Colors.lightBlue,
             icon: Icon(Icons.account_circle),
-            label: 'Profile',
+            label: 'Accounts',
           ),
         ],
       ),

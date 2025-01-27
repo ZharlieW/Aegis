@@ -1,16 +1,21 @@
-# aegis
+# Aegis - Nostr Signer for iOS
 
-A new Flutter project.
+**Aegis** is a dedicated Nostr signer designed for iOS, providing users with robust private key management and support for advanced features like NIP-46 login and a local relay.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+1. **Multi-User Management**  
+   Seamlessly manage multiple accounts with ease.
 
-A few resources to get you started if this is your first Flutter project:
+2. **NIP-46 Login**  
+   Securely log in to applications using the Nostr protocol.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+3. **App Authorization Management**  
+   Control and manage the apps authorized to sign events.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+4. **Local Relay**  
+   Utilize a local relay for enhanced privacy and performance.
+
+5. **iOS Keep-Alive Solution**  
+   Implemented strategies to maintain background activity on iOS devices.
+
