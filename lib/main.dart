@@ -1,3 +1,7 @@
+import 'package:aegis/pages/application/application.dart';
+import 'package:aegis/pages/pending_request/pending_request.dart';
+import 'package:aegis/pages/profile/profile.dart';
+import 'package:aegis/pages/setting/setting.dart';
 import 'package:aegis/utils/aegis_http_server.dart';
 import 'package:aegis/utils/aegis_http_server_client.dart';
 import 'package:aegis/utils/aegis_websocket.dart';
@@ -14,12 +18,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: '',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: BottomTabBarExample(),
+      // const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -34,14 +39,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +69,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -92,7 +88,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -112,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -132,28 +126,83 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-
           ],
         ),
       ),
-
     );
   }
 
-  void _startWebsocketService(){
+  void _startWebsocketService() {
     AegisWebSocketServer.sharedInstance.start();
   }
 
-  void _connectWebsocketService(){
+  void _connectWebsocketService() {
     AegisWebSocketClient.sharedInstance.connect();
   }
 
-  void _startHttpsService(){
+  void _startHttpsService() {
     AegisHttpServer.sharedInstance.start();
   }
 
   void _connectHttpsService() async {
     String url = await AegisWebSocketServer.getLocalIpAddress();
-    AegisHttpServerClient.sharedInstance.sendPostRequest('http://$url:8080/hello',{'aa':'a'});
+    AegisHttpServerClient.sharedInstance
+        .sendPostRequest('http://$url:8080/hello', {'aa': 'a'});
   }
 }
+
+class BottomTabBarExample extends StatefulWidget {
+  @override
+  _BottomTabBarExampleState createState() => _BottomTabBarExampleState();
+}
+
+class _BottomTabBarExampleState extends State<BottomTabBarExample> {
+  int _selectedIndex = 0;
+
+  static List<Widget> _widgetOptions = <Widget>[
+    Application(),
+    PendingRequest(),
+    Setting(),
+    Profile(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            backgroundColor: Colors.orange,
+            icon: Icon(Icons.home),
+            label: 'application',
+          ),
+          BottomNavigationBarItem(
+            backgroundColor: Colors.orange,
+            icon: Icon(Icons.book_sharp),
+            label: 'pending request',
+          ),
+          BottomNavigationBarItem(
+            backgroundColor: Colors.orange,
+            icon: Icon(Icons.dataset),
+            label: 'setting',
+          ),
+          BottomNavigationBarItem(
+            backgroundColor: Colors.orange,
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
