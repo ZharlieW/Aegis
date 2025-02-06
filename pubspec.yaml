@@ -38,6 +38,7 @@ dependencies:
   http: ^1.2.2
   wifi_info_flutter: ^2.0.0
   connectivity_plus: ^6.1.2
+  flutter_easyloading: ^3.0.0
 
 dev_dependencies:
   flutter_test:
