@@ -2,10 +2,7 @@ import 'package:aegis/pages/application/application.dart';
 import 'package:aegis/pages/pending_request/pending_request.dart';
 import 'package:aegis/pages/profile/profile.dart';
 import 'package:aegis/pages/setting/setting.dart';
-import 'package:aegis/utils/aegis_http_server.dart';
-import 'package:aegis/utils/aegis_http_server_client.dart';
-import 'package:aegis/utils/aegis_websocket.dart';
-import 'package:aegis/utils/aegis_websocket_client.dart';
+import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -127,21 +124,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startWebsocketService() {
-    AegisWebSocketServer.sharedInstance.start();
+    // AegisWebSocketServer.sharedInstance.start();
   }
 
   void _connectWebsocketService() {
-    AegisWebSocketClient.sharedInstance.connect();
   }
 
   void _startHttpsService() {
-    AegisHttpServer.sharedInstance.start();
   }
 
   void _connectHttpsService() async {
-    String url = await AegisWebSocketServer.getLocalIpAddress();
-    AegisHttpServerClient.sharedInstance
-        .sendPostRequest('http://$url:8080/hello', {'aa': 'a'});
+    // String url = await AegisWebSocketServer.getLocalIpAddress();
+    // AegisHttpServerClient.sharedInstance
+    //     .sendPostRequest('http://$url:8080/hello', {'aa': 'a'});
   }
 }
 

@@ -1,10 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../utils/aegis_http_server.dart';
-import '../../utils/aegis_http_server_client.dart';
-import '../../utils/aegis_websocket.dart';
-import '../../utils/aegis_websocket_client.dart';
+import '../../utils/aegis_websocket_server.dart';
+import '../../utils/server_nip46_signer.dart';
+// import '../../utils/server_nip46_signer.dart';
 
 class PendingRequest extends StatefulWidget {
   @override
@@ -35,22 +34,43 @@ class _PendingRequestState extends State<PendingRequest> {
                   Container(
                     child: Text('Start the websocket service'),
                   ),
-                  GestureDetector(
-                    onTap: _startWebSocketServer,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.lightBlue,
-                          borderRadius: BorderRadius.circular(10.0),
-                       ),
-                      margin: EdgeInsets.only(left: 20),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                  Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _startWebSocketServer,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlue,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          margin: EdgeInsets.only(left: 20),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                              'Start websocket'
+                          ),
+                        ),
                       ),
-                      child: Text(
-                          'Start websocket'
+                      GestureDetector(
+                        onTap:(){},
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlue,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          margin: EdgeInsets.only(top: 15),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                              'Stop websocket'
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -152,28 +172,34 @@ class _PendingRequestState extends State<PendingRequest> {
   }
 
   void _startSocketClient() async {
-    AegisWebSocketClient.sharedInstance.connect();
+    // AegisWebSocketClient.sharedInstance.connect();
   }
 
   void _startWebSocketServer() async {
-    await AegisWebSocketServer.sharedInstance.start();
-    String localIp = await AegisWebSocketServer.getLocalIpAddress();
-    socketInfo = 'WebSocket server will run at: ws://$localIp:${AegisWebSocketServer.sharedInstance.port}';
-    setState(() {});
+    var signer = ServerNIP46Signer();
+    signer.start();
+    // var client = NIP46Client(serverUrl: "ws://127.0.0.1:8081");
+    // await client.connect();
+    // String response = await client.requestSign('{"kind":1,"content":"Hello NIP-46"}');
+    // print("📥 远程签名返回: $response");
+    // await AegisWebSocketServer.sharedInstance.start();
+    // String localIp = await AegisWebSocketServer.getLocalIpAddress();
+    // socketInfo = 'WebSocket server will run at: ws://$localIp:${AegisWebSocketServer.sharedInstance.port}';
+    // setState(() {});
   }
 
   void _startHttpsService() async{
-    AegisHttpServer.sharedInstance.start();
-    String localIp = await AegisWebSocketServer.getLocalIpAddress();
-    httpInfo = 'Http server will run at: http://$localIp:${AegisWebSocketServer.sharedInstance.port}';
-    setState(() {});
+    // AegisHttpServer.sharedInstance.start();
+    // String localIp = await AegisWebSocketServer.getLocalIpAddress();
+    // httpInfo = 'Http server will run at: http://$localIp:${AegisWebSocketServer.sharedInstance.port}';
+    // setState(() {});
 
   }
 
   void _connectHttpsService() async {
-    String url = await AegisWebSocketServer.getLocalIpAddress();
-    AegisHttpServerClient.sharedInstance
-        .sendPostRequest('http://$url:8080/hello', {'aa': 'a'});
+    // String url = await AegisWebSocketServer.getLocalIpAddress();
+    // AegisHttpServerClient.sharedInstance
+    //     .sendPostRequest('http://$url:8080/hello', {'aa': 'a'});
   }
 
 
