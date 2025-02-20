@@ -1,8 +1,7 @@
 import 'package:aegis/pages/application/application.dart';
-import 'package:aegis/pages/pending_request/pending_request.dart';
 import 'package:aegis/pages/profile/profile.dart';
-import 'package:aegis/pages/setting/setting.dart';
-import 'package:aegis/utils/aegis_websocket_server.dart';
+import 'package:aegis/pages/request/request.dart';
+import 'package:aegis/pages/settings/settings.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -127,11 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // AegisWebSocketServer.sharedInstance.start();
   }
 
-  void _connectWebsocketService() {
-  }
+  void _connectWebsocketService() {}
 
-  void _startHttpsService() {
-  }
+  void _startHttpsService() {}
 
   void _connectHttpsService() async {
     // String url = await AegisWebSocketServer.getLocalIpAddress();
@@ -150,9 +147,8 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     Application(),
-    PendingRequest(),
-    Setting(),
-    Profile(),
+    Request(),
+    Settings(),
   ];
 
   void _onItemTapped(int index) {
@@ -166,32 +162,27 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> {
     return Scaffold(
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
+        // selectedItemColor:Theme.of(context).colorScheme.secondaryContainer,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            backgroundColor: Colors.lightBlue,
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            backgroundColor: Colors.lightBlue,
+            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
             icon: Icon(Icons.book_sharp),
-            label: 'pending request',
+            label: 'Application',
           ),
           BottomNavigationBarItem(
-            backgroundColor: Colors.lightBlue,
+            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
             icon: Icon(Icons.dataset),
-            label: 'setting',
+            label: 'Request',
           ),
           BottomNavigationBarItem(
-            backgroundColor: Colors.lightBlue,
+            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
             icon: Icon(Icons.account_circle),
-            label: 'Accounts',
+            label: 'Settings',
           ),
         ],
       ),
     );
   }
 }
-

@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import '../nostr/event.dart';
-import '../nostr/nips/nip19/nip19.dart';
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'aegis_websocket_server.dart';
-
 
 class ServerNIP46Signer {
   static final ServerNIP46Signer instance = ServerNIP46Signer._internal();
@@ -19,7 +17,6 @@ class ServerNIP46Signer {
   final int port = 8081;
 
   List<String>? _remotePubkeyTags;
-
 
   Future<void> start() async {
     _generateKeyPair();

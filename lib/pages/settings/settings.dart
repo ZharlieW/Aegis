@@ -1,18 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Setting extends StatefulWidget {
+class Settings extends StatefulWidget {
   @override
-  _SettingState createState() => _SettingState();
+  _SettingsState createState() => _SettingsState();
 }
 
-class _SettingState extends State<Setting> {
+class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlue,
-        title: Text('Setting'),
+        title: Text('Settings'),
       ),
       body: Center(
         child: GestureDetector(

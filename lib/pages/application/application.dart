@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:aegis/common/common_image.dart';
+import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 class Application extends StatefulWidget {
@@ -13,45 +14,100 @@ class _ApplicationState extends State<Application> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightBlue,
-        title: const Text('Home'),
-      ),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 50),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                'Mission Accomplished! Your new account is now ready!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
+        title: Text(
+          'Application',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w400,
               ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                'You can now start using Nostr applications through Aegis. When necessary, Aegis will launch and request approval permissions.',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text(
-                "On this screen, you'll find all the applications with active permissions.",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
         ),
+      ),
+      body: Stack(
+        children: [
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: CommonImage(
+                      iconName: 'aegis_logo.png',
+                      size: 100,
+                    ).setPaddingOnly(
+                      top: 24.0,
+                      bottom: 20.0,
+                    ),
+                  ),
+                  Text(
+                    'Congratulations, your new account is ready!',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w400,
+                        ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    "Now you can start using apps that support Aegis, when needed Aegis will open and ask you to confirm permissions. In this view you will find all the apps that have active permissions.",
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    "Discover all Nostr apps for android at nostrapps.com.",
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  FilledButton.tonal(
+                    onPressed: () {},
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .secondaryContainer, // 背景色
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(vertical: 16),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Discover',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                      ),
+                    ),
+                  ).setPaddingOnly(top: 20.0),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(56),
+              ),
+              child: Center(
+                child: CommonImage(
+                  iconName: 'add_icon.png',
+                  size: 36,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

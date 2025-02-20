@@ -1,16 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// import 'package:flutter/cupertino.dart';
 
 import '../../utils/aegis_websocket_server.dart';
 import '../../utils/server_nip46_signer.dart';
 // import '../../utils/server_nip46_signer.dart';
 
-class PendingRequest extends StatefulWidget {
+class Request extends StatefulWidget {
   @override
-  _PendingRequestState createState() => _PendingRequestState();
+  _RequestState createState() => _RequestState();
 }
 
-class _PendingRequestState extends State<PendingRequest> {
+class _RequestState extends State<Request> {
 
   String socketInfo = '';
   String socketConnectInfo = '';
@@ -18,10 +18,11 @@ class _PendingRequestState extends State<PendingRequest> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightBlue,
-        title: Text('Pending Request'),
-      ),
+      appBar:
+        AppBar(
+          backgroundColor: Colors.lightBlue,
+            title: const Text('Hello WorldWorldWorldWorldWorld'),
+        ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -78,6 +79,7 @@ class _PendingRequestState extends State<PendingRequest> {
             Text(
               socketInfo,
             ),
+
             Container(
               padding: EdgeInsets.only(top: 100),
               child: Row(

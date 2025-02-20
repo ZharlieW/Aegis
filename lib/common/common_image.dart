@@ -14,7 +14,6 @@ class CommonImage extends StatelessWidget{
   final double? width;
   final BoxFit? fit;
   ///plugin name
-  final String? package;
 
   CommonImage({
     required this.iconName,
@@ -22,7 +21,6 @@ class CommonImage extends StatelessWidget{
     double? height,
     double? width,
     double? size,
-    this.package = 'ox_common',
     this.fit,
   }): this.height = size ?? height,
         this.width = size ?? width;
@@ -35,7 +33,6 @@ class CommonImage extends StatelessWidget{
       width: this.width,
       height: this.height,
       color: this.color,
-      package: this.package,
       fit: this.fit,
     );
   }
@@ -49,7 +46,6 @@ class CommonIconButton extends StatelessWidget {
     double? height,
     double? width,
     double? size,
-    this.package = 'ox_common',
     this.fit,
     this.padding,
     required this.onPressed,
@@ -63,8 +59,6 @@ class CommonIconButton extends StatelessWidget {
   final double? height;
   final double? width;
   final BoxFit? fit;
-  ///plugin name
-  final String? package;
 
   final EdgeInsetsGeometry? padding;
   final VoidCallback onPressed;
@@ -80,7 +74,6 @@ class CommonIconButton extends StatelessWidget {
           height: height,
           width: width,
           color: color,
-          package: package,
         ),
       ),
     );
