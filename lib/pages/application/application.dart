@@ -2,6 +2,10 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
+import '../../navigator/navigator.dart';
+import '../login/login.dart';
+import 'add_application.dart';
+
 class Application extends StatefulWidget {
   const Application({super.key});
 
@@ -66,7 +70,9 @@ class _ApplicationState extends State<Application> {
                         ),
                   ),
                   FilledButton.tonal(
-                    onPressed: () {},
+                    onPressed: () {
+                      AegisNavigator.pushPage(context, (context) => AddApplication());
+                    },
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context)
                           .colorScheme
@@ -74,7 +80,7 @@ class _ApplicationState extends State<Application> {
                     ),
                     child: Container(
                       width: double.infinity,
-                      margin: EdgeInsets.symmetric(vertical: 16),
+                      margin: const EdgeInsets.symmetric(vertical: 16),
                       alignment: Alignment.center,
                       child: Text(
                         'Discover',
@@ -92,17 +98,22 @@ class _ApplicationState extends State<Application> {
           Positioned(
             bottom: 16,
             right: 16,
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(56),
-              ),
-              child: Center(
-                child: CommonImage(
-                  iconName: 'add_icon.png',
-                  size: 36,
+            child: GestureDetector(
+              onTap: () {
+                AegisNavigator.pushPage(context, (context) => Login());
+              },
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(56),
+                ),
+                child: Center(
+                  child: CommonImage(
+                    iconName: 'add_icon.png',
+                    size: 36,
+                  ),
                 ),
               ),
             ),
