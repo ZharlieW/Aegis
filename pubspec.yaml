@@ -46,7 +46,6 @@ dependencies:
   pointycastle: ^3.3.0
   bech32: ^0.2.2
   string_validator: ^1.1.0
-  device_info_plus: ^10.1.0
   dio: ^5.4.3+1
   dio_cookie_manager: ^3.1.1
   flutter_socks_proxy: ^0.0.3
@@ -74,9 +73,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
