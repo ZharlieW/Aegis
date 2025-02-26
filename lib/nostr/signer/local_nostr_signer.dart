@@ -1,5 +1,6 @@
 import 'package:pointycastle/export.dart';
 import '../event.dart';
+import '../keychain.dart';
 import '../nips/nip04/nip04.dart';
 import '../nips/nip19/nip19.dart';
 import '../nips/nip44/nip44_v2.dart';
@@ -16,11 +17,12 @@ class LocalNostrSigner implements NostrSigner {
   late String nsecPrivateKey;
   ECDHBasicAgreement? _agreement;
 
-  void init(String privateKeyParams){
+  void init(String privateKeyNsec){
+    privateKey = Nip19.decodePrivkey(privateKeyNsec);
+    nsecPrivateKey = privateKeyNsec;
 
-    privateKey = Nip19.decodePrivkey('');
-    publicKey = Nip19.decodePubkey('');
-    nsecPrivateKey = Nip19.bech32Encode("nsec", privateKeyParams);
+    final key = Keychain(privateKey);
+    publicKey = key.public;
   }
 
 

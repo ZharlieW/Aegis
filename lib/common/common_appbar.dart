@@ -63,7 +63,6 @@ class BaseAppBarState extends State<CommonAppBar> {
       leading: _leadingWidget(),
       title: Text(
           widget.title,
-
       ),
     );
   }
