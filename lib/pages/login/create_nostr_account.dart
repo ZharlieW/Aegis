@@ -1,17 +1,29 @@
+import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/common_appbar.dart';
-import '../../navigator/navigator.dart';
+import '../../nostr/keychain.dart';
+import '../../utils/account.dart';
 
 class CreateNostrAccount extends StatefulWidget {
   const CreateNostrAccount({super.key});
 
-  @override
-  _CreateNostrAccountState createState() => _CreateNostrAccountState();
+  CreateNostrAccountState createState() => CreateNostrAccountState();
 }
 
-class _CreateNostrAccountState extends State<CreateNostrAccount> {
+class CreateNostrAccountState extends State<CreateNostrAccount> {
+
+  late Keychain _keychain;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _init();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,29 +44,37 @@ class _CreateNostrAccountState extends State<CreateNostrAccount> {
                             fontWeight: FontWeight.w500,
                           ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     TextField(
+                      maxLines :2,
                       textAlignVertical: TextAlignVertical.center,
-                      style: TextStyle(fontSize: 24.0),
                       decoration: InputDecoration(
-                        hintStyle: TextStyle(fontSize: 16.0),
-                        labelText: 'Nsec / private key',
-                        hintText: 'wss://relay.nsec.app',
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.secondaryContainer,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        enabled: false,
+                        hintStyle: TextStyle(
+                            fontSize: 16.0,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        labelText: 'NupPub',
+                        labelStyle: TextStyle(
+                          fontSize: 16.0,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        hintText: Account.getNupPublicKey(_keychain.public),
                         border: const OutlineInputBorder(),
-                        // isDense: false,
                         contentPadding: const EdgeInsets.all(12), //
                       ),
                     ),
                     FilledButton.tonal(
-                      onPressed: () {
-                        AegisNavigator.popToRoot(context);
-                      },
+                      onPressed: _createAccount,
                       style: FilledButton.styleFrom(
                         backgroundColor: Theme.of(context)
                             .colorScheme
-                            .secondaryContainer, // 背景色
+                            .primary,
                       ),
                       child: Container(
                         width: double.infinity,
@@ -65,17 +85,31 @@ class _CreateNostrAccountState extends State<CreateNostrAccount> {
                           style:
                               Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                   ),
                         ),
                       ),
                     ).setPaddingOnly(top: 20.0),
                   ],
-                ).setPadding(EdgeInsets.symmetric(horizontal: 16)),
+                ).setPadding(const EdgeInsets.symmetric(horizontal: 16)),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _createAccount(){
+    Account.sharedInstance.currentPrivkey = _keychain.private;
+    Account.sharedInstance.currentPubkey = _keychain.public;
+    CommonTips.success(context, 'Create successfully !');
+
+    AegisNavigator.popToRoot(context);
+  }
+
+  void _init(){
+    _keychain = Account.generateNewKeychain();
+    setState(() {});
   }
 }

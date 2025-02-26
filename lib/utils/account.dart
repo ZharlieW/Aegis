@@ -28,6 +28,10 @@ class Account {
     return Keychain.getPublicKey(privkey);
   }
 
+  static String getNupPublicKey(String publicKey) {
+    return Nip19.encodePubkey(publicKey);
+  }
+
   static bool validateNsec(String nsecBase64) {
     try {
       if (nsecBase64.length != 63) {

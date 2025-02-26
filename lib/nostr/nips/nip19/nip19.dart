@@ -7,12 +7,14 @@ import 'package:hex/hex.dart';
 import 'hrps.dart';
 
 class Nip19 {
-  // static String encodePubKey(String pubkey) {
-  //   var data = hex.decode(pubkey);
-  //   data = Bech32.convertBits(data, 8, 5, true);
-  //   return Bech32.encode(Hrps.PUBLIC_KEY, data);
-  // }
 
+  static encodePubkey(String pubkey) {
+    try {
+      return bech32Encode("npub", pubkey);
+    } catch (_) {
+      return '';
+    }
+  }
 
   static String decodePrivkey(String data) {
     Map map = bech32Decode(data);
