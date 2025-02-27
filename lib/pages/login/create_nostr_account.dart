@@ -101,10 +101,9 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
   }
 
   void _createAccount(){
-    Account.sharedInstance.currentPrivkey = _keychain.private;
-    Account.sharedInstance.currentPubkey = _keychain.public;
-    CommonTips.success(context, 'Create successfully !');
+    Account.sharedInstance.loginSuccess(_keychain.public,_keychain.private);
 
+    CommonTips.success(context, 'Create successfully !');
     AegisNavigator.popToRoot(context);
   }
 

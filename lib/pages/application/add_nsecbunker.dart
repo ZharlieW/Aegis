@@ -19,125 +19,85 @@ class _AddNsecbunkerState extends State<AddNsecbunker> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          CommonAppBar(
-            title: 'Add a nsecbunker',
-          ),
-          SliverList(
-            delegate: SliverChildListDelegate([
-              // Outlined text field
-
-              Container(
-                height: 56,
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: const TextField(
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(FocusNode());
+        },
+        child: CustomScrollView(
+          slivers: [
+            CommonAppBar(
+              title: 'Add a nsecbunker',
+            ),
+            SliverList(
+              delegate: SliverChildListDelegate([
+                Text(
+                  "To create a new nsecbunker you need to give it a name and select one or more relays, that's all!",
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ).setPadding(EdgeInsets.symmetric(horizontal: 16)),
+                Container(
+                  height: 56,
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: const TextField(
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      labelText: 'name',
+                      hintText: 'Name',
+                      border: OutlineInputBorder(),
+                      isDense: false,
+                      contentPadding: EdgeInsets.all(16), //
+                    ),
+                  ),
+                ),
+                TextField(
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
-                    labelText: 'wss',
-                    hintText: 'wss://...',
-                    border: OutlineInputBorder(),
-                    isDense: false,
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.secondaryContainer,
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    enabled: false,
+                    hintStyle: TextStyle(
+                      fontSize: 16.0,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    labelText: 'Bunker URL',
+                    labelStyle: TextStyle(
+                      fontSize: 16.0,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    hintText: 'asd',
+                    border: const OutlineInputBorder(),
                     contentPadding: EdgeInsets.all(16), //
                   ),
+                ).setPadding(EdgeInsets.symmetric(horizontal: 16)),
+                SizedBox(
+                  height: 20,
                 ),
-              ),
-              Container(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: TextField(
-                  textAlignVertical: TextAlignVertical.center,
-                  style: TextStyle(fontSize: 24.0),
-                  decoration: InputDecoration(
-                    hintStyle:  TextStyle(fontSize: 16.0),
-                    labelText: 'Name',
-                    hintText: 'Enter Name',
-                    border: const OutlineInputBorder(),
-                    // isDense: false,
-                    contentPadding: const EdgeInsets.all(12), //
-                    suffixIcon: Container(
-                      width: 72,
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          // margin: EdgeInsets.only(right: 16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(40),
+                FilledButton.tonal(
+                  onPressed: () {},
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary, //
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(vertical: 16),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Add',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.w500,
                           ),
-                          child: CommonImage(
-                            iconName: 'add_icon.png',
-                            size: 24,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
-                ),
-              ),
-              Container(
-                margin:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: TextField(
-                  textAlignVertical: TextAlignVertical.center,
-                  style: TextStyle(fontSize: 24.0),
-                  decoration: InputDecoration(
-                    hintStyle:  TextStyle(fontSize: 16.0),
-                    labelText: 'Name',
-                    hintText: 'wss://relay.nsec.app',
-                    border: const OutlineInputBorder(),
-                    // isDense: false,
-                    contentPadding: const EdgeInsets.all(12), //
-                    suffixIcon: Container(
-                      width: 72,
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          // margin: EdgeInsets.only(right: 16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          child: CommonImage(
-                            iconName: 'add_icon.png',
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              FilledButton.tonal(
-                onPressed: () {
-                  AegisNavigator.pushPage(context, (context) => AddApplication());
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .secondaryContainer, // 背景色
-                ),
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(vertical: 16),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Create',
-                    style:
-                    Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ).setPaddingOnly(top: 20.0),
-              // Your list of items
-            ]
+                ).setPadding(EdgeInsets.symmetric(horizontal: 16)),
+              ]),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

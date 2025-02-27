@@ -101,9 +101,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
     String privateKey = Account.getPrivateKey(privateKeyNsec);
     String publicKey = Account.getPublicKey(privateKey);
 
-    Account.sharedInstance.currentPubkey = publicKey;
-    Account.sharedInstance.currentPrivkey = privateKey;
-
+    Account.sharedInstance.loginSuccess(publicKey,privateKey);
     CommonTips.error(context, 'Login successfully !');
 
     AegisNavigator.popToRoot(context);

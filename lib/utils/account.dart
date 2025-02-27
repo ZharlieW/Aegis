@@ -8,8 +8,6 @@ abstract mixin class AccountObservers {
   void didSwitchUser();
 
   void didLogout();
-
-  void didUpdateUserInfo() {}
 }
 
 class Account {
@@ -19,17 +17,19 @@ class Account {
 
   final List<AccountObservers> _observers = <AccountObservers>[];
 
-  String currentPubkey = '';
-  String currentPrivkey = '';
+  String _currentPubkey = '';
+  String _currentPrivkey = '';
 
   void addObserver(AccountObservers observer) => _observers.add(observer);
 
   bool removeObserver(AccountObservers observer) => _observers.remove(observer);
 
-  Future<void> loginSuccess() async {
-    for (AccountObservers observer in _observers) {
-      observer.didLoginSuccess();
-    }
+  String get currentPubkey {
+    return _currentPubkey;
+  }
+
+  String get currentPrivkey {
+    return _currentPrivkey;
   }
 
   bool isValidPubKey(String pubKey) {
@@ -68,6 +68,18 @@ class Account {
   }
 
   Future<void> logout() async {
+    _currentPubkey = '';
+    _currentPrivkey = '';
+    for (AccountObservers observer in _observers) {
+      observer.didLogout();
+    }
+  }
 
+  Future<void> loginSuccess(String pubkey,String privkey) async {
+    _currentPubkey = pubkey;
+    _currentPrivkey = privkey;
+    for (AccountObservers observer in _observers) {
+      observer.didLoginSuccess();
+    }
   }
 }

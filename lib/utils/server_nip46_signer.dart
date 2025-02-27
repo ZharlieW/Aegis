@@ -14,6 +14,7 @@ class ServerNIP46Signer {
   late LocalNostrSigner localNostrSigner;
   String _remotePubkey = '';
   String subscriptionId = '';
+  String _ipAddress = '';
   final int port = 8081;
 
   List<String>? _remotePubkeyTags;
@@ -190,4 +191,21 @@ class ServerNIP46Signer {
     _remotePubkeyTags ??= ["p", _remotePubkey];
     return _remotePubkeyTags!;
   }
+
+  static Future<String> getIpAddress() async {
+    try {
+      final interfaces = await NetworkInterface.list();
+      for (var interface in interfaces) {
+        for (var addr in interface.addresses) {
+          if (addr.type == InternetAddressType.IPv4) {
+           return addr.address;
+          }
+        }
+      }
+      return '';
+    } catch (e) {
+      return '';
+    }
+  }
+
 }

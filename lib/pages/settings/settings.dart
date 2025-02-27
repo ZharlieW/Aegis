@@ -2,12 +2,32 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils/account.dart';
+import '../../utils/took_kit.dart';
+
 class Settings extends StatefulWidget {
   @override
   _SettingsState createState() => _SettingsState();
 }
 
-class _SettingsState extends State<Settings> {
+class _SettingsState extends State<Settings> with AccountObservers {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Account.sharedInstance.addObserver(this);
+  }
+
+  String get _getKeyToStr {
+    Account instance = Account.sharedInstance;
+    String pubkey = instance.currentPubkey;
+    String private = instance.currentPrivkey;
+    if(pubkey.isEmpty || private.isEmpty) return '--';
+    String nupKey = Account.getNupPublicKey(pubkey);
+    return '${nupKey.substring(0,8)}:${private.substring(0,8)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +83,7 @@ class _SettingsState extends State<Settings> {
                     ),
               ),
               Text(
-                'npub1smn:2syewl0f',
+                _getKeyToStr,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
@@ -73,23 +93,29 @@ class _SettingsState extends State<Settings> {
           ),
           Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                child: Center(
-                  child: CommonImage(
-                    iconName: 'copy_Icon.png',
-                    size: 24,
+              GestureDetector(
+                onTap: () => TookKit.copyKey(context, 'aaaa'),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'copy_Icon.png',
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
-              Container(
-                width: 48,
-                height: 48,
-                child: Center(
-                  child: CommonImage(
-                    iconName: 'logout_icon.png',
-                    size: 24,
+              GestureDetector(
+                onTap: Account.sharedInstance.logout,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'logout_icon.png',
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
@@ -114,5 +140,26 @@ class _SettingsState extends State<Settings> {
         ],
       ),
     );
+  }
+
+  @override
+  void didLoginSuccess() {
+    // TODO: implement didLoginSuccess
+    if(mounted){
+      setState(() {});
+    }
+  }
+
+  @override
+  void didLogout() {
+    // TODO: implement didLogout
+    if(mounted){
+      setState(() {});
+    }
+  }
+
+  @override
+  void didSwitchUser() {
+    // TODO: implement didSwitchUser
   }
 }
