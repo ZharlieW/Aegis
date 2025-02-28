@@ -1,3 +1,4 @@
+import 'package:aegis/utils/account.dart';
 import 'package:pointycastle/export.dart';
 import '../event.dart';
 import '../keychain.dart';
@@ -14,15 +15,12 @@ class LocalNostrSigner implements NostrSigner {
 
   late String privateKey;
   late String publicKey;
-  late String nsecPrivateKey;
   ECDHBasicAgreement? _agreement;
 
-  void init(String privateKeyNsec){
-    privateKey = Nip19.decodePrivkey(privateKeyNsec);
-    nsecPrivateKey = privateKeyNsec;
+  void init(){
+    privateKey = Account.sharedInstance.currentPrivkey;
 
-    final key = Keychain(privateKey);
-    publicKey = key.public;
+    publicKey = Account.sharedInstance.currentPubkey;
   }
 
 
@@ -33,10 +31,6 @@ class LocalNostrSigner implements NostrSigner {
 
   Future<String?> getPrivateKey() async {
     return privateKey;
-  }
-
-  String? get getNsecPrivateKey {
-    return nsecPrivateKey;
   }
 
   @override

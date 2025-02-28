@@ -6,6 +6,20 @@ import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'aegis_websocket_server.dart';
 
+class BunkerSocket {
+  final String name;
+  final String nsecBunker;
+  final String port;
+  final int createTimestamp;
+
+  BunkerSocket({
+    required this.name,
+    required this.nsecBunker,
+    required this.port,
+    required this.createTimestamp,
+  });
+}
+
 class ServerNIP46Signer {
   static final ServerNIP46Signer instance = ServerNIP46Signer._internal();
   factory ServerNIP46Signer() => instance;
@@ -15,21 +29,22 @@ class ServerNIP46Signer {
   String _remotePubkey = '';
   String subscriptionId = '';
   String _ipAddress = '';
-  final int port = 8081;
+  String port = '8081';
 
   List<String>? _remotePubkeyTags;
 
-  Future<void> start() async {
-    _generateKeyPair();
+  Future<void> start(String getPort) async {
+    port = getPort;
+    generateKeyPair();
     await _startWebSocketServer();
   }
 
-  void _generateKeyPair() {
-    LocalNostrSigner.instance.init('');
-    String nsec = LocalNostrSigner.instance.getNsecPrivateKey ?? '';
-    print("✅ NIP-46  ws://127.0.0.1:$port");
-    print("🔑 Nsec : $nsec");
-    print("🔗 Bunker URL: ${_getBunkerUrl()}");
+  void generateKeyPair() async {
+    LocalNostrSigner.instance.init();
+    String getIpAddress = await ServerNIP46Signer.getIpAddress();
+    print("✅ NIP-46  ws://${getIpAddress}:$port");
+    String bunkerUrl = await getBunkerUrl(port);
+    print("🔗 Bunker URL: $bunkerUrl");
   }
 
   Future<void> _startWebSocketServer() async {
@@ -58,7 +73,7 @@ class ServerNIP46Signer {
     socket.add(jsonResponseEOSE);
   }
 
-  void _handleEvent(WebSocket socket, Map<String,dynamic> eventData) async {
+  void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
     final event = Event.fromJson(eventData);
     if (event == null) return;
 
@@ -87,18 +102,19 @@ class ServerNIP46Signer {
     socket.add(signEvent.serialize());
   }
 
-  Future<String> _processRemoteRequest(NostrRemoteRequest remoteRequest, Event event) async {
+  Future<String> _processRemoteRequest(
+      NostrRemoteRequest remoteRequest, Event event) async {
     String responseJson = '';
     switch (remoteRequest.method) {
       case "connect":
         _remotePubkey = event.pubkey;
-        responseJson = jsonEncode(
-            {"id": remoteRequest.id, "result": "ack", "error": ''});
+        responseJson =
+            jsonEncode({"id": remoteRequest.id, "result": "ack", "error": ''});
         break;
 
       case "ping":
-        responseJson = jsonEncode(
-            {"id": remoteRequest.id, "result": "pong", "error": ''});
+        responseJson =
+            jsonEncode({"id": remoteRequest.id, "result": "pong", "error": ''});
         break;
 
       case "get_public_key":
@@ -113,7 +129,7 @@ class ServerNIP46Signer {
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null) {
           Event? signEvent =
-          Event.fromJson(jsonDecode(contentStr), verify: false);
+              Event.fromJson(jsonDecode(contentStr), verify: false);
           if (signEvent == null) return '';
           final eventFromJ = Event.from(
             createdAt: signEvent.createdAt,
@@ -136,41 +152,29 @@ class ServerNIP46Signer {
       case "nip04_encrypt":
         String? result = await LocalNostrSigner.instance
             .encrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        responseJson = jsonEncode({
-          "id": remoteRequest.id,
-          "result": result ?? '',
-          "error": ''
-        });
+        responseJson = jsonEncode(
+            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
 
       case "nip04_decrypt":
         String? result = await LocalNostrSigner.instance
             .decrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        responseJson = jsonEncode({
-          "id": remoteRequest.id,
-          "result": result ?? '',
-          "error": ''
-        });
+        responseJson = jsonEncode(
+            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
 
       case "nip44_decrypt":
         String? result = await LocalNostrSigner.instance
             .decrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        responseJson = jsonEncode({
-          "id": remoteRequest.id,
-          "result": result ?? '',
-          "error": ''
-        });
+        responseJson = jsonEncode(
+            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
 
       case "nip44_encrypt":
         String? result = await LocalNostrSigner.instance
             .nip44Encrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        responseJson = jsonEncode({
-          "id": remoteRequest.id,
-          "result": result ?? '',
-          "error": ''
-        });
+        responseJson = jsonEncode(
+            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
 
       default:
@@ -183,8 +187,9 @@ class ServerNIP46Signer {
     return responseJson;
   }
 
-  String _getBunkerUrl() {
-    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://192.168.1.3:8081";
+  Future<String> getBunkerUrl(String port) async {
+    String ipAddress = await getIpAddress();
+    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://$ipAddress:$port";
   }
 
   List<String> getRemoteSignerPubkeyTags() {
@@ -198,7 +203,7 @@ class ServerNIP46Signer {
       for (var interface in interfaces) {
         for (var addr in interface.addresses) {
           if (addr.type == InternetAddressType.IPv4) {
-           return addr.address;
+            return addr.address;
           }
         }
       }
@@ -207,5 +212,4 @@ class ServerNIP46Signer {
       return '';
     }
   }
-
 }

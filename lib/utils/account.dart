@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:flutter/foundation.dart';
+
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
 
@@ -16,6 +19,8 @@ class Account {
   static final Account sharedInstance = Account._internal();
 
   final List<AccountObservers> _observers = <AccountObservers>[];
+  
+  final ValueListenable<List<BunkerSocket>> bunkerSocketList = ValueNotifier([]);
 
   String _currentPubkey = '';
   String _currentPrivkey = '';

@@ -7,25 +7,24 @@ import 'package:flutter/material.dart';
 import '../../navigator/navigator.dart';
 import '../login/login.dart';
 import 'add_application.dart';
-import 'bunker_socket_info.dart';
 
-class Application extends StatefulWidget {
-  const Application({super.key});
+class EditBunkerSocketInfo extends StatefulWidget {
+  const EditBunkerSocketInfo({super.key});
 
   @override
-  _ApplicationState createState() => _ApplicationState();
+  _EditBunkerSocketInfoState createState() => _EditBunkerSocketInfoState();
 }
 
-class _ApplicationState extends State<Application> {
+class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Application',
+          'EditBunkerSocketInfo',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w400,
-              ),
+            fontWeight: FontWeight.w400,
+          ),
         ),
       ),
       body: Container(
@@ -76,10 +75,7 @@ class _ApplicationState extends State<Application> {
       DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
 
       return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: (){
-          AegisNavigator.pushPage(context, (context) => BunkerSocketInfo());
-        },
+        onTap: (){},
         child: Container(
           height: 72,
           child: Row(
@@ -122,9 +118,9 @@ class _ApplicationState extends State<Application> {
             Text(
               'Congratulations, your new account is ready!',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w400,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w400,
+              ),
             ),
             const SizedBox(
               height: 8,
@@ -132,9 +128,9 @@ class _ApplicationState extends State<Application> {
             Text(
               "Now you can start using apps that support Aegis, when needed Aegis will open and ask you to confirm permissions. In this view you will find all the apps that have active permissions.",
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(
               height: 8,
@@ -142,9 +138,9 @@ class _ApplicationState extends State<Application> {
             Text(
               "Discover all Nostr apps for android at nostrapps.com.",
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             FilledButton.tonal(
               onPressed: () {
@@ -152,7 +148,7 @@ class _ApplicationState extends State<Application> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor:
-                    Theme.of(context).colorScheme.secondaryContainer,
+                Theme.of(context).colorScheme.secondaryContainer,
               ),
               child: Container(
                 width: double.infinity,
@@ -161,8 +157,8 @@ class _ApplicationState extends State<Application> {
                 child: Text(
                   'Discover',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ).setPaddingOnly(top: 20.0),

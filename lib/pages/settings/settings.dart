@@ -100,7 +100,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
                   height: 48,
                   child: Center(
                     child: CommonImage(
-                      iconName: 'copy_Icon.png',
+                      iconName: 'copy_icon.png',
                       size: 24,
                     ),
                   ),
