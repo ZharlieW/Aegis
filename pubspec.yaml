@@ -50,6 +50,7 @@ dependencies:
   dio_cookie_manager: ^3.1.1
   flutter_socks_proxy: ^0.0.3
   pretty_qr_code: ^3.3.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
