@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:aegis/common/common_tips.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class TookKit{
   static String getShortStrByHex64(String hex64){
@@ -48,4 +49,11 @@ class TookKit{
     );
     CommonTips.success(context, 'copied successfully');
   }
+
+  static String formatTimestamp(int timestamp) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    DateFormat formatter = DateFormat('MM Feb HH:mm');
+    return formatter.format(date);
+  }
 }
+

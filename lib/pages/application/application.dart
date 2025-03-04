@@ -1,6 +1,7 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
@@ -77,10 +78,11 @@ class _ApplicationState extends State<Application> {
 
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: (){
+        onTap: () {
           AegisNavigator.pushPage(context, (context) => BunkerSocketInfo());
         },
         child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16),
           height: 72,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -88,14 +90,24 @@ class _ApplicationState extends State<Application> {
             children: [
               Container(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(bunkerSocket.name),
-                    Text(bunkerSocket.nsecBunker.substring(0, 8)),
+                    Text(
+                      bunkerSocket.name,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      bunkerSocket.nsecBunker.substring(0, 15),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ],
                 ),
               ),
-              Text(dateTime.toString())
+              Text(
+                TookKit.formatTimestamp(timestamp),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
         ),

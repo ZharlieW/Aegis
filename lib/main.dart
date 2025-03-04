@@ -1,7 +1,7 @@
 import 'package:aegis/pages/application/application.dart';
-import 'package:aegis/pages/profile/profile.dart';
 import 'package:aegis/pages/request/request.dart';
 import 'package:aegis/pages/settings/settings.dart';
+import 'package:aegis/splash_screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
       ),
-      home: BottomTabBarExample(),
+      home: SplashScreen(),
       // const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }

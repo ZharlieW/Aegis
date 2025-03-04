@@ -16,53 +16,63 @@ class EditBunkerSocketInfo extends StatefulWidget {
 }
 
 class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
+  final TextEditingController _nameController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'EditBunkerSocketInfo',
+          'Edit configuration',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w400,
-          ),
+                fontWeight: FontWeight.w400,
+              ),
         ),
       ),
       body: Container(
-        height: double.infinity,
-        child: Stack(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
           children: [
-            ValueListenableBuilder<List<BunkerSocket>>(
-              valueListenable: Account.sharedInstance.bunkerSocketList,
-              builder: (context, value, child) {
-                if (value.isEmpty) return _noBunkerSocketWidget();
-                return Column(
-                  children: _applicationList(value),
-                );
-              },
-            ),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () {
-                  AegisNavigator.pushPage(context, (context) => Login());
-                },
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(56),
+            Text(
+              "To create a new nsecbunker you need to give it a name and select one or more relays, that's all!",
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
                   ),
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'add_icon.png',
-                      size: 36,
-                    ),
-                  ),
+            ).setPadding(EdgeInsets.symmetric(vertical: 20)),
+            Container(
+              height: 56,
+              child: TextField(
+                controller: _nameController,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: const InputDecoration(
+                  labelText: 'name',
+                  hintText: 'Name',
+                  border: OutlineInputBorder(),
+                  isDense: false,
+                  contentPadding: EdgeInsets.all(16), //
                 ),
               ),
             ),
+            FilledButton.tonal(
+              onPressed: () {
+                AegisNavigator.pushPage(context, (context) => AddApplication());
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(vertical: 16),
+                alignment: Alignment.center,
+                child: Text(
+                  'Update',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                ),
+              ),
+            ).setPaddingOnly(top: 20.0),
           ],
         ),
       ),
@@ -75,7 +85,7 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
       DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
 
       return GestureDetector(
-        onTap: (){},
+        onTap: () {},
         child: Container(
           height: 72,
           child: Row(
@@ -118,9 +128,9 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
             Text(
               'Congratulations, your new account is ready!',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w400,
-              ),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w400,
+                  ),
             ),
             const SizedBox(
               height: 8,
@@ -128,9 +138,9 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
             Text(
               "Now you can start using apps that support Aegis, when needed Aegis will open and ask you to confirm permissions. In this view you will find all the apps that have active permissions.",
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
             const SizedBox(
               height: 8,
@@ -138,9 +148,9 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
             Text(
               "Discover all Nostr apps for android at nostrapps.com.",
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
             FilledButton.tonal(
               onPressed: () {
@@ -148,7 +158,7 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor:
-                Theme.of(context).colorScheme.secondaryContainer,
+                    Theme.of(context).colorScheme.secondaryContainer,
               ),
               child: Container(
                 width: double.infinity,
@@ -157,8 +167,8 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
                 child: Text(
                   'Discover',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
             ).setPaddingOnly(top: 20.0),

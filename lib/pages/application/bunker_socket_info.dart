@@ -1,12 +1,11 @@
-import 'package:aegis/common/common_image.dart';
-import 'package:aegis/utils/account.dart';
-import 'package:aegis/utils/server_nip46_signer.dart';
-import 'package:aegis/utils/widget_tool.dart';
+import 'package:aegis/navigator/navigator.dart';
 import 'package:flutter/material.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 
-import '../../navigator/navigator.dart';
-import '../login/login.dart';
-import 'add_application.dart';
+import '../../common/common_image.dart';
+import '../../utils/account.dart';
+import '../../utils/took_kit.dart';
+import 'edit_bunker_socket_info.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
   const BunkerSocketInfo({super.key});
@@ -16,51 +15,108 @@ class BunkerSocketInfo extends StatefulWidget {
 }
 
 class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
+  String _bunkerUrl = '';
+
+  @override
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _bunkerUrl = Account.sharedInstance.bunkerSocketList.value[0].nsecBunker;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'BunkerSocketInfo',
+          'Bunker Socket Info',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w400,
-          ),
+                fontWeight: FontWeight.w400,
+              ),
         ),
       ),
       body: Container(
-        height: double.infinity,
-        child: Stack(
+        margin: EdgeInsets.symmetric(horizontal: 16),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ValueListenableBuilder<List<BunkerSocket>>(
-              valueListenable: Account.sharedInstance.bunkerSocketList,
-              builder: (context, value, child) {
-                if (value.isEmpty) return _noBunkerSocketWidget();
-                return Column(
-                  children: _applicationList(value),
-                );
-              },
+            _qrCodeWidget(),
+            const SizedBox(
+              height: 40,
             ),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () {
-                  AegisNavigator.pushPage(context, (context) => Login());
-                },
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(56),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _bunkerUrl,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'add_icon.png',
-                      size: 36,
+                ),
+                GestureDetector(
+                  onTap: () => TookKit.copyKey(context, _bunkerUrl),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    child: Center(
+                      child: CommonImage(
+                        iconName: 'copy_icon.png',
+                        size: 24,
+                      ),
                     ),
                   ),
                 ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        height: 100,
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                AegisNavigator.pushPage(context, (context) => EditBunkerSocketInfo());
+              },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.primary),
+              ),
+              icon: CommonImage(
+                iconName: 'edit_icon.png',
+                size: 18,
+              ),
+              label: Text(
+                "Edit",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                    ),
+              ),
+            ),
+            const SizedBox(width: 10), //
+            ElevatedButton.icon(
+              onPressed: () {},
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.primary),
+              ),
+              icon: CommonImage(
+                iconName: 'del_icon.png',
+                size: 32,
+                color: Colors.white,
+              ),
+              label: Text(
+                "Remove",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                    ),
               ),
             ),
           ],
@@ -69,101 +125,14 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
     );
   }
 
-  List<Widget> _applicationList(List<BunkerSocket> bunkerSocketist) {
-    return bunkerSocketist.map((BunkerSocket bunkerSocket) {
-      int timestamp = bunkerSocket.createTimestamp;
-      DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-
-      return GestureDetector(
-        onTap: (){},
-        child: Container(
-          height: 72,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(bunkerSocket.name),
-                    Text(bunkerSocket.nsecBunker.substring(0, 8)),
-                  ],
-                ),
-              ),
-              Text(dateTime.toString())
-            ],
-          ),
-        ),
-      );
-    }).toList();
-  }
-
-  Widget _noBunkerSocketWidget() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: CommonImage(
-                iconName: 'aegis_logo.png',
-                size: 100,
-              ).setPaddingOnly(
-                top: 24.0,
-                bottom: 20.0,
-              ),
-            ),
-            Text(
-              'Congratulations, your new account is ready!',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              "Now you can start using apps that support Aegis, when needed Aegis will open and ask you to confirm permissions. In this view you will find all the apps that have active permissions.",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              "Discover all Nostr apps for android at nostrapps.com.",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            FilledButton.tonal(
-              onPressed: () {
-                AegisNavigator.pushPage(context, (context) => AddApplication());
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                Theme.of(context).colorScheme.secondaryContainer,
-              ),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(vertical: 16),
-                alignment: Alignment.center,
-                child: Text(
-                  'Discover',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ).setPaddingOnly(top: 20.0),
-          ],
-        ),
+  Widget _qrCodeWidget() {
+    return Container(
+      margin: EdgeInsets.only(top: 50),
+      width: 240,
+      height: 240,
+      child: PrettyQrView.data(
+        data: _bunkerUrl,
+        errorCorrectLevel: QrErrorCorrectLevel.M,
       ),
     );
   }
