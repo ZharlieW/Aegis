@@ -74,7 +74,6 @@ class _ApplicationState extends State<Application> {
   List<Widget> _applicationList(List<BunkerSocket> bunkerSocketist) {
     return bunkerSocketist.map((BunkerSocket bunkerSocket) {
       int timestamp = bunkerSocket.createTimestamp;
-      DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
 
       return GestureDetector(
         behavior: HitTestBehavior.translucent,

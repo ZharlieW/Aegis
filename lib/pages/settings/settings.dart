@@ -162,4 +162,14 @@ class _SettingsState extends State<Settings> with AccountObservers {
   void didSwitchUser() {
     // TODO: implement didSwitchUser
   }
+
+  @override
+  void didAddBunkerSocketList() {
+    // TODO: implement didAddBunkerSocketList
+  }
+
+  @override
+  void didAddClientRequestList() {
+    // TODO: implement didAddClientRequestList
+  }
 }

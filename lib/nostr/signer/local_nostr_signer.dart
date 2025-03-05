@@ -19,7 +19,6 @@ class LocalNostrSigner implements NostrSigner {
 
   void init(){
     privateKey = Account.sharedInstance.currentPrivkey;
-
     publicKey = Account.sharedInstance.currentPubkey;
   }
 

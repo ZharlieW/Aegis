@@ -143,7 +143,8 @@ class _AddNsecbunkerState extends State<AddNsecbunker> {
       nsecBunker: bunkerUrl,
       createTimestamp: timestamp,
     );
-    Account.sharedInstance.bunkerSocketList.value.add(bunkerSocket);
+    Account.sharedInstance.addBunkerSocketList(bunkerSocket);
+    ServerNIP46Signer.instance.start('8081');
     CommonTips.success(context, 'Add successfully !!');
     AegisNavigator.popToRoot(context);
   }

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:aegis/utils/account.dart';
+
 import '../nostr/event.dart';
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
@@ -18,6 +20,17 @@ class BunkerSocket {
     required this.port,
     required this.createTimestamp,
   });
+}
+
+class ClientRequest {
+  final String method;
+  final List<String?> contentList;
+
+
+  ClientRequest({
+    required this.method,
+    required this.contentList,
+});
 }
 
 class ServerNIP46Signer {
@@ -79,7 +92,6 @@ class ServerNIP46Signer {
 
     NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
         event.content, event.pubkey, LocalNostrSigner.instance);
-
     if (remoteRequest == null) return;
 
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
@@ -105,8 +117,15 @@ class ServerNIP46Signer {
   Future<String> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event) async {
     String responseJson = '';
+    print('===remoteRequest====method==${remoteRequest.method}');
+    print('===remoteRequest====params==${remoteRequest.params}');
     switch (remoteRequest.method) {
       case "connect":
+        ClientRequest clientRequest = ClientRequest(
+          method: "connect",
+          contentList: remoteRequest.params,
+        );
+        Account.sharedInstance.addClientRequestList(clientRequest);
         _remotePubkey = event.pubkey;
         responseJson =
             jsonEncode({"id": remoteRequest.id, "result": "ack", "error": ''});
@@ -118,6 +137,11 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
+        ClientRequest clientRequest = ClientRequest(
+          method: "get_public_key",
+          contentList: remoteRequest.params,
+        );
+        Account.sharedInstance.addClientRequestList(clientRequest);
         responseJson = jsonEncode({
           "id": remoteRequest.id,
           "result": LocalNostrSigner.instance.publicKey,

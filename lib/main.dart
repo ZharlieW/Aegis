@@ -1,7 +1,10 @@
+import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/pages/application/application.dart';
 import 'package:aegis/pages/request/request.dart';
+import 'package:aegis/pages/request/request_info.dart';
 import 'package:aegis/pages/settings/settings.dart';
 import 'package:aegis/splash_screen/splash_screen.dart';
+import 'package:aegis/utils/account.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -142,7 +145,7 @@ class BottomTabBarExample extends StatefulWidget {
   _BottomTabBarExampleState createState() => _BottomTabBarExampleState();
 }
 
-class _BottomTabBarExampleState extends State<BottomTabBarExample> {
+class _BottomTabBarExampleState extends State<BottomTabBarExample> with AccountObservers{
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
@@ -150,6 +153,13 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> {
     Request(),
     Settings(),
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Account.sharedInstance.addObserver(this);
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -184,5 +194,31 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> {
         ],
       ),
     );
+  }
+
+  @override
+  void didAddBunkerSocketList() {
+    // TODO: implement didAddBunkerSocketList
+  }
+
+  @override
+  void didAddClientRequestList() {
+    // TODO: implement didAddClientRequestList
+    AegisNavigator.presentPage(context, (context) => RequestInfo(),fullscreenDialog: false);
+  }
+
+  @override
+  void didLoginSuccess() {
+    // TODO: implement didLoginSuccess
+  }
+
+  @override
+  void didLogout() {
+    // TODO: implement didLogout
+  }
+
+  @override
+  void didSwitchUser() {
+    // TODO: implement didSwitchUser
   }
 }

@@ -11,6 +11,10 @@ abstract mixin class AccountObservers {
   void didSwitchUser();
 
   void didLogout();
+
+  void didAddBunkerSocketList();
+
+  void didAddClientRequestList();
 }
 
 class Account {
@@ -21,6 +25,8 @@ class Account {
   final List<AccountObservers> _observers = <AccountObservers>[];
   
   final ValueListenable<List<BunkerSocket>> bunkerSocketList = ValueNotifier([]);
+
+  final ValueListenable<List<ClientRequest>> clientRequestList = ValueNotifier([]);
 
   String _currentPubkey = '';
   String _currentPrivkey = '';
@@ -85,6 +91,20 @@ class Account {
     _currentPrivkey = privkey;
     for (AccountObservers observer in _observers) {
       observer.didLoginSuccess();
+    }
+  }
+
+  void addBunkerSocketList(BunkerSocket bunkerSocket){
+    bunkerSocketList.value.add(bunkerSocket);
+    for (AccountObservers observer in _observers) {
+      observer.didAddBunkerSocketList();
+    }
+  }
+
+  void addClientRequestList(ClientRequest clientRequest){
+    clientRequestList.value.add(clientRequest);
+    for (AccountObservers observer in _observers) {
+      observer.didAddClientRequestList();
     }
   }
 }
