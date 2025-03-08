@@ -69,12 +69,13 @@ class BaseAppBarState extends State<CommonAppBar> {
 
 
   Widget _leadingWidget() {
+    String getIcon = widget.isClose ? 'title_close_icon.png' : 'back_icon.png';
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => AegisNavigator.pop(context),
       child: Center(
         child: CommonImage(
-          iconName: 'back_icon.png',
+          iconName: getIcon,
           size: 24,
         ),
       ),

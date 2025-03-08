@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
 
+import '../navigator/navigator.dart';
 import '../nostr/event.dart';
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
+import '../pages/request/request_info.dart';
 import 'aegis_websocket_server.dart';
 
 class BunkerSocket {
-  final String name;
+  String name;
   final String nsecBunker;
   final String port;
   final int createTimestamp;
@@ -41,10 +43,11 @@ class ServerNIP46Signer {
   late LocalNostrSigner localNostrSigner;
   String _remotePubkey = '';
   String subscriptionId = '';
-  String _ipAddress = '';
   String port = '8081';
 
   List<String>? _remotePubkeyTags;
+
+  AegisWebSocketServer? server;
 
   Future<void> start(String getPort) async {
     port = getPort;
@@ -61,11 +64,7 @@ class ServerNIP46Signer {
   }
 
   Future<void> _startWebSocketServer() async {
-    AegisWebSocketServer server = AegisWebSocketServer(
-      port: port,
-      onMessageReceived: _handleMessage,
-    );
-    await server.start();
+    AegisWebSocketServer.instance.start(onMessageReceived: _handleMessage,port:port);
   }
 
   void _handleMessage(String message, WebSocket socket) async {
@@ -97,8 +96,8 @@ class ServerNIP46Signer {
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
     socket.add(jsonResponseOk);
 
-    String responseJson = await _processRemoteRequest(remoteRequest, event);
-
+    String? responseJson = await _processRemoteRequest(remoteRequest, event);
+    if(responseJson == null) return;
     String? responseJsonEncrypt = await LocalNostrSigner.instance
         .nip44Encrypt(_remotePubkey, responseJson);
 
@@ -114,18 +113,20 @@ class ServerNIP46Signer {
     socket.add(signEvent.serialize());
   }
 
-  Future<String> _processRemoteRequest(
+  Future<String?> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event) async {
     String responseJson = '';
     print('===remoteRequest====method==${remoteRequest.method}');
     print('===remoteRequest====params==${remoteRequest.params}');
+    ClientRequest clientRequest = ClientRequest(
+      method: "connect",
+      contentList: remoteRequest.params,
+    );
+    Account.sharedInstance.addClientRequestMap(clientRequest);
+
     switch (remoteRequest.method) {
       case "connect":
-        ClientRequest clientRequest = ClientRequest(
-          method: "connect",
-          contentList: remoteRequest.params,
-        );
-        Account.sharedInstance.addClientRequestList(clientRequest);
+
         _remotePubkey = event.pubkey;
         responseJson =
             jsonEncode({"id": remoteRequest.id, "result": "ack", "error": ''});
@@ -137,11 +138,8 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-        ClientRequest clientRequest = ClientRequest(
-          method: "get_public_key",
-          contentList: remoteRequest.params,
-        );
-        Account.sharedInstance.addClientRequestList(clientRequest);
+        final status =  await AegisNavigator.presentPage(AegisNavigator.navigatorKey.currentContext, (context) => RequestInfo(),fullscreenDialog: false);
+        if(status == null || status == false) return null;
         responseJson = jsonEncode({
           "id": remoteRequest.id,
           "result": LocalNostrSigner.instance.publicKey,
@@ -189,7 +187,7 @@ class ServerNIP46Signer {
 
       case "nip44_decrypt":
         String? result = await LocalNostrSigner.instance
-            .decrypt(remoteRequest.params[0], remoteRequest.params[1]);
+            .nip44Decrypt(remoteRequest.params[0], remoteRequest.params[1]);
         responseJson = jsonEncode(
             {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;

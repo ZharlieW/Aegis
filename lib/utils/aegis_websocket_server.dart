@@ -2,32 +2,64 @@ import 'dart:io';
 import 'dart:async';
 
 class AegisWebSocketServer {
-  final String port;
-  final Function(String, WebSocket) onMessageReceived;
+  static final AegisWebSocketServer instance = AegisWebSocketServer._internal();
+  factory AegisWebSocketServer() => instance;
 
-  AegisWebSocketServer({required this.port, required this.onMessageReceived});
+  AegisWebSocketServer._internal();
 
-  Future<void> start() async {
-    HttpServer server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(port) ?? 7651);
-    server.listen((HttpRequest request) async {
+  HttpServer? _server;
+  final List<WebSocket> _clients = [];
+  Function(String, WebSocket)? _onMessageReceived;
+  String _port = "7651"; 
+
+  Future<void> start({String port = "7651", required Function(String, WebSocket) onMessageReceived}) async {
+    if (_server != null) {
+      print("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
+      return;
+    }
+
+    _port = port;
+    _onMessageReceived = onMessageReceived;
+
+    _server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
+    _server!.listen((HttpRequest request) async {
       if (WebSocketTransformer.isUpgradeRequest(request)) {
         WebSocket socket = await WebSocketTransformer.upgrade(request);
+        _clients.add(socket);
         socket.listen(
-          (message) => onMessageReceived(message, socket),
-          onDone: () => print("❌ The client is disconnected"),
-          onError: (error) => print("🚨 WebSocket error: $error"),
+              (message) => _onMessageReceived?.call(message, socket),
+          onDone: () {
+            print("❌ The client is disconnected: ${socket.hashCode}");
+            _clients.remove(socket);
+          },
+          onError: (error) {
+            print("🚨 WebSocket error: $error");
+            _clients.remove(socket);
+          },
         );
-        print("🔗 The client is disconnected: ${request.connectionInfo?.remoteAddress}");
+        print("🔗 The client is connected: ${request.connectionInfo?.remoteAddress}");
       } else {
         request.response
           ..statusCode = HttpStatus.forbidden
           ..close();
       }
     });
-    print("✅ WebSocket The server runs on ws://127.0.0.1:$port");
+
+    print("✅ WebSocket server is running on ws://127.0.0.1:$_port");
   }
 
-  void stop() {
-    //
+  Future<void> stop() async {
+    if (_server != null) {
+      print("🛑 Stopping WebSocket server...");
+      await _server!.close();
+      for (var client in _clients) {
+        client.close();
+      }
+      _clients.clear();
+      _server = null;
+      print("✅ WebSocket server stopped.");
+    } else {
+      print("⚠️ WebSocket server is not running.");
+    }
   }
 }

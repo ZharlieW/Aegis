@@ -163,13 +163,14 @@ class _SettingsState extends State<Settings> with AccountObservers {
     // TODO: implement didSwitchUser
   }
 
+
   @override
-  void didAddBunkerSocketList() {
-    // TODO: implement didAddBunkerSocketList
+  void didAddBunkerSocketMap() {
+    // TODO: implement didAddBunkerSocketMap
   }
 
   @override
-  void didAddClientRequestList() {
-    // TODO: implement didAddClientRequestList
+  void didAddClientRequestMap() {
+    // TODO: implement didAddClientRequestMap
   }
 }

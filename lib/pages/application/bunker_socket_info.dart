@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../common/common_image.dart';
+import '../../common/common_tips.dart';
 import '../../utils/account.dart';
+import '../../utils/aegis_websocket_server.dart';
+import '../../utils/server_nip46_signer.dart';
 import '../../utils/took_kit.dart';
 import 'edit_bunker_socket_info.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
-  const BunkerSocketInfo({super.key});
+  final BunkerSocket bunkerSocket;
+
+  const BunkerSocketInfo({super.key, required this.bunkerSocket});
 
   @override
   _BunkerSocketInfoState createState() => _BunkerSocketInfoState();
@@ -22,7 +27,7 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _bunkerUrl = Account.sharedInstance.bunkerSocketList.value[0].nsecBunker;
+    _bunkerUrl = widget.bunkerSocket.nsecBunker;
     setState(() {});
   }
 
@@ -83,7 +88,12 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
           children: [
             ElevatedButton.icon(
               onPressed: () {
-                AegisNavigator.pushPage(context, (context) => EditBunkerSocketInfo());
+                AegisNavigator.pushPage(
+                  context,
+                  (context) => EditBunkerSocketInfo(
+                    bunkerSocket: widget.bunkerSocket,
+                  ),
+                );
               },
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(
@@ -102,7 +112,37 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
             ),
             const SizedBox(width: 10), //
             ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Remove"),
+                      content: Text("Are you sure you want to remove all permissions from this application?"),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0), // 圆角
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => AegisNavigator.pop(context),
+                          child: Text("Cancel"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            BunkerSocket bunkerSocket = widget.bunkerSocket;
+                            String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
+                            Account.sharedInstance.bunkerSocketMap.value.remove(key);
+                            AegisWebSocketServer.instance.stop();
+                            CommonTips.error(context,'Remove success');
+                            AegisNavigator.popToRoot(context);
+                          },
+                          child: Text("Remove"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(
                     Theme.of(context).colorScheme.primary),

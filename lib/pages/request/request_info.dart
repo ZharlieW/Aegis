@@ -1,3 +1,4 @@
+import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +41,12 @@ class RequestInfoState extends State<RequestInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: GestureDetector(
+          onTap: () => AegisNavigator.pop(context),
+          child: Center(
+            child: CommonImage(iconName: 'title_close_icon.png',size: 32,),
+          ),
+        ),
         title: Text(
           'Request Info',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -73,13 +80,13 @@ class RequestInfoState extends State<RequestInfo> {
                         ),
                   ).setPadding(EdgeInsets.symmetric(vertical: 20)),
                   _requestContentWidget(),
-                  // _requestContentWidget(),
-                  // _requestContentWidget(),
                   const SizedBox(
                     height: 8,
                   ),
                   FilledButton.tonal(
-                    onPressed: () {},
+                    onPressed: () {
+                      AegisNavigator.pop(context,true);
+                    },
                     style: FilledButton.styleFrom(
                       backgroundColor:
                           Theme.of(context).colorScheme.primary, // 背景色

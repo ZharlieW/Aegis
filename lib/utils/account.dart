@@ -12,9 +12,9 @@ abstract mixin class AccountObservers {
 
   void didLogout();
 
-  void didAddBunkerSocketList();
+  void didAddBunkerSocketMap();
 
-  void didAddClientRequestList();
+  void didAddClientRequestMap();
 }
 
 class Account {
@@ -23,8 +23,9 @@ class Account {
   static final Account sharedInstance = Account._internal();
 
   final List<AccountObservers> _observers = <AccountObservers>[];
-  
-  final ValueListenable<List<BunkerSocket>> bunkerSocketList = ValueNotifier([]);
+
+  // key: createTimestamp + port
+  final ValueListenable<Map<String,BunkerSocket>> bunkerSocketMap = ValueNotifier({});
 
   final ValueListenable<List<ClientRequest>> clientRequestList = ValueNotifier([]);
 
@@ -94,17 +95,26 @@ class Account {
     }
   }
 
-  void addBunkerSocketList(BunkerSocket bunkerSocket){
-    bunkerSocketList.value.add(bunkerSocket);
+  void addBunkerSocketMap(BunkerSocket bunkerSocket){
+    String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
+    bunkerSocketMap.value[key] = bunkerSocket;
     for (AccountObservers observer in _observers) {
-      observer.didAddBunkerSocketList();
+      observer.didAddBunkerSocketMap();
     }
   }
 
-  void addClientRequestList(ClientRequest clientRequest){
+  void removeBunkerSocketList(BunkerSocket bunkerSocket){
+    String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
+    bunkerSocketMap.value[key] = bunkerSocket;
+    for (AccountObservers observer in _observers) {
+      observer.didAddBunkerSocketMap();
+    }
+  }
+
+  void addClientRequestMap(ClientRequest clientRequest){
     clientRequestList.value.add(clientRequest);
     for (AccountObservers observer in _observers) {
-      observer.didAddClientRequestList();
+      observer.didAddClientRequestMap();
     }
   }
 }

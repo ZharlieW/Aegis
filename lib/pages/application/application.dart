@@ -33,12 +33,12 @@ class _ApplicationState extends State<Application> {
         height: double.infinity,
         child: Stack(
           children: [
-            ValueListenableBuilder<List<BunkerSocket>>(
-              valueListenable: Account.sharedInstance.bunkerSocketList,
+            ValueListenableBuilder<Map<String,BunkerSocket>>(
+              valueListenable: Account.sharedInstance.bunkerSocketMap,
               builder: (context, value, child) {
                 if (value.isEmpty) return _noBunkerSocketWidget();
                 return Column(
-                  children: _applicationList(value),
+                  children: _applicationList(value.values.toList()),
                 );
               },
             ),
@@ -78,7 +78,7 @@ class _ApplicationState extends State<Application> {
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
-          AegisNavigator.pushPage(context, (context) => BunkerSocketInfo());
+          AegisNavigator.pushPage(context, (context) => BunkerSocketInfo(bunkerSocket: bunkerSocket,));
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16),

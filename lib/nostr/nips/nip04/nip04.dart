@@ -118,4 +118,15 @@ class NIP04 {
   static bool isEncrypted(String text) {
     return text.indexOf("?iv=") > 0;
   }
+
+  static List<List<String>> toTags(String p, String q, String qPubkey, int? expiration, {List<String>? members}) {
+    List<List<String>> result = [];
+    result.add(["p", p]);
+    for (var m in members ?? []) {
+      if (m != p) result.add(["p", m]);
+    }
+    if (q.isNotEmpty) result.add(["q", q, '', '']);
+    if (expiration != null) result.add(['expiration', expiration.toString()]);
+    return result;
+  }
 }

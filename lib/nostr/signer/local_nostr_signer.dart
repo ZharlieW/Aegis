@@ -1,9 +1,7 @@
 import 'package:aegis/utils/account.dart';
 import 'package:pointycastle/export.dart';
 import '../event.dart';
-import '../keychain.dart';
 import '../nips/nip04/nip04.dart';
-import '../nips/nip19/nip19.dart';
 import '../nips/nip44/nip44_v2.dart';
 import 'nostr_signer.dart';
 

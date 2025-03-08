@@ -1,7 +1,6 @@
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/pages/application/application.dart';
 import 'package:aegis/pages/request/request.dart';
-import 'package:aegis/pages/request/request_info.dart';
 import 'package:aegis/pages/settings/settings.dart';
 import 'package:aegis/splash_screen/splash_screen.dart';
 import 'package:aegis/utils/account.dart';
@@ -17,6 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: AegisNavigator.navigatorKey,
       title: '',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
@@ -197,17 +197,6 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> with AccountO
   }
 
   @override
-  void didAddBunkerSocketList() {
-    // TODO: implement didAddBunkerSocketList
-  }
-
-  @override
-  void didAddClientRequestList() {
-    // TODO: implement didAddClientRequestList
-    AegisNavigator.presentPage(context, (context) => RequestInfo(),fullscreenDialog: false);
-  }
-
-  @override
   void didLoginSuccess() {
     // TODO: implement didLoginSuccess
   }
@@ -220,5 +209,15 @@ class _BottomTabBarExampleState extends State<BottomTabBarExample> with AccountO
   @override
   void didSwitchUser() {
     // TODO: implement didSwitchUser
+  }
+
+  @override
+  void didAddBunkerSocketMap() {
+    // TODO: implement didAddBunkerSocketMap
+  }
+
+  @override
+  void didAddClientRequestMap() {
+    // TODO: implement didAddClientRequestMap
   }
 }

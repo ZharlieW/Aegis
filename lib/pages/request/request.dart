@@ -27,41 +27,16 @@ class RequestState extends State<Request> {
       ),
       body: Container(
         height: double.infinity,
-        child: Stack(
-          children: [
-            ValueListenableBuilder<List<ClientRequest>>(
-              valueListenable: Account.sharedInstance.clientRequestList,
-              builder: (context, value, child) {
-                if (value.isEmpty) return _noRequestWidget();
-                return Column(
-                  children: _requestListWidget(value),
-                );
-              },
-            ),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () {
-                  AegisNavigator.pushPage(context, (context) => Login());
-                },
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(56),
-                  ),
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'add_icon.png',
-                      size: 36,
-                    ),
-                  ),
-                ),
+        child: ValueListenableBuilder<List<ClientRequest>>(
+          valueListenable: Account.sharedInstance.clientRequestList,
+          builder: (context, value, child) {
+            if (value.isEmpty) return _noRequestWidget();
+            return SingleChildScrollView(
+              child: Column(
+                children: _requestListWidget(value),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
 
@@ -149,13 +124,19 @@ class RequestState extends State<Request> {
           AegisNavigator.pushPage(context, (context) => RequestInfo());
         },
         child: Container(
+          width: double.infinity,
+          color: Theme.of(context).colorScheme.primaryContainer,
+          margin: EdgeInsets.only(left: 16,right: 16,bottom: 20),
           padding: EdgeInsets.symmetric(
-            vertical: 20
+            vertical: 20,
+            horizontal: 16
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(clientRequest.method),
-              Text(content),
+              Text(clientRequest.method,style: Theme.of(context).textTheme.titleLarge,),
+              SizedBox(height: 15,),
+              Text(content,style: Theme.of(context).textTheme.titleMedium,),
             ],
           ),
         ),
