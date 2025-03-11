@@ -123,20 +123,48 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
                         borderRadius: BorderRadius.circular(12.0), // 圆角
                       ),
                       actions: [
-                        TextButton(
+                        ElevatedButton.icon(
                           onPressed: () => AegisNavigator.pop(context),
-                          child: Text("Cancel"),
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all(
+                                Theme.of(context).colorScheme.primary),
+                          ),
+                          icon: CommonImage(
+                            iconName: 'title_close_icon.png',
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            "Cancel",
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                        ElevatedButton(
+                        ElevatedButton.icon(
                           onPressed: () {
                             BunkerSocket bunkerSocket = widget.bunkerSocket;
                             String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
                             Account.sharedInstance.bunkerSocketMap.value.remove(key);
                             AegisWebSocketServer.instance.stop();
-                            CommonTips.error(context,'Remove success');
+                            CommonTips.success(context,'Remove success');
                             AegisNavigator.popToRoot(context);
                           },
-                          child: Text("Remove"),
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all(
+                                Theme.of(context).colorScheme.primary),
+                          ),
+                          icon: CommonImage(
+                            iconName: 'del_icon.png',
+                            size: 32,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            "Remove",
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ],
                     );

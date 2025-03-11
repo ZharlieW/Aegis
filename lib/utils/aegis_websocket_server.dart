@@ -10,7 +10,7 @@ class AegisWebSocketServer {
   HttpServer? _server;
   final List<WebSocket> _clients = [];
   Function(String, WebSocket)? _onMessageReceived;
-  String _port = "7651"; 
+  String _port = "7651";
 
   Future<void> start({String port = "7651", required Function(String, WebSocket) onMessageReceived}) async {
     if (_server != null) {

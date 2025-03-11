@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:aegis/common/common_image.dart';
 import 'package:flutter/material.dart';
 
-import '../main.dart';
+import 'home.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
     );
 
     _animation = Tween<double>(begin: 0.2, end: 1.0).animate(
@@ -32,10 +32,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    Timer(Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 2), () {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => BottomTabBarExample(),
+          pageBuilder: (context, animation, secondaryAnimation) => Home(),
           transitionDuration: Duration.zero, //
           reverseTransitionDuration: Duration.zero, //
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
