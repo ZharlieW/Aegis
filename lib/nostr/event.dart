@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:aegis/nostr/utils.dart';
 import 'package:convert/convert.dart';

@@ -26,13 +26,12 @@ class NostrRemoteRequest {
 
   static Future<NostrRemoteRequest?> decrypt(
       String ciphertext, String pubkey,LocalNostrSigner localNostrSigner) async {
-    // try {
+    try {
       String? plaintext;
       bool isNip04 = ciphertext.contains('?iv=');
       if(isNip04){
         plaintext = NIP04.decrypt(ciphertext, localNostrSigner.getAgreement(), pubkey);
       }else{
-        print('=====>>>>111');
         plaintext = await localNostrSigner.nip44Decrypt(pubkey, ciphertext);
       }
 
@@ -55,11 +54,11 @@ class NostrRemoteRequest {
         }
       }
     }
-    // catch (e) {
-    //   print("NostrRemoteRequest decrypt error");
-    //   print(e);
-    // }
+    catch (e) {
+      print("NostrRemoteRequest decrypt error");
+      print(e);
+    }
 
-    // return null;
-  // }
+    return null;
+  }
 }

@@ -1,184 +1,105 @@
-import 'package:aegis/navigator/navigator.dart';
+import 'dart:convert';
+
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/common_image.dart';
+import '../../nostr/event.dart';
+import '../../nostr/nips/nip04/nip04.dart';
+import '../../nostr/signer/local_nostr_signer.dart';
+import '../../utils/server_nip46_signer.dart';
+
 
 class RequestInfo extends StatefulWidget {
+  final ClientRequest requestEvent;
+  RequestInfo({required this.requestEvent});
   @override
   RequestInfoState createState() => RequestInfoState();
 }
 
-class PermissionsContent {
-  final String title;
-  final String content;
-
-  PermissionsContent({
-    required this.content,
-    required this.title,
-  });
-}
-
 class RequestInfoState extends State<RequestInfo> {
-  int selectIndex = 0;
+  String decryptContent = '';
+  String decryptSignEventContent = '';
 
-  final List<PermissionsContent> permissionsContentList = [
-    PermissionsContent(
-      title: 'Approve basic actions',
-      content: 'Recommended for most people. This will minimize the number of interruptions during your app usage.',
-    ),
-    PermissionsContent(
-      title: 'I fully trust this application',
-      content: 'Sign automatically every request',
-    ),
-    PermissionsContent(
-      title: 'Manually approve each permission',
-      content: 'Recommended for privacy-minded people who would like control over each permission. Choosing this will prompt you set a preference every time you receive a new permission.',
-    ),
-  ];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getDecryptContent();
+    // getSignEventContent();
+  }
+
+  void getDecryptContent()async {
+    Event event = widget.requestEvent.event;
+    String ciphertext = event.content;
+    String plaintext;
+    bool isNip04 = ciphertext.contains('?iv=');
+    if(isNip04){
+      plaintext = NIP04.decrypt(ciphertext, LocalNostrSigner.instance.getAgreement(), event.pubkey);
+    }else{
+      plaintext = await LocalNostrSigner.instance.nip44Decrypt(event.pubkey, ciphertext) ?? '--';
+    }
+    setState(() {
+      decryptContent = plaintext;
+    });
+  }
+
+  // void getSignEventContent()async {
+  //   if(widget.requestEvent.method != 'sign_event') return;
+  //   Event event = widget.requestEvent.event;
+  //   Map ciphertextMap = jsonDecode(widget.requestEvent.params[0]!);
+  //   String ciphertext = ciphertextMap['content'];
+  //   String plaintext;
+  //   bool isNip04 = ciphertext.contains('?iv=');
+  //   print('===ciphertext==$ciphertext');
+  //   if(isNip04){
+  //     plaintext = NIP04.decrypt(ciphertext, LocalNostrSigner.instance.getAgreement(), Account.sharedInstance.currentPubkey);
+  //   }else{
+  //     plaintext = await LocalNostrSigner.instance.nip44Decrypt(event.pubkey, ciphertext) ?? '--';
+  //   }
+  //   setState(() {
+  //     decryptSignEventContent = plaintext;
+  //   });
+  // }
+
+
 
   @override
   Widget build(BuildContext context) {
+    Event event = widget.requestEvent.event;
     return Scaffold(
       appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () => AegisNavigator.pop(context),
-          child: Center(
-            child: CommonImage(iconName: 'title_close_icon.png',size: 32,),
-          ),
-        ),
         title: Text(
           'Request Info',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w400,
-              ),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Container(
-              margin: EdgeInsets.only(bottom: 30),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Center(
-                    child: CommonImage(
-                      iconName: 'aegis_logo.png',
-                      size: 100,
-                    ).setPaddingOnly(
-                      top: 24.0,
-                      bottom: 20.0,
-                    ),
-                  ),
-                  Text(
-                    "Would like your permission to read your public key and sign events on your behalf. How to handle this application permissions?",
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ).setPadding(EdgeInsets.symmetric(vertical: 20)),
-                  _requestContentWidget(),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  FilledButton.tonal(
-                    onPressed: () {
-                      AegisNavigator.pop(context,true);
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primary, // 背景色
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.symmetric(vertical: 16),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Grant Permissions',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                          color: Colors.white
-                            ),
-                      ),
-                    ),
-                  ).setPaddingOnly(top: 20.0),
-                  FilledButton.tonal(
-                    onPressed: () {},
-                    style: FilledButton.styleFrom(
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainer, // 背景色
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.symmetric(vertical: 16),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Reject',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.error,
-                            ),
-                      ),
-                    ),
-                  ).setPaddingOnly(top: 20.0),
-                ],
-              ),
-            ),
+            fontWeight: FontWeight.w400,
           ),
         ),
       ),
-    );
-  }
+      body: Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+                event.pubkey
+            ).setPadding(EdgeInsets.symmetric(horizontal: 16,vertical: 20)),
 
-  Widget _requestContentWidget() {
-    return Column(
-      children: permissionsContentList.map((PermissionsContent contentInfo){
-        int findIndex = permissionsContentList.indexOf(contentInfo);
-        bool isSelect = findIndex == selectIndex;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              selectIndex = findIndex;
-            });
-          },
-          child: Container(
-            margin: EdgeInsets.only(bottom: 20),
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                CommonImage(
-                  iconName: isSelect ? 'select_radio_button_icon.png' : 'radio_button_icon.png',
-                  size: 32,
-                ).setPaddingOnly(right: 16.0),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        contentInfo.title,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Text(
-                        contentInfo.content,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
+            Text(
+                event.id
+            ).setPadding(EdgeInsets.symmetric(horizontal: 16,vertical: 20)),
+            Text(
+                event.createdAt.toString()
+            ).setPadding(EdgeInsets.symmetric(horizontal: 16,vertical: 20)),
+            Text(
+                event.tags.toString()
+            ).setPadding(EdgeInsets.symmetric(horizontal: 16,vertical: 20)),
 
+            Text(
+                decryptContent
+            ).setPadding(EdgeInsets.symmetric(horizontal: 16,vertical: 20)),
+
+          ],
+        ),
+      ),
+    );
   }
 }

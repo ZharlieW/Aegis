@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
 
+import '../nostr/event.dart';
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
 
@@ -103,7 +104,7 @@ class Account {
     }
   }
 
-  void removeBunkerSocketList(BunkerSocket bunkerSocket){
+  void removeBunkerSocketMap(BunkerSocket bunkerSocket){
     String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
     bunkerSocketMap.value[key] = bunkerSocket;
     for (AccountObservers observer in _observers) {
@@ -111,7 +112,7 @@ class Account {
     }
   }
 
-  void addClientRequestMap(ClientRequest clientRequest){
+  void addClientRequestList(ClientRequest clientRequest){
     clientRequestList.value.add(clientRequest);
     for (AccountObservers observer in _observers) {
       observer.didAddClientRequestMap();

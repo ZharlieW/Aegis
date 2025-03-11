@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../common/common_image.dart';
 import '../../utils/account.dart';
 import '../../utils/server_nip46_signer.dart';
-import '../login/login.dart';
 
 class Request extends StatefulWidget {
   @override
@@ -39,11 +38,10 @@ class RequestState extends State<Request> {
           },
         ),
       ),
-
     );
   }
 
-  Widget _noRequestWidget(){
+  Widget _noRequestWidget() {
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -88,12 +86,11 @@ class RequestState extends State<Request> {
             ),
             FilledButton.tonal(
               onPressed: () {
-                AegisNavigator.pushPage(context, (context) => RequestInfo());
+                // AegisNavigator.pushPage(context, (context) => RequestPermission());
               },
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context)
-                    .colorScheme
-                    .secondaryContainer, // 背景色
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondaryContainer, //
               ),
               child: Container(
                 width: double.infinity,
@@ -101,10 +98,9 @@ class RequestState extends State<Request> {
                 alignment: Alignment.center,
                 child: Text(
                   'Discover',
-                  style:
-                  Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
             ).setPaddingOnly(top: 20.0),
@@ -114,29 +110,38 @@ class RequestState extends State<Request> {
     );
   }
 
-  List<Widget> _requestListWidget(List<ClientRequest> clientRequestList){
-
+  List<Widget> _requestListWidget(List<ClientRequest> clientRequestList) {
     return clientRequestList.map((ClientRequest clientRequest) {
-      String content = clientRequest.contentList.join('');
-
       return GestureDetector(
         onTap: () {
-          AegisNavigator.pushPage(context, (context) => RequestInfo());
+          AegisNavigator.pushPage(context, (context) => RequestInfo(requestEvent: clientRequest,));
         },
         child: Container(
           width: double.infinity,
           color: Theme.of(context).colorScheme.primaryContainer,
-          margin: EdgeInsets.only(left: 16,right: 16,bottom: 20),
-          padding: EdgeInsets.symmetric(
-            vertical: 20,
-            horizontal: 16
-          ),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: 20),
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(clientRequest.method,style: Theme.of(context).textTheme.titleLarge,),
-              SizedBox(height: 15,),
-              Text(content,style: Theme.of(context).textTheme.titleMedium,),
+              Text(
+                clientRequest.method,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Text(
+                clientRequest.event?.subscriptionId?.toString() ?? '',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Text(
+                clientRequest.params.toString(),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
         ),

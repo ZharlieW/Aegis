@@ -47,7 +47,12 @@ class _ApplicationState extends State<Application> {
               right: 16,
               child: GestureDetector(
                 onTap: () {
-                  AegisNavigator.pushPage(context, (context) => Login());
+                  Account account = Account.sharedInstance;
+                  if(account.currentPubkey.isEmpty || account.currentPrivkey.isEmpty){
+                    AegisNavigator.pushPage(context, (context) => Login());
+                    return;
+                  }
+                  AegisNavigator.pushPage(context, (context) => AddApplication());
                 },
                 child: Container(
                   width: 56,
@@ -159,7 +164,7 @@ class _ApplicationState extends State<Application> {
             ),
             FilledButton.tonal(
               onPressed: () {
-                AegisNavigator.pushPage(context, (context) => AddApplication());
+                // AegisNavigator.pushPage(context, (context) => AddApplication());
               },
               style: FilledButton.styleFrom(
                 backgroundColor:

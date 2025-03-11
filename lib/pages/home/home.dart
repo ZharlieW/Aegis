@@ -2,10 +2,10 @@ import 'package:aegis/common/common_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../pages/application/application.dart';
-import '../pages/request/request.dart';
-import '../pages/settings/settings.dart';
-import '../utils/account.dart';
+import '../application/application.dart';
+import '../request/request.dart';
+import '../settings/settings.dart';
+import '../../utils/account.dart';
 
 class Home extends StatefulWidget {
   @override

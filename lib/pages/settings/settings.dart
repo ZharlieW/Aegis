@@ -2,8 +2,10 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
+import '../../navigator/navigator.dart';
 import '../../utils/account.dart';
 import '../../utils/took_kit.dart';
+import '../login/login.dart';
 
 class Settings extends StatefulWidget {
   @override
@@ -11,7 +13,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> with AccountObservers {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -23,9 +24,9 @@ class _SettingsState extends State<Settings> with AccountObservers {
     Account instance = Account.sharedInstance;
     String pubkey = instance.currentPubkey;
     String private = instance.currentPrivkey;
-    if(pubkey.isEmpty || private.isEmpty) return '--';
+    if (pubkey.isEmpty || private.isEmpty) return '--';
     String nupKey = Account.getNupPublicKey(pubkey);
-    return '${nupKey.substring(0,8)}:${private.substring(0,8)}';
+    return '${nupKey.substring(0, 8)}:${private.substring(0, 8)}';
   }
 
   @override
@@ -94,7 +95,15 @@ class _SettingsState extends State<Settings> with AccountObservers {
           Row(
             children: [
               GestureDetector(
-                onTap: () => TookKit.copyKey(context, 'aaaa'),
+                onTap: () {
+                  Account account = Account.sharedInstance;
+                  if (account.currentPubkey.isEmpty ||
+                      account.currentPrivkey.isEmpty) {
+                    AegisNavigator.pushPage(context, (context) => Login());
+                    return;
+                  }
+                  TookKit.copyKey(context, account.currentPubkey);
+                },
                 child: Container(
                   width: 48,
                   height: 48,
@@ -145,7 +154,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
   @override
   void didLoginSuccess() {
     // TODO: implement didLoginSuccess
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
@@ -153,7 +162,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
   @override
   void didLogout() {
     // TODO: implement didLogout
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
@@ -162,7 +171,6 @@ class _SettingsState extends State<Settings> with AccountObservers {
   void didSwitchUser() {
     // TODO: implement didSwitchUser
   }
-
 
   @override
   void didAddBunkerSocketMap() {
