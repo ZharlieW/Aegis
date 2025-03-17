@@ -52,28 +52,19 @@ class _HomeSate extends State<Home> with AccountObservers {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             backgroundColor: Colors.purpleAccent,
-            icon: CommonImage(
-              iconName: 'application_icon.png',
-              size: 24,
-            ),
+            icon: _buildIcon('application_icon.png',false),
             activeIcon:
                 _buildIcon('select_application_icon.png', _selectedIndex == 0),
             label: 'Application',
           ),
           BottomNavigationBarItem(
-            icon: CommonImage(
-              iconName: 'request_icon.png',
-              size: 24,
-            ),
+            icon: _buildIcon('request_icon.png',false),
             activeIcon:
                 _buildIcon('select_request_icon.png', _selectedIndex == 1),
             label: 'Request',
           ),
           BottomNavigationBarItem(
-            icon: CommonImage(
-              iconName: 'settings_icon.png',
-              size: 24,
-            ),
+            icon: _buildIcon('settings_icon.png',false),
             activeIcon:
                 _buildIcon('select_settings_icon.png', _selectedIndex == 2),
             label: 'Settings',
@@ -84,7 +75,14 @@ class _HomeSate extends State<Home> with AccountObservers {
   }
 
   Widget _buildIcon(String iconName, bool isSelected) {
-    Widget iconWidget = CommonImage(iconName: iconName, size: 24);
+    Widget iconWidget = SizedBox(
+      height: 32,
+      child: CommonImage(
+        iconName: iconName,
+        size: 24,
+      ),
+    );
+
     if (!isSelected) return iconWidget;
     return Container(
       width: 64,

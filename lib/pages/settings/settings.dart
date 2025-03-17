@@ -1,4 +1,5 @@
 import 'package:aegis/common/common_image.dart';
+import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
@@ -117,7 +118,13 @@ class _SettingsState extends State<Settings> with AccountObservers {
                 ),
               ),
               GestureDetector(
-                onTap: Account.sharedInstance.logout,
+                onTap: () {
+                  if(Account.sharedInstance.currentPrivkey.isEmpty || Account.sharedInstance.currentPubkey.isEmpty){
+                    CommonTips.error(context, 'Not logged in');
+                    return;
+                  }
+                  Account.sharedInstance.logout();
+                },
                 child: Container(
                   width: 48,
                   height: 48,
@@ -137,17 +144,22 @@ class _SettingsState extends State<Settings> with AccountObservers {
   }
 
   Widget _itemWidget({required String iconName, required String content}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      child: Row(
-        children: [
-          CommonImage(iconName: iconName, size: 24).setPaddingOnly(right: 12.0),
-          Text(
-            content,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ],
+    return GestureDetector(
+      onTap:  () {
+        CommonTips.error(context, 'comming soon !');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Row(
+          children: [
+            CommonImage(iconName: iconName, size: 24).setPaddingOnly(right: 12.0),
+            Text(
+              content,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
+        ),
       ),
     );
   }
