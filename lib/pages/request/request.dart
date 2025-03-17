@@ -4,6 +4,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/common_image.dart';
+import '../../common/common_webview.dart';
 import '../../utils/account.dart';
 import '../../utils/server_nip46_signer.dart';
 
@@ -86,7 +87,7 @@ class RequestState extends State<Request> {
             ),
             FilledButton.tonal(
               onPressed: () {
-                // AegisNavigator.pushPage(context, (context) => RequestPermission());
+                AegisNavigator.pushPage(context, (context) => CommonWebView('https://nostrapps.com'));
               },
               style: FilledButton.styleFrom(
                 backgroundColor:

@@ -102,7 +102,8 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     AegisNavigator.pushPage(context, (context) => Login());
                     return;
                   }
-                  TookKit.copyKey(context, account.currentPubkey);
+                  String npubKey =  Account.getNupPublicKey(account.currentPubkey);
+                  TookKit.copyKey(context, '$npubKey:${account.currentPrivkey}');
                 },
                 child: Container(
                   width: 48,

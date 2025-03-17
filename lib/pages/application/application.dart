@@ -193,8 +193,7 @@ class _ApplicationState extends State<Application> {
             ),
             FilledButton.tonal(
               onPressed: () {
-                // AegisNavigator.pushPage(context, (context) => WebViewWidget(controller: controller));
-                // AegisNavigator.pushPage(context, (context) => AddApplication());
+                AegisNavigator.pushPage(context, (context) => CommonWebView('https://nostrapps.com'));
               },
               style: FilledButton.styleFrom(
                 backgroundColor:
