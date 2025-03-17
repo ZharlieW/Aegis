@@ -4,7 +4,10 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/common_appbar.dart';
+import '../../db/db_isar.dart';
+import '../../db/userDB_isar.dart';
 import '../../nostr/keychain.dart';
+import '../../nostr/nips/nip19/nip19.dart';
 import '../../utils/account.dart';
 
 class CreateNostrAccount extends StatefulWidget {
@@ -100,7 +103,12 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
     );
   }
 
-  void _createAccount(){
+  void _createAccount()async{
+
+
+    String privateKeyNsec = Nip19.encodePrivateKey(_keychain.private);
+    UserDBISAR user = UserDBISAR(pubkey: _keychain.public, privkey: _keychain.private, encryptedPrivkey: privateKeyNsec);
+    await DBISAR.sharedInstance.saveToDB(user);
     Account.sharedInstance.loginSuccess(_keychain.public,_keychain.private);
 
     CommonTips.success(context, 'Create successfully !');

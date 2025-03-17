@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
+import 'package:isar/isar.dart';
 
+import '../db/clientAuthDB_isar.dart';
+import '../db/db_isar.dart';
 import '../navigator/navigator.dart';
 import '../nostr/event.dart';
 import '../nostr/nips/nip46/nostr_remote_request.dart';
@@ -124,7 +127,7 @@ class ServerNIP46Signer {
         event: event,
     );
     Account.sharedInstance.addClientRequestList(clientRequest);
-
+    print('==event.pubkey===${event.pubkey}');
     switch (remoteRequest.method) {
       case "connect":
         _remotePubkey = event.pubkey;
@@ -138,11 +141,17 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-        final status = await AegisNavigator.presentPage(
-            AegisNavigator.navigatorKey.currentContext,
-            (context) => RequestPermission(),
-            fullscreenDialog: false);
-        if (status == null || status == false) return null;
+       bool isAuthorized = await isClientAuthorized(Account.sharedInstance.currentPubkey,_remotePubkey);
+       print('===isAuthorized===$isAuthorized');
+       if(!isAuthorized){
+         final status = await AegisNavigator.presentPage(
+             AegisNavigator.navigatorKey.currentContext,
+                 (context) => RequestPermission(),
+             fullscreenDialog: false);
+         if (status == null || status == false) return null;
+         saveClientAuth(Account.sharedInstance.currentPubkey,_remotePubkey);
+       }
+
         responseJson = jsonEncode({
           "id": remoteRequest.id,
           "result": LocalNostrSigner.instance.publicKey,
@@ -235,6 +244,31 @@ class ServerNIP46Signer {
       return '';
     } catch (e) {
       return '';
+    }
+  }
+
+  Future<bool> isClientAuthorized(String pubkey, String clientPubkey) async {
+    final auth = await DBISAR.sharedInstance.isar.clientAuthDBISARs
+        .filter()
+        .pubkeyEqualTo(pubkey)
+        .clientPubkeyEqualTo(clientPubkey)
+        .findFirst();
+    return auth != null && auth.isAuthorized;
+  }
+
+  Future<void> saveClientAuth(String pubkey, String clientPubkey) async {
+    final existingAuth = await DBISAR.sharedInstance.isar.clientAuthDBISARs
+        .filter()
+        .pubkeyEqualTo(pubkey)
+        .clientPubkeyEqualTo(clientPubkey)
+        .findFirst();
+
+    if (existingAuth == null) {
+      final auth = ClientAuthDBISAR(pubkey: pubkey,clientPubkey:clientPubkey,isAuthorized:true);
+
+      await DBISAR.sharedInstance.isar.writeTxn(() async {
+        await DBISAR.sharedInstance.isar.clientAuthDBISARs.put(auth);
+      });
     }
   }
 }

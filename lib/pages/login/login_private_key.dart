@@ -1,7 +1,9 @@
+import 'package:aegis/db/db_isar.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import '../../common/common_appbar.dart';
 import '../../common/common_tips.dart';
+import '../../db/userDB_isar.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/account.dart';
 
@@ -101,7 +103,11 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
     String privateKey = Account.getPrivateKey(privateKeyNsec);
     String publicKey = Account.getPublicKey(privateKey);
 
+    UserDBISAR user = UserDBISAR(pubkey: publicKey, privkey: privateKey, encryptedPrivkey: privateKeyNsec);
+
+    await DBISAR.sharedInstance.saveToDB(user);
     Account.sharedInstance.loginSuccess(publicKey,privateKey);
+
     CommonTips.error(context, 'Login successfully !');
 
     AegisNavigator.popToRoot(context);

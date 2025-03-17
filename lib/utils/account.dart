@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
 
+import '../db/db_isar.dart';
 import '../nostr/event.dart';
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
@@ -91,6 +92,7 @@ class Account {
   Future<void> loginSuccess(String pubkey,String privkey) async {
     _currentPubkey = pubkey;
     _currentPrivkey = privkey;
+    await DBISAR.sharedInstance.open(pubkey);
     for (AccountObservers observer in _observers) {
       observer.didLoginSuccess();
     }

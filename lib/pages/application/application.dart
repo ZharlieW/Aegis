@@ -4,7 +4,9 @@ import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../common/common_webview.dart';
 import '../../navigator/navigator.dart';
 import '../login/login.dart';
 import 'add_application.dart';
@@ -18,6 +20,33 @@ class Application extends StatefulWidget {
 }
 
 class _ApplicationState extends State<Application> {
+  late WebViewController controller ;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // controller = WebViewController()
+    //   ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    //   ..setNavigationDelegate(
+    //     NavigationDelegate(
+    //       onProgress: (int progress) {
+    //         // Update loading bar.
+    //       },
+    //       onPageStarted: (String url) {},
+    //       onPageFinished: (String url) {},
+    //       onHttpError: (HttpResponseError error) {},
+    //       onWebResourceError: (WebResourceError error) {},
+    //       onNavigationRequest: (NavigationRequest request) {
+    //         if (request.url.startsWith('https://www.youtube.com/')) {
+    //           return NavigationDecision.prevent;
+    //         }
+    //         return NavigationDecision.navigate;
+    //       },
+    //     ),
+    //   )
+    //   ..loadRequest(Uri.parse('https://www.baidu.com'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -164,6 +193,7 @@ class _ApplicationState extends State<Application> {
             ),
             FilledButton.tonal(
               onPressed: () {
+                // AegisNavigator.pushPage(context, (context) => WebViewWidget(controller: controller));
                 // AegisNavigator.pushPage(context, (context) => AddApplication());
               },
               style: FilledButton.styleFrom(
@@ -187,4 +217,6 @@ class _ApplicationState extends State<Application> {
       ),
     );
   }
+
+
 }
