@@ -25,26 +25,6 @@ class _ApplicationState extends State<Application> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // controller = WebViewController()
-    //   ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    //   ..setNavigationDelegate(
-    //     NavigationDelegate(
-    //       onProgress: (int progress) {
-    //         // Update loading bar.
-    //       },
-    //       onPageStarted: (String url) {},
-    //       onPageFinished: (String url) {},
-    //       onHttpError: (HttpResponseError error) {},
-    //       onWebResourceError: (WebResourceError error) {},
-    //       onNavigationRequest: (NavigationRequest request) {
-    //         if (request.url.startsWith('https://www.youtube.com/')) {
-    //           return NavigationDecision.prevent;
-    //         }
-    //         return NavigationDecision.navigate;
-    //       },
-    //     ),
-    //   )
-    //   ..loadRequest(Uri.parse('https://www.baidu.com'));
   }
 
   @override
@@ -94,6 +74,7 @@ class _ApplicationState extends State<Application> {
                     child: CommonImage(
                       iconName: 'add_icon.png',
                       size: 36,
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -108,7 +89,7 @@ class _ApplicationState extends State<Application> {
   List<Widget> _applicationList(List<BunkerSocket> bunkerSocketist) {
     return bunkerSocketist.map((BunkerSocket bunkerSocket) {
       int timestamp = bunkerSocket.createTimestamp;
-
+      String bunkerName = '${bunkerSocket.nsecBunker.substring(0,5)}...${bunkerSocket.nsecBunker.substring(bunkerSocket.nsecBunker.length - 20)}';
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
@@ -131,7 +112,7 @@ class _ApplicationState extends State<Application> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      bunkerSocket.nsecBunker.substring(0, 15),
+                      bunkerName,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],
@@ -216,6 +197,4 @@ class _ApplicationState extends State<Application> {
       ),
     );
   }
-
-
 }

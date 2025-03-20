@@ -43,26 +43,6 @@ class RequestInfoState extends State<RequestInfo> {
     });
   }
 
-  // void getSignEventContent()async {
-  //   if(widget.requestEvent.method != 'sign_event') return;
-  //   Event event = widget.requestEvent.event;
-  //   Map ciphertextMap = jsonDecode(widget.requestEvent.params[0]!);
-  //   String ciphertext = ciphertextMap['content'];
-  //   String plaintext;
-  //   bool isNip04 = ciphertext.contains('?iv=');
-  //   print('===ciphertext==$ciphertext');
-  //   if(isNip04){
-  //     plaintext = NIP04.decrypt(ciphertext, LocalNostrSigner.instance.getAgreement(), Account.sharedInstance.currentPubkey);
-  //   }else{
-  //     plaintext = await LocalNostrSigner.instance.nip44Decrypt(event.pubkey, ciphertext) ?? '--';
-  //   }
-  //   setState(() {
-  //     decryptSignEventContent = plaintext;
-  //   });
-  // }
-
-
-
   @override
   Widget build(BuildContext context) {
     Event event = widget.requestEvent.event;

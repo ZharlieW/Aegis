@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
 
+import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
 import '../nostr/event.dart';
 import '../nostr/keychain.dart';
@@ -29,7 +31,7 @@ class Account {
   // key: createTimestamp + port
   final ValueListenable<Map<String,BunkerSocket>> bunkerSocketMap = ValueNotifier({});
 
-  final ValueListenable<List<ClientRequest>> clientRequestList = ValueNotifier([]);
+  final ValueListenable<List<ClientAuthDBISAR>> clientAuthList = ValueNotifier([]);
 
   String _currentPubkey = '';
   String _currentPrivkey = '';
@@ -93,6 +95,8 @@ class Account {
     _currentPubkey = pubkey;
     _currentPrivkey = privkey;
     await DBISAR.sharedInstance.open(pubkey);
+    List<ClientAuthDBISAR> list = await DBISAR.sharedInstance.isar.clientAuthDBISARs.where().findAll();
+    clientAuthList.value.addAll(list);
     for (AccountObservers observer in _observers) {
       observer.didLoginSuccess();
     }
@@ -114,8 +118,8 @@ class Account {
     }
   }
 
-  void addClientRequestList(ClientRequest clientRequest){
-    clientRequestList.value.add(clientRequest);
+  void addClientRequestList(ClientAuthDBISAR clientAuthDBISAR){
+    clientAuthList.value.add(clientAuthDBISAR);
     for (AccountObservers observer in _observers) {
       observer.didAddClientRequestMap();
     }

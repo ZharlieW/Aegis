@@ -1,4 +1,5 @@
 import 'package:aegis/common/common_image.dart';
+import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -46,23 +47,13 @@ class _AddApplicationState extends State<AddApplication> {
                       height: 20,
                     ),
                     _cardWidget(
-                        onTap: () => {
-                              AegisNavigator.pushPage(
-                                context,
-                                (context) => ApplicationItem(),
-                              )
-                            },
+                        onTap: () =>  CommonTips.error(context, 'comming soon !'),
                         iconName: 'clipboard_icon.png',
                         title: 'Paste from clipboard',
                         content:
                             'If your app offers you a Nostr Connect URL, you can paste it here. Usually this login mode it is offered by web apps.'),
                     _cardWidget(
-                      onTap: () => {
-                        AegisNavigator.pushPage(
-                          context,
-                          (context) => EditConfiguration(),
-                        )
-                      },
+                      onTap: () =>  CommonTips.error(context, 'comming soon !'),
                       iconName: 'scan_icon.png',
                       title: 'Scan a QR Code',
                       content:

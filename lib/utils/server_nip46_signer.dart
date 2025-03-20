@@ -121,12 +121,6 @@ class ServerNIP46Signer {
       NostrRemoteRequest remoteRequest, Event event) async {
     String responseJson = '';
 
-    ClientRequest clientRequest = ClientRequest(
-        method: remoteRequest.method,
-        params: remoteRequest.params,
-        event: event,
-    );
-    Account.sharedInstance.addClientRequestList(clientRequest);
     print('==event.pubkey===${event.pubkey}');
     switch (remoteRequest.method) {
       case "connect":
@@ -265,7 +259,7 @@ class ServerNIP46Signer {
 
     if (existingAuth == null) {
       final auth = ClientAuthDBISAR(pubkey: pubkey,clientPubkey:clientPubkey,isAuthorized:true);
-
+      Account.sharedInstance.addClientRequestList(auth);
       await DBISAR.sharedInstance.isar.writeTxn(() async {
         await DBISAR.sharedInstance.isar.clientAuthDBISARs.put(auth);
       });

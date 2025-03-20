@@ -25,7 +25,8 @@ class RequestPermissionState extends State<RequestPermission> {
   final List<PermissionsContent> permissionsContentList = [
     PermissionsContent(
       title: 'Approve basic actions',
-      content: 'Recommended for most people. This will minimize the number of interruptions during your app usage.',
+      content:
+          'Recommended for most people. This will minimize the number of interruptions during your app usage.',
     ),
     PermissionsContent(
       title: 'I fully trust this application',
@@ -33,7 +34,8 @@ class RequestPermissionState extends State<RequestPermission> {
     ),
     PermissionsContent(
       title: 'Manually approve each permission',
-      content: 'Recommended for privacy-minded people who would like control over each permission. Choosing this will prompt you set a preference every time you receive a new permission.',
+      content:
+          'Recommended for privacy-minded people who would like control over each permission. Choosing this will prompt you set a preference every time you receive a new permission.',
     ),
   ];
 
@@ -44,7 +46,11 @@ class RequestPermissionState extends State<RequestPermission> {
         leading: GestureDetector(
           onTap: () => AegisNavigator.pop(context),
           child: Center(
-            child: CommonImage(iconName: 'title_close_icon.png',size: 32,),
+            child: CommonImage(
+              iconName: 'title_close_icon.png',
+              size: 32,
+              color: Colors.black,
+            ),
           ),
         ),
         title: Text(
@@ -85,7 +91,7 @@ class RequestPermissionState extends State<RequestPermission> {
                   ),
                   FilledButton.tonal(
                     onPressed: () {
-                      AegisNavigator.pop(context,true);
+                      AegisNavigator.pop(context, true);
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor:
@@ -97,10 +103,12 @@ class RequestPermissionState extends State<RequestPermission> {
                       alignment: Alignment.center,
                       child: Text(
                         'Grant Permissions',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                          color: Colors.white
-                            ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
                       ),
                     ),
                   ).setPaddingOnly(top: 20.0),
@@ -116,10 +124,11 @@ class RequestPermissionState extends State<RequestPermission> {
                       alignment: Alignment.center,
                       child: Text(
                         'Reject',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.error,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
                       ),
                     ),
                   ).setPaddingOnly(top: 20.0),
@@ -134,7 +143,7 @@ class RequestPermissionState extends State<RequestPermission> {
 
   Widget _requestContentWidget() {
     return Column(
-      children: permissionsContentList.map((PermissionsContent contentInfo){
+      children: permissionsContentList.map((PermissionsContent contentInfo) {
         int findIndex = permissionsContentList.indexOf(contentInfo);
         bool isSelect = findIndex == selectIndex;
         return GestureDetector(
@@ -153,7 +162,9 @@ class RequestPermissionState extends State<RequestPermission> {
             child: Row(
               children: [
                 CommonImage(
-                  iconName: isSelect ? 'select_radio_button_icon.png' : 'radio_button_icon.png',
+                  iconName: isSelect
+                      ? 'select_radio_button_icon.png'
+                      : 'radio_button_icon.png',
                   size: 32,
                 ).setPaddingOnly(right: 16.0),
                 Flexible(
@@ -166,9 +177,12 @@ class RequestPermissionState extends State<RequestPermission> {
                       ),
                       Text(
                         contentInfo.content,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
                       ),
                     ],
                   ),
@@ -179,6 +193,5 @@ class RequestPermissionState extends State<RequestPermission> {
         );
       }).toList(),
     );
-
   }
 }

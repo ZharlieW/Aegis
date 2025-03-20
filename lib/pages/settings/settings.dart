@@ -28,7 +28,8 @@ class _SettingsState extends State<Settings> with AccountObservers {
     String private = instance.currentPrivkey;
     if (pubkey.isEmpty || private.isEmpty) return '--';
     String nupKey = Account.getNupPublicKey(pubkey);
-    return '${nupKey.substring(0, 8)}:${private.substring(0, 8)}';
+    String nsecKey =  Nip19.encodePrivateKey(instance.currentPrivkey);
+    return '${nupKey.substring(0, 15)}:${nsecKey.substring(0, 15)}';
   }
 
   @override
