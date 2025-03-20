@@ -5,6 +5,7 @@ import '../../common/common_appbar.dart';
 import '../../common/common_tips.dart';
 import '../../db/userDB_isar.dart';
 import '../../navigator/navigator.dart';
+import '../../nostr/nips/nip19/nip19.dart';
 import '../../utils/account.dart';
 
 class LoginPrivateKey extends StatefulWidget {
@@ -89,21 +90,29 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
   }
 
   void _nescLogin() async {
-    final privateKeyNsec = _textController.text.trim();
-    if (privateKeyNsec.isEmpty) {
+    final key = _textController.text.trim();
+    if (key.isEmpty) {
       CommonTips.error(context, 'The content cannot be empty！');
       return;
     }
 
-    if (!Account.validateNsec(privateKeyNsec)) {
-      CommonTips.error(context, 'Private illegal！');
-      return;
+    bool isNsec = Account.validateNsec(key);
+
+    String nsecKey = '';
+    String privateKey = '';
+
+    if(isNsec){
+      privateKey = Account.getPrivateKey(key);
+      nsecKey = key;
+    }else{
+      privateKey = key;
+      nsecKey = Nip19.encodePrivateKey(key);
     }
 
-    String privateKey = Account.getPrivateKey(privateKeyNsec);
     String publicKey = Account.getPublicKey(privateKey);
 
-    UserDBISAR user = UserDBISAR(pubkey: publicKey, privkey: privateKey, encryptedPrivkey: privateKeyNsec);
+
+    UserDBISAR user = UserDBISAR(pubkey: publicKey, privkey: privateKey, encryptedPrivkey: nsecKey);
 
     await DBISAR.sharedInstance.saveToDB(user);
     Account.sharedInstance.loginSuccess(publicKey,privateKey);

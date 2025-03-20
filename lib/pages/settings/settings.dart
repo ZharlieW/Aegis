@@ -4,6 +4,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../navigator/navigator.dart';
+import '../../nostr/nips/nip19/nip19.dart';
 import '../../utils/account.dart';
 import '../../utils/took_kit.dart';
 import '../login/login.dart';
@@ -104,7 +105,9 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     return;
                   }
                   String npubKey =  Account.getNupPublicKey(account.currentPubkey);
-                  TookKit.copyKey(context, '$npubKey:${account.currentPrivkey}');
+                  String nsecKey =  Nip19.encodePrivateKey(account.currentPrivkey);
+
+                  TookKit.copyKey(context, '$npubKey:$nsecKey');
                 },
                 child: Container(
                   width: 48,

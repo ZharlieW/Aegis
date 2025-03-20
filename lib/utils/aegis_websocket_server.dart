@@ -7,8 +7,8 @@ class AegisWebSocketServer {
 
   AegisWebSocketServer._internal();
 
-  HttpServer? _server;
-  final List<WebSocket> _clients = [];
+  HttpServer? server;
+  final List<WebSocket> clients = [];
   Function(String, WebSocket)? _onMessageReceived;
   String _port = "7651";
 
@@ -21,7 +21,7 @@ class AegisWebSocketServer {
 
   /// Start the WebSocket server
   Future<void> start({String port = "7651", required Function(String, WebSocket) onMessageReceived}) async {
-    if (_server != null) {
+    if (server != null) {
       print("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
       return;
     }
@@ -29,11 +29,11 @@ class AegisWebSocketServer {
     _port = port;
     _onMessageReceived = onMessageReceived;
 
-    _server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
-    _server!.listen((HttpRequest request) async {
+    server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
+    server!.listen((HttpRequest request) async {
       if (WebSocketTransformer.isUpgradeRequest(request)) {
         WebSocket socket = await WebSocketTransformer.upgrade(request);
-        _clients.add(socket);
+        clients.add(socket);
         socket.listen(
               (message) {
             if (message == "server_heartbeat") {
@@ -48,11 +48,11 @@ class AegisWebSocketServer {
           },
           onDone: () {
             print("❌ Client disconnected: ${socket.hashCode}");
-            _clients.remove(socket);
+            clients.remove(socket);
           },
           onError: (error) {
             print("🚨 WebSocket error: $error");
-            _clients.remove(socket);
+            clients.remove(socket);
           },
         );
         print("🔗 Client connected: ${request.connectionInfo?.remoteAddress}");
@@ -71,14 +71,14 @@ class AegisWebSocketServer {
 
   /// Stop the WebSocket server
   Future<void> stop() async {
-    if (_server != null) {
+    if (server != null) {
       print("🛑 Stopping WebSocket server...");
-      await _server!.close();
-      for (var client in _clients) {
+      await server!.close();
+      for (var client in clients) {
         client.close();
       }
-      _clients.clear();
-      _server = null;
+      clients.clear();
+      server = null;
       print("✅ WebSocket server stopped.");
     } else {
       print("⚠️ WebSocket server is not running.");
