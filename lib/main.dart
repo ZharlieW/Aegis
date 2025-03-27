@@ -1,4 +1,5 @@
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/background_audio_manager.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'pages/home/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BackgroundAudioManager().init();
+  await Account.sharedInstance.autoLogin();
   runApp(MainApp());
 }
 

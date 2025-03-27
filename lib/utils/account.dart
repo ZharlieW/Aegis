@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
@@ -86,6 +87,12 @@ class Account {
   Future<void> logout() async {
     _currentPubkey = '';
     _currentPrivkey = '';
+
+    // 🔹 clean local cache
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('pubkey');
+    await prefs.remove('privkey');
+
     for (AccountObservers observer in _observers) {
       observer.didLogout();
     }
@@ -94,9 +101,16 @@ class Account {
   Future<void> loginSuccess(String pubkey,String privkey) async {
     _currentPubkey = pubkey;
     _currentPrivkey = privkey;
+
     await DBISAR.sharedInstance.open(pubkey);
     List<ClientAuthDBISAR> list = await DBISAR.sharedInstance.isar.clientAuthDBISARs.where().findAll();
     clientAuthList.value.addAll(list);
+
+    // 🔹 save pubkey 和 privkey
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pubkey', pubkey);
+    await prefs.setString('privkey', privkey);
+
     for (AccountObservers observer in _observers) {
       observer.didLoginSuccess();
     }
@@ -122,6 +136,19 @@ class Account {
     clientAuthList.value.add(clientAuthDBISAR);
     for (AccountObservers observer in _observers) {
       observer.didAddClientRequestMap();
+    }
+  }
+
+  Future<void> autoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? pubkey = prefs.getString('pubkey');
+    String? privkey = prefs.getString('privkey');
+
+    if (pubkey != null && privkey != null) {
+      print("🔹 The session is automatically resumed after the user logs in. Procedure");
+      await loginSuccess(pubkey, privkey);
+    } else {
+      print("🔹 No login information is detected. The user needs to log in again");
     }
   }
 }

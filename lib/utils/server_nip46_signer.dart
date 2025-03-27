@@ -46,7 +46,7 @@ class ServerNIP46Signer {
 
   String _remotePubkey = '';
   String subscriptionId = '';
-  String port = '8081';
+  String port = '8080';
 
   List<String>? _remotePubkeyTags;
 

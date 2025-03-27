@@ -59,7 +59,7 @@ dependencies:
   audio_service: ^0.18.17
   just_audio: ^0.9.46
   audio_session: ^0.1.25
-
+  shared_preferences: ^2.5.2
 
 
 dev_dependencies:

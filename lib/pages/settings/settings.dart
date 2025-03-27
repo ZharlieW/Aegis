@@ -123,11 +123,54 @@ class _SettingsState extends State<Settings> with AccountObservers {
               ),
               GestureDetector(
                 onTap: () {
-                  if(Account.sharedInstance.currentPrivkey.isEmpty || Account.sharedInstance.currentPubkey.isEmpty){
-                    CommonTips.error(context, 'Not logged in');
-                    return;
-                  }
-                  Account.sharedInstance.logout();
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Tips"),
+                        content: Text("Are you sure you want to remove all permissions from this application?"),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0), //
+                        ),
+                        actions: [
+                          ElevatedButton.icon(
+                            onPressed: () => AegisNavigator.pop(context),
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(
+                                  Theme.of(context).colorScheme.surfaceBright),
+                            ),
+                            label: Text(
+                              "Cancel",
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              if(Account.sharedInstance.currentPrivkey.isEmpty || Account.sharedInstance.currentPubkey.isEmpty){
+                                CommonTips.error(context, 'Not logged in');
+                                return;
+                              }
+                              Account.sharedInstance.logout();
+                              AegisNavigator.pop(context);
+                            },
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(
+                                  Theme.of(context).colorScheme.primary),
+                            ),
+                            label: Text(
+                              "Confirm",
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
                 },
                 child: Container(
                   width: 48,

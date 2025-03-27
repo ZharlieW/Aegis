@@ -29,7 +29,10 @@ class AegisWebSocketServer {
     _port = port;
     _onMessageReceived = onMessageReceived;
 
-    server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
+    // server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
+    server = await HttpServer.bind('0.0.0.0', int.tryParse(_port) ?? 7651);
+
+
     server!.listen((HttpRequest request) async {
       if (WebSocketTransformer.isUpgradeRequest(request)) {
         WebSocket socket = await WebSocketTransformer.upgrade(request);
@@ -88,7 +91,9 @@ class AegisWebSocketServer {
   /// The server self-checks the heartbeat
   void _startSelfHeartbeat() async {
     try {
-      _selfSocket = await WebSocket.connect("ws://127.0.0.1:$_port");
+      // _selfSocket = await WebSocket.connect("ws://127.0.0.1:$_port");
+      _selfSocket = await WebSocket.connect("ws://0.0.0.0:$_port");
+
       print("🔄 Server self-check WebSocket connected.");
 
       _selfSocket!.listen(
