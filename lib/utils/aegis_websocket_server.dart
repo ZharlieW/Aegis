@@ -12,6 +12,8 @@ class AegisWebSocketServer {
   Function(String, WebSocket)? _onMessageReceived;
   String _port = "7651";
 
+  String ip = '127.0.0.1';
+
   Timer? _heartbeatTimer;
   Timer? _heartbeatTimeoutTimer;
   WebSocket? _selfSocket; // The WebSocket client of the server itself
@@ -30,7 +32,7 @@ class AegisWebSocketServer {
     _onMessageReceived = onMessageReceived;
 
     // server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
-    server = await HttpServer.bind('0.0.0.0', int.tryParse(_port) ?? 7651);
+    server = await HttpServer.bind(ip, int.tryParse(_port) ?? 7651);
 
 
     server!.listen((HttpRequest request) async {
@@ -69,7 +71,7 @@ class AegisWebSocketServer {
     print("✅ WebSocket server started on ws://127.0.0.1:$_port");
 
     // Example Start the server self-check heartbeat
-    _startSelfHeartbeat();
+    // _startSelfHeartbeat();
   }
 
   /// Stop the WebSocket server
@@ -92,7 +94,7 @@ class AegisWebSocketServer {
   void _startSelfHeartbeat() async {
     try {
       // _selfSocket = await WebSocket.connect("ws://127.0.0.1:$_port");
-      _selfSocket = await WebSocket.connect("ws://0.0.0.0:$_port");
+      _selfSocket = await WebSocket.connect("ws://$ip:$_port");
 
       print("🔄 Server self-check WebSocket connected.");
 

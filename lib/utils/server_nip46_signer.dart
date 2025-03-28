@@ -216,7 +216,7 @@ class ServerNIP46Signer {
   }
 
   Future<String> getBunkerUrl(String port) async {
-    String ipAddress = await getIpAddress();
+    String ipAddress = AegisWebSocketServer.instance.ip;
     return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://$ipAddress:$port";
   }
 
