@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
@@ -6,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
-import '../nostr/event.dart';
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
 
@@ -34,6 +34,8 @@ class Account {
 
   final ValueListenable<List<ClientAuthDBISAR>> clientAuthList = ValueNotifier([]);
 
+  final Map<String,List> clientReqMap = {};
+  
   String _currentPubkey = '';
   String _currentPrivkey = '';
 

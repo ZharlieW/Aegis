@@ -77,6 +77,9 @@ class ServerNIP46Signer {
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
 
     if (messageType == 'REQ') {
+      String getPubKey = request[2]['#p'][0];
+      Account.sharedInstance.clientReqMap[getPubKey] = request;
+      // print('===Account.sharedInstance.clientReqMap===${Account.sharedInstance.clientReqMap}');
       _handleRequest(socket, request[1]);
     } else if (messageType == 'EVENT') {
       _handleEvent(socket, request[1]);
@@ -103,7 +106,7 @@ class ServerNIP46Signer {
     String? responseJson = await _processRemoteRequest(remoteRequest, event);
     if (responseJson == null) return;
     String? responseJsonEncrypt = await LocalNostrSigner.instance
-        .nip44Encrypt(_remotePubkey, responseJson);
+        .nip44Encrypt(event.pubkey, responseJson);
 
     final signEvent = Event.from(
       subscriptionId: subscriptionId,

@@ -1,9 +1,17 @@
+import 'dart:convert';
+
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/pages/request/request_permission.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/background_audio_manager.dart';
+import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import 'nostr/event.dart';
+import 'nostr/signer/local_nostr_signer.dart';
 import 'pages/home/splash_screen.dart';
 
 void main() async {
@@ -21,6 +29,8 @@ class MainApp extends StatefulWidget {
 }
 
 class MainState extends State<MainApp> with WidgetsBindingObserver {
+
+  static const platform = MethodChannel('app.channel.shared.data');
   @override
   void initState() {
     super.initState();
@@ -29,6 +39,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    _getSchemeData();
     return MaterialApp(
       navigatorKey: AegisNavigator.navigatorKey,
       title: '',
@@ -41,9 +52,22 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     );
   }
 
+  void _getSchemeData() {
+    platform.setMethodCallHandler((MethodCall call) async {
+      if (call.method == 'onSchemeCalled') {
+        String? url = call.arguments;
+
+        if(url == null) return;
+        String scheme = 'aegis://';
+        NostrWalletConnectionParserHandler.handleScheme(url.substring(scheme.length));
+      }
+    });
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _getSchemeData();
       print("📱 The application goes back to the foreground and checks WebSocket...");
     } else if (state == AppLifecycleState.paused) {
       print("📱 Application enter background");
