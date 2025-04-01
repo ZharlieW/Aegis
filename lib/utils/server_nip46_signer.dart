@@ -40,6 +40,20 @@ class ClientRequest {
   });
 }
 
+class Nip46NostrConnectInfo {
+  final String logo;
+  final String name;
+  final String relay;
+  final int createTimestamp;
+
+  Nip46NostrConnectInfo({
+    required this.logo,
+    required this.name,
+    required this.relay,
+    required this.createTimestamp,
+  });
+}
+
 class ServerNIP46Signer {
   static final ServerNIP46Signer instance = ServerNIP46Signer._internal();
   factory ServerNIP46Signer() => instance;
@@ -67,7 +81,8 @@ class ServerNIP46Signer {
   }
 
   Future<void> _startWebSocketServer() async {
-    AegisWebSocketServer.instance.start(onMessageReceived: _handleMessage, port: port);
+    AegisWebSocketServer.instance
+        .start(onMessageReceived: _handleMessage, port: port);
   }
 
   void _handleMessage(String message, WebSocket socket) async {
@@ -77,11 +92,11 @@ class ServerNIP46Signer {
 
     if (messageType == 'REQ') {
       String? getPubKey = request?[2]?['#p']?[0] ?? null;
-      if(getPubKey != null){
+      if (getPubKey != null) {
         Account.sharedInstance.clientReqMap[getPubKey] = request;
       }
       String schemeUri = Account.sharedInstance.nostrWalletConnectSchemeUri;
-      if(schemeUri.isNotEmpty){
+      if (schemeUri.isNotEmpty) {
         NostrWalletConnectionParserHandler.handleScheme(schemeUri);
       }
       _handleRequest(socket, request[1]);
@@ -129,6 +144,8 @@ class ServerNIP46Signer {
     String responseJson = '';
 
     print('==event.pubkey===${event.pubkey}');
+
+    print('=content=${remoteRequest.method}=${remoteRequest.params}');
     switch (remoteRequest.method) {
       case "connect":
         _remotePubkey = event.pubkey;
@@ -142,16 +159,17 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-       bool isAuthorized = await isClientAuthorized(Account.sharedInstance.currentPubkey,_remotePubkey);
-       print('===isAuthorized===$isAuthorized');
-       if(!isAuthorized){
-         final status = await AegisNavigator.presentPage(
-             AegisNavigator.navigatorKey.currentContext,
-                 (context) => RequestPermission(),
-             fullscreenDialog: false);
-         if (status == null || status == false) return null;
-         saveClientAuth(Account.sharedInstance.currentPubkey,_remotePubkey);
-       }
+        bool isAuthorized = await isClientAuthorized(
+            Account.sharedInstance.currentPubkey, _remotePubkey);
+        print('===isAuthorized===$isAuthorized');
+        if (!isAuthorized) {
+          final status = await AegisNavigator.presentPage(
+              AegisNavigator.navigatorKey.currentContext,
+              (context) => RequestPermission(),
+              fullscreenDialog: false);
+          if (status == null || status == false) return null;
+          saveClientAuth(Account.sharedInstance.currentPubkey, _remotePubkey);
+        }
 
         responseJson = jsonEncode({
           "id": remoteRequest.id,
@@ -265,7 +283,11 @@ class ServerNIP46Signer {
         .findFirst();
 
     if (existingAuth == null) {
-      final auth = ClientAuthDBISAR(pubkey: pubkey,clientPubkey:clientPubkey,isAuthorized:true);
+      final auth = ClientAuthDBISAR(
+        pubkey: pubkey,
+        clientPubkey: clientPubkey,
+        isAuthorized: true,
+      );
       Account.sharedInstance.addClientRequestList(auth);
       await DBISAR.sharedInstance.isar.writeTxn(() async {
         await DBISAR.sharedInstance.isar.clientAuthDBISARs.put(auth);

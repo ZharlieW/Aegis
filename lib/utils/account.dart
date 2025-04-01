@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:collection';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
 import '../nostr/keychain.dart';
@@ -34,6 +34,8 @@ class Account {
   final ValueListenable<Map<String,BunkerSocket>> bunkerSocketMap = ValueNotifier({});
 
   final ValueListenable<List<ClientAuthDBISAR>> clientAuthList = ValueNotifier([]);
+
+  final ValueListenable<List<Nip46NostrConnectInfo>> nip46NostrConnectInfoList = ValueNotifier([]);
 
   final Map<String,List> clientReqMap = {};
 
@@ -157,8 +159,8 @@ class Account {
     }
   }
 
-  bool isValidNostrConnectSchemeUri (String uri){
-    if(uri.isEmpty || !(uri.contains('nostrconnect://'))) return false;
+  bool isValidNostrConnectSchemeUri (String uri) {
+    if(uri.isEmpty || !(uri.contains(NIP46_NOSTR_CONNECT_PROTOCOL))) return false;
     return true;
   }
 }

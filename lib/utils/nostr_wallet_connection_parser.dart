@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../common/common_constant.dart';
 import '../navigator/navigator.dart';
 import '../nostr/event.dart';
 import '../nostr/signer/local_nostr_signer.dart';
@@ -12,7 +14,7 @@ class NostrWalletConnectionParserHandler {
   static Map<String, dynamic>? parseUri(String? uri) {
     if (uri == null) return null;
     String decodeUri = Uri.decodeComponent(uri);
-    if (!decodeUri.startsWith('nostrconnect://')) return null;
+    if (!decodeUri.startsWith(NIP46_NOSTR_CONNECT_PROTOCOL)) return null;
 
     try {
       var decodedUri = Uri.parse(decodeUri);
@@ -22,6 +24,9 @@ class NostrWalletConnectionParserHandler {
       var secret = queryParams['secret']?.first ?? '';
       var lud16 = queryParams['lud16']?.first;
       var scheme = queryParams['scheme']?.first ?? '';
+      var image = queryParams['image']?.first ?? '';
+      var name = queryParams['name']?.first ?? '';
+
       var pubkey = decodedUri.authority;
 
       print('🛜 server: $server');
@@ -38,6 +43,8 @@ class NostrWalletConnectionParserHandler {
         'pubkey': pubkey,
         'lud16': lud16,
         'scheme': scheme,
+        'image': image,
+        'name' : name,
       };
     } catch (e) {
       print('Error parsing URI: $e');
@@ -85,6 +92,19 @@ class NostrWalletConnectionParserHandler {
     var result = parseUri(url);
     if (result == null) return;
 
+    bool isAuthorized = await ServerNIP46Signer.instance.isClientAuthorized(Account.sharedInstance.currentPubkey,result['pubkey']);
+    print('===isAuthorized===$isAuthorized');
+    if(!isAuthorized){
+      final status = await AegisNavigator.presentPage(
+          AegisNavigator.navigatorKey.currentContext,
+              (context) => RequestPermission(),
+          fullscreenDialog: false);
+      if (status == null || status == false) return null;
+     await ServerNIP46Signer.instance.saveClientAuth(Account.sharedInstance.currentPubkey,result['pubkey']);
+    }
+
+    launchScheme(result['scheme']);
+
     try {
       int timestamp = DateTime.now().millisecondsSinceEpoch;
       final clientPubkey = result['pubkey'];
@@ -104,14 +124,6 @@ class NostrWalletConnectionParserHandler {
         sendEvent(clientPubkey, subscriptionId, authEncrypted);
       }
 
-      final status = await AegisNavigator.presentPage(
-        AegisNavigator.navigatorKey.currentContext,
-            (context) => RequestPermission(),
-        fullscreenDialog: false,
-      );
-
-      if (status == null || status == false) return;
-
       final secretResponse = jsonEncode({
         'id': 'nostr-connect-$timestamp',
         'result': result['secret'],
@@ -121,9 +133,14 @@ class NostrWalletConnectionParserHandler {
       if (secretEncrypted != null) {
         sendEvent(clientPubkey, subscriptionId, secretEncrypted);
       }
-      Account.sharedInstance.nostrWalletConnectSchemeUri = '';
-      Account.sharedInstance.clientReqMap.remove(clientPubkey);
-      launchScheme(result['scheme']);
+
+      Nip46NostrConnectInfo info = Nip46NostrConnectInfo(
+          logo: result['image'],
+          name: result['name'],
+          relay: result['relays'][0],
+          createTimestamp: timestamp,
+      );
+      Account.sharedInstance.nip46NostrConnectInfoList.value.add(info);
     } catch (e) {
       print('Error handling scheme: $e');
     }
