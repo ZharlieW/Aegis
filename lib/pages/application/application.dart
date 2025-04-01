@@ -56,6 +56,9 @@ class _ApplicationState extends State<Application> {
               right: 16,
               child: GestureDetector(
                 onTap: () {
+                  // print('REQ 🔔 ===> ${Account.sharedInstance.clientReqMap.keys.toString()}');
+                  // print('scheme 🕸️ ===> ${Account.sharedInstance.nostrWalletConnectSchemeUri}');
+
                   Account account = Account.sharedInstance;
                   if(account.currentPubkey.isEmpty || account.currentPrivkey.isEmpty){
                     AegisNavigator.pushPage(context, (context) => Login());

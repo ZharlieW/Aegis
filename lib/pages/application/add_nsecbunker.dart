@@ -21,7 +21,6 @@ class _AddNsecbunkerState extends State<AddNsecbunker> {
 
   String bunkerUrl = '';
 
-  String port = '8081';
 
   @override
   @override
@@ -33,7 +32,7 @@ class _AddNsecbunkerState extends State<AddNsecbunker> {
   }
 
   void _init() async {
-    bunkerUrl = await ServerNIP46Signer.instance.getBunkerUrl(port);
+    bunkerUrl = await ServerNIP46Signer.instance.getBunkerUrl();
     setState(() {});
   }
 
@@ -139,12 +138,11 @@ class _AddNsecbunkerState extends State<AddNsecbunker> {
     int timestamp = DateTime.now().millisecondsSinceEpoch;
     BunkerSocket bunkerSocket = BunkerSocket(
       name: name,
-      port: port,
+      port: ServerNIP46Signer.instance.port,
       nsecBunker: bunkerUrl,
       createTimestamp: timestamp,
     );
     Account.sharedInstance.addBunkerSocketMap(bunkerSocket);
-    ServerNIP46Signer.instance.start('8081');
     CommonTips.success(context, 'Add successfully !!');
     AegisNavigator.popToRoot(context);
   }

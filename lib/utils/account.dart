@@ -9,6 +9,7 @@ import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
+import '../nostr/signer/local_nostr_signer.dart';
 
 abstract mixin class AccountObservers {
   void didLoginSuccess();
@@ -35,7 +36,9 @@ class Account {
   final ValueListenable<List<ClientAuthDBISAR>> clientAuthList = ValueNotifier([]);
 
   final Map<String,List> clientReqMap = {};
-  
+
+  String nostrWalletConnectSchemeUri = '';
+
   String _currentPubkey = '';
   String _currentPrivkey = '';
 
@@ -112,7 +115,7 @@ class Account {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('pubkey', pubkey);
     await prefs.setString('privkey', privkey);
-
+    LocalNostrSigner.instance.init();
     for (AccountObservers observer in _observers) {
       observer.didLoginSuccess();
     }
@@ -152,5 +155,10 @@ class Account {
     } else {
       print("🔹 No login information is detected. The user needs to log in again");
     }
+  }
+
+  bool isValidNostrConnectSchemeUri (String uri){
+    if(uri.isEmpty || !(uri.contains('nostrconnect://'))) return false;
+    return true;
   }
 }

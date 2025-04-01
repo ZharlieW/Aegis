@@ -55,6 +55,8 @@ class NostrWalletConnectionParserHandler {
   }
 
   static void sendEvent(String clientPubkey, String subscriptionId, String content) {
+    print('==AegisWebSocketServer.instance.clients==${AegisWebSocketServer.instance.clients}');
+    if(AegisWebSocketServer.instance.clients.isEmpty) return;
     final socket = AegisWebSocketServer.instance.clients[0];
     final signEvent = Event.from(
       subscriptionId: subscriptionId,
@@ -86,7 +88,10 @@ class NostrWalletConnectionParserHandler {
     try {
       int timestamp = DateTime.now().millisecondsSinceEpoch;
       final clientPubkey = result['pubkey'];
-      final subscriptionId = Account.sharedInstance.clientReqMap[clientPubkey]?[1];
+      if(Account.sharedInstance.clientReqMap[clientPubkey] == null) {
+        return;
+      }
+      String subscriptionId = Account.sharedInstance.clientReqMap[clientPubkey]?[1];
 
       final authResponse = jsonEncode({
         'id': 'nostr-connect-$timestamp',
@@ -116,7 +121,8 @@ class NostrWalletConnectionParserHandler {
       if (secretEncrypted != null) {
         sendEvent(clientPubkey, subscriptionId, secretEncrypted);
       }
-
+      Account.sharedInstance.nostrWalletConnectSchemeUri = '';
+      Account.sharedInstance.clientReqMap.remove(clientPubkey);
       launchScheme(result['scheme']);
     } catch (e) {
       print('Error handling scheme: $e');

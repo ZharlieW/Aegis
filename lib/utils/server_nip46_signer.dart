@@ -12,6 +12,7 @@ import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import '../pages/request/request_permission.dart';
 import 'aegis_websocket_server.dart';
+import 'nostr_wallet_connection_parser.dart';
 
 class BunkerSocket {
   String name;
@@ -54,21 +55,19 @@ class ServerNIP46Signer {
 
   Future<void> start(String getPort) async {
     port = getPort;
-    generateKeyPair();
+    // generateKeyPair();
     await _startWebSocketServer();
   }
 
   void generateKeyPair() async {
-    LocalNostrSigner.instance.init();
     String getIpAddress = await ServerNIP46Signer.getIpAddress();
     print("✅ NIP-46  ws://${getIpAddress}:$port");
-    String bunkerUrl = await getBunkerUrl(port);
+    String bunkerUrl = await getBunkerUrl();
     print("🔗 Bunker URL: $bunkerUrl");
   }
 
   Future<void> _startWebSocketServer() async {
-    AegisWebSocketServer.instance
-        .start(onMessageReceived: _handleMessage, port: port);
+    AegisWebSocketServer.instance.start(onMessageReceived: _handleMessage, port: port);
   }
 
   void _handleMessage(String message, WebSocket socket) async {
@@ -77,9 +76,14 @@ class ServerNIP46Signer {
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
 
     if (messageType == 'REQ') {
-      String getPubKey = request[2]['#p'][0];
-      Account.sharedInstance.clientReqMap[getPubKey] = request;
-      // print('===Account.sharedInstance.clientReqMap===${Account.sharedInstance.clientReqMap}');
+      String? getPubKey = request?[2]?['#p']?[0] ?? null;
+      if(getPubKey != null){
+        Account.sharedInstance.clientReqMap[getPubKey] = request;
+      }
+      String schemeUri = Account.sharedInstance.nostrWalletConnectSchemeUri;
+      if(schemeUri.isNotEmpty){
+        NostrWalletConnectionParserHandler.handleScheme(schemeUri);
+      }
       _handleRequest(socket, request[1]);
     } else if (messageType == 'EVENT') {
       _handleEvent(socket, request[1]);
@@ -218,7 +222,7 @@ class ServerNIP46Signer {
     return responseJson;
   }
 
-  Future<String> getBunkerUrl(String port) async {
+  Future<String> getBunkerUrl() async {
     String ipAddress = AegisWebSocketServer.instance.ip;
     return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://$ipAddress:$port";
   }
