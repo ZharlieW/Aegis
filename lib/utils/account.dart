@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
@@ -106,6 +107,7 @@ class Account {
     await prefs.remove('pubkey');
     await prefs.remove('privkey');
 
+    AegisWebSocketServer.instance.stop();
     for (AccountObservers observer in _observers) {
       observer.didLogout();
     }
