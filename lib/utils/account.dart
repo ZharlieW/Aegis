@@ -46,7 +46,6 @@ class Account {
   // value : []
   final Map<String,List> clientReqMap = {};
 
-  String nostrWalletConnectSchemeUri = '';
 
   String _currentPubkey = '';
   String _currentPrivkey = '';
@@ -108,6 +107,11 @@ class Account {
     await prefs.remove('privkey');
 
     AegisWebSocketServer.instance.stop();
+    bunkerSocketMap.value.clear();
+    clientAuthList.value.clear();
+    nip46NostrConnectInfoMap.value.clear();
+    clientReqMap.clear();
+
     for (AccountObservers observer in _observers) {
       observer.didLogout();
     }

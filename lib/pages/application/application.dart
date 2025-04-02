@@ -1,6 +1,5 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/account.dart';
-import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
