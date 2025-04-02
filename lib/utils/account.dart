@@ -7,9 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
+import '../navigator/navigator.dart';
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
 import '../nostr/signer/local_nostr_signer.dart';
+import '../pages/request/request_permission.dart';
+import 'nostr_wallet_connection_parser.dart';
 
 abstract mixin class AccountObservers {
   void didLoginSuccess();
@@ -35,8 +38,11 @@ class Account {
 
   final ValueListenable<List<ClientAuthDBISAR>> clientAuthList = ValueNotifier([]);
 
-  final ValueListenable<List<Nip46NostrConnectInfo>> nip46NostrConnectInfoList = ValueNotifier([]);
+  // key : pubkey.toLowerCase()
+  final ValueListenable<Map<String,Nip46NostrConnectInfo>> nip46NostrConnectInfoMap = ValueNotifier({});
 
+  // key: pubkey.toLowerCase()
+  // value : []
   final Map<String,List> clientReqMap = {};
 
   String nostrWalletConnectSchemeUri = '';
@@ -118,6 +124,7 @@ class Account {
     await prefs.setString('pubkey', pubkey);
     await prefs.setString('privkey', privkey);
     LocalNostrSigner.instance.init();
+    await ServerNIP46Signer.instance.start('8081');
     for (AccountObservers observer in _observers) {
       observer.didLoginSuccess();
     }
@@ -162,5 +169,27 @@ class Account {
   bool isValidNostrConnectSchemeUri (String uri) {
     if(uri.isEmpty || !(uri.contains(NIP46_NOSTR_CONNECT_PROTOCOL))) return false;
     return true;
+  }
+
+  static Future<void> clientAuth(String pubkey) async {
+    bool isAuthorized = await ServerNIP46Signer.instance.isClientAuthorized(
+      Account.sharedInstance.currentPubkey,
+      pubkey,
+    );
+
+    if (!isAuthorized) {
+      final status = await AegisNavigator.presentPage(
+          AegisNavigator.navigatorKey.currentContext,
+              (context) => RequestPermission(),
+          fullscreenDialog: false);
+
+      if (status == null || status == false) return;
+
+      await ServerNIP46Signer.instance.saveClientAuth(
+        Account.sharedInstance.currentPubkey,
+        pubkey,
+      );
+      return;
+    }
   }
 }

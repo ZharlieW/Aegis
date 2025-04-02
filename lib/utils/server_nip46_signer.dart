@@ -6,11 +6,9 @@ import 'package:isar/isar.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
-import '../navigator/navigator.dart';
 import '../nostr/event.dart';
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
-import '../pages/request/request_permission.dart';
 import 'aegis_websocket_server.dart';
 import 'nostr_wallet_connection_parser.dart';
 
@@ -37,20 +35,6 @@ class ClientRequest {
     required this.method,
     required this.params,
     required this.event,
-  });
-}
-
-class Nip46NostrConnectInfo {
-  final String logo;
-  final String name;
-  final String relay;
-  final int createTimestamp;
-
-  Nip46NostrConnectInfo({
-    required this.logo,
-    required this.name,
-    required this.relay,
-    required this.createTimestamp,
   });
 }
 
@@ -91,15 +75,15 @@ class ServerNIP46Signer {
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
 
     if (messageType == 'REQ') {
-      String? getPubKey = request?[2]?['#p']?[0] ?? null;
+      String? getPubKey = request?[2]?['#p']?[0]?.toLowerCase();
       if (getPubKey != null) {
         Account.sharedInstance.clientReqMap[getPubKey] = request;
+        Nip46NostrConnectInfo? connectInfo = Account.sharedInstance.nip46NostrConnectInfoMap.value[getPubKey];
+        if(connectInfo != null){
+          NostrWalletConnectionParserHandler.sendAuthUrl(request[1], connectInfo);
+        }
       }
-      String schemeUri = Account.sharedInstance.nostrWalletConnectSchemeUri;
-      if (schemeUri.isNotEmpty) {
-        NostrWalletConnectionParserHandler.handleScheme(schemeUri);
-      }
-      _handleRequest(socket, request[1]);
+      _handleRequest(socket,request[1]);
     } else if (messageType == 'EVENT') {
       _handleEvent(socket, request[1]);
     }
@@ -142,13 +126,9 @@ class ServerNIP46Signer {
   Future<String?> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event) async {
     String responseJson = '';
-
-    print('==event.pubkey===${event.pubkey}');
-
-    print('=content=${remoteRequest.method}=${remoteRequest.params}');
+    _remotePubkey = event.pubkey;
     switch (remoteRequest.method) {
       case "connect":
-        _remotePubkey = event.pubkey;
         responseJson =
             jsonEncode({"id": remoteRequest.id, "result": "ack", "error": ''});
         break;
@@ -159,18 +139,7 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-        bool isAuthorized = await isClientAuthorized(
-            Account.sharedInstance.currentPubkey, _remotePubkey);
-        print('===isAuthorized===$isAuthorized');
-        if (!isAuthorized) {
-          final status = await AegisNavigator.presentPage(
-              AegisNavigator.navigatorKey.currentContext,
-              (context) => RequestPermission(),
-              fullscreenDialog: false);
-          if (status == null || status == false) return null;
-          saveClientAuth(Account.sharedInstance.currentPubkey, _remotePubkey);
-        }
-
+        await Account.clientAuth(_remotePubkey);
         responseJson = jsonEncode({
           "id": remoteRequest.id,
           "result": LocalNostrSigner.instance.publicKey,
@@ -198,7 +167,6 @@ class ServerNIP46Signer {
             "result": jsonEncode(eventFromJ.toJson()),
             "error": null
           });
-          print('======>>>.responseJson===>$responseJson');
         }
         break;
 

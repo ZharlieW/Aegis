@@ -8,10 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../common/common_constant.dart';
 import '../../common/common_webview.dart';
-import '../../main.dart';
 import '../../navigator/navigator.dart';
+import '../../utils/launch_scheme_utils.dart';
 import '../../utils/nostr_wallet_connection_parser.dart';
 import '../login/login.dart';
 import 'add_application.dart';
@@ -30,22 +29,7 @@ class _ApplicationState extends State<Application> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getSchemeData();
-  }
-
-  void _getSchemeData() {
-    MainState.platform.setMethodCallHandler((MethodCall call) async {
-      if (call.method == 'onSchemeCalled') {
-        String? url = call.arguments;
-        if (url == null) return;
-        String uri = url.substring(APP_SCHEME.length);
-        String schemeUrl = Uri.decodeComponent(uri);
-        if (Account.sharedInstance.isValidNostrConnectSchemeUri(schemeUrl)) {
-          Account.sharedInstance.nostrWalletConnectSchemeUri = schemeUrl;
-          NostrWalletConnectionParserHandler.handleScheme(schemeUrl);
-        }
-      }
-    });
+    LaunchSchemeUtils.getSchemeData();
   }
 
   @override
@@ -68,20 +52,20 @@ class _ApplicationState extends State<Application> {
                 ValueListenableBuilder<Map<String,BunkerSocket>>(
                   valueListenable: Account.sharedInstance.bunkerSocketMap,
                   builder: (context, value, child) {
-                    final infoList = Account.sharedInstance.nip46NostrConnectInfoList;
+                    final infoList = Account.sharedInstance.nip46NostrConnectInfoMap;
                     if (value.isEmpty && infoList.value.isEmpty) return _noBunkerSocketWidget();
                     return Column(
                       children: _applicationList(value.values.toList()),
                     );
                   },
                 ),
-                ValueListenableBuilder<List<Nip46NostrConnectInfo>>(
-                  valueListenable: Account.sharedInstance.nip46NostrConnectInfoList,
+                ValueListenableBuilder<Map<String,Nip46NostrConnectInfo>>(
+                  valueListenable: Account.sharedInstance.nip46NostrConnectInfoMap,
                   builder: (context, value, child) {
                     final bunkerSocketInfo = Account.sharedInstance.bunkerSocketMap;
                     if (value.isEmpty && bunkerSocketInfo.value.isEmpty) return Container();
                     return Column(
-                      children: _nostrConnectApplicationList(value),
+                      children: _nostrConnectApplicationList(value.values.toList()),
                     );
                   },
                 ),
@@ -92,10 +76,6 @@ class _ApplicationState extends State<Application> {
               right: 16,
               child: GestureDetector(
                 onTap: () {
-                  print('====>  Aegis ==>${AegisWebSocketServer.instance.clients.length}');
-                  // print(Account.sharedInstance.nip46NostrConnectInfoList);
-                  // print('REQ 🔔 ===> ${Account.sharedInstance.clientReqMap.keys.toString()}');
-                  // print('scheme 🕸️ ===> ${Account.sharedInstance.nostrWalletConnectSchemeUri}');
                   Account account = Account.sharedInstance;
                   if(account.currentPubkey.isEmpty || account.currentPrivkey.isEmpty){
                     AegisNavigator.pushPage(context, (context) => Login());
@@ -171,7 +151,7 @@ class _ApplicationState extends State<Application> {
 
   List<Widget> _nostrConnectApplicationList(List<Nip46NostrConnectInfo> connectInfo) {
     return connectInfo.map((Nip46NostrConnectInfo info) {
-      int timestamp = info.createTimestamp;
+      int timestamp = info.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
@@ -185,7 +165,7 @@ class _ApplicationState extends State<Application> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.network(
-                info.logo,
+                info.image,
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
@@ -202,7 +182,7 @@ class _ApplicationState extends State<Application> {
                       ),
                     ),
                     Text(
-                      info.relay,
+                      info.relay ?? '--',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSecondaryContainer,
                       ),

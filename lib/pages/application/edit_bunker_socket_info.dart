@@ -83,7 +83,6 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
       CommonTips.error(context,'The name cannot be empty');
       return;
     }
-    print('====s');
     BunkerSocket bunkerInfo = widget.bunkerSocket;
     String key = '${bunkerInfo.createTimestamp}${bunkerInfo.port}';
     Account.sharedInstance.bunkerSocketMap.value[key]!.name = name;
