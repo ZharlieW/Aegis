@@ -1,4 +1,5 @@
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/nostr/nips/nip19/nip19.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
@@ -88,13 +89,13 @@ class RequestState extends State<Request> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _infoWidget('pukey', clientAuth.pubkey),
-              _infoWidget('clientPukey', clientAuth.clientPubkey),
+              _infoWidget('Account', Nip19.encodePubkey(clientAuth.pubkey)),
+              _infoWidget('ClientPukey', Nip19.encodePubkey(clientAuth.clientPubkey)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'isAuthorized',
+                    'Fully Authorized',
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                   ),
                   Text(clientAuth.isAuthorized ? '✅' : '❌'),

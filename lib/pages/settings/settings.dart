@@ -140,9 +140,9 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text("Tips"),
+                        title: Text("Logout"),
                         content: Text(
-                            "Are you sure you want to remove all permissions from this application?"),
+                            "Are you sure you want to log out?"),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0), //
                         ),
