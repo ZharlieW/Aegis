@@ -47,29 +47,28 @@ class _AddApplicationState extends State<AddApplication> {
                       height: 20,
                     ),
                     _cardWidget(
-                        onTap: () =>  CommonTips.error(context, 'comming soon !'),
-                        iconName: 'clipboard_icon.png',
-                        title: 'Paste Nostr Connect URL from clipboard',
-                        content:
-                            ''),
-                    _cardWidget(
-                      onTap: () =>  CommonTips.error(context, 'comming soon !'),
-                      iconName: 'scan_icon.png',
-                      title: 'Scan Nostr Connect QR Code',
-                      content:
-                          "",
+                      onTap: () => {
+                        AegisNavigator.pushPage(
+                          context,
+                          (context) => AddNsecbunker(),
+                        )
+                      },
+                      iconName: 'nsecbunker_icon.png',
+                      title: 'Add a nsecbunker manually',
+                      content: "",
                     ),
                     _cardWidget(
-                        onTap: () => {
-                              AegisNavigator.pushPage(
-                                context,
-                                (context) => AddNsecbunker(),
-                              )
-                            },
-                        iconName: 'nsecbunker_icon.png',
-                        title: 'Add a nsecbunker manually',
-                        content:
-                            ""),
+                      onTap: () => CommonTips.error(context, 'comming soon !'),
+                      iconName: 'clipboard_icon.png',
+                      title: 'Paste Nostr Connect URL from clipboard',
+                      content: '',
+                    ),
+                    _cardWidget(
+                      onTap: () => CommonTips.error(context, 'comming soon !'),
+                      iconName: 'scan_icon.png',
+                      title: 'Scan Nostr Connect QR Code',
+                      content: "",
+                    ),
                   ],
                 ),
               ),
