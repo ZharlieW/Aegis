@@ -24,18 +24,18 @@ class RequestPermissionState extends State<RequestPermission> {
 
   final List<PermissionsContent> permissionsContentList = [
     PermissionsContent(
-      title: 'Approve basic actions',
-      content:
-          'Recommended for most people. This will minimize the number of interruptions during your app usage.',
-    ),
-    PermissionsContent(
       title: 'I fully trust this application',
       content: 'Sign automatically every request',
     ),
     PermissionsContent(
+      title: 'Approve basic actions',
+      content:
+          'Coming soon...',
+    ),
+    PermissionsContent(
       title: 'Manually approve each permission',
       content:
-          'Recommended for privacy-minded people who would like control over each permission. Choosing this will prompt you set a preference every time you receive a new permission.',
+          'Coming soon...',
     ),
   ];
 
@@ -79,7 +79,7 @@ class RequestPermissionState extends State<RequestPermission> {
                     ),
                   ),
                   Text(
-                    "Would like your permission to read your public key and sign events on your behalf. How to handle this application permissions?",
+                    "How to handle this application permissions?",
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
@@ -149,7 +149,9 @@ class RequestPermissionState extends State<RequestPermission> {
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectIndex = findIndex;
+              if(findIndex == 0) {
+                selectIndex = findIndex;
+              }
             });
           },
           child: Container(
