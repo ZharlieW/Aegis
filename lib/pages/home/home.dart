@@ -17,7 +17,7 @@ class _HomeSate extends State<Home> with AccountObservers {
 
   static final List<Widget> _widgetOptions = <Widget>[
     Application(),
-    Request(),
+    // Request(),
     Settings(),
   ];
 
@@ -57,12 +57,12 @@ class _HomeSate extends State<Home> with AccountObservers {
                 _buildIcon('select_application_icon.png', _selectedIndex == 0),
             label: 'Application',
           ),
-          BottomNavigationBarItem(
-            icon: _buildIcon('request_icon.png',false),
-            activeIcon:
-                _buildIcon('select_request_icon.png', _selectedIndex == 1),
-            label: 'Request',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: _buildIcon('request_icon.png',false),
+          //   activeIcon:
+          //       _buildIcon('select_request_icon.png', _selectedIndex == 1),
+          //   label: 'Request',
+          // ),
           BottomNavigationBarItem(
             icon: _buildIcon('settings_icon.png',false),
             activeIcon:
