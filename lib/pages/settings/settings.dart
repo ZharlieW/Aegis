@@ -8,6 +8,7 @@ import '../../nostr/nips/nip19/nip19.dart';
 import '../../utils/account.dart';
 import '../../utils/took_kit.dart';
 import '../login/login.dart';
+import 'account_backup.dart';
 
 class Settings extends StatefulWidget {
   @override
@@ -28,8 +29,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
     String private = instance.currentPrivkey;
     if (pubkey.isEmpty || private.isEmpty) return '--';
     String nupKey = Account.getNupPublicKey(pubkey);
-    String nsecKey =  Nip19.encodePrivateKey(instance.currentPrivkey);
-    return '${nupKey.substring(0, 15)}:${nsecKey.substring(0, 15)}';
+    return '${nupKey.substring(0, 15)}...${nupKey.substring(nupKey.length - 10)}';
   }
 
   @override
@@ -44,9 +44,19 @@ class _SettingsState extends State<Settings> with AccountObservers {
                   children: [
                     _accountView(),
                     _itemWidget(
-                      iconName: 'backup_icon.png',
-                      content: 'Backup Keys',
-                    ),
+                        iconName: 'backup_icon.png',
+                        content: 'Backup Keys',
+                        onTap: () {
+                          Account account = Account.sharedInstance;
+                          if (account.currentPubkey.isEmpty ||
+                              account.currentPrivkey.isEmpty) {
+                            AegisNavigator.pushPage(
+                                context, (context) => Login());
+                            return;
+                          }
+                          AegisNavigator.pushPage(
+                              context, (context) => const AccountBackup());
+                        }),
                     // _itemWidget(
                     //   iconName: 'relays_icon.png',
                     //   content: 'Relays',
@@ -105,8 +115,10 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     AegisNavigator.pushPage(context, (context) => Login());
                     return;
                   }
-                  String npubKey =  Account.getNupPublicKey(account.currentPubkey);
-                  String nsecKey =  Nip19.encodePrivateKey(account.currentPrivkey);
+                  String npubKey =
+                      Account.getNupPublicKey(account.currentPubkey);
+                  String nsecKey =
+                      Nip19.encodePrivateKey(account.currentPrivkey);
 
                   TookKit.copyKey(context, '$npubKey:$nsecKey');
                 },
@@ -128,7 +140,8 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: Text("Tips"),
-                        content: Text("Are you sure you want to remove all permissions from this application?"),
+                        content: Text(
+                            "Are you sure you want to remove all permissions from this application?"),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0), //
                         ),
@@ -141,14 +154,20 @@ class _SettingsState extends State<Settings> with AccountObservers {
                             ),
                             label: Text(
                               "Cancel",
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.black,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.black,
+                                  ),
                             ),
                           ),
                           ElevatedButton.icon(
                             onPressed: () {
-                              if(Account.sharedInstance.currentPrivkey.isEmpty || Account.sharedInstance.currentPubkey.isEmpty){
+                              if (Account
+                                      .sharedInstance.currentPrivkey.isEmpty ||
+                                  Account
+                                      .sharedInstance.currentPubkey.isEmpty) {
                                 CommonTips.error(context, 'Not logged in');
                                 return;
                               }
@@ -161,16 +180,18 @@ class _SettingsState extends State<Settings> with AccountObservers {
                             ),
                             label: Text(
                               "Confirm",
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                  ),
                             ),
                           ),
                         ],
                       );
                     },
                   );
-
                 },
                 child: Container(
                   width: 48,
@@ -190,9 +211,16 @@ class _SettingsState extends State<Settings> with AccountObservers {
     );
   }
 
-  Widget _itemWidget({required String iconName, required String content}) {
+  Widget _itemWidget(
+      {required String iconName,
+      required String content,
+      GestureTapCallback? onTap}) {
     return GestureDetector(
-      onTap:  () {
+      onTap: () {
+        if (onTap != null) {
+          onTap();
+          return;
+        }
         CommonTips.error(context, 'comming soon !');
       },
       child: Container(
@@ -200,7 +228,8 @@ class _SettingsState extends State<Settings> with AccountObservers {
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         child: Row(
           children: [
-            CommonImage(iconName: iconName, size: 24).setPaddingOnly(right: 12.0),
+            CommonImage(iconName: iconName, size: 24)
+                .setPaddingOnly(right: 12.0),
             Text(
               content,
               style: Theme.of(context).textTheme.bodyLarge,

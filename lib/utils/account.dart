@@ -46,7 +46,6 @@ class Account {
   // value : []
   final Map<String,List> clientReqMap = {};
 
-
   String _currentPubkey = '';
   String _currentPrivkey = '';
 
