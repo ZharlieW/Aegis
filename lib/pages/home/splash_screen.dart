@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:aegis/common/common_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../navigator/navigator.dart';
+import '../../utils/account.dart';
+import '../login/login.dart';
 import 'home.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -32,18 +35,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 1), () {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => Home(),
-          transitionDuration: Duration.zero, //
-          reverseTransitionDuration: Duration.zero, //
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return child; //
-          },
-        ),
-      );
+    Timer(const Duration(seconds: 1), () async{
+      Account instance = Account.sharedInstance;
+      if(instance.currentPubkey.isEmpty || instance.currentPrivkey.isEmpty){
+        await AegisNavigator.pushPage(context, (context) => Login(isLaunchLogin: true,));
+      }
+      _replaceHome();
     });
+  }
+
+  void _replaceHome(){
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => Home(),
+        transitionDuration: Duration.zero, //
+        reverseTransitionDuration: Duration.zero, //
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return child; //
+        },
+      ),
+    );
   }
 
   @override

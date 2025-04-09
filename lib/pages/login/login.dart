@@ -7,7 +7,8 @@ import 'create_nostr_account.dart';
 import 'login_private_key.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  final bool isLaunchLogin;
+  const Login({super.key,this.isLaunchLogin = false});
 
   @override
   _LoginState createState() => _LoginState();
@@ -17,7 +18,9 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+          leading: widget.isLaunchLogin ? Container() : null,
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
