@@ -57,10 +57,10 @@ class _SettingsState extends State<Settings> with AccountObservers {
                           AegisNavigator.pushPage(
                               context, (context) => const AccountBackup());
                         }),
-                    // _itemWidget(
-                    //   iconName: 'relays_icon.png',
-                    //   content: 'Relays',
-                    // ),
+                        _itemWidget(
+                          iconName: 'version_icon.png',
+                          content: 'Version: 1.0.0',
+                        ),
                     // _itemWidget(
                     //   iconName: 'policy_icon.png',
                     //   content: 'Sign policy',

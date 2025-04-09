@@ -75,6 +75,9 @@ class ServerNIP46Signer {
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
 
     if (messageType == 'REQ') {
+      List<dynamic> kindList = request?[2]?['kinds'];
+      if(!kindList.contains(24133)) return;
+
       String? getPubKey = request?[2]?['#p']?[0]?.toLowerCase();
       if (getPubKey != null) {
         Account.sharedInstance.clientReqMap[getPubKey] = request;
