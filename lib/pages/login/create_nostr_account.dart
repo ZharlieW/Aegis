@@ -41,7 +41,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                 Column(
                   children: [
                     Text(
-                      "Your Nostr account is ready! This is your public key, a sort of username that you can share with anyone to let it find you on Nostr:",
+                      "Your Nostr account is ready! This is your nostr public key:",
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
@@ -62,7 +62,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                             fontSize: 16.0,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        labelText: 'NupPub',
+                        labelText: 'NostrPubkey',
                         labelStyle: TextStyle(
                           fontSize: 16.0,
                           color: Theme.of(context).colorScheme.onSurface,

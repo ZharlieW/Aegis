@@ -57,54 +57,14 @@ class RequestState extends State<Request> {
                 bottom: 20.0,
               ),
             ),
-            Text(
+            Center(child: Text(
               'Nothing to approve yet',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w400,
-                  ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              "Why not explore your favorite nostr app  a bit?",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              "Discover all Nostr apps for android at nostrapps.com.",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-            FilledButton.tonal(
-              onPressed: () {
-                AegisNavigator.pushPage(context,
-                    (context) => CommonWebView('https://nostrapps.com'));
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                    Theme.of(context).colorScheme.secondaryContainer, //
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w400,
               ),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(vertical: 16),
-                alignment: Alignment.center,
-                child: Text(
-                  'Discover',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-              ),
-            ).setPaddingOnly(top: 20.0),
+              textAlign: TextAlign.center,
+            ),)
           ],
         ),
       ),

@@ -47,14 +47,14 @@ class _SettingsState extends State<Settings> with AccountObservers {
                       iconName: 'backup_icon.png',
                       content: 'Backup Keys',
                     ),
-                    _itemWidget(
-                      iconName: 'relays_icon.png',
-                      content: 'Relays',
-                    ),
-                    _itemWidget(
-                      iconName: 'policy_icon.png',
-                      content: 'Sign policy',
-                    ),
+                    // _itemWidget(
+                    //   iconName: 'relays_icon.png',
+                    //   content: 'Relays',
+                    // ),
+                    // _itemWidget(
+                    //   iconName: 'policy_icon.png',
+                    //   content: 'Sign policy',
+                    // ),
                   ],
                 ),
               ),

@@ -217,52 +217,13 @@ class _ApplicationState extends State<Application> {
               ),
             ),
             Text(
-              'Congratulations, your new account is ready!',
+              'Congratulations!\n\nNow you can start using apps that support Aegis!',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w400,
                   ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              "Now you can start using apps that support Aegis, when needed Aegis will open and ask you to confirm permissions. In this view you will find all the apps that have active permissions.",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              "Discover all Nostr apps for android at nostrapps.com.",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-            FilledButton.tonal(
-              onPressed: () {
-                AegisNavigator.pushPage(context, (context) => CommonWebView('https://nostrapps.com'));
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                    Theme.of(context).colorScheme.secondaryContainer,
-              ),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(vertical: 16),
-                alignment: Alignment.center,
-                child: Text(
-                  'Discover',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-              ),
-            ).setPaddingOnly(top: 20.0),
           ],
         ),
       ),

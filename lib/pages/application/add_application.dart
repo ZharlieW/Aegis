@@ -37,7 +37,7 @@ class _AddApplicationState extends State<AddApplication> {
                       height: 24,
                     ),
                     Text(
-                      'Usually Nostrapplications have a "Login with Aegis" option that permits to use Aegis as external signer; when you press that button Aegis is launched and you are asked to approve some permissions.',
+                      'You can choose any of these methods to connect with Aegis!',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
@@ -49,15 +49,15 @@ class _AddApplicationState extends State<AddApplication> {
                     _cardWidget(
                         onTap: () =>  CommonTips.error(context, 'comming soon !'),
                         iconName: 'clipboard_icon.png',
-                        title: 'Paste from clipboard',
+                        title: 'Paste Nostr Connect URL from clipboard',
                         content:
-                            'If your app offers you a Nostr Connect URL, you can paste it here. Usually this login mode it is offered by web apps.'),
+                            ''),
                     _cardWidget(
                       onTap: () =>  CommonTips.error(context, 'comming soon !'),
                       iconName: 'scan_icon.png',
-                      title: 'Scan a QR Code',
+                      title: 'Scan Nostr Connect QR Code',
                       content:
-                          "If your app offers you a Nostr Connect QR Code you can scan it from here. Usually this login mode it is offered by web apps.",
+                          "",
                     ),
                     _cardWidget(
                         onTap: () => {
@@ -67,9 +67,9 @@ class _AddApplicationState extends State<AddApplication> {
                               )
                             },
                         iconName: 'nsecbunker_icon.png',
-                        title: 'Add a nsecbunker',
+                        title: 'Add a nsecbunker manually',
                         content:
-                            "This option allow to add a nsecbunker manually, and use with whichever app supports Nostr Connect (NIP-46)　。"),
+                            ""),
                   ],
                 ),
               ),
@@ -118,9 +118,6 @@ class _AddApplicationState extends State<AddApplication> {
                       color: Colors.black,
                     ),
                   ),
-                  Text(
-                    content,
-                  )
                 ],
               ),
             ),
