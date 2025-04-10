@@ -66,7 +66,7 @@ class _HomeSate extends State<Home> with AccountObservers {
           BottomNavigationBarItem(
             icon: _buildIcon('settings_icon.png',false),
             activeIcon:
-                _buildIcon('select_settings_icon.png', _selectedIndex == 2),
+                _buildIcon('select_settings_icon.png', _selectedIndex == 1),
             label: 'Settings',
           ),
         ],
