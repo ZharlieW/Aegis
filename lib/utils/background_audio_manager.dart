@@ -25,8 +25,11 @@ class BackgroundAudioManager {
       androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
     ));
 
+    final handler = MyAudioHandler();
+    await handler.init();
+
     _audioHandler = await AudioService.init(
-      builder: () => MyAudioHandler(),
+      builder: () => handler,
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.aegis.app.audio',
         androidNotificationChannelName: 'Audio Playback',
@@ -34,24 +37,18 @@ class BackgroundAudioManager {
       ),
     );
 
-    _session.interruptionEventStream.listen((event) async {
-      if (!event.begin) {
-        await _audioHandler.play();
-      }
+    Future.microtask(() async {
+      await _audioHandler.play();
     });
-
-    await _audioHandler.play();
   }
 }
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
 
-  MyAudioHandler() {
-    _initPlayer();
-  }
+  MyAudioHandler();
 
-  Future<void> _initPlayer() async {
+  Future<void> init() async {
     await _player.setLoopMode(LoopMode.one);
     await _player.setVolume(0.0);
     await _player.setAudioSource(AudioSource.asset('assets/audio/5c891d4ebb60a52465.mp3'));
