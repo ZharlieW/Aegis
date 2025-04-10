@@ -36,7 +36,7 @@ class _ApplicationState extends State<Application> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Application',
+          'Applications',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
