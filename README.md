@@ -1,21 +1,45 @@
-# Aegis - Nostr Signer for iOS
 
-**Aegis** is a dedicated Nostr signer designed for iOS, providing users with robust private key management and support for advanced features like NIP-46 login and a local relay.
+# Aegis - Nostr Signer
 
-## Features
+**Aegis** is a Nostr signer that supports multiple connection methods. It works seamlessly with Nostr clients that support Nostr Connect.
 
-1. **Multi-User Management**  
-   Seamlessly manage multiple accounts with ease.
+## ✨ Features
 
-2. **NIP-46 Login**  
-   Securely log in to applications using the Nostr protocol.
+- Supports `bunker://` connection
+- Supports iOS URL Scheme redirection for login
+- On iOS, the signer app can remain active in the background, ensuring availability for signing requests
 
-3. **App Authorization Management**  
-   Control and manage the apps authorized to sign events.
+## 📦 Supported Connection Methods
 
-4. **Local Relay**  
-   Utilize a local relay for enhanced privacy and performance.
+### 1. Using `bunker://` URL
 
-5. **iOS Keep-Alive Solution**  
-   Implemented strategies to maintain background activity on iOS devices.
+You can generate a `bunker://` URI to allow clients to connect quickly via the bunker protocol.
+
+**Example:**
+
+`bunker://<encoded_bunker_connect_uri>`
+
+### 2. Using iOS URL Scheme Redirection
+
+On iOS, you can redirect users to Aegis using a custom URL scheme.
+
+Format of the URL scheme:
+
+```
+aegis://${Uri.encodeComponent("$nostrConnectURI&scheme=$yourappurlcheme://")
+```
+
+You can generate a redirect URL like this:
+
+```dart
+final nostrConnectURI = createNostrConnectURI(
+  relay: 'ws://127.0.0.1:8081',
+  // other params
+);
+
+final schemeURL = 'aegis://${Uri.encodeComponent("$nostrConnectURI&scheme=oxchat://")}';
+```
+
+Calling this schemeURL from your iOS app will redirect to Aegis for signing authorization.
+
 
