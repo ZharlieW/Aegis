@@ -84,5 +84,11 @@
     			</array>
     		</dict>
     	</array>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>We need access to the microphone for voice recognition and audio recording features</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need access to your location to provide location-based services and features</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We need access to your location to provide location-based services and features</string>
 </dict>
 </plist>

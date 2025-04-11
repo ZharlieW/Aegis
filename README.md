@@ -26,7 +26,7 @@ On iOS, you can redirect users to Aegis using a custom URL scheme.
 Format of the URL scheme:
 
 ```
-aegis://${Uri.encodeComponent("$nostrConnectURI&scheme=$yourappurlcheme://")
+aegis://${Uri.encodeComponent("$nostrConnectURI&scheme=$yourappurlscheme://")
 ```
 
 You can generate a redirect URL like this:
