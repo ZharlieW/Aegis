@@ -165,15 +165,14 @@ class _SettingsState extends State<Settings> with AccountObservers {
                           ),
                           ElevatedButton.icon(
                             onPressed: () {
-                              if (Account
-                                      .sharedInstance.currentPrivkey.isEmpty ||
-                                  Account
-                                      .sharedInstance.currentPubkey.isEmpty) {
+                              Account instance = Account.sharedInstance;
+                              if (instance.currentPrivkey.isEmpty || instance.currentPubkey.isEmpty) {
                                 CommonTips.error(context, 'Not logged in');
                                 return;
                               }
                               Account.sharedInstance.logout();
                               AegisNavigator.pop(context);
+                              AegisNavigator.pushPage(context, (context) => const Login(isLaunchLogin: true));
                             },
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.all(

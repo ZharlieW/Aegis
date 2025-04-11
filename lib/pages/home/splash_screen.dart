@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     Timer(const Duration(seconds: 1), () async{
       Account instance = Account.sharedInstance;
       if(instance.currentPubkey.isEmpty || instance.currentPrivkey.isEmpty){
-        await AegisNavigator.pushPage(context, (context) => Login(isLaunchLogin: true,));
+        await AegisNavigator.pushPage(context, (context) => const Login(isLaunchLogin: true));
       }
       _replaceHome();
     });

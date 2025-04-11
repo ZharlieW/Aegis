@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../common/common_appbar.dart';
+import '../../utils/nostr_wallet_connection_parser.dart';
 
 class AddNsecbunker extends StatefulWidget {
   const AddNsecbunker({super.key});

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
 import '../db/clientAuthDB_isar.dart';
@@ -76,18 +77,43 @@ class ServerNIP46Signer {
 
     if (messageType == 'REQ') {
       List<dynamic> kindList = request?[2]?['kinds'];
-      if(!kindList.contains(24133)) return;
+      if (!kindList.contains(24133)) return;
 
       String? getPubKey = request?[2]?['#p']?[0]?.toLowerCase();
       if (getPubKey != null) {
         Account.sharedInstance.clientReqMap[getPubKey] = request;
         Nip46NostrConnectInfo? connectInfo = Account.sharedInstance.nip46NostrConnectInfoMap.value[getPubKey];
-        if(connectInfo != null){
+        if (connectInfo != null) {
           NostrWalletConnectionParserHandler.sendAuthUrl(request[1], connectInfo);
         }
       }
-      _handleRequest(socket,request[1]);
+      _handleRequest(socket, request[1]);
     } else if (messageType == 'EVENT') {
+      String clientPubkey = request[1]['pubkey'];
+      ValueListenable<Map<String, Nip46NostrConnectInfo>> valueMap = Account.sharedInstance.nip46NostrConnectInfoMap;
+      if (valueMap.value[clientPubkey.toLowerCase()] == null) {
+        ClientAuthDBISAR? clientInfo = await ServerNIP46Signer.instance.searchConnectInfo(
+          Account.sharedInstance.currentPubkey,
+          clientPubkey,
+        );
+        if (clientInfo != null) {
+          Nip46NostrConnectInfo info = Nip46NostrConnectInfo(
+            image: clientInfo.image ?? '',
+            name: clientInfo.name ?? '',
+            relay: clientInfo.relay ?? '',
+            createTimestamp: clientInfo.createTimestamp ?? DateTime.now().millisecondsSinceEpoch,
+            server: clientInfo.server ?? '',
+            secret: clientInfo.secret ?? '',
+            pubkey: clientInfo.pubkey,
+            scheme: clientInfo.scheme ?? '',
+          );
+
+          Map<String, Nip46NostrConnectInfo> newValue = Map.from(valueMap.value);
+          newValue[clientInfo.clientPubkey] = info;
+          Account.sharedInstance.nip46NostrConnectInfoMap.value = newValue;
+        }
+      }
+      // isClientAuthorized
       _handleEvent(socket, request[1]);
     }
   }
@@ -105,7 +131,6 @@ class ServerNIP46Signer {
     NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
         event.content, event.pubkey, LocalNostrSigner.instance);
     if (remoteRequest == null) return;
-
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
     socket.add(jsonResponseOk);
 
@@ -142,10 +167,21 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-        await Account.clientAuth(_remotePubkey);
+        String responseJsonResult = LocalNostrSigner.instance.publicKey;
+        if(Account.sharedInstance.nip46NostrConnectInfoMap.value[_remotePubkey] == null){
+          var result = await Account.clientAuth(
+              pubkey: Account.sharedInstance.currentPubkey,
+              clientPubkey: _remotePubkey,
+              connectionType: EConnectionType.bunker,
+          );
+          if(!result){
+            responseJsonResult = '';
+          }
+        }
+
         responseJson = jsonEncode({
           "id": remoteRequest.id,
-          "result": LocalNostrSigner.instance.publicKey,
+          "result": responseJsonResult,
           "error": ''
         });
         break;
@@ -246,7 +282,23 @@ class ServerNIP46Signer {
     return auth != null && auth.isAuthorized;
   }
 
-  Future<void> saveClientAuth(String pubkey, String clientPubkey) async {
+  Future<ClientAuthDBISAR?> searchConnectInfo(String pubkey, String clientPubkey) async {
+    final result = await DBISAR.sharedInstance.isar.clientAuthDBISARs
+        .filter()
+        .pubkeyEqualTo(pubkey)
+        .clientPubkeyEqualTo(clientPubkey)
+        .findFirst();
+    return result;
+  }
+
+  Future<void> saveClientAuth({
+    required String pubkey,
+    required String clientPubkey,
+    required EConnectionType connectionType,
+    String? image,
+    String? name,
+    String? relay,
+  }) async {
     final existingAuth = await DBISAR.sharedInstance.isar.clientAuthDBISARs
         .filter()
         .pubkeyEqualTo(pubkey)
@@ -258,6 +310,10 @@ class ServerNIP46Signer {
         pubkey: pubkey,
         clientPubkey: clientPubkey,
         isAuthorized: true,
+        connectionType: connectionType.toInt,
+        image: image,
+        name: name,
+        relay: relay,
       );
       Account.sharedInstance.addClientRequestList(auth);
       await DBISAR.sharedInstance.isar.writeTxn(() async {

@@ -48,26 +48,49 @@ class _ApplicationState extends State<Application> {
           children: [
             Column(
               children: [
-                ValueListenableBuilder<Map<String,BunkerSocket>>(
-                  valueListenable: Account.sharedInstance.bunkerSocketMap,
-                  builder: (context, value, child) {
-                    final infoList = Account.sharedInstance.nip46NostrConnectInfoMap;
-                    if (value.isEmpty && infoList.value.isEmpty) return _noBunkerSocketWidget();
+                AnimatedBuilder(
+                  animation: Listenable.merge([
+                    Account.sharedInstance.bunkerSocketMap,
+                    Account.sharedInstance.nip46NostrConnectInfoMap,
+                  ]),
+                  builder: (context, child) {
+                    final bunkerSocketMap = Account.sharedInstance.bunkerSocketMap.value;
+                    final nostrConnectMap = Account.sharedInstance.nip46NostrConnectInfoMap.value;
+
+                    if (bunkerSocketMap.isEmpty && nostrConnectMap.isEmpty) {
+                      return _noBunkerSocketWidget();
+                    }
                     return Column(
-                      children: _applicationList(value.values.toList()),
+                      children: [
+                        if (bunkerSocketMap.isNotEmpty)
+                          Column(children: _applicationList(bunkerSocketMap.values.toList())),
+                        if (nostrConnectMap.isNotEmpty)
+                          Column(children: _nostrConnectApplicationList(nostrConnectMap.values.toList())),
+                      ],
                     );
                   },
-                ),
-                ValueListenableBuilder<Map<String,Nip46NostrConnectInfo>>(
-                  valueListenable: Account.sharedInstance.nip46NostrConnectInfoMap,
-                  builder: (context, value, child) {
-                    final bunkerSocketInfo = Account.sharedInstance.bunkerSocketMap;
-                    if (value.isEmpty && bunkerSocketInfo.value.isEmpty) return Container();
-                    return Column(
-                      children: _nostrConnectApplicationList(value.values.toList()),
-                    );
-                  },
-                ),
+                )
+                // ValueListenableBuilder<Map<String,BunkerSocket>>(
+                //   valueListenable: Account.sharedInstance.bunkerSocketMap,
+                //   builder: (context, value, child) {
+                //     final infoList = Account.sharedInstance.nip46NostrConnectInfoMap;
+                //     if (value.isEmpty && infoList.value.isEmpty) return _noBunkerSocketWidget();
+                //     if(value.isEmpty) return Container();
+                //     return Column(
+                //       children: _applicationList(value.values.toList()),
+                //     );
+                //   },
+                // ),
+                // ValueListenableBuilder<Map<String,Nip46NostrConnectInfo>>(
+                //   valueListenable: Account.sharedInstance.nip46NostrConnectInfoMap,
+                //   builder: (context, value, child) {
+                //     final bunkerSocketInfo = Account.sharedInstance.bunkerSocketMap;
+                //     if (value.isEmpty && bunkerSocketInfo.value.isEmpty)  return Container();
+                //     return Column(
+                //       children: _nostrConnectApplicationList(value.values.toList()),
+                //     );
+                //   },
+                // ),
               ],
             ),
             Positioned(
@@ -150,6 +173,7 @@ class _ApplicationState extends State<Application> {
 
   List<Widget> _nostrConnectApplicationList(List<Nip46NostrConnectInfo> connectInfo) {
     return connectInfo.map((Nip46NostrConnectInfo info) {
+
       int timestamp = info.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -163,12 +187,12 @@ class _ApplicationState extends State<Application> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.network(
+              info.image.isNotEmpty ? Image.network(
                 info.image,
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
-              ).setPaddingOnly(right: 16.0),
+              ).setPaddingOnly(right: 16.0) : const SizedBox(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +205,7 @@ class _ApplicationState extends State<Application> {
                       ),
                     ),
                     Text(
-                      info.relay ?? '--',
+                      info.relay,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSecondaryContainer,
                       ),

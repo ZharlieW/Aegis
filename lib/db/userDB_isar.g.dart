@@ -17,18 +17,23 @@ const UserDBISARSchema = CollectionSchema(
   name: r'UserDBISAR',
   id: 3624421458299562443,
   properties: {
-    r'encryptedPrivkey': PropertySchema(
+    r'defaultPassword': PropertySchema(
       id: 0,
+      name: r'defaultPassword',
+      type: IsarType.string,
+    ),
+    r'encryptedPrivkey': PropertySchema(
+      id: 1,
       name: r'encryptedPrivkey',
       type: IsarType.string,
     ),
     r'privkey': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'privkey',
       type: IsarType.string,
     ),
     r'pubkey': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'pubkey',
       type: IsarType.string,
     )
@@ -53,8 +58,24 @@ int _userDBISAREstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.encryptedPrivkey.length * 3;
-  bytesCount += 3 + object.privkey.length * 3;
+  {
+    final value = object.defaultPassword;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.encryptedPrivkey;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.privkey;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.pubkey.length * 3;
   return bytesCount;
 }
@@ -65,9 +86,10 @@ void _userDBISARSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.encryptedPrivkey);
-  writer.writeString(offsets[1], object.privkey);
-  writer.writeString(offsets[2], object.pubkey);
+  writer.writeString(offsets[0], object.defaultPassword);
+  writer.writeString(offsets[1], object.encryptedPrivkey);
+  writer.writeString(offsets[2], object.privkey);
+  writer.writeString(offsets[3], object.pubkey);
 }
 
 UserDBISAR _userDBISARDeserialize(
@@ -77,9 +99,10 @@ UserDBISAR _userDBISARDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = UserDBISAR(
-    encryptedPrivkey: reader.readString(offsets[0]),
-    privkey: reader.readString(offsets[1]),
-    pubkey: reader.readString(offsets[2]),
+    defaultPassword: reader.readStringOrNull(offsets[0]),
+    encryptedPrivkey: reader.readStringOrNull(offsets[1]),
+    privkey: reader.readStringOrNull(offsets[2]),
+    pubkey: reader.readString(offsets[3]),
   );
   object.id = id;
   return object;
@@ -93,10 +116,12 @@ P _userDBISARDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -195,8 +220,180 @@ extension UserDBISARQueryWhere
 extension UserDBISARQueryFilter
     on QueryBuilder<UserDBISAR, UserDBISAR, QFilterCondition> {
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivkeyEqualTo(
+      defaultPasswordIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'defaultPassword',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'defaultPassword',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'defaultPassword',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'defaultPassword',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'defaultPassword',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'defaultPassword',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordStartsWith(
     String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'defaultPassword',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'defaultPassword',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'defaultPassword',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'defaultPassword',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'defaultPassword',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      defaultPasswordIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'defaultPassword',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      encryptedPrivkeyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'encryptedPrivkey',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      encryptedPrivkeyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'encryptedPrivkey',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      encryptedPrivkeyEqualTo(
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -210,7 +407,7 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       encryptedPrivkeyGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -226,7 +423,7 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       encryptedPrivkeyLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -242,8 +439,8 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       encryptedPrivkeyBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -383,8 +580,25 @@ extension UserDBISARQueryFilter
     });
   }
 
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> privkeyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'privkey',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      privkeyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'privkey',
+      ));
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> privkeyEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -398,7 +612,7 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       privkeyGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -413,7 +627,7 @@ extension UserDBISARQueryFilter
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> privkeyLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -428,8 +642,8 @@ extension UserDBISARQueryFilter
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> privkeyBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -655,6 +869,19 @@ extension UserDBISARQueryLinks
 
 extension UserDBISARQuerySortBy
     on QueryBuilder<UserDBISAR, UserDBISAR, QSortBy> {
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByDefaultPassword() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'defaultPassword', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
+      sortByDefaultPasswordDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'defaultPassword', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByEncryptedPrivkey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedPrivkey', Sort.asc);
@@ -695,6 +922,19 @@ extension UserDBISARQuerySortBy
 
 extension UserDBISARQuerySortThenBy
     on QueryBuilder<UserDBISAR, UserDBISAR, QSortThenBy> {
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDefaultPassword() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'defaultPassword', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
+      thenByDefaultPasswordDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'defaultPassword', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByEncryptedPrivkey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedPrivkey', Sort.asc);
@@ -747,6 +987,14 @@ extension UserDBISARQuerySortThenBy
 
 extension UserDBISARQueryWhereDistinct
     on QueryBuilder<UserDBISAR, UserDBISAR, QDistinct> {
+  QueryBuilder<UserDBISAR, UserDBISAR, QDistinct> distinctByDefaultPassword(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'defaultPassword',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QDistinct> distinctByEncryptedPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -778,14 +1026,21 @@ extension UserDBISARQueryProperty
     });
   }
 
-  QueryBuilder<UserDBISAR, String, QQueryOperations>
+  QueryBuilder<UserDBISAR, String?, QQueryOperations>
+      defaultPasswordProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'defaultPassword');
+    });
+  }
+
+  QueryBuilder<UserDBISAR, String?, QQueryOperations>
       encryptedPrivkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'encryptedPrivkey');
     });
   }
 
-  QueryBuilder<UserDBISAR, String, QQueryOperations> privkeyProperty() {
+  QueryBuilder<UserDBISAR, String?, QQueryOperations> privkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'privkey');
     });

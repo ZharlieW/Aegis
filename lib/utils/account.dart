@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aegis/db/userDB_isar.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +13,7 @@ import '../navigator/navigator.dart';
 import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
 import '../nostr/signer/local_nostr_signer.dart';
+import '../nostr/utils.dart';
 import '../pages/request/request_permission.dart';
 import 'nostr_wallet_connection_parser.dart';
 
@@ -35,16 +37,19 @@ class Account {
   final List<AccountObservers> _observers = <AccountObservers>[];
 
   // key: createTimestamp + port
-  final ValueListenable<Map<String,BunkerSocket>> bunkerSocketMap = ValueNotifier({});
+  final ValueNotifier<Map<String, BunkerSocket>> bunkerSocketMap =
+      ValueNotifier({});
 
-  final ValueListenable<List<ClientAuthDBISAR>> clientAuthList = ValueNotifier([]);
+  final ValueNotifier<List<ClientAuthDBISAR>> clientAuthList =
+      ValueNotifier([]);
 
   // key : pubkey.toLowerCase()
-  final ValueListenable<Map<String,Nip46NostrConnectInfo>> nip46NostrConnectInfoMap = ValueNotifier({});
+  final ValueNotifier<Map<String, Nip46NostrConnectInfo>>
+      nip46NostrConnectInfoMap = ValueNotifier({});
 
   // key: pubkey.toLowerCase()
   // value : []
-  final Map<String,List> clientReqMap = {};
+  final Map<String, List> clientReqMap = {};
 
   String _currentPubkey = '';
   String _currentPrivkey = '';
@@ -66,7 +71,7 @@ class Account {
     return pattern.hasMatch(pubKey);
   }
 
-  static String getPrivateKey(String nsec){
+  static String getPrivateKey(String nsec) {
     return Nip19.decodePrivkey(nsec);
   }
 
@@ -116,26 +121,53 @@ class Account {
     }
   }
 
-  Future<void> loginSuccess(String pubkey,String privkey) async {
+  Future<void> loginSuccess(String pubkey, String? privkey) async {
     _currentPubkey = pubkey;
-    _currentPrivkey = privkey;
 
     await DBISAR.sharedInstance.open(pubkey);
-    List<ClientAuthDBISAR> list = await DBISAR.sharedInstance.isar.clientAuthDBISARs.where().findAll();
-    clientAuthList.value.addAll(list);
 
-    // 🔹 save pubkey 和 privkey
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pubkey', pubkey);
-    await prefs.setString('privkey', privkey);
-    LocalNostrSigner.instance.init();
-    await ServerNIP46Signer.instance.start('8081');
-    for (AccountObservers observer in _observers) {
-      observer.didLoginSuccess();
+    try {
+      if (privkey == null) {
+        final user = await _getUserFromDB(pubkey);
+        if (user == null) return;
+
+        final decryptedPrivkey = _decryptPrivkey(user);
+        _currentPrivkey = bytesToHex(decryptedPrivkey);
+      } else {
+
+        _currentPrivkey = privkey;
+
+        final defaultPassword = generateStrongPassword(16);
+        final encrypted = encryptPrivateKey(hexToBytes(privkey), defaultPassword);
+
+        final user = UserDBISAR(
+          pubkey: pubkey,
+          encryptedPrivkey: bytesToHex(encrypted),
+          defaultPassword: defaultPassword,
+        );
+
+        await DBISAR.sharedInstance.saveToDB(user);
+      }
+
+      final list = await DBISAR.sharedInstance.isar.clientAuthDBISARs.where().findAll();
+      clientAuthList.value.addAll(list);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pubkey', pubkey);
+
+      LocalNostrSigner.instance.init();
+      await ServerNIP46Signer.instance.start('8081');
+
+      for (final observer in _observers) {
+        observer.didLoginSuccess();
+      }
+    } catch (e, stack) {
+      print('loginSuccess error: $e\n$stack');
     }
   }
 
-  void addBunkerSocketMap(BunkerSocket bunkerSocket){
+
+  void addBunkerSocketMap(BunkerSocket bunkerSocket) {
     String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
     bunkerSocketMap.value[key] = bunkerSocket;
     for (AccountObservers observer in _observers) {
@@ -143,7 +175,15 @@ class Account {
     }
   }
 
-  void removeBunkerSocketMap(BunkerSocket bunkerSocket){
+  void addNip46NostrConnectInfoMap(Nip46NostrConnectInfo info) {
+    ValueListenable<Map<String, Nip46NostrConnectInfo>> valueMap =
+        Account.sharedInstance.nip46NostrConnectInfoMap;
+    Map<String, Nip46NostrConnectInfo> newValue = Map.from(valueMap.value);
+    newValue[info.pubkey] = info;
+    Account.sharedInstance.nip46NostrConnectInfoMap.value = newValue;
+  }
+
+  void removeBunkerSocketMap(BunkerSocket bunkerSocket) {
     String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
     bunkerSocketMap.value[key] = bunkerSocket;
     for (AccountObservers observer in _observers) {
@@ -151,7 +191,7 @@ class Account {
     }
   }
 
-  void addClientRequestList(ClientAuthDBISAR clientAuthDBISAR){
+  void addClientRequestList(ClientAuthDBISAR clientAuthDBISAR) {
     clientAuthList.value.add(clientAuthDBISAR);
     for (AccountObservers observer in _observers) {
       observer.didAddClientRequestMap();
@@ -161,40 +201,67 @@ class Account {
   Future<void> autoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     String? pubkey = prefs.getString('pubkey');
-    String? privkey = prefs.getString('privkey');
 
-    if (pubkey != null && privkey != null) {
-      print("🔹 The session is automatically resumed after the user logs in. Procedure");
-      await loginSuccess(pubkey, privkey);
-    } else {
-      print("🔹 No login information is detected. The user needs to log in again");
+    if (pubkey != null) {
+      await loginSuccess(pubkey, null);
+      print(
+          "🔹 The session is automatically resumed after the user logs in. Procedure");
+    }
+    else {
+      print(
+          "🔹 No login information is detected. The user needs to log in again");
     }
   }
 
-  bool isValidNostrConnectSchemeUri (String uri) {
-    if(uri.isEmpty || !(uri.contains(NIP46_NOSTR_CONNECT_PROTOCOL))) return false;
+  bool isValidNostrConnectSchemeUri(String uri) {
+    if (uri.isEmpty || !(uri.contains(NIP46_NOSTR_CONNECT_PROTOCOL)))
+      return false;
     return true;
   }
 
-  static Future<void> clientAuth(String pubkey) async {
+  static Future<bool> clientAuth({
+    required String pubkey,
+    required String clientPubkey,
+    required EConnectionType connectionType,
+    String? image,
+    String? name,
+    String? relay,
+  }) async {
     bool isAuthorized = await ServerNIP46Signer.instance.isClientAuthorized(
       Account.sharedInstance.currentPubkey,
-      pubkey,
+      clientPubkey,
     );
 
     if (!isAuthorized) {
       final status = await AegisNavigator.presentPage(
           AegisNavigator.navigatorKey.currentContext,
-              (context) => RequestPermission(),
+          (context) => RequestPermission(),
           fullscreenDialog: false);
 
-      if (status == null || status == false) return;
-
+      if (status == null || status == false) return false;
       await ServerNIP46Signer.instance.saveClientAuth(
-        Account.sharedInstance.currentPubkey,
-        pubkey,
+        pubkey: Account.sharedInstance.currentPubkey,
+        clientPubkey: clientPubkey,
+        connectionType: connectionType,
+        image: image,
+        name: name,
+        relay: relay,
       );
-      return;
+      return true;
     }
+
+    return true;
+  }
+
+  Future<UserDBISAR?> _getUserFromDB(String pubkey) {
+    return DBISAR.sharedInstance.isar.userDBISARs
+        .filter()
+        .pubkeyEqualTo(pubkey)
+        .findFirst();
+  }
+
+  Uint8List _decryptPrivkey(UserDBISAR user) {
+    final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
+    return decryptPrivateKey(encryptedBytes, user.defaultPassword!);
   }
 }

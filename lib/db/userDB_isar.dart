@@ -6,13 +6,15 @@ part 'userDB_isar.g.dart';
 class UserDBISAR {
   Id id = Isar.autoIncrement;
   late String pubkey;
-  late String privkey;
+  late String? privkey;
 
-  late String encryptedPrivkey;
+  late String? encryptedPrivkey;
+  late String? defaultPassword;
 
   UserDBISAR({
     required this.pubkey,
-    required this.privkey,
-    required this.encryptedPrivkey,
+    this.privkey,
+    this.encryptedPrivkey,
+    this.defaultPassword,
   });
 }

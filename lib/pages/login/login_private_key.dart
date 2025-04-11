@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:aegis/db/db_isar.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import '../../common/common_tips.dart';
 import '../../db/userDB_isar.dart';
 import '../../navigator/navigator.dart';
 import '../../nostr/nips/nip19/nip19.dart';
+import '../../nostr/utils.dart';
 import '../../utils/account.dart';
 
 class LoginPrivateKey extends StatefulWidget {
@@ -98,23 +101,17 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
 
     bool isNsec = Account.validateNsec(key);
 
-    String nsecKey = '';
     String privateKey = '';
+
 
     if(isNsec){
       privateKey = Account.getPrivateKey(key);
-      nsecKey = key;
     }else{
       privateKey = key;
-      nsecKey = Nip19.encodePrivateKey(key);
     }
 
     String publicKey = Account.getPublicKey(privateKey);
 
-
-    UserDBISAR user = UserDBISAR(pubkey: publicKey, privkey: privateKey, encryptedPrivkey: nsecKey);
-
-    await DBISAR.sharedInstance.saveToDB(user);
     Account.sharedInstance.loginSuccess(publicKey,privateKey);
 
     CommonTips.error(context, 'Login successfully !');

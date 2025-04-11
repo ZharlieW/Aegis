@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/widget_tool.dart';
@@ -8,6 +10,7 @@ import '../../db/db_isar.dart';
 import '../../db/userDB_isar.dart';
 import '../../nostr/keychain.dart';
 import '../../nostr/nips/nip19/nip19.dart';
+import '../../nostr/utils.dart';
 import '../../utils/account.dart';
 
 class CreateNostrAccount extends StatefulWidget {
@@ -104,12 +107,8 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
   }
 
   void _createAccount()async{
-
-
-    String privateKeyNsec = Nip19.encodePrivateKey(_keychain.private);
-    UserDBISAR user = UserDBISAR(pubkey: _keychain.public, privkey: _keychain.private, encryptedPrivkey: privateKeyNsec);
-    await DBISAR.sharedInstance.saveToDB(user);
-    Account.sharedInstance.loginSuccess(_keychain.public,_keychain.private);
+    String privkey = _keychain.private;
+    Account.sharedInstance.loginSuccess(_keychain.public,privkey);
 
     CommonTips.success(context, 'Create successfully !');
     AegisNavigator.popToRoot(context);

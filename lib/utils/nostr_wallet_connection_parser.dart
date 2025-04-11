@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
 import '../common/common_constant.dart';
 import '../nostr/event.dart';
 import '../nostr/signer/local_nostr_signer.dart';
@@ -29,7 +29,6 @@ class Nip46NostrConnectInfo {
     required this.createTimestamp,
   });
 }
-
 
 class NostrWalletConnectionParserHandler {
   static Nip46NostrConnectInfo? parseUri(String? uri) {
@@ -139,11 +138,18 @@ class NostrWalletConnectionParserHandler {
     Nip46NostrConnectInfo? result = parseUri(url);
 
     if (result == null) return;
-    Map<String, Nip46NostrConnectInfo> connectInfoList = Account.sharedInstance.nip46NostrConnectInfoMap.value;
-    String clientPubkey = result.pubkey;
-    connectInfoList[clientPubkey] = result;
 
-    await Account.clientAuth(clientPubkey);
+    String clientPubkey = result.pubkey;
+    Account.sharedInstance.addNip46NostrConnectInfoMap(result);
+
+    await Account.clientAuth(
+      pubkey: Account.sharedInstance.currentPubkey,
+      clientPubkey: result.pubkey,
+      connectionType: EConnectionType.nostrconnect,
+      image: result.image,
+      name: result.name,
+      relay: result.relay,
+    );
 
     List<dynamic>? reqInfo = Account.sharedInstance.clientReqMap[clientPubkey];
     if (reqInfo != null) {
