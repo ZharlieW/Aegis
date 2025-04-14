@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
                 ),
               ),
               const Text(
-                'Aegis',
+                'A simple signer for Nostr',
                 style: TextStyle(
                   fontFamily: 'Staatliches',
                   fontSize: 16,

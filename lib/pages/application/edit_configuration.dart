@@ -28,7 +28,7 @@ class _EditConfigurationState extends State<EditConfiguration> {
             delegate: SliverChildListDelegate([
               // Outlined text field
               Text(
-                "To create a new nsecbunker you need to give it a name and select one or more relays, that's all!",
+                "To create a new nsecbunker, you only need to provide a name. The relay address defaults to the local address: 127.0.0.1:8081.",
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w500,

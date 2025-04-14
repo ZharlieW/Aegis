@@ -40,7 +40,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                   Column(
                     children: [
                       Text(
-                        "Setup Aegis with your Nostr private key. Youcan enter different versions: Nsec, Ncryptsec or Hex.You can also scan it from a QR Code.",
+                        "Set up Aegis with your Nostr private key — supports both nsec and hex formats.",
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w500,
@@ -55,8 +55,8 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                         style: const TextStyle(fontSize: 24.0),
                         decoration: const InputDecoration(
                           hintStyle: TextStyle(fontSize: 16.0),
-                          labelText: 'Nsec / private key',
-                          hintText: 'Nsec / private key',
+                          labelText: 'nsec / hex key',
+                          hintText: 'nsec / hex key',
                           border: OutlineInputBorder(),
                           // isDense: false,
                           contentPadding: EdgeInsets.all(12), //
