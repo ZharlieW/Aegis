@@ -49,6 +49,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
+                      textAlign: TextAlign.left,
                     ),
                     const SizedBox(
                       height: 20,
