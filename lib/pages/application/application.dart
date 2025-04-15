@@ -48,27 +48,31 @@ class _ApplicationState extends State<Application> {
           children: [
             Column(
               children: [
-                AnimatedBuilder(
-                  animation: Listenable.merge([
-                    Account.sharedInstance.bunkerSocketMap,
-                    Account.sharedInstance.nip46NostrConnectInfoMap,
-                  ]),
-                  builder: (context, child) {
-                    final bunkerSocketMap = Account.sharedInstance.bunkerSocketMap.value;
-                    final nostrConnectMap = Account.sharedInstance.nip46NostrConnectInfoMap.value;
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: Listenable.merge([
+                      Account.sharedInstance.bunkerSocketMap,
+                      Account.sharedInstance.nip46NostrConnectInfoMap,
+                    ]),
+                    builder: (context, child) {
+                      final bunkerSocketMap = Account.sharedInstance.bunkerSocketMap.value;
+                      final nostrConnectMap = Account.sharedInstance.nip46NostrConnectInfoMap.value;
 
-                    if (bunkerSocketMap.isEmpty && nostrConnectMap.isEmpty) {
-                      return _noBunkerSocketWidget();
-                    }
-                    return Column(
-                      children: [
-                        if (bunkerSocketMap.isNotEmpty)
-                          Column(children: _applicationList(bunkerSocketMap.values.toList())),
-                        if (nostrConnectMap.isNotEmpty)
-                          Column(children: _nostrConnectApplicationList(nostrConnectMap.values.toList())),
-                      ],
-                    );
-                  },
+                      if (bunkerSocketMap.isEmpty && nostrConnectMap.isEmpty) {
+                        return _noBunkerSocketWidget();
+                      }
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            if (bunkerSocketMap.isNotEmpty)
+                              Column(children: _applicationList(bunkerSocketMap.values.toList())),
+                            if (nostrConnectMap.isNotEmpty)
+                              Column(children: _nostrConnectApplicationList(nostrConnectMap.values.toList())),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 )
                 // ValueListenableBuilder<Map<String,BunkerSocket>>(
                 //   valueListenable: Account.sharedInstance.bunkerSocketMap,

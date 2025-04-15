@@ -136,8 +136,7 @@ class ServerNIP46Signer {
 
     String? responseJson = await _processRemoteRequest(remoteRequest, event);
     if (responseJson == null) return;
-    String? responseJsonEncrypt = await LocalNostrSigner.instance
-        .nip44Encrypt(event.pubkey, responseJson);
+    String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(event.pubkey, responseJson);
 
     final signEvent = Event.from(
       subscriptionId: subscriptionId,
@@ -167,22 +166,28 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-        String responseJsonResult = LocalNostrSigner.instance.publicKey;
-        if(Account.sharedInstance.nip46NostrConnectInfoMap.value[_remotePubkey] == null){
-          var result = await Account.clientAuth(
-              pubkey: Account.sharedInstance.currentPubkey,
-              clientPubkey: _remotePubkey,
-              connectionType: EConnectionType.bunker,
+        final isAuthorized = Account.sharedInstance.nip46NostrConnectInfoMap.value[_remotePubkey] != null;
+
+        if (!isAuthorized) {
+          final success = await Account.clientAuth(
+            pubkey: Account.sharedInstance.currentPubkey,
+            clientPubkey: _remotePubkey,
+            connectionType: EConnectionType.bunker,
           );
-          if(!result){
-            responseJsonResult = '';
+
+          if (!success) {
+            responseJson = jsonEncode({
+              "id": remoteRequest.id,
+              "result": null,
+              "error": "unauthorized",
+            });
           }
         }
 
         responseJson = jsonEncode({
           "id": remoteRequest.id,
-          "result": responseJsonResult,
-          "error": ''
+          "result": LocalNostrSigner.instance.publicKey,
+          "error": "",
         });
         break;
 
@@ -191,7 +196,7 @@ class ServerNIP46Signer {
         if (contentStr != null) {
           Event? signEvent =
               Event.fromJson(jsonDecode(contentStr), verify: false);
-          if (signEvent == null) return '';
+          if (signEvent == null) return null;
           final eventFromJ = Event.from(
             createdAt: signEvent.createdAt,
             subscriptionId: subscriptionId,
@@ -253,7 +258,7 @@ class ServerNIP46Signer {
   }
 
   List<String> getRemoteSignerPubkeyTags() {
-    _remotePubkeyTags ??= ["p", _remotePubkey];
+    _remotePubkeyTags = ["p", _remotePubkey];
     return _remotePubkeyTags!;
   }
 

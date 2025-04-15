@@ -140,9 +140,8 @@ class NostrWalletConnectionParserHandler {
     if (result == null) return;
 
     String clientPubkey = result.pubkey;
-    Account.sharedInstance.addNip46NostrConnectInfoMap(result);
 
-    await Account.clientAuth(
+    bool isAuth = await Account.clientAuth(
       pubkey: Account.sharedInstance.currentPubkey,
       clientPubkey: result.pubkey,
       connectionType: EConnectionType.nostrconnect,
@@ -151,6 +150,9 @@ class NostrWalletConnectionParserHandler {
       relay: result.relay,
     );
 
+    if(!isAuth) return;
+
+    Account.sharedInstance.addNip46NostrConnectInfoMap(result);
     List<dynamic>? reqInfo = Account.sharedInstance.clientReqMap[clientPubkey];
     if (reqInfo != null) {
       sendAuthUrl(reqInfo[1], result);
