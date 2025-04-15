@@ -56,9 +56,6 @@ class _AccountBackupState extends State<AccountBackup> {
             ),
             SliverList(
               delegate: SliverChildListDelegate([
-                Text(
-                  Account.sharedInstance.currentPubkey,
-                ),
                 _openAccountWidget(),
                 SizedBox(height: 30),
                 _accountPrivateKeyWidget(),
