@@ -1,6 +1,8 @@
 
 # Aegis - Nostr Signer
 
+[![Download on TestFlight](https://img.shields.io/badge/TestFlight-Download-blue?logo=apple)](https://testflight.apple.com/join/DUzVMDMK)
+
 **Aegis** is a simple and cross-platform Nostr signer that supports multiple connection methods. 
 
 ## Features
