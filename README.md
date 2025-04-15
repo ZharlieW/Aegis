@@ -3,12 +3,12 @@
 
 **Aegis** is a simple and cross-platform Nostr signer that supports multiple connection methods. 
 
-## ✨ Features
+## Features
 
 - Supports `bunker://` connection
 - Supports iOS URL Scheme redirection for login
 
-## 📦 Supported Connection Methods
+## Supported Connection Methods
 
 ### 1. Using `bunker://` URL
 
