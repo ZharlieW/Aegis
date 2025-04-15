@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../common/common_appbar.dart';
 import '../../utils/nostr_wallet_connection_parser.dart';
+import 'bunker_socket_info.dart';
 
 class AddNsecbunker extends StatefulWidget {
   const AddNsecbunker({super.key});
@@ -146,5 +147,6 @@ class _AddNsecbunkerState extends State<AddNsecbunker> {
     Account.sharedInstance.addBunkerSocketMap(bunkerSocket);
     CommonTips.success(context, 'Add successfully !!');
     AegisNavigator.popToRoot(context);
+    AegisNavigator.pushPage(context, (context) => BunkerSocketInfo(bunkerSocket: bunkerSocket));
   }
 }

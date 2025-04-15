@@ -216,6 +216,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
       required String content,
       GestureTapCallback? onTap}) {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: () {
         if (onTap != null) {
           onTap();

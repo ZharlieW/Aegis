@@ -156,7 +156,7 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
                           ),
                           icon: CommonImage(
                             iconName: 'del_icon.png',
-                            size: 32,
+                            size: 18,
                             color: Colors.white,
                           ),
                           label: Text(
@@ -177,7 +177,7 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
               ),
               icon: CommonImage(
                 iconName: 'del_icon.png',
-                size: 32,
+                size: 18,
                 color: Colors.white,
               ),
               label: Text(
