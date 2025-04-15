@@ -49,7 +49,7 @@ class RequestInfoState extends State<RequestInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Request Info',
+          'Permission Request',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w400,
           ),

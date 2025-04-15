@@ -25,15 +25,15 @@ class RequestPermissionState extends State<RequestPermission> {
   final List<PermissionsContent> permissionsContentList = [
     PermissionsContent(
       title: 'I fully trust this application',
-      content: 'Sign automatically every request',
+      content: 'Approve all request automatically',
     ),
     PermissionsContent(
-      title: 'Approve basic actions',
+      title: 'Only Approve basic actions',
       content:
           'Coming soon...',
     ),
     PermissionsContent(
-      title: 'Manually approve each permission',
+      title: 'Manually review and approve each permission',
       content:
           'Coming soon...',
     ),
@@ -54,7 +54,7 @@ class RequestPermissionState extends State<RequestPermission> {
           ),
         ),
         title: Text(
-          'Request Info',
+          'Permission Request',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -79,7 +79,7 @@ class RequestPermissionState extends State<RequestPermission> {
                     ),
                   ),
                   Text(
-                    "How to handle this application permissions?",
+                    "How would you like to handle this application's permissions?",
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
