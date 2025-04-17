@@ -1,19 +1,17 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/account.dart';
-import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../common/common_webview.dart';
+import '../../db/clientAuthDB_isar.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/launch_scheme_utils.dart';
-import '../../utils/nostr_wallet_connection_parser.dart';
 import '../login/login.dart';
 import 'add_application.dart';
-import 'bunker_socket_info.dart';
+import 'application_info.dart';
 
 class Application extends StatefulWidget {
   const Application({super.key});
@@ -49,52 +47,17 @@ class _ApplicationState extends State<Application> {
             Column(
               children: [
                 Expanded(
-                  child: AnimatedBuilder(
-                    animation: Listenable.merge([
-                      Account.sharedInstance.bunkerSocketMap,
-                      Account.sharedInstance.nip46NostrConnectInfoMap,
-                    ]),
-                    builder: (context, child) {
-                      final bunkerSocketMap = Account.sharedInstance.bunkerSocketMap.value;
-                      final nostrConnectMap = Account.sharedInstance.nip46NostrConnectInfoMap.value;
-
-                      if (bunkerSocketMap.isEmpty && nostrConnectMap.isEmpty) {
-                        return _noBunkerSocketWidget();
-                      }
-                      return SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            if (bunkerSocketMap.isNotEmpty)
-                              Column(children: _applicationList(bunkerSocketMap.values.toList())),
-                            if (nostrConnectMap.isNotEmpty)
-                              Column(children: _nostrConnectApplicationList(nostrConnectMap.values.toList())),
-                          ],
-                        ),
+                  child: ValueListenableBuilder(
+                    valueListenable: Account.sharedInstance.applicationValueNotifier,
+                    builder: (BuildContext context, applicationMap, Widget? child) {
+                      if (applicationMap.isEmpty) return _noBunkerSocketWidget();
+                      List<ClientAuthDBISAR> applicationList = applicationMap.values.toList();
+                      return Column(
+                        children: _applicationList(applicationList),
                       );
                     },
                   ),
                 )
-                // ValueListenableBuilder<Map<String,BunkerSocket>>(
-                //   valueListenable: Account.sharedInstance.bunkerSocketMap,
-                //   builder: (context, value, child) {
-                //     final infoList = Account.sharedInstance.nip46NostrConnectInfoMap;
-                //     if (value.isEmpty && infoList.value.isEmpty) return _noBunkerSocketWidget();
-                //     if(value.isEmpty) return Container();
-                //     return Column(
-                //       children: _applicationList(value.values.toList()),
-                //     );
-                //   },
-                // ),
-                // ValueListenableBuilder<Map<String,Nip46NostrConnectInfo>>(
-                //   valueListenable: Account.sharedInstance.nip46NostrConnectInfoMap,
-                //   builder: (context, value, child) {
-                //     final bunkerSocketInfo = Account.sharedInstance.bunkerSocketMap;
-                //     if (value.isEmpty && bunkerSocketInfo.value.isEmpty)  return Container();
-                //     return Column(
-                //       children: _nostrConnectApplicationList(value.values.toList()),
-                //     );
-                //   },
-                // ),
               ],
             ),
             Positioned(
@@ -132,84 +95,51 @@ class _ApplicationState extends State<Application> {
     );
   }
 
-  List<Widget> _applicationList(List<BunkerSocket> bunkerSocketist) {
-    return bunkerSocketist.map((BunkerSocket bunkerSocket) {
-      int timestamp = bunkerSocket.createTimestamp;
-      String bunkerName = '${bunkerSocket.nsecBunker.substring(0,5)}...${bunkerSocket.nsecBunker.substring(bunkerSocket.nsecBunker.length - 20)}';
+  List<Widget> _applicationList(List<ClientAuthDBISAR> applicationList) {
+    return applicationList.map((ClientAuthDBISAR db) {
+
+      int timestamp = db.createTimestamp;
+      bool isBunker = db.connectionType == EConnectionType.bunker.toInt;
+      String connectType = isBunker ? 'bunker://' : 'nostrconnect://';
+      bool isConnect = db.socketHashCode != null;
+      String name = db.name ?? '--';
+      if(name.length > 20){
+        name = '${name.substring(0,5)}...${name.substring(0,5)}';
+      }
+
+      Widget _iconWidget(){
+        if(isBunker) return CommonImage(iconName: 'default_app_icon.png',size: 40,).setPaddingOnly(right: 8.0);
+        return Image.network(
+          db.image ?? '',
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+        ).setPaddingOnly(right: 8.0);;
+      }
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
-          AegisNavigator.pushPage(context, (context) => BunkerSocketInfo(bunkerSocket: bunkerSocket,));
+          AegisNavigator.pushPage(context, (context) => ApplicationInfo(clientAuthDBISAR:db));
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16),
           height: 72,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      bunkerSocket.name,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Text(
-                      bunkerName,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                TookKit.formatTimestamp(timestamp),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ],
-          ),
-        ),
-      );
-    }).toList();
-  }
-
-  List<Widget> _nostrConnectApplicationList(List<Nip46NostrConnectInfo> connectInfo) {
-    return connectInfo.map((Nip46NostrConnectInfo info) {
-
-      int timestamp = info.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
-      return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () {
-          // AegisNavigator.pushPage(context, (context) => BunkerSocketInfo(bunkerSocket: bunkerSocket,));
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          height: 72,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              info.image.isNotEmpty ? Image.network(
-                info.image,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-              ).setPaddingOnly(right: 16.0) : const SizedBox(),
+              _iconWidget(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      info.name,
+                      name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Text(
-                      info.relay,
+                      connectType,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
@@ -217,9 +147,31 @@ class _ApplicationState extends State<Application> {
                   ],
                 ),
               ),
-              Text(
-                TookKit.formatTimestamp(timestamp),
-                style: Theme.of(context).textTheme.titleMedium,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    TookKit.formatTimestamp(timestamp),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isConnect ? Colors.greenAccent : Colors.grey,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                      ).setPaddingOnly(right: 8.0),
+                      Text(
+                        isConnect ? 'Connected' : 'Not Connected',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

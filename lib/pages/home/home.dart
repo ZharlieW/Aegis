@@ -1,23 +1,20 @@
 import 'package:aegis/common/common_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import '../application/application.dart';
-import '../request/request.dart';
 import '../settings/settings.dart';
-import '../../utils/account.dart';
 
 class Home extends StatefulWidget {
+  const Home({super.key});
+
   @override
   _HomeSate createState() => _HomeSate();
 }
 
-class _HomeSate extends State<Home> with AccountObservers {
+class _HomeSate extends State<Home> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
     Application(),
-    // Request(),
     Settings(),
   ];
 
@@ -25,7 +22,6 @@ class _HomeSate extends State<Home> with AccountObservers {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Account.sharedInstance.addObserver(this);
   }
 
   void _onItemTapped(int index) {
@@ -57,12 +53,6 @@ class _HomeSate extends State<Home> with AccountObservers {
                 _buildIcon('select_application_icon.png', _selectedIndex == 0),
             label: 'Applications',
           ),
-          // BottomNavigationBarItem(
-          //   icon: _buildIcon('request_icon.png',false),
-          //   activeIcon:
-          //       _buildIcon('select_request_icon.png', _selectedIndex == 1),
-          //   label: 'Request',
-          // ),
           BottomNavigationBarItem(
             icon: _buildIcon('settings_icon.png',false),
             activeIcon:
@@ -94,30 +84,5 @@ class _HomeSate extends State<Home> with AccountObservers {
       ),
       child: iconWidget,
     );
-  }
-
-  @override
-  void didLoginSuccess() {
-    // TODO: implement didLoginSuccess
-  }
-
-  @override
-  void didLogout() {
-    // TODO: implement didLogout
-  }
-
-  @override
-  void didSwitchUser() {
-    // TODO: implement didSwitchUser
-  }
-
-  @override
-  void didAddBunkerSocketMap() {
-    // TODO: implement didAddBunkerSocketMap
-  }
-
-  @override
-  void didAddClientRequestMap() {
-    // TODO: implement didAddClientRequestMap
   }
 }

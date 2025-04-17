@@ -99,7 +99,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
       return;
     }
 
-    bool isNsec = Account.validateNsec(key);
+    bool isNsec = validateNsec(key);
 
     String privateKey = '';
 

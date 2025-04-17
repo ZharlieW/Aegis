@@ -52,8 +52,8 @@ Uint8List decryptPrivateKey(Uint8List encryptedPrivateKey, String password) {
   // Decrypt the private key
   Uint8List privateKey = Uint8List(encryptedPrivateKey.length);
   for (int offset = 0;
-  offset < encryptedPrivateKey.length;
-  offset += cipher.blockSize) {
+      offset < encryptedPrivateKey.length;
+      offset += cipher.blockSize) {
     cipher.processBlock(encryptedPrivateKey, offset, privateKey, offset);
   }
 
@@ -94,3 +94,16 @@ String generateStrongPassword(int length) {
       length, (index) => characters[random.nextInt(characters.length)]).join();
 }
 
+bool validateNsec(String nsecBase64) {
+  try {
+    if (nsecBase64.length != 63) {
+      return false;
+    }
+    if (!nsecBase64.startsWith('nsec')) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

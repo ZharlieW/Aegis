@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/utils/server_nip46_signer.dart';
 import '../common/common_constant.dart';
 import '../nostr/event.dart';
 import '../nostr/signer/local_nostr_signer.dart';
@@ -8,30 +9,8 @@ import 'account.dart';
 import 'aegis_websocket_server.dart';
 import 'launch_scheme_utils.dart';
 
-class Nip46NostrConnectInfo {
-  final String server;
-  final String secret;
-  final String pubkey;
-  final String scheme;
-  final String image;
-  final String name;
-  final String relay;
-  final int createTimestamp;
-
-  Nip46NostrConnectInfo({
-    required this.server,
-    required this.secret,
-    required this.pubkey,
-    required this.scheme,
-    required this.image,
-    required this.name,
-    required this.relay,
-    required this.createTimestamp,
-  });
-}
-
 class NostrWalletConnectionParserHandler {
-  static Nip46NostrConnectInfo? parseUri(String? uri) {
+  static ClientAuthDBISAR? parseUri(String? uri) {
     if (uri == null) return null;
     String decodeUri = Uri.decodeComponent(uri);
     if (!decodeUri.startsWith(NIP46_NOSTR_CONNECT_PROTOCOL)) return null;
@@ -47,26 +26,28 @@ class NostrWalletConnectionParserHandler {
       var image = queryParams['image']?.first ?? '';
       var name = queryParams['name']?.first ?? '';
 
-      var pubkey = decodedUri.authority;
+      var clientPubkey = decodedUri.authority;
 
       print('🛜 server: $server');
       print('📶 relays: $relays');
       print('🔑 secret: $secret');
-      print('🔑 pubkey: $pubkey');
+      print('🔑 clientPubkey: $clientPubkey');
       print('⏫ scheme: $scheme');
       print('🌲 lud16: $lud16');
 
       int timestamp = DateTime.now().millisecondsSinceEpoch;
 
-      return Nip46NostrConnectInfo(
+      return ClientAuthDBISAR(
+        clientPubkey: clientPubkey,
         image: image,
         name: name,
         relay: relays[0],
         createTimestamp: timestamp,
         server: server,
         secret: secret,
-        pubkey: pubkey,
+        pubkey: Account.sharedInstance.currentPubkey,
         scheme: scheme,
+        connectionType: EConnectionType.nostrconnect.toInt,
       );
     } catch (e) {
       print('Error parsing URI: $e');
@@ -86,9 +67,13 @@ class NostrWalletConnectionParserHandler {
   }
 
   static void sendEvent(
-      String clientPubkey, String subscriptionId, String content) {
+      String clientPubkey,
+      String subscriptionId,
+      String content,
+      ) {
     if (AegisWebSocketServer.instance.clients.isEmpty) return;
     final socket = AegisWebSocketServer.instance.clients[0];
+    LocalNostrSigner instance = LocalNostrSigner.instance;
     final signEvent = Event.from(
       subscriptionId: subscriptionId,
       kind: 24133,
@@ -96,8 +81,8 @@ class NostrWalletConnectionParserHandler {
         ['p', clientPubkey]
       ],
       content: content,
-      pubkey: LocalNostrSigner.instance.publicKey,
-      privkey: LocalNostrSigner.instance.privateKey,
+      pubkey: instance.publicKey,
+      privkey: instance.privateKey,
     );
     socket.add(signEvent.serialize());
     print('Event sent: ${signEvent.serialize()}');
@@ -105,7 +90,7 @@ class NostrWalletConnectionParserHandler {
 
   static void sendAuthUrl(
     String subscriptionId,
-    Nip46NostrConnectInfo connectInfo,
+    ClientAuthDBISAR connectInfo,
   ) async {
     int timestamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -116,9 +101,9 @@ class NostrWalletConnectionParserHandler {
     });
 
     final authEncrypted =
-        await signAndEncrypt(connectInfo.pubkey, authResponse);
+        await signAndEncrypt(connectInfo.clientPubkey, authResponse);
     if (authEncrypted != null) {
-      sendEvent(connectInfo.pubkey, subscriptionId, authEncrypted);
+      sendEvent(connectInfo.clientPubkey, subscriptionId, authEncrypted);
     }
 
     final secretResponse = jsonEncode({
@@ -127,36 +112,36 @@ class NostrWalletConnectionParserHandler {
     });
 
     final secretEncrypted =
-        await signAndEncrypt(connectInfo.pubkey, secretResponse);
+        await signAndEncrypt(connectInfo.clientPubkey, secretResponse);
     if (secretEncrypted != null) {
-      sendEvent(connectInfo.pubkey, subscriptionId, secretEncrypted);
+      sendEvent(connectInfo.clientPubkey, subscriptionId, secretEncrypted);
     }
   }
 
   static Future<void> handleScheme(String? url) async {
     if (url == null) return;
-    Nip46NostrConnectInfo? result = parseUri(url);
+    ClientAuthDBISAR? result = parseUri(url);
 
     if (result == null) return;
 
-    String clientPubkey = result.pubkey;
+    String clientPubkey = result.clientPubkey;
+    Account instance = Account.sharedInstance;
 
-    bool isAuth = await Account.clientAuth(
-      pubkey: Account.sharedInstance.currentPubkey,
-      clientPubkey: result.pubkey,
-      connectionType: EConnectionType.nostrconnect,
-      image: result.image,
-      name: result.name,
-      relay: result.relay,
-    );
+    ClientAuthDBISAR? hasClient = await ClientAuthDBISAR.searchFromDB(instance.currentPubkey, result.clientPubkey);
+    if(hasClient == null) {
+      bool isSuccess = await Account.authToClient();
+      if(!isSuccess) return;
+    }
 
-    if(!isAuth) return;
+    await ClientAuthDBISAR.saveFromDB(result);
 
-    Account.sharedInstance.addNip46NostrConnectInfoMap(result);
-    List<dynamic>? reqInfo = Account.sharedInstance.clientReqMap[clientPubkey];
+    List<dynamic>? reqInfo = instance.clientReqMap[clientPubkey];
+    instance.authToNostrConnectInfo[result.clientPubkey] = result;
     if (reqInfo != null) {
       sendAuthUrl(reqInfo[1], result);
     }
-    LaunchSchemeUtils.open(result.scheme);
+
+    LaunchSchemeUtils.open(result.scheme!);
   }
 }
+

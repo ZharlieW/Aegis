@@ -1,19 +1,13 @@
-import 'package:aegis/navigator/navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../common/common_image.dart';
-import '../../common/common_tips.dart';
-import '../../utils/account.dart';
-import '../../utils/aegis_websocket_server.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../../utils/took_kit.dart';
-import 'edit_bunker_socket_info.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
-  final BunkerSocket bunkerSocket;
 
-  const BunkerSocketInfo({super.key, required this.bunkerSocket});
+  const BunkerSocketInfo();
 
   @override
   _BunkerSocketInfoState createState() => _BunkerSocketInfoState();
@@ -27,8 +21,13 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _bunkerUrl = widget.bunkerSocket.nsecBunker;
+    _init();
+  }
+
+  void _init() async{
+    _bunkerUrl = await ServerNIP46Signer.instance.getBunkerUrl();
     setState(() {});
+
   }
 
   @override
@@ -78,118 +77,115 @@ class _BunkerSocketInfoState extends State<BunkerSocketInfo> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 100,
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () {
-                AegisNavigator.pushPage(
-                  context,
-                  (context) => EditBunkerSocketInfo(
-                    bunkerSocket: widget.bunkerSocket,
-                  ),
-                );
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.primary),
-              ),
-              icon: CommonImage(
-                iconName: 'edit_icon.png',
-                size: 18,
-              ),
-              label: Text(
-                "Edit",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                    ),
-              ),
-            ),
-            const SizedBox(width: 10), //
-            ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text("Remove"),
-                      content: Text("Are you sure you want to remove all permissions from this application?"),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0), // 圆角
-                      ),
-                      actions: [
-                        ElevatedButton.icon(
-                          onPressed: () => AegisNavigator.pop(context),
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(
-                                Theme.of(context).colorScheme.primary),
-                          ),
-                          icon: CommonImage(
-                            iconName: 'title_close_icon.png',
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                          label: Text(
-                            "Cancel",
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            BunkerSocket bunkerSocket = widget.bunkerSocket;
-                            String key = '${bunkerSocket.createTimestamp}${bunkerSocket.port}';
-                            Account.sharedInstance.bunkerSocketMap.value.remove(key);
-                            AegisWebSocketServer.instance.stop();
-                            CommonTips.success(context,'Remove success');
-                            AegisNavigator.popToRoot(context);
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(
-                                Theme.of(context).colorScheme.primary),
-                          ),
-                          icon: CommonImage(
-                            iconName: 'del_icon.png',
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                          label: Text(
-                            "Remove",
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.primary),
-              ),
-              icon: CommonImage(
-                iconName: 'del_icon.png',
-                size: 18,
-                color: Colors.white,
-              ),
-              label: Text(
-                "Remove",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                    ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   height: 100,
+      //   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      //   color: Theme.of(context).colorScheme.surfaceContainer,
+      //   child: Row(
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     mainAxisAlignment: MainAxisAlignment.end,
+      //     children: [
+      //       ElevatedButton.icon(
+      //         onPressed: () {
+      //           AegisNavigator.pushPage(
+      //             context,
+      //             (context) => EditBunkerSocketInfo(
+      //               clientAuthDBISAR: widget.clientAuthDBISAR,
+      //             ),
+      //           );
+      //         },
+      //         style: ButtonStyle(
+      //           backgroundColor: WidgetStateProperty.all(
+      //               Theme.of(context).colorScheme.primary),
+      //         ),
+      //         icon: CommonImage(
+      //           iconName: 'edit_icon.png',
+      //           size: 18,
+      //         ),
+      //         label: Text(
+      //           "Edit",
+      //           style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      //                 color: Colors.white,
+      //               ),
+      //         ),
+      //       ),
+      //       const SizedBox(width: 10), //
+      //       ElevatedButton.icon(
+      //         onPressed: () {
+      //           showDialog(
+      //             context: context,
+      //             builder: (BuildContext context) {
+      //               return AlertDialog(
+      //                 title: Text("Remove"),
+      //                 content: Text("Are you sure you want to remove all permissions from this application?"),
+      //                 shape: RoundedRectangleBorder(
+      //                   borderRadius: BorderRadius.circular(12.0), // 圆角
+      //                 ),
+      //                 actions: [
+      //                   ElevatedButton.icon(
+      //                     onPressed: () => AegisNavigator.pop(context),
+      //                     style: ButtonStyle(
+      //                       backgroundColor: WidgetStateProperty.all(
+      //                           Theme.of(context).colorScheme.primary),
+      //                     ),
+      //                     icon: CommonImage(
+      //                       iconName: 'title_close_icon.png',
+      //                       size: 18,
+      //                       color: Colors.white,
+      //                     ),
+      //                     label: Text(
+      //                       "Cancel",
+      //                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      //                         color: Colors.white,
+      //                       ),
+      //                     ),
+      //                   ),
+      //                   ElevatedButton.icon(
+      //                     onPressed: () {
+      //                       Account.sharedInstance.applicationValueNotifier.value.remove(widget.clientAuthDBISAR.clientPubkey);
+      //                       CommonTips.success(context,'Remove success');
+      //                       AegisNavigator.popToRoot(context);
+      //                     },
+      //                     style: ButtonStyle(
+      //                       backgroundColor: WidgetStateProperty.all(
+      //                           Theme.of(context).colorScheme.primary),
+      //                     ),
+      //                     icon: CommonImage(
+      //                       iconName: 'del_icon.png',
+      //                       size: 18,
+      //                       color: Colors.white,
+      //                     ),
+      //                     label: Text(
+      //                       "Remove",
+      //                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      //                         color: Colors.white,
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ],
+      //               );
+      //             },
+      //           );
+      //         },
+      //         style: ButtonStyle(
+      //           backgroundColor: WidgetStateProperty.all(
+      //               Theme.of(context).colorScheme.primary),
+      //         ),
+      //         icon: CommonImage(
+      //           iconName: 'del_icon.png',
+      //           size: 18,
+      //           color: Colors.white,
+      //         ),
+      //         label: Text(
+      //           "Remove",
+      //           style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      //                 color: Colors.white,
+      //               ),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 

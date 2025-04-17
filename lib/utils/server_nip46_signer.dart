@@ -2,30 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
-import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
 
 import '../db/clientAuthDB_isar.dart';
-import '../db/db_isar.dart';
 import '../nostr/event.dart';
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'aegis_websocket_server.dart';
 import 'nostr_wallet_connection_parser.dart';
-
-class BunkerSocket {
-  String name;
-  final String nsecBunker;
-  final String port;
-  final int createTimestamp;
-
-  BunkerSocket({
-    required this.name,
-    required this.nsecBunker,
-    required this.port,
-    required this.createTimestamp,
-  });
-}
 
 class ClientRequest {
   final String method;
@@ -44,11 +27,8 @@ class ServerNIP46Signer {
   factory ServerNIP46Signer() => instance;
   ServerNIP46Signer._internal();
 
-  String _remotePubkey = '';
   String subscriptionId = '';
   String port = '8080';
-
-  List<String>? _remotePubkeyTags;
 
   AegisWebSocketServer? server;
 
@@ -58,16 +38,16 @@ class ServerNIP46Signer {
     await _startWebSocketServer();
   }
 
-  void generateKeyPair() async {
-    String getIpAddress = await ServerNIP46Signer.getIpAddress();
-    print("✅ NIP-46  ws://${getIpAddress}:$port");
-    String bunkerUrl = await getBunkerUrl();
+  void generateKeyPair()  {
+    // String getIpAddress = await ServerNIP46Signer.getIpAddress();
+    print("✅ NIP-46  ws://127.0.0.1:$port");
+    String bunkerUrl =  getBunkerUrl();
     print("🔗 Bunker URL: $bunkerUrl");
   }
 
   Future<void> _startWebSocketServer() async {
     AegisWebSocketServer.instance
-        .start(onMessageReceived: _handleMessage, port: port);
+        .start(onMessageReceived: _handleMessage, port: port,onDoneFromSocket:_onDoneFromSocket);
   }
 
   void _handleMessage(String message, WebSocket socket) async {
@@ -78,11 +58,12 @@ class ServerNIP46Signer {
     if (messageType == 'REQ') {
       List<dynamic> kindList = request?[2]?['kinds'];
       if (!kindList.contains(24133)) return;
-
       String? getPubKey = request?[2]?['#p']?[0]?.toLowerCase();
       if (getPubKey != null) {
+        await _dealwithApplication(getPubKey,socket);
         Account.sharedInstance.clientReqMap[getPubKey] = request;
-        Nip46NostrConnectInfo? connectInfo = Account.sharedInstance.nip46NostrConnectInfoMap.value[getPubKey];
+
+        ClientAuthDBISAR? connectInfo = Account.sharedInstance.authToNostrConnectInfo[getPubKey];
         if (connectInfo != null) {
           NostrWalletConnectionParserHandler.sendAuthUrl(request[1], connectInfo);
         }
@@ -90,31 +71,18 @@ class ServerNIP46Signer {
       _handleRequest(socket, request[1]);
     } else if (messageType == 'EVENT') {
       String clientPubkey = request[1]['pubkey'];
-      ValueListenable<Map<String, Nip46NostrConnectInfo>> valueMap = Account.sharedInstance.nip46NostrConnectInfoMap;
-      if (valueMap.value[clientPubkey.toLowerCase()] == null) {
-        ClientAuthDBISAR? clientInfo = await ServerNIP46Signer.instance.searchConnectInfo(
-          Account.sharedInstance.currentPubkey,
-          clientPubkey,
-        );
-        if (clientInfo != null) {
-          Nip46NostrConnectInfo info = Nip46NostrConnectInfo(
-            image: clientInfo.image ?? '',
-            name: clientInfo.name ?? '',
-            relay: clientInfo.relay ?? '',
-            createTimestamp: clientInfo.createTimestamp ?? DateTime.now().millisecondsSinceEpoch,
-            server: clientInfo.server ?? '',
-            secret: clientInfo.secret ?? '',
-            pubkey: clientInfo.pubkey,
-            scheme: clientInfo.scheme ?? '',
-          );
-
-          Map<String, Nip46NostrConnectInfo> newValue = Map.from(valueMap.value);
-          newValue[clientInfo.clientPubkey] = info;
-          Account.sharedInstance.nip46NostrConnectInfoMap.value = newValue;
-        }
-      }
-      // isClientAuthorized
+      await _dealwithApplication(clientPubkey,socket);
       _handleEvent(socket, request[1]);
+    }
+  }
+
+  void _onDoneFromSocket(WebSocket socket) async {
+    final list = Account.sharedInstance.applicationValueNotifier.value.values.toList();
+    for(var client in list){
+      if(client.socketHashCode == socket.hashCode){
+        client.socketHashCode = null;
+        Account.sharedInstance.addApplicationValueNotifier(client,isUpdate: true);
+      }
     }
   }
 
@@ -133,15 +101,15 @@ class ServerNIP46Signer {
     if (remoteRequest == null) return;
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
     socket.add(jsonResponseOk);
-
     String? responseJson = await _processRemoteRequest(remoteRequest, event);
     if (responseJson == null) return;
-    String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(event.pubkey, responseJson);
+    String? responseJsonEncrypt = await LocalNostrSigner.instance
+        .nip44Encrypt(event.pubkey, responseJson);
 
     final signEvent = Event.from(
       subscriptionId: subscriptionId,
       kind: event.kind,
-      tags: [getRemoteSignerPubkeyTags()],
+      tags: [["p", event.pubkey]],
       content: responseJsonEncrypt ?? '',
       pubkey: LocalNostrSigner.instance.publicKey,
       privkey: LocalNostrSigner.instance.privateKey,
@@ -153,7 +121,6 @@ class ServerNIP46Signer {
   Future<String?> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event) async {
     String responseJson = '';
-    _remotePubkey = event.pubkey;
     switch (remoteRequest.method) {
       case "connect":
         responseJson =
@@ -166,29 +133,35 @@ class ServerNIP46Signer {
         break;
 
       case "get_public_key":
-        final isAuthorized = Account.sharedInstance.nip46NostrConnectInfoMap.value[_remotePubkey] != null;
-
-        if (!isAuthorized) {
-          final success = await Account.clientAuth(
-            pubkey: Account.sharedInstance.currentPubkey,
-            clientPubkey: _remotePubkey,
-            connectionType: EConnectionType.bunker,
-          );
-
-          if (!success) {
-            responseJson = jsonEncode({
-              "id": remoteRequest.id,
-              "result": null,
-              "error": "unauthorized",
-            });
-          }
-        }
-
+        final instance = Account.sharedInstance;
         responseJson = jsonEncode({
           "id": remoteRequest.id,
           "result": LocalNostrSigner.instance.publicKey,
           "error": "",
         });
+
+        ClientAuthDBISAR? client = instance.authToNostrConnectInfo[event.pubkey];
+        client ??= await ClientAuthDBISAR.searchFromDB(instance.currentPubkey, event.pubkey);
+
+        if (client != null)  break;
+
+        final isSuccess = await Account.authToClient();
+        if (isSuccess) {
+          ClientAuthDBISAR newClient = ClientAuthDBISAR(
+            createTimestamp: DateTime.now().millisecondsSinceEpoch,
+            pubkey: instance.currentPubkey,
+            clientPubkey: event.pubkey,
+            name: event.pubkey,
+            connectionType: EConnectionType.bunker.toInt,
+          );
+          await ClientAuthDBISAR.saveFromDB(newClient);
+        } else {
+          responseJson = jsonEncode({
+            "id": remoteRequest.id,
+            "result": null,
+            "error": "unauthorized",
+          });
+        }
         break;
 
       case "sign_event":
@@ -252,14 +225,9 @@ class ServerNIP46Signer {
     return responseJson;
   }
 
-  Future<String> getBunkerUrl() async {
-    String ipAddress = AegisWebSocketServer.instance.ip;
-    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://$ipAddress:$port";
-  }
-
-  List<String> getRemoteSignerPubkeyTags() {
-    _remotePubkeyTags = ["p", _remotePubkey];
-    return _remotePubkeyTags!;
+  String getBunkerUrl()  {
+    // String ipAddress = AegisWebSocketServer.instance.ip;
+    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://127.0.0.1:$port";
   }
 
   static Future<String> getIpAddress() async {
@@ -278,52 +246,17 @@ class ServerNIP46Signer {
     }
   }
 
-  Future<bool> isClientAuthorized(String pubkey, String clientPubkey) async {
-    final auth = await DBISAR.sharedInstance.isar.clientAuthDBISARs
-        .filter()
-        .pubkeyEqualTo(pubkey)
-        .clientPubkeyEqualTo(clientPubkey)
-        .findFirst();
-    return auth != null && auth.isAuthorized;
-  }
-
-  Future<ClientAuthDBISAR?> searchConnectInfo(String pubkey, String clientPubkey) async {
-    final result = await DBISAR.sharedInstance.isar.clientAuthDBISARs
-        .filter()
-        .pubkeyEqualTo(pubkey)
-        .clientPubkeyEqualTo(clientPubkey)
-        .findFirst();
-    return result;
-  }
-
-  Future<void> saveClientAuth({
-    required String pubkey,
-    required String clientPubkey,
-    required EConnectionType connectionType,
-    String? image,
-    String? name,
-    String? relay,
-  }) async {
-    final existingAuth = await DBISAR.sharedInstance.isar.clientAuthDBISARs
-        .filter()
-        .pubkeyEqualTo(pubkey)
-        .clientPubkeyEqualTo(clientPubkey)
-        .findFirst();
-
-    if (existingAuth == null) {
-      final auth = ClientAuthDBISAR(
-        pubkey: pubkey,
-        clientPubkey: clientPubkey,
-        isAuthorized: true,
-        connectionType: connectionType.toInt,
-        image: image,
-        name: name,
-        relay: relay,
-      );
-      Account.sharedInstance.addClientRequestList(auth);
-      await DBISAR.sharedInstance.isar.writeTxn(() async {
-        await DBISAR.sharedInstance.isar.clientAuthDBISARs.put(auth);
-      });
+  Future<void> _dealwithApplication(String clientPubkey,WebSocket socket) async {
+    final instance = Account.sharedInstance;
+    ClientAuthDBISAR? client = instance.authToNostrConnectInfo[clientPubkey];
+    client ??= await ClientAuthDBISAR.searchFromDB(instance.currentPubkey, clientPubkey);
+    if (client != null) {
+      bool isUpdate = false;
+      if(client.socketHashCode == null){
+        client.socketHashCode = socket.hashCode;
+        isUpdate = true;
+      }
+      Account.sharedInstance.addApplicationValueNotifier(client,isUpdate:isUpdate);
     }
   }
 }

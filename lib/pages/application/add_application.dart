@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../common/common_appbar.dart';
-import 'add_nsecbunker.dart';
-import 'application_item.dart';
-import 'edit_configuration.dart';
+import 'bunker_socket_info.dart';
 
 class AddApplication extends StatefulWidget {
   const AddApplication({super.key});
@@ -50,7 +48,7 @@ class _AddApplicationState extends State<AddApplication> {
                       onTap: () => {
                         AegisNavigator.pushPage(
                           context,
-                          (context) => AddNsecbunker(),
+                          (context) => BunkerSocketInfo(),
                         )
                       },
                       iconName: 'nsecbunker_icon.png',
@@ -58,27 +56,15 @@ class _AddApplicationState extends State<AddApplication> {
                       content: "",
                     ),
                     _cardWidget(
-                      onTap: () => CommonTips.error(context, 'Open with an app that supports Aegis URL scheme to log in'),
+                      onTap: () => CommonTips.error(context,
+                          'Open with an app that supports Aegis URL scheme to log in'),
                       iconName: 'clipboard_icon.png',
                       title: 'Login using URL Scheme',
                       content: '',
                     ),
-                    // _cardWidget(
-                    //   onTap: () => CommonTips.error(context, 'comming soon !'),
-                    //   iconName: 'clipboard_icon.png',
-                    //   title: 'Paste Nostr Connect URL from clipboard',
-                    //   content: '',
-                    // ),
-                    // _cardWidget(
-                    //   onTap: () => CommonTips.error(context, 'comming soon !'),
-                    //   iconName: 'scan_icon.png',
-                    //   title: 'Scan Nostr Connect QR Code',
-                    //   content: "",
-                    // ),
                   ],
                 ),
               ),
-              // Your list of items
             ]),
           ),
         ],
@@ -86,11 +72,12 @@ class _AddApplicationState extends State<AddApplication> {
     );
   }
 
-  Widget _cardWidget(
-      {required String iconName,
-      required String title,
-      required String content,
-      required onTap}) {
+  Widget _cardWidget({
+    required String iconName,
+    required String title,
+    required String content,
+    required onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

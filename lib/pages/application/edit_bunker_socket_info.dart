@@ -2,20 +2,20 @@ import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
+import '../../db/clientAuthDB_isar.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/account.dart';
-import '../../utils/server_nip46_signer.dart';
-import 'add_application.dart';
 
-class EditBunkerSocketInfo extends StatefulWidget {
-  final BunkerSocket bunkerSocket;
-  const EditBunkerSocketInfo({super.key,required this.bunkerSocket});
+
+class EditApplicationInfo extends StatefulWidget {
+  final ClientAuthDBISAR clientAuthDBISAR;
+  const EditApplicationInfo({super.key,required this.clientAuthDBISAR});
 
   @override
-  _EditBunkerSocketInfoState createState() => _EditBunkerSocketInfoState();
+  _EditApplicationInfoState createState() => _EditApplicationInfoState();
 }
 
-class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
+class _EditApplicationInfoState extends State<EditApplicationInfo> {
   final TextEditingController _nameController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -32,13 +32,14 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
-            Text(
-              "To create a new nsecbunker, you only need to provide a name. The relay address defaults to the local address: 127.0.0.1:8081.",
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ).setPadding(EdgeInsets.symmetric(vertical: 20)),
+            // Text(
+            //   "To create a new nsecbunker, you only need to provide a name. The relay address defaults to the local address: 127.0.0.1:8081.",
+            //   style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            //         color: Theme.of(context).colorScheme.onSurface,
+            //         fontWeight: FontWeight.w500,
+            //       ),
+            // ).setPadding(EdgeInsets.symmetric(vertical: 20)),
+            SizedBox(height: 20),
             Container(
               height: 56,
               child: TextField(
@@ -83,9 +84,13 @@ class _EditBunkerSocketInfoState extends State<EditBunkerSocketInfo> {
       CommonTips.error(context,'The name cannot be empty');
       return;
     }
-    BunkerSocket bunkerInfo = widget.bunkerSocket;
-    String key = '${bunkerInfo.createTimestamp}${bunkerInfo.port}';
-    Account.sharedInstance.bunkerSocketMap.value[key]!.name = name;
+    Account instance = Account.sharedInstance;
+    ClientAuthDBISAR client = instance.applicationValueNotifier.value[widget.clientAuthDBISAR.clientPubkey]!;
+    client.name = name;
+    instance.applicationValueNotifier.value[widget.clientAuthDBISAR.clientPubkey] = client;
+
+    ClientAuthDBISAR.saveFromDB(client,isUpdate: true);
+
     CommonTips.success(context,'Update success');
     AegisNavigator.pop(context);
   }
