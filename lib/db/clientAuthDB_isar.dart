@@ -56,7 +56,7 @@ class ClientAuthDBISAR {
   late String? secret;
   // client scheme
   late String? scheme;
-  late int createTimestamp;
+  late int? createTimestamp;
 
   //  0 : bunker://
   //  1 : nostrconnect://
@@ -73,7 +73,7 @@ class ClientAuthDBISAR {
     this.scheme,
     this.server,
     this.socketHashCode,
-    required this.createTimestamp,
+    this.createTimestamp,
     required this.pubkey,
     required this.clientPubkey,
     required this.connectionType,

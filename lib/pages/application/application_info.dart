@@ -79,7 +79,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
               ),
               _itemWidget(
                 'Create time',
-                subTitle: TookKit.formatTimestamp(client.createTimestamp),
+                subTitle: TookKit.formatTimestamp(client.createTimestamp ?? DateTime.now().millisecondsSinceEpoch),
               ),
               _optionItemWidget(
                 title: 'Application name',

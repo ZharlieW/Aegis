@@ -156,7 +156,7 @@ ClientAuthDBISAR _clientAuthDBISARDeserialize(
   final object = ClientAuthDBISAR(
     clientPubkey: reader.readString(offsets[0]),
     connectionType: reader.readLong(offsets[1]),
-    createTimestamp: reader.readLong(offsets[2]),
+    createTimestamp: reader.readLongOrNull(offsets[2]),
     image: reader.readStringOrNull(offsets[3]),
     name: reader.readStringOrNull(offsets[4]),
     pubkey: reader.readString(offsets[5]),
@@ -181,7 +181,7 @@ P _clientAuthDBISARDeserializeProp<P>(
     case 1:
       return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
@@ -488,7 +488,25 @@ extension ClientAuthDBISARQueryFilter
   }
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
-      createTimestampEqualTo(int value) {
+      createTimestampIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'createTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      createTimestampIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'createTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      createTimestampEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'createTimestamp',
@@ -499,7 +517,7 @@ extension ClientAuthDBISARQueryFilter
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       createTimestampGreaterThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -513,7 +531,7 @@ extension ClientAuthDBISARQueryFilter
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       createTimestampLessThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -527,8 +545,8 @@ extension ClientAuthDBISARQueryFilter
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       createTimestampBetween(
-    int lower,
-    int upper, {
+    int? lower,
+    int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -2054,7 +2072,7 @@ extension ClientAuthDBISARQueryProperty
     });
   }
 
-  QueryBuilder<ClientAuthDBISAR, int, QQueryOperations>
+  QueryBuilder<ClientAuthDBISAR, int?, QQueryOperations>
       createTimestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createTimestamp');
