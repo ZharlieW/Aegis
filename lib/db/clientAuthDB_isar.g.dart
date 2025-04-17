@@ -37,38 +37,33 @@ const ClientAuthDBISARSchema = CollectionSchema(
       name: r'image',
       type: IsarType.string,
     ),
-    r'isAuthorized': PropertySchema(
-      id: 4,
-      name: r'isAuthorized',
-      type: IsarType.bool,
-    ),
     r'name': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'name',
       type: IsarType.string,
     ),
     r'pubkey': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'pubkey',
       type: IsarType.string,
     ),
     r'relay': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'relay',
       type: IsarType.string,
     ),
     r'scheme': PropertySchema(
-      id: 8,
+      id: 7,
       name: r'scheme',
       type: IsarType.string,
     ),
     r'secret': PropertySchema(
-      id: 9,
+      id: 8,
       name: r'secret',
       type: IsarType.string,
     ),
     r'server': PropertySchema(
-      id: 10,
+      id: 9,
       name: r'server',
       type: IsarType.string,
     )
@@ -144,13 +139,12 @@ void _clientAuthDBISARSerialize(
   writer.writeLong(offsets[1], object.connectionType);
   writer.writeLong(offsets[2], object.createTimestamp);
   writer.writeString(offsets[3], object.image);
-  writer.writeBool(offsets[4], object.isAuthorized);
-  writer.writeString(offsets[5], object.name);
-  writer.writeString(offsets[6], object.pubkey);
-  writer.writeString(offsets[7], object.relay);
-  writer.writeString(offsets[8], object.scheme);
-  writer.writeString(offsets[9], object.secret);
-  writer.writeString(offsets[10], object.server);
+  writer.writeString(offsets[4], object.name);
+  writer.writeString(offsets[5], object.pubkey);
+  writer.writeString(offsets[6], object.relay);
+  writer.writeString(offsets[7], object.scheme);
+  writer.writeString(offsets[8], object.secret);
+  writer.writeString(offsets[9], object.server);
 }
 
 ClientAuthDBISAR _clientAuthDBISARDeserialize(
@@ -162,15 +156,14 @@ ClientAuthDBISAR _clientAuthDBISARDeserialize(
   final object = ClientAuthDBISAR(
     clientPubkey: reader.readString(offsets[0]),
     connectionType: reader.readLong(offsets[1]),
-    createTimestamp: reader.readLongOrNull(offsets[2]),
+    createTimestamp: reader.readLong(offsets[2]),
     image: reader.readStringOrNull(offsets[3]),
-    isAuthorized: reader.readBool(offsets[4]),
-    name: reader.readStringOrNull(offsets[5]),
-    pubkey: reader.readString(offsets[6]),
-    relay: reader.readStringOrNull(offsets[7]),
-    scheme: reader.readStringOrNull(offsets[8]),
-    secret: reader.readStringOrNull(offsets[9]),
-    server: reader.readStringOrNull(offsets[10]),
+    name: reader.readStringOrNull(offsets[4]),
+    pubkey: reader.readString(offsets[5]),
+    relay: reader.readStringOrNull(offsets[6]),
+    scheme: reader.readStringOrNull(offsets[7]),
+    secret: reader.readStringOrNull(offsets[8]),
+    server: reader.readStringOrNull(offsets[9]),
   );
   object.id = id;
   return object;
@@ -188,22 +181,20 @@ P _clientAuthDBISARDeserializeProp<P>(
     case 1:
       return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (reader.readBool(offset)) as P;
-    case 5:
       return (reader.readStringOrNull(offset)) as P;
-    case 6:
+    case 5:
       return (reader.readString(offset)) as P;
+    case 6:
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
       return (reader.readStringOrNull(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readStringOrNull(offset)) as P;
-    case 10:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -497,25 +488,7 @@ extension ClientAuthDBISARQueryFilter
   }
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
-      createTimestampIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'createTimestamp',
-      ));
-    });
-  }
-
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
-      createTimestampIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'createTimestamp',
-      ));
-    });
-  }
-
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
-      createTimestampEqualTo(int? value) {
+      createTimestampEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'createTimestamp',
@@ -526,7 +499,7 @@ extension ClientAuthDBISARQueryFilter
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       createTimestampGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -540,7 +513,7 @@ extension ClientAuthDBISARQueryFilter
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       createTimestampLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -554,8 +527,8 @@ extension ClientAuthDBISARQueryFilter
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       createTimestampBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -776,16 +749,6 @@ extension ClientAuthDBISARQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'image',
         value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
-      isAuthorizedEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isAuthorized',
-        value: value,
       ));
     });
   }
@@ -1760,20 +1723,6 @@ extension ClientAuthDBISARQuerySortBy
     });
   }
 
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
-      sortByIsAuthorized() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isAuthorized', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
-      sortByIsAuthorizedDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isAuthorized', Sort.desc);
-    });
-  }
-
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1927,20 +1876,6 @@ extension ClientAuthDBISARQuerySortThenBy
     });
   }
 
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
-      thenByIsAuthorized() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isAuthorized', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
-      thenByIsAuthorizedDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isAuthorized', Sort.desc);
-    });
-  }
-
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -2054,13 +1989,6 @@ extension ClientAuthDBISARQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct>
-      distinctByIsAuthorized() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isAuthorized');
-    });
-  }
-
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2126,7 +2054,7 @@ extension ClientAuthDBISARQueryProperty
     });
   }
 
-  QueryBuilder<ClientAuthDBISAR, int?, QQueryOperations>
+  QueryBuilder<ClientAuthDBISAR, int, QQueryOperations>
       createTimestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createTimestamp');
@@ -2136,13 +2064,6 @@ extension ClientAuthDBISARQueryProperty
   QueryBuilder<ClientAuthDBISAR, String?, QQueryOperations> imageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'image');
-    });
-  }
-
-  QueryBuilder<ClientAuthDBISAR, bool, QQueryOperations>
-      isAuthorizedProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isAuthorized');
     });
   }
 

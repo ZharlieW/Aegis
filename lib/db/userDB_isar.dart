@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+import 'db_isar.dart';
+
 part 'userDB_isar.g.dart';
 
 @collection
@@ -17,4 +19,11 @@ class UserDBISAR {
     this.encryptedPrivkey,
     this.defaultPassword,
   });
+
+  static Future<UserDBISAR?> searchFromDB(String pubkey) {
+    return DBISAR.sharedInstance.isar.userDBISARs
+        .filter()
+        .pubkeyEqualTo(pubkey)
+        .findFirst();
+  }
 }
