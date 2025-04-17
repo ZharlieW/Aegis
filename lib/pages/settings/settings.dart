@@ -271,4 +271,19 @@ class _SettingsState extends State<Settings> with AccountObservers {
   void didAddClientRequestMap() {
     // TODO: implement didAddClientRequestMap
   }
+
+  @override
+  void didAddApplicationMap() {
+    // TODO: implement didAddApplicationMap
+  }
+
+  @override
+  void didRemoveApplicationMap() {
+    // TODO: implement didRemoveApplicationMap
+  }
+
+  @override
+  void didUpdateApplicationMap() {
+    // TODO: implement didUpdateApplicationMap
+  }
 }

@@ -3,7 +3,6 @@ import 'package:aegis/db/userDB_isar.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../common/common_constant.dart';
@@ -22,6 +21,12 @@ abstract mixin class AccountObservers {
   void didSwitchUser();
 
   void didLogout();
+
+  void didAddApplicationMap();
+
+  void didRemoveApplicationMap();
+
+  void didUpdateApplicationMap();
 }
 
 class Account {
@@ -32,7 +37,7 @@ class Account {
   final List<AccountObservers> _observers = <AccountObservers>[];
 
   // key: clientPubkey
-  final ValueNotifier<Map<String, ClientAuthDBISAR>> applicationValueNotifier = ValueNotifier({});
+  Map<String, ValueNotifier<ClientAuthDBISAR>> applicationMap = {};
 
   // key : pubkey.toLowerCase()
   final Map<String, ClientAuthDBISAR> authToNostrConnectInfo = {};
@@ -126,11 +131,9 @@ class Account {
 
       final clientList = await ClientAuthDBISAR.getAllFromDB();
 
-      Map<String, ClientAuthDBISAR> applicationMap = {
-        for (var client in clientList) client.clientPubkey: client,
+      applicationMap = {
+        for (var client in clientList) client.clientPubkey: ValueNotifier<ClientAuthDBISAR>(client),
       };
-      applicationValueNotifier.value = applicationMap;
-
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pubkey', pubkey);
@@ -183,13 +186,33 @@ class Account {
     return decryptPrivateKey(encryptedBytes, user.defaultPassword!);
   }
 
-  void addApplicationValueNotifier(ClientAuthDBISAR client,{bool isUpdate = false}) {
-    Map<String, ClientAuthDBISAR> applicationNotifier = applicationValueNotifier.value;
+  void addApplicationMap(ClientAuthDBISAR client,{bool isUpdate = false}) {
     String clientPubkey = client.clientPubkey;
-    if (applicationNotifier[clientPubkey] != null && !isUpdate) return;
+    ValueNotifier<ClientAuthDBISAR>? clientNotifier = applicationMap[clientPubkey];
+    if (clientNotifier != null && !isUpdate) return;
 
-    Map<String, ClientAuthDBISAR> newApplicationNotifier = Map.from(applicationNotifier);
-    newApplicationNotifier[clientPubkey] = client;
-    Account.sharedInstance.applicationValueNotifier.value = newApplicationNotifier;
+    if(clientNotifier == null){
+      applicationMap[clientPubkey] = ValueNotifier<ClientAuthDBISAR>(client);
+    }else{
+      clientNotifier.value = client;
+    }
+
+    for (final observer in _observers) {
+      observer.didAddApplicationMap();
+    }
+  }
+
+  void removeApplicationMap(String clientPubkey){
+    applicationMap.remove(clientPubkey);
+    for (final observer in _observers) {
+      observer.didRemoveApplicationMap();
+    }
+  }
+
+  void updateApplicationMap(String clientPubkey){
+    applicationMap.remove(clientPubkey);
+    for (final observer in _observers) {
+      observer.didRemoveApplicationMap();
+    }
   }
 }

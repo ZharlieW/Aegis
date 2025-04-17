@@ -159,10 +159,8 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                         ElevatedButton.icon(
                           onPressed: () async {
                             Account instance = Account.sharedInstance;
-                            String clientPubkey =
-                                widget.clientAuthDBISAR.clientPubkey;
-                            instance.applicationValueNotifier.value
-                                .remove(widget.clientAuthDBISAR.clientPubkey);
+                            String clientPubkey = widget.clientAuthDBISAR.clientPubkey;
+                            instance.applicationMap.remove(widget.clientAuthDBISAR.clientPubkey);
                             await ClientAuthDBISAR.deleteFromDB(
                                 instance.currentPubkey, clientPubkey);
                             CommonTips.success(context, 'Remove success');

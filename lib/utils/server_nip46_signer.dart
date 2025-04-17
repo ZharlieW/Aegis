@@ -77,11 +77,11 @@ class ServerNIP46Signer {
   }
 
   void _onDoneFromSocket(WebSocket socket) async {
-    final list = Account.sharedInstance.applicationValueNotifier.value.values.toList();
+    final list = Account.sharedInstance.applicationMap.values.toList();
     for(var client in list){
-      if(client.socketHashCode == socket.hashCode){
-        client.socketHashCode = null;
-        Account.sharedInstance.addApplicationValueNotifier(client,isUpdate: true);
+      if(client.value.socketHashCode == socket.hashCode){
+        client.value.socketHashCode = null;
+        Account.sharedInstance.addApplicationMap(client.value,isUpdate: true);
       }
     }
   }
@@ -256,7 +256,7 @@ class ServerNIP46Signer {
         client.socketHashCode = socket.hashCode;
         isUpdate = true;
       }
-      Account.sharedInstance.addApplicationValueNotifier(client,isUpdate:isUpdate);
+      Account.sharedInstance.addApplicationMap(client,isUpdate:isUpdate);
     }
   }
 }

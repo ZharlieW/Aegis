@@ -85,11 +85,11 @@ class _EditApplicationInfoState extends State<EditApplicationInfo> {
       return;
     }
     Account instance = Account.sharedInstance;
-    ClientAuthDBISAR client = instance.applicationValueNotifier.value[widget.clientAuthDBISAR.clientPubkey]!;
-    client.name = name;
-    instance.applicationValueNotifier.value[widget.clientAuthDBISAR.clientPubkey] = client;
 
-    ClientAuthDBISAR.saveFromDB(client,isUpdate: true);
+    ValueNotifier<ClientAuthDBISAR> clientNotifier = instance.applicationMap[widget.clientAuthDBISAR.clientPubkey]!;
+    clientNotifier.value.name = name;
+
+    ClientAuthDBISAR.saveFromDB(clientNotifier.value,isUpdate: true);
 
     CommonTips.success(context,'Update success');
     AegisNavigator.pop(context);
