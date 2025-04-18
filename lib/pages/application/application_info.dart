@@ -160,7 +160,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                           onPressed: () async {
                             Account instance = Account.sharedInstance;
                             String clientPubkey = widget.clientAuthDBISAR.clientPubkey;
-                            instance.applicationMap.remove(widget.clientAuthDBISAR.clientPubkey);
+                            instance.removeApplicationMap(clientPubkey);
                             await ClientAuthDBISAR.deleteFromDB(
                                 instance.currentPubkey, clientPubkey);
                             CommonTips.success(context, 'Remove success');
