@@ -91,7 +91,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Aegis Account',
+                'Account',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
