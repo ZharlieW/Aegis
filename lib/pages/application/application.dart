@@ -1,5 +1,8 @@
 import 'package:aegis/common/common_image.dart';
+import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/common/common_toast.dart';
 import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +12,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../db/clientAuthDB_isar.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/launch_scheme_utils.dart';
+import '../../utils/server_nip46_signer.dart';
 import '../login/login.dart';
 import 'add_application.dart';
 import 'application_info.dart';
@@ -22,6 +26,8 @@ class Application extends StatefulWidget {
 
 class _ApplicationState extends State<Application> with AccountObservers {
   late WebViewController controller;
+
+  bool isPortAvailable = true;
 
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = Account.sharedInstance.applicationMap.values.toList();
@@ -44,6 +50,7 @@ class _ApplicationState extends State<Application> with AccountObservers {
     super.initState();
     LaunchSchemeUtils.getSchemeData();
     Account.sharedInstance.addObserver(this);
+    _getSocketStatus();
   }
 
   @override
@@ -64,7 +71,9 @@ class _ApplicationState extends State<Application> with AccountObservers {
             Column(
               children: [
                 Expanded(
-                  child: _applicationList(clientList),
+                  child: isPortAvailable ?
+                  _applicationList(clientList) :
+                  _showPortUnAvailableWidget()
                 ),
               ],
             ),
@@ -247,6 +256,53 @@ class _ApplicationState extends State<Application> with AccountObservers {
         ),
       ),
     );
+  }
+
+  Widget _showPortUnAvailableWidget(){
+    return Column(
+      children: [
+        Text(
+          '  Currently listening on 127.0.0.1:8081, but the port is already occupied by another program, causing the connection to fail. Please close the other program and click retry.',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ).setPadding(const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0)),
+        const SizedBox(height: 10,),
+        SizedBox(
+          width: 200,
+          child: ElevatedButton.icon(
+            onPressed: () async{
+              bool status = await AegisWebSocketServer.instance.isPortAvailable();
+              if(!status) {
+                CommonTips.error(context, 'Failed to connect to the socket.');
+                return;
+              }
+              await ServerNIP46Signer.instance.start('8081');
+              isPortAvailable = true;
+              CommonTips.error(context, 'Connection successful! ');
+              setState(() {});
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                  Theme.of(context).colorScheme.primary),
+            ),
+            label: Text(
+              "Retry",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  void _getSocketStatus()async {
+    bool status = await AegisWebSocketServer.instance.isPortAvailable();
+    isPortAvailable = status;
+    setState(() {});
   }
 
   @override

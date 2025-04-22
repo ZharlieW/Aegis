@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:string_validator/string_validator.dart';
+
 class AegisWebSocketServer {
   static final AegisWebSocketServer instance = AegisWebSocketServer._internal();
   factory AegisWebSocketServer() => instance;
@@ -11,7 +13,7 @@ class AegisWebSocketServer {
   final List<WebSocket> clients = [];
   Function(String, WebSocket)? _onMessageReceived;
   Function(WebSocket)? _onDoneFromSocket;
-  String _port = "7651";
+  String _port = "8081";
 
   String ip = '127.0.0.1';
 
@@ -20,10 +22,13 @@ class AegisWebSocketServer {
 
   /// Start the WebSocket server
   Future<void> start({
-    String port = "7651",
+    String port = "8081",
     required Function(String, WebSocket) onMessageReceived,
     required Function(WebSocket) onDoneFromSocket,
   }) async {
+    bool hasConnect = await isPortAvailable();
+    if(!hasConnect) return;
+
     if (server != null) {
       print("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
       return;
@@ -75,6 +80,16 @@ class AegisWebSocketServer {
 
     // Example Start the server self-check heartbeat
     // _startSelfHeartbeat();
+  }
+
+  Future<bool> isPortAvailable() async {
+    try {
+      final socket = await Socket.connect(ip, int.parse(_port), timeout: Duration(milliseconds: 300));
+      socket.destroy();
+      return false;
+    } catch (e) {
+      return true;
+    }
   }
 
   /// Stop the WebSocket server
