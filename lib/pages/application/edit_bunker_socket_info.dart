@@ -45,12 +45,12 @@ class _EditApplicationInfoState extends State<EditApplicationInfo> {
               child: TextField(
                 controller: _nameController,
                 textAlignVertical: TextAlignVertical.center,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  hintText: widget.clientAuthDBISAR.name,
                   labelText: 'name',
-                  hintText: 'Name',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   isDense: false,
-                  contentPadding: EdgeInsets.all(16), //
+                  contentPadding: const EdgeInsets.all(16), //
                 ),
               ),
             ),
@@ -82,6 +82,10 @@ class _EditApplicationInfoState extends State<EditApplicationInfo> {
     String name = _nameController.text.trim();
     if(name.isEmpty)  {
       CommonTips.error(context,'The name cannot be empty');
+      return;
+    }
+    if(name.length > 15)  {
+      CommonTips.error(context,'The name is too long.');
       return;
     }
     Account instance = Account.sharedInstance;
