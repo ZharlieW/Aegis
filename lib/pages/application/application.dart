@@ -1,6 +1,5 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
-import 'package:aegis/common/common_toast.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/took_kit.dart';
@@ -50,7 +49,6 @@ class _ApplicationState extends State<Application> with AccountObservers {
     super.initState();
     LaunchSchemeUtils.getSchemeData();
     Account.sharedInstance.addObserver(this);
-    _getSocketStatus();
   }
 
   @override
@@ -70,10 +68,15 @@ class _ApplicationState extends State<Application> with AccountObservers {
           children: [
             Column(
               children: [
-                Expanded(
-                  child: isPortAvailable ?
-                  _applicationList(clientList) :
-                  _showPortUnAvailableWidget()
+                ValueListenableBuilder(
+                  valueListenable: AegisWebSocketServer.instance.serverNotifier,
+                  builder: (context, value, child) {
+                    return Expanded(
+                      child: value == null
+                          ? _showPortUnAvailableWidget()
+                          : _applicationList(clientList),
+                    );
+                  },
                 ),
               ],
             ),
@@ -83,13 +86,13 @@ class _ApplicationState extends State<Application> with AccountObservers {
               child: GestureDetector(
                 onTap: () {
                   Account account = Account.sharedInstance;
-                  if (account.currentPubkey.isEmpty ||
-                      account.currentPrivkey.isEmpty) {
-                    AegisNavigator.pushPage(context, (context) => Login());
-                    return;
-                  }
+                  bool isEmpty = account.currentPubkey.isEmpty ||
+                      account.currentPrivkey.isEmpty;
                   AegisNavigator.pushPage(
-                      context, (context) => AddApplication());
+                    context,
+                    (context) =>
+                        isEmpty ? const Login() : const AddApplication(),
+                  );
                 },
                 child: Container(
                   width: 56,
@@ -124,7 +127,8 @@ class _ApplicationState extends State<Application> with AccountObservers {
           return ValueListenableBuilder(
               valueListenable: dbNotifier,
               builder: (context, value, child) {
-                int timestamp = value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
+                int timestamp = value.createTimestamp ??
+                    DateTime.now().millisecondsSinceEpoch;
                 bool isBunker =
                     value.connectionType == EConnectionType.bunker.toInt;
                 String connectType = isBunker ? 'bunker://' : 'nostrconnect://';
@@ -258,29 +262,32 @@ class _ApplicationState extends State<Application> with AccountObservers {
     );
   }
 
-  Widget _showPortUnAvailableWidget(){
+  Widget _showPortUnAvailableWidget() {
     return Column(
       children: [
         Text(
           '  Currently listening on 127.0.0.1:8081, but the port is already occupied by another program, causing the connection to fail. Please close the other program and click retry.',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ).setPadding(const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0)),
-        const SizedBox(height: 10,),
+                color: Theme.of(context).colorScheme.primary,
+              ),
+        ).setPadding(
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0)),
+        const SizedBox(
+          height: 10,
+        ),
         SizedBox(
           width: 200,
           child: ElevatedButton.icon(
-            onPressed: () async{
-              bool status = await AegisWebSocketServer.instance.isPortAvailable();
-              if(!status) {
-                CommonTips.error(context, 'Failed to connect to the socket.');
-                return;
-              }
+            onPressed: () async {
               await ServerNIP46Signer.instance.start('8081');
-              isPortAvailable = true;
-              CommonTips.error(context, 'Connection successful! ');
-              setState(() {});
+              String content = '';
+              bool isConnect =
+                  AegisWebSocketServer.instance.serverNotifier.value != null;
+              content = isConnect
+                  ? 'Connection successful! '
+                  : 'Failed to connect to the socket.';
+
+              CommonTips.success(context, content);
             },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(
@@ -298,17 +305,10 @@ class _ApplicationState extends State<Application> with AccountObservers {
     );
   }
 
-
-  void _getSocketStatus()async {
-    bool status = await AegisWebSocketServer.instance.isPortAvailable();
-    isPortAvailable = status;
-    setState(() {});
-  }
-
   @override
   void didAddApplicationMap() {
     // TODO: implement didAddApplicationMap
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }

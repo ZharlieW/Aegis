@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:string_validator/string_validator.dart';
+import 'package:flutter/cupertino.dart';
 
 class AegisWebSocketServer {
   static final AegisWebSocketServer instance = AegisWebSocketServer._internal();
@@ -9,7 +9,7 @@ class AegisWebSocketServer {
 
   AegisWebSocketServer._internal();
 
-  HttpServer? server;
+  ValueNotifier<HttpServer?> serverNotifier = ValueNotifier(null);
   final List<WebSocket> clients = [];
   Function(String, WebSocket)? _onMessageReceived;
   Function(WebSocket)? _onDoneFromSocket;
@@ -29,7 +29,7 @@ class AegisWebSocketServer {
     bool hasConnect = await isPortAvailable();
     if(!hasConnect) return;
 
-    if (server != null) {
+    if (serverNotifier.value != null) {
       print("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
       return;
     }
@@ -39,10 +39,12 @@ class AegisWebSocketServer {
     _onDoneFromSocket = onDoneFromSocket;
 
     // server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
-    server = await HttpServer.bind(ip, int.tryParse(_port) ?? 7651);
+
+    HttpServer server = await HttpServer.bind(ip, int.tryParse(_port) ?? 7651);
+    serverNotifier.value = server;
 
 
-    server!.listen((HttpRequest request) async {
+    serverNotifier.value!.listen((HttpRequest request) async {
       if (WebSocketTransformer.isUpgradeRequest(request)) {
         WebSocket socket = await WebSocketTransformer.upgrade(request);
         clients.add(socket);
@@ -94,14 +96,14 @@ class AegisWebSocketServer {
 
   /// Stop the WebSocket server
   Future<void> stop() async {
-    if (server != null) {
+    if (serverNotifier.value != null) {
       print("🛑 Stopping WebSocket server...");
-      await server!.close();
+      await serverNotifier.value!.close();
       for (var client in clients) {
         client.close();
       }
       clients.clear();
-      server = null;
+      serverNotifier.value = null;
       print("✅ WebSocket server stopped.");
     } else {
       print("⚠️ WebSocket server is not running.");
