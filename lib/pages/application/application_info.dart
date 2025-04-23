@@ -13,13 +13,13 @@ import 'edit_bunker_socket_info.dart';
 
 class ApplicationInfo extends StatefulWidget {
   final ClientAuthDBISAR clientAuthDBISAR;
-  const ApplicationInfo({required this.clientAuthDBISAR});
+  const ApplicationInfo({super.key, required this.clientAuthDBISAR});
 
   @override
-  _ApplicationInfoState createState() => _ApplicationInfoState();
+  ApplicationInfoState createState() => ApplicationInfoState();
 }
 
-class _ApplicationInfoState extends State<ApplicationInfo> {
+class ApplicationInfoState extends State<ApplicationInfo> {
   String _bunkerUrl = '';
 
   @override
@@ -63,15 +63,18 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                 subTitle:
                     ConnectionTypeEx.fromToEnum(client.connectionType).toStr,
               ),
-              _itemWidget(
-                'Client app logo',
-                rightWidget: client.image != null ? Image.network(
-                  client.image ?? '',
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                ) : CommonImage(iconName: 'default_app_icon.png',size: 40,)
-              ),
+              _itemWidget('Client app logo',
+                  rightWidget: client.image != null
+                      ? Image.network(
+                          client.image ?? '',
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        )
+                      : CommonImage(
+                          iconName: 'default_app_icon.png',
+                          size: 40,
+                        )),
               _itemWidget(
                 'URL Scheme',
                 isShowWidget: isNostrconnect,
@@ -79,7 +82,8 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
               ),
               _itemWidget(
                 'Create time',
-                subTitle: TookKit.formatTimestamp(client.createTimestamp ?? DateTime.now().millisecondsSinceEpoch),
+                subTitle: TookKit.formatTimestamp(client.createTimestamp ??
+                    DateTime.now().millisecondsSinceEpoch),
               ),
               _optionItemWidget(
                 title: 'Application name',
@@ -116,7 +120,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
       ),
       bottomNavigationBar: Container(
         height: 100,
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         color: Theme.of(context).colorScheme.surfaceContainer,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,9 +132,10 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text("Remove"),
-                      content: Text(
-                          "Are you sure you want to remove all permissions from this application?"),
+                      title: const Text("Remove"),
+                      content: const Text(
+                        "Are you sure you want to remove all permissions from this application?",
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0), // 圆角
                       ),
@@ -159,7 +164,8 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                         ElevatedButton.icon(
                           onPressed: () async {
                             Account instance = Account.sharedInstance;
-                            String clientPubkey = widget.clientAuthDBISAR.clientPubkey;
+                            String clientPubkey =
+                                widget.clientAuthDBISAR.clientPubkey;
                             instance.removeApplicationMap(clientPubkey);
                             await ClientAuthDBISAR.deleteFromDB(
                                 instance.currentPubkey, clientPubkey);
@@ -215,7 +221,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
   Widget _qrCodeWidget() {
     if (widget.clientAuthDBISAR.connectionType != 0) return const SizedBox();
     return Container(
-      margin: EdgeInsets.only(top: 30, bottom: 20),
+      margin: const EdgeInsets.only(top: 30, bottom: 20),
       width: 240,
       height: 240,
       child: PrettyQrView.data(
@@ -233,7 +239,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
   }) {
     if (!isShowWidget) return const SizedBox();
     return Container(
-      padding: EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

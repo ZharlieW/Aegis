@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../../common/common_image.dart';
 
 class RequestPermission extends StatefulWidget {
+  const RequestPermission({super.key});
+
   @override
   RequestPermissionState createState() => RequestPermissionState();
 }
@@ -29,13 +31,11 @@ class RequestPermissionState extends State<RequestPermission> {
     ),
     PermissionsContent(
       title: 'Only Approve basic actions',
-      content:
-          'Coming soon...',
+      content: 'Coming soon...',
     ),
     PermissionsContent(
       title: 'Manually review and approve each permission',
-      content:
-          'Coming soon...',
+      content: 'Coming soon...',
     ),
   ];
 
@@ -64,7 +64,7 @@ class RequestPermissionState extends State<RequestPermission> {
         child: SingleChildScrollView(
           child: Center(
             child: Container(
-              margin: EdgeInsets.only(bottom: 30),
+              margin: const EdgeInsets.only(bottom: 30),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -84,7 +84,7 @@ class RequestPermissionState extends State<RequestPermission> {
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
-                  ).setPadding(EdgeInsets.symmetric(vertical: 20)),
+                  ).setPadding(const EdgeInsets.symmetric(vertical: 20)),
                   _requestContentWidget(),
                   const SizedBox(
                     height: 8,
@@ -155,8 +155,8 @@ class RequestPermissionState extends State<RequestPermission> {
             });
           },
           child: Container(
-            margin: EdgeInsets.only(bottom: 20),
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondaryContainer,
               borderRadius: BorderRadius.circular(8),

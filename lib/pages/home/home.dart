@@ -7,14 +7,14 @@ class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
-  _HomeSate createState() => _HomeSate();
+  HomeSate createState() => HomeSate();
 }
 
-class _HomeSate extends State<Home> {
+class HomeSate extends State<Home> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    Application(),
+    const Application(),
     Settings(),
   ];
 

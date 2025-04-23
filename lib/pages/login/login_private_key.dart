@@ -1,13 +1,8 @@
-import 'dart:typed_data';
-
-import 'package:aegis/db/db_isar.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import '../../common/common_appbar.dart';
 import '../../common/common_tips.dart';
-import '../../db/userDB_isar.dart';
 import '../../navigator/navigator.dart';
-import '../../nostr/nips/nip19/nip19.dart';
 import '../../nostr/utils.dart';
 import '../../utils/account.dart';
 
@@ -101,14 +96,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
 
     bool isNsec = validateNsec(key);
 
-    String privateKey = '';
-
-
-    if(isNsec){
-      privateKey = Account.getPrivateKey(key);
-    }else{
-      privateKey = key;
-    }
+    String privateKey =  isNsec ? Account.getPrivateKey(key) : key;
 
     String publicKey = Account.getPublicKey(privateKey);
 

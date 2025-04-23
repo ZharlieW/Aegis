@@ -11,10 +11,10 @@ class Login extends StatefulWidget {
   const Login({super.key,this.isLaunchLogin = false});
 
   @override
-  _LoginState createState() => _LoginState();
+  LoginState createState() => LoginState();
 }
 
-class _LoginState extends State<Login> {
+class LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

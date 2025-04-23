@@ -1,21 +1,20 @@
+import 'package:flutter/material.dart';
+
+import 'bunker_socket_info.dart';
+import 'package:aegis/navigator/navigator.dart';
+
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
-import 'package:aegis/navigator/navigator.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-
-import '../../common/common_appbar.dart';
-import 'bunker_socket_info.dart';
+import 'package:aegis/common/common_appbar.dart';
 
 class AddApplication extends StatefulWidget {
   const AddApplication({super.key});
 
   @override
-  _AddApplicationState createState() => _AddApplicationState();
+  AddApplicationState createState() => AddApplicationState();
 }
 
-class _AddApplicationState extends State<AddApplication> {
+class AddApplicationState extends State<AddApplication> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,47 +24,53 @@ class _AddApplicationState extends State<AddApplication> {
             title: 'Add a new application',
           ),
           SliverList(
-            delegate: SliverChildListDelegate([
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      height: 24,
-                    ),
-                    Text(
-                      'You can choose any of these methods to connect with Aegis!',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w500,
-                          ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    _cardWidget(
-                      onTap: () => {
-                        AegisNavigator.pushPage(
-                          context,
-                          (context) => BunkerSocketInfo(),
-                        )
-                      },
-                      iconName: 'nsecbunker_icon.png',
-                      title: 'Add a nsecbunker manually',
-                      content: "",
-                    ),
-                    _cardWidget(
-                      onTap: () => CommonTips.error(context,
-                          'Open with an app that supports Aegis URL scheme to log in'),
-                      iconName: 'clipboard_icon.png',
-                      title: 'Login using URL Scheme',
-                      content: '',
-                    ),
-                  ],
+            delegate: SliverChildListDelegate(
+              [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(
+                        height: 24,
+                      ),
+                      Text(
+                        'You can choose any of these methods to connect with Aegis!',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      _cardWidget(
+                        onTap: () => {
+                          AegisNavigator.pushPage(
+                            context,
+                            (context) => const BunkerSocketInfo(),
+                          )
+                        },
+                        iconName: 'nsecbunker_icon.png',
+                        title: 'Add a nsecbunker manually',
+                        content: "",
+                      ),
+                      _cardWidget(
+                        onTap: () {
+                          CommonTips.error(
+                            context,
+                            'Open with an app that supports Aegis URL scheme to log in',
+                          );
+                        },
+                        iconName: 'clipboard_icon.png',
+                        title: 'Login using URL Scheme',
+                        content: '',
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ),
         ],
       ),
@@ -81,7 +86,7 @@ class _AddApplicationState extends State<AddApplication> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: EdgeInsets.only(
+        margin: const EdgeInsets.only(
           bottom: 20,
         ),
         padding: const EdgeInsets.symmetric(
@@ -92,7 +97,6 @@ class _AddApplicationState extends State<AddApplication> {
           color: Theme.of(context).colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(8),
         ),
-        // width: 200,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -106,7 +110,7 @@ class _AddApplicationState extends State<AddApplication> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black,
                     ),
                   ),

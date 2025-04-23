@@ -1,7 +1,5 @@
 import 'package:aegis/utils/widget_tool.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import '../../common/common_appbar.dart';
 import '../../common/common_image.dart';
@@ -13,10 +11,10 @@ class AccountBackup extends StatefulWidget {
   const AccountBackup({super.key});
 
   @override
-  _AccountBackupState createState() => _AccountBackupState();
+  AccountBackupState createState() => AccountBackupState();
 }
 
-class _AccountBackupState extends State<AccountBackup> {
+class AccountBackupState extends State<AccountBackup> {
   bool _isObscured = true;
   late final String nsecKeyStr;
 
@@ -57,7 +55,7 @@ class _AccountBackupState extends State<AccountBackup> {
             SliverList(
               delegate: SliverChildListDelegate([
                 _openAccountWidget(),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 _accountPrivateKeyWidget(),
               ]),
             ),
@@ -76,31 +74,29 @@ class _AccountBackupState extends State<AccountBackup> {
       children: [
         Text('Public account ID',
             style: Theme.of(context).textTheme.titleMedium),
-        Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 300,
-                child: Text(nupKey),
-              ),
-              GestureDetector(
-                onTap: () {
-                  TookKit.copyKey(context, nupKey);
-                },
-                child: SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'copy_icon.png',
-                      size: 24,
-                    ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+              width: 300,
+              child: Text(nupKey),
+            ),
+            GestureDetector(
+              onTap: () {
+                TookKit.copyKey(context, nupKey);
+              },
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Center(
+                  child: CommonImage(
+                    iconName: 'copy_icon.png',
+                    size: 24,
                   ),
                 ),
-              )
-            ],
-          ),
+              ),
+            )
+          ],
         ),
       ],
     ).setPadding(const EdgeInsets.symmetric(horizontal: 16));
@@ -117,7 +113,7 @@ class _AccountBackupState extends State<AccountBackup> {
                 style: Theme.of(context).textTheme.titleMedium),
             Row(
               children: [
-                Text('Show'),
+                const Text('Show'),
                 Switch(
                   value: !_isObscured,
                   onChanged: (value) {
@@ -130,40 +126,38 @@ class _AccountBackupState extends State<AccountBackup> {
             ),
           ],
         ),
-        Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 300,
-                decoration: BoxDecoration(
-                  // border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  displayNsecKey,
-                ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 300,
+              decoration: BoxDecoration(
+                // border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(6),
               ),
-              GestureDetector(
-                onTap: () {
-                  TookKit.copyKey(context, nsecKeyStr);
-                },
-                child: SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'copy_icon.png',
-                      size: 24,
-                    ),
+              child: Text(
+                displayNsecKey,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                TookKit.copyKey(context, nsecKeyStr);
+              },
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Center(
+                  child: CommonImage(
+                    iconName: 'copy_icon.png',
+                    size: 24,
                   ),
                 ),
-              )
-            ],
-          ),
+              ),
+            )
+          ],
         ),
       ],
-    ).setPadding(EdgeInsets.symmetric(horizontal: 16));
+    ).setPadding(const EdgeInsets.symmetric(horizontal: 16));
   }
 }

@@ -5,7 +5,6 @@ import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../db/clientAuthDB_isar.dart';
@@ -20,10 +19,10 @@ class Application extends StatefulWidget {
   const Application({super.key});
 
   @override
-  _ApplicationState createState() => _ApplicationState();
+  ApplicationState createState() => ApplicationState();
 }
 
-class _ApplicationState extends State<Application> with AccountObservers {
+class ApplicationState extends State<Application> with AccountObservers {
   late WebViewController controller;
 
   bool isPortAvailable = true;
@@ -52,6 +51,12 @@ class _ApplicationState extends State<Application> with AccountObservers {
   }
 
   @override
+  void dispose() {
+    Account.sharedInstance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +67,7 @@ class _ApplicationState extends State<Application> with AccountObservers {
               ),
         ),
       ),
-      body: Container(
+      body: SizedBox(
         height: double.infinity,
         child: Stack(
           children: [
@@ -127,13 +132,13 @@ class _ApplicationState extends State<Application> with AccountObservers {
           return ValueListenableBuilder(
               valueListenable: dbNotifier,
               builder: (context, value, child) {
-                int timestamp = value.createTimestamp ??
-                    DateTime.now().millisecondsSinceEpoch;
-                bool isBunker =
-                    value.connectionType == EConnectionType.bunker.toInt;
-                String connectType = isBunker ? 'bunker://' : 'nostrconnect://';
+
+                int timestamp = value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
+                bool isBunker = value.connectionType == EConnectionType.bunker.toInt;
+                String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
                 bool isConnect = value.socketHashCode != null;
                 String name = value.name ?? '--';
+
                 if (name.length > 20) {
                   name = '${name.substring(0, 5)}...${name.substring(0, 5)}';
                 }
@@ -156,11 +161,13 @@ class _ApplicationState extends State<Application> with AccountObservers {
                 return GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    AegisNavigator.pushPage(context,
-                        (context) => ApplicationInfo(clientAuthDBISAR: value));
+                    AegisNavigator.pushPage(
+                      context,
+                      (context) => ApplicationInfo(clientAuthDBISAR: value),
+                    );
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     height: 72,
                     child: Row(
                       children: [
@@ -176,8 +183,9 @@ class _ApplicationState extends State<Application> with AccountObservers {
                                     .textTheme
                                     .titleLarge
                                     ?.copyWith(
-                                      color:
-                                          Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
                               ),
                               Text(
@@ -216,7 +224,8 @@ class _ApplicationState extends State<Application> with AccountObservers {
                                 ).setPaddingOnly(right: 8.0),
                                 Text(
                                   isConnect ? 'Connected' : 'Not Connected',
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                               ],
                             ),
@@ -281,13 +290,10 @@ class _ApplicationState extends State<Application> with AccountObservers {
             onPressed: () async {
               await ServerNIP46Signer.instance.start('8081');
               String content = '';
-              bool isConnect =
-                  AegisWebSocketServer.instance.serverNotifier.value != null;
-              content = isConnect
-                  ? 'Connection successful! '
-                  : 'Failed to connect to the socket.';
+              bool isConnect = AegisWebSocketServer.instance.serverNotifier.value != null;
+              content = isConnect ? 'Connection successful! ' : 'Failed to connect to the socket.';
 
-              CommonTips.success(context, content);
+              if(mounted) CommonTips.success(context, content);
             },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(
@@ -296,8 +302,8 @@ class _ApplicationState extends State<Application> with AccountObservers {
             label: Text(
               "Retry",
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-              ),
+                    color: Colors.white,
+                  ),
             ),
           ),
         ),
@@ -331,7 +337,7 @@ class _ApplicationState extends State<Application> with AccountObservers {
   @override
   void didRemoveApplicationMap() {
     // TODO: implement didRemoveApplicationMap
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
@@ -339,7 +345,7 @@ class _ApplicationState extends State<Application> with AccountObservers {
   @override
   void didUpdateApplicationMap() {
     // TODO: implement didUpdateApplicationMap
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }

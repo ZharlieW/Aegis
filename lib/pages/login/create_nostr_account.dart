@@ -1,16 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/common_appbar.dart';
-import '../../db/db_isar.dart';
-import '../../db/userDB_isar.dart';
 import '../../nostr/keychain.dart';
-import '../../nostr/nips/nip19/nip19.dart';
-import '../../nostr/utils.dart';
 import '../../utils/account.dart';
 
 class CreateNostrAccount extends StatefulWidget {

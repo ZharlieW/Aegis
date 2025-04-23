@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
-import 'package:aegis/utils/server_nip46_signer.dart';
 import '../common/common_constant.dart';
 import '../nostr/event.dart';
 import '../nostr/signer/local_nostr_signer.dart';

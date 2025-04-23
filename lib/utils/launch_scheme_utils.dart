@@ -43,8 +43,8 @@ class LaunchSchemeUtils {
       context:  AegisNavigator.navigatorKey.currentContext!,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Tips"),
-          content: Text("Unable to resolve scheme, please login first."),
+          title: const Text("Tips"),
+          content: const Text("Unable to resolve scheme, please login first."),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0), //
           ),

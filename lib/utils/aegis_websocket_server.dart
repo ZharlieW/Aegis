@@ -51,13 +51,11 @@ class AegisWebSocketServer {
         socket.listen(
               (message) {
             if (message == "server_heartbeat") {
-              // After receiving a heartbeat request, the server directly replies without entering _onMessageReceived
               print("💓 Received heartbeat check, sending ACK...");
               socket.add("server_heartbeat_ack");
               return;
             }
 
-            // Normal messages are handled by onMessageReceived
             _onMessageReceived?.call(message, socket);
           },
           onDone: () {
@@ -79,9 +77,6 @@ class AegisWebSocketServer {
     });
 
     print("✅ WebSocket server started on ws://127.0.0.1:$_port");
-
-    // Example Start the server self-check heartbeat
-    // _startSelfHeartbeat();
   }
 
   Future<bool> isPortAvailable() async {

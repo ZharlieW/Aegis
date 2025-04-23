@@ -11,11 +11,13 @@ import '../login/login.dart';
 import 'account_backup.dart';
 
 class Settings extends StatefulWidget {
+  const Settings({super.key});
+
   @override
-  _SettingsState createState() => _SettingsState();
+  SettingsState createState() => SettingsState();
 }
 
-class _SettingsState extends State<Settings> with AccountObservers {
+class SettingsState extends State<Settings> with AccountObservers {
   @override
   void initState() {
     // TODO: implement initState
@@ -48,24 +50,20 @@ class _SettingsState extends State<Settings> with AccountObservers {
                         content: 'Backup Keys',
                         onTap: () {
                           Account account = Account.sharedInstance;
-                          if (account.currentPubkey.isEmpty ||
-                              account.currentPrivkey.isEmpty) {
-                            AegisNavigator.pushPage(
-                                context, (context) => Login());
-                            return;
-                          }
+                          bool isNoLogin = account.currentPubkey.isEmpty ||
+                              account.currentPrivkey.isEmpty;
                           AegisNavigator.pushPage(
-                              context, (context) => const AccountBackup());
+                            context,
+                            (context) => isNoLogin
+                                ? const Login()
+                                : const AccountBackup(),
+                          );
                         }),
-                        _itemWidget(
-                          iconName: 'version_icon.png',
-                          content: 'Version: 0.1.1',
-                          onTap: () => {}
-                        ),
-                    // _itemWidget(
-                    //   iconName: 'policy_icon.png',
-                    //   content: 'Sign policy',
-                    // ),
+                    _itemWidget(
+                      iconName: 'version_icon.png',
+                      content: 'Version: 0.1.1',
+                      onTap: () => {},
+                    ),
                   ],
                 ),
               ),
@@ -78,8 +76,8 @@ class _SettingsState extends State<Settings> with AccountObservers {
 
   Widget _accountView() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
@@ -113,17 +111,16 @@ class _SettingsState extends State<Settings> with AccountObservers {
                   Account account = Account.sharedInstance;
                   if (account.currentPubkey.isEmpty ||
                       account.currentPrivkey.isEmpty) {
-                    AegisNavigator.pushPage(context, (context) => Login());
+                    AegisNavigator.pushPage(
+                        context, (context) => const Login());
                     return;
                   }
                   String npubKey =
                       Account.getNupPublicKey(account.currentPubkey);
-                  String nsecKey =
-                      Nip19.encodePrivateKey(account.currentPrivkey);
 
-                  TookKit.copyKey(context, '$npubKey:$nsecKey');
+                  TookKit.copyKey(context, npubKey);
                 },
-                child: Container(
+                child: SizedBox(
                   width: 48,
                   height: 48,
                   child: Center(
@@ -140,9 +137,9 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text("Logout"),
-                        content: Text(
-                            "Are you sure you want to log out?"),
+                        title: const Text("Logout"),
+                        content:
+                            const Text("Are you sure you want to log out?"),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0), //
                         ),
@@ -166,17 +163,24 @@ class _SettingsState extends State<Settings> with AccountObservers {
                           ElevatedButton.icon(
                             onPressed: () {
                               Account instance = Account.sharedInstance;
-                              if (instance.currentPrivkey.isEmpty || instance.currentPubkey.isEmpty) {
+                              if (instance.currentPrivkey.isEmpty ||
+                                  instance.currentPubkey.isEmpty) {
                                 CommonTips.error(context, 'Not logged in');
                                 return;
                               }
                               Account.sharedInstance.logout();
                               AegisNavigator.pop(context);
-                              AegisNavigator.pushPage(context, (context) => const Login(isLaunchLogin: true));
+                              AegisNavigator.pushPage(
+                                context,
+                                (context) => const Login(
+                                  isLaunchLogin: true,
+                                ),
+                              );
                             },
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.all(
-                                  Theme.of(context).colorScheme.primary),
+                                Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                             label: Text(
                               "Confirm",
@@ -193,7 +197,7 @@ class _SettingsState extends State<Settings> with AccountObservers {
                     },
                   );
                 },
-                child: Container(
+                child: SizedBox(
                   width: 48,
                   height: 48,
                   child: Center(
@@ -211,10 +215,11 @@ class _SettingsState extends State<Settings> with AccountObservers {
     );
   }
 
-  Widget _itemWidget(
-      {required String iconName,
-      required String content,
-      GestureTapCallback? onTap}) {
+  Widget _itemWidget({
+    required String iconName,
+    required String content,
+    GestureTapCallback? onTap,
+  }) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -260,16 +265,6 @@ class _SettingsState extends State<Settings> with AccountObservers {
   @override
   void didSwitchUser() {
     // TODO: implement didSwitchUser
-  }
-
-  @override
-  void didAddBunkerSocketMap() {
-    // TODO: implement didAddBunkerSocketMap
-  }
-
-  @override
-  void didAddClientRequestMap() {
-    // TODO: implement didAddClientRequestMap
   }
 
   @override
