@@ -275,7 +275,7 @@ class ApplicationState extends State<Application> with AccountObservers {
     return Column(
       children: [
         Text(
-          '  Currently listening on 127.0.0.1:8081, but the port is already occupied by another program, causing the connection to fail. Please close the other program and click retry.',
+          'The local relay is set to use port 8081, but it appears another app is already using this port. Please close the conflicting app and try again.',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
