@@ -30,8 +30,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
     _init();
   }
 
-  void _init() async {
-    _bunkerUrl = await ServerNIP46Signer.instance.getBunkerUrl();
+  void _init() {
+    _bunkerUrl = ServerNIP46Signer.instance.getBunkerUrl();
     setState(() {});
   }
 

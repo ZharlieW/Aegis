@@ -289,11 +289,15 @@ class ApplicationState extends State<Application> with AccountObservers {
           child: ElevatedButton.icon(
             onPressed: () async {
               await ServerNIP46Signer.instance.start('8081');
-              String content = '';
-              bool isConnect = AegisWebSocketServer.instance.serverNotifier.value != null;
-              content = isConnect ? 'Connection successful! ' : 'Failed to connect to the socket.';
-
-              if(mounted) CommonTips.success(context, content);
+              AegisWebSocketServer.instance.serverNotifier.addListener(() {
+                bool isConnect = AegisWebSocketServer.instance.serverNotifier.value != null;
+                if (mounted) {
+                  CommonTips.success(
+                    context,
+                    isConnect ? 'Connection successful!' : 'Failed to connect to the socket.',
+                  );
+                }
+              });
             },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(
