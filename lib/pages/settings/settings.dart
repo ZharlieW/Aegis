@@ -61,7 +61,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                         }),
                     _itemWidget(
                       iconName: 'version_icon.png',
-                      content: 'Version: 0.1.1',
+                      content: 'Version: 0.1.2',
                       onTap: () => {},
                     ),
                   ],
