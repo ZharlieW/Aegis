@@ -12,6 +12,7 @@ import '../../navigator/navigator.dart';
 import '../../utils/launch_scheme_utils.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../login/login.dart';
+import '../settings/settings.dart';
 import 'add_application.dart';
 import 'application_info.dart';
 
@@ -60,63 +61,94 @@ class ApplicationState extends State<Application> with AccountObservers {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Applications',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w400,
-              ),
-        ),
-      ),
-      body: SizedBox(
-        height: double.infinity,
-        child: Stack(
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer.withAlpha((0.3 * 255).round()),
+        leadingWidth: 200,
+        leading: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              children: [
-                ValueListenableBuilder(
-                  valueListenable: AegisWebSocketServer.instance.serverNotifier,
-                  builder: (context, value, child) {
-                    return Expanded(
-                      child: value == null
-                          ? _showPortUnAvailableWidget()
-                          : _applicationList(clientList),
+            Container(
+              padding: const EdgeInsets.only(left: 20),
+              child: Text(
+                'Aegis for Nostr',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 24,
+                   ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          GestureDetector(
+            onTap: () => AegisNavigator.pushPage(context, (context) => const Settings()),
+            child: CommonImage(
+              iconName: 'settings_icon.png',
+              size: 24,
+            ).setPaddingOnly(right: 16.0),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SizedBox(
+          height: double.infinity,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  ValueListenableBuilder(
+                    valueListenable: AegisWebSocketServer.instance.serverNotifier,
+                    builder: (context, value, child) {
+                      return Expanded(
+                        child: value == null
+                            ? _showPortUnAvailableWidget()
+                            : _applicationList(clientList),
+                      );
+                    },
+                  ),
+                ],
+              ).setPaddingOnly(top: 12.0),
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    Account account = Account.sharedInstance;
+                    bool isEmpty = account.currentPubkey.isEmpty ||
+                        account.currentPrivkey.isEmpty;
+                    AegisNavigator.pushPage(
+                      context,
+                      (context) =>
+                          isEmpty ? const Login() : const AddApplication(),
                     );
                   },
-                ),
-              ],
-            ),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () {
-                  Account account = Account.sharedInstance;
-                  bool isEmpty = account.currentPubkey.isEmpty ||
-                      account.currentPrivkey.isEmpty;
-                  AegisNavigator.pushPage(
-                    context,
-                    (context) =>
-                        isEmpty ? const Login() : const AddApplication(),
-                  );
-                },
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(56),
-                  ),
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'add_icon.png',
-                      size: 36,
-                      color: Colors.black,
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color:  Theme.of(context).colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(56),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha((0.14 * 255).round()),
+                          offset: const Offset(0, 4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: CommonImage(
+                        iconName: 'add_icon.png',
+                        size: 36,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -167,7 +199,7 @@ class ApplicationState extends State<Application> with AccountObservers {
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 22),
                     height: 72,
                     child: Row(
                       children: [

@@ -42,7 +42,8 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       title: '',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Theme.of(context).colorScheme.primary),
+            seedColor: const Color(0xFF615289),
+        ),
         useMaterial3: true,
       ),
       home: SplashScreen(),

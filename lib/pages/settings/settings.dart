@@ -4,7 +4,6 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../navigator/navigator.dart';
-import '../../nostr/nips/nip19/nip19.dart';
 import '../../utils/account.dart';
 import '../../utils/took_kit.dart';
 import '../login/login.dart';
@@ -37,6 +36,14 @@ class SettingsState extends State<Settings> with AccountObservers {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Settings',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [

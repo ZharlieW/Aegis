@@ -121,7 +121,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
       bottomNavigationBar: Container(
         height: 100,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        color: Theme.of(context).colorScheme.surfaceContainer,
+        color: Theme.of(context).colorScheme.secondaryContainer.withAlpha((0.3 * 255).round()),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.end,
