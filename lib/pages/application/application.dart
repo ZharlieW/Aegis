@@ -255,7 +255,7 @@ class ApplicationState extends State<Application> with AccountObservers {
                                   ),
                                 ).setPaddingOnly(right: 8.0),
                                 Text(
-                                  isConnect ? 'Connected' : 'Not Connected',
+                                  isConnect ? 'Connected' : 'Disconnected',
                                   style:
                                       Theme.of(context).textTheme.titleMedium,
                                 ),
