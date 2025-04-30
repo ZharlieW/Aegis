@@ -80,6 +80,10 @@ class SettingsState extends State<Settings> with AccountObservers {
                   account,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+                trailing: CommonImage(
+                  iconName: 'change_icon.png',
+                  size: 22,
+                ),
                 onTap: () {
                   // _switchAccount(account);
                   Navigator.pop(context);
@@ -91,6 +95,10 @@ class SettingsState extends State<Settings> with AccountObservers {
               title: Text(
                 'Add Account',
                 style: Theme.of(context).textTheme.titleMedium,
+              ),
+              trailing: CommonImage(
+                iconName: 'add_circle_icon.png',
+                size: 22,
               ),
               onTap: () {
                 AegisNavigator.pop(context);
