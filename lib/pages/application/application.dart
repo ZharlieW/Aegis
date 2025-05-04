@@ -43,6 +43,17 @@ class ApplicationState extends State<Application> with AccountObservers {
     return list;
   }
 
+  final List<String> accounts = ['Account 1', 'Account 2', 'Account 3'];
+
+  String get _getKeyToStr {
+    Account instance = Account.sharedInstance;
+    String pubkey = instance.currentPubkey;
+    String private = instance.currentPrivkey;
+    if (pubkey.isEmpty || private.isEmpty) return '--';
+    String nupKey = Account.getNupPublicKey(pubkey);
+    return '${nupKey.substring(0, 15)}...${nupKey.substring(nupKey.length - 10)}';
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -61,24 +72,6 @@ class ApplicationState extends State<Application> with AccountObservers {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.secondaryContainer.withAlpha((0.3 * 255).round()),
-        leadingWidth: 200,
-        leading: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(left: 20),
-              child: Text(
-                'Aegis for Nostr',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 24,
-                   ),
-              ),
-            ),
-          ],
-        ),
         actions: [
           GestureDetector(
             onTap: () => AegisNavigator.pushPage(context, (context) => const Settings()),
@@ -88,6 +81,69 @@ class ApplicationState extends State<Application> with AccountObservers {
             ).setPaddingOnly(right: 16.0),
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Container(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              child: SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Current Account: ',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        _getKeyToStr,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            ...accounts.map((account) {
+              return ListTile(
+                title: Text(
+                  account,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                trailing: CommonImage(
+                  iconName: 'change_icon.png',
+                  size: 22,
+                ),
+                onTap: () {
+                  // _switchAccount(account);
+                  Navigator.pop(context);
+                },
+              );
+            }),
+            const Divider(),
+            ListTile(
+              title: Text(
+                'Add Account',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              trailing: CommonImage(
+                iconName: 'add_circle_icon.png',
+                size: 22,
+              ),
+              onTap: () {
+                AegisNavigator.pop(context);
+                AegisNavigator.pushPage(context, (context) => const Login());
+              },
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: SizedBox(

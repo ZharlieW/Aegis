@@ -17,7 +17,6 @@ class Settings extends StatefulWidget {
 }
 
 class SettingsState extends State<Settings> with AccountObservers {
-  final List<String> accounts = ['Account 1', 'Account 2', 'Account 3'];
   @override
   void initState() {
     // TODO: implement initState
@@ -43,69 +42,6 @@ class SettingsState extends State<Settings> with AccountObservers {
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
-        ),
-      ),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            Container(
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              child: SafeArea(
-                bottom: false,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Current Account: ',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        _getKeyToStr,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            ...accounts.map((account) {
-              return ListTile(
-                title: Text(
-                  account,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                trailing: CommonImage(
-                  iconName: 'change_icon.png',
-                  size: 22,
-                ),
-                onTap: () {
-                  // _switchAccount(account);
-                  Navigator.pop(context);
-                },
-              );
-            }),
-            const Divider(),
-            ListTile(
-              title: Text(
-                'Add Account',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              trailing: CommonImage(
-                iconName: 'add_circle_icon.png',
-                size: 22,
-              ),
-              onTap: () {
-                AegisNavigator.pop(context);
-                AegisNavigator.pushPage(context, (context) => const Login());
-              },
-            ),
-          ],
         ),
       ),
       body: SafeArea(
