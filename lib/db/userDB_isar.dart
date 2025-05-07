@@ -26,4 +26,18 @@ class UserDBISAR {
         .pubkeyEqualTo(pubkey)
         .findFirst();
   }
+
+  Map<String, dynamic> toJson() => {
+    'pubkey': pubkey,
+    'privkey': privkey,
+    'encryptedPrivkey':encryptedPrivkey,
+    'defaultPassword':defaultPassword
+  };
+
+  static UserDBISAR fromJson(Map<String, dynamic> json) => UserDBISAR(
+    pubkey: json['pubkey'],
+    privkey: json['privkey'],
+    encryptedPrivkey: json['encryptedPrivkey'],
+    defaultPassword: json['defaultPassword'],
+  );
 }

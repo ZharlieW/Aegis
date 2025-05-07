@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
@@ -13,7 +13,9 @@ import '../nostr/keychain.dart';
 import '../nostr/nips/nip19/nip19.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import '../nostr/utils.dart';
+import '../pages/login/login.dart';
 import '../pages/request/request_permission.dart';
+import 'local_storage.dart';
 
 abstract mixin class AccountObservers {
   void didLoginSuccess();
@@ -82,18 +84,31 @@ class Account {
     return Nip19.encodePubkey(publicKey);
   }
 
-  Future<void> logout() async {
+  void clear(){
     _currentPubkey = '';
     _currentPrivkey = '';
-
-    // 🔹 clean local cache
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('pubkey');
-    await prefs.remove('privkey');
-
-    AegisWebSocketServer.instance.stop();
+    applicationMap.clear();
     authToNostrConnectInfo.clear();
     clientReqMap.clear();
+  }
+
+  Future<void> logout() async {
+    await AccountManager.deleteAccount(_currentPubkey);
+    Account.sharedInstance.clear();
+
+    final allAccount = await AccountManager.getAllAccount();
+    if (allAccount.isNotEmpty) {
+      final nextUser = allAccount.values.first;
+      String pubkey = nextUser.pubkey;
+      await LocalStorage.set('pubkey', pubkey);
+      Account.sharedInstance.loginSuccess(pubkey, null);
+    } else {
+      AegisWebSocketServer.instance.stop();
+      await LocalStorage.remove('pubkey');
+      AegisNavigator.pushPage(AegisNavigator.navigatorKey.currentContext, (context) => const Login(
+        isLaunchLogin: true,
+      ));
+    }
 
     for (AccountObservers observer in _observers) {
       observer.didLogout();
@@ -101,13 +116,15 @@ class Account {
   }
 
   Future<void> loginSuccess(String pubkey, String? privkey) async {
+    clear();
     _currentPubkey = pubkey;
 
     await DBISAR.sharedInstance.open(pubkey);
 
+    UserDBISAR? user;
     try {
       if (privkey == null) {
-        final user = await UserDBISAR.searchFromDB(pubkey);
+        user = await UserDBISAR.searchFromDB(pubkey);
         if (user == null) return;
 
         final decryptedPrivkey = _decryptPrivkey(user);
@@ -116,10 +133,9 @@ class Account {
         _currentPrivkey = privkey;
 
         final defaultPassword = generateStrongPassword(16);
-        final encrypted =
-            encryptPrivateKey(hexToBytes(privkey), defaultPassword);
+        final encrypted = encryptPrivateKey(hexToBytes(privkey), defaultPassword);
 
-        final user = UserDBISAR(
+        user = UserDBISAR(
           pubkey: pubkey,
           encryptedPrivkey: bytesToHex(encrypted),
           defaultPassword: defaultPassword,
@@ -135,13 +151,15 @@ class Account {
         for (var client in clientList) client.clientPubkey: ValueNotifier<ClientAuthDBISAR>(client),
       };
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('pubkey', pubkey);
+      await LocalStorage.set('pubkey', pubkey);
+
+      await AccountManager.saveAccount(user);
 
       LocalNostrSigner.instance.init();
       await ServerNIP46Signer.instance.start('8081');
 
       for (final observer in _observers) {
+
         observer.didLoginSuccess();
       }
     } catch (e, stack) {
@@ -150,8 +168,7 @@ class Account {
   }
 
   Future<void> autoLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? pubkey = prefs.getString('pubkey');
+    String? pubkey = LocalStorage.get('pubkey');
 
     if (pubkey != null) {
       await loginSuccess(pubkey, null);

@@ -1,29 +1,33 @@
+import '../db/userDB_isar.dart';
 import 'local_storage.dart';
 
 class AccountManager {
-  static const String _accountPrefix = 'account_';
+  static const String _accountPrefix = 'aegis_account_map';
 
-  static Future<Map<String, Map<String, dynamic>>> getAllAccounts() async {
-    await LocalStorage.init();
-    final keys = await LocalStorage.getKeys();
-    final accounts = <String, Map<String, dynamic>>{};
-
-    for (var key in keys) {
-      if (key.startsWith(_accountPrefix)) {
-        final data = LocalStorage.get(key);
-        if (data != null && data is Map<String, dynamic>) {
-          accounts[key.replaceFirst(_accountPrefix, '')] = data;
-        }
-      }
-    }
-    return accounts;
+  static Future<Map<String, UserDBISAR>> getAllAccount() async {
+    final rawMap = await LocalStorage.get(_accountPrefix) ?? {};
+    return Map<String, UserDBISAR>.fromEntries(
+      (rawMap as Map<String, dynamic>).entries.map(
+            (e) => MapEntry(
+              e.key,
+              UserDBISAR.fromJson(e.value),
+            ),
+          ),
+    );
   }
 
-  static Future<void> saveAccount(String pubkey, Map<String, dynamic> accountData) async {
-    await LocalStorage.set('$_accountPrefix$pubkey', accountData);
+  static Future<void> saveAccount(UserDBISAR user) async {
+    Map<String, dynamic> rawMap = await LocalStorage.get(_accountPrefix) ?? {};
+    rawMap[user.pubkey] = user.toJson();
+    await LocalStorage.set(_accountPrefix, rawMap);
   }
 
   static Future<void> deleteAccount(String pubkey) async {
-    await LocalStorage.remove('$_accountPrefix$pubkey');
+    final allAccount = await getAllAccount();
+    allAccount.remove(pubkey);
+    await LocalStorage.set(
+      _accountPrefix,
+      allAccount.map((k, v) => MapEntry(k, v.toJson())),
+    );
   }
 }

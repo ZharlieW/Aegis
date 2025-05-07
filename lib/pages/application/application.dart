@@ -1,7 +1,10 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/db/userDB_isar.dart';
 import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
+import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
@@ -43,16 +46,21 @@ class ApplicationState extends State<Application> with AccountObservers {
     return list;
   }
 
-  final List<String> accounts = ['Account 1', 'Account 2', 'Account 3'];
 
-  String get _getKeyToStr {
+  String get _getCurrentKeyToStr {
     Account instance = Account.sharedInstance;
     String pubkey = instance.currentPubkey;
     String private = instance.currentPrivkey;
     if (pubkey.isEmpty || private.isEmpty) return '--';
-    String nupKey = Account.getNupPublicKey(pubkey);
-    return '${nupKey.substring(0, 15)}...${nupKey.substring(nupKey.length - 10)}';
+    return _getNpubKeyToStr(pubkey);
   }
+
+  String _getNpubKeyToStr(String pubkey) {
+    String nupKey = Account.getNupPublicKey(pubkey);
+    return '${nupKey.substring(0, 15)}:${nupKey.substring(nupKey.length - 15)}';
+  }
+
+  Map<String,UserDBISAR> accountMap = {};
 
   @override
   void initState() {
@@ -60,12 +68,19 @@ class ApplicationState extends State<Application> with AccountObservers {
     super.initState();
     LaunchSchemeUtils.getSchemeData();
     Account.sharedInstance.addObserver(this);
+    getAccountList();
   }
 
   @override
   void dispose() {
     Account.sharedInstance.removeObserver(this);
     super.dispose();
+  }
+
+  void getAccountList() async {
+    accountMap = await AccountManager.getAllAccount();
+    accountMap.remove(Account.sharedInstance.currentPubkey);
+    setState(() {});
   }
 
   @override
@@ -103,7 +118,7 @@ class ApplicationState extends State<Application> with AccountObservers {
                         height: 10,
                       ),
                       Text(
-                        _getKeyToStr,
+                        _getCurrentKeyToStr,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
@@ -111,10 +126,10 @@ class ApplicationState extends State<Application> with AccountObservers {
                 ),
               ),
             ),
-            ...accounts.map((account) {
+            ...accountMap.values.toList().map((account) {
               return ListTile(
                 title: Text(
-                  account,
+                  _getNpubKeyToStr(account.pubkey),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 trailing: CommonImage(
@@ -122,7 +137,7 @@ class ApplicationState extends State<Application> with AccountObservers {
                   size: 22,
                 ),
                 onTap: () {
-                  // _switchAccount(account);
+                  _switchAccount(account);
                   Navigator.pop(context);
                 },
               );
@@ -403,6 +418,11 @@ class ApplicationState extends State<Application> with AccountObservers {
     );
   }
 
+  void _switchAccount(UserDBISAR account){
+    Account.sharedInstance.loginSuccess(account.pubkey,null);
+    CommonTips.success(context, 'Switch successfully!');
+  }
+
   @override
   void didAddApplicationMap() {
     // TODO: implement didAddApplicationMap
@@ -414,11 +434,17 @@ class ApplicationState extends State<Application> with AccountObservers {
   @override
   void didLoginSuccess() {
     // TODO: implement didLoginSuccess
+    if(mounted){
+      getAccountList();
+    }
   }
 
   @override
   void didLogout() {
     // TODO: implement didLogout
+    if(mounted){
+      getAccountList();
+    }
   }
 
   @override

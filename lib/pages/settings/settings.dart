@@ -177,12 +177,6 @@ class SettingsState extends State<Settings> with AccountObservers {
                               }
                               Account.sharedInstance.logout();
                               AegisNavigator.pop(context);
-                              AegisNavigator.pushPage(
-                                context,
-                                (context) => const Login(
-                                  isLaunchLogin: true,
-                                ),
-                              );
                             },
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.all(
