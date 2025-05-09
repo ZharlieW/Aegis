@@ -111,8 +111,8 @@ class ServerNIP46Signer {
       kind: event.kind,
       tags: [["p", event.pubkey]],
       content: responseJsonEncrypt ?? '',
-      pubkey: LocalNostrSigner.instance.publicKey,
-      privkey: LocalNostrSigner.instance.privateKey,
+      pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
+      privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
     );
     print('jsonResponse===${signEvent.serialize()}');
     socket.add(signEvent.serialize());
@@ -136,12 +136,12 @@ class ServerNIP46Signer {
         final instance = Account.sharedInstance;
         responseJson = jsonEncode({
           "id": remoteRequest.id,
-          "result": LocalNostrSigner.instance.publicKey,
+          "result": LocalNostrSigner.instance.getPublicKey(event.pubkey),
           "error": "",
         });
 
         ClientAuthDBISAR? client = instance.authToNostrConnectInfo[event.pubkey];
-        client ??= await ClientAuthDBISAR.searchFromDB(instance.currentPubkey, event.pubkey);
+        client ??= instance.applicationMap[event.pubkey]?.value;
 
         if (client != null)  break;
 
@@ -155,6 +155,7 @@ class ServerNIP46Signer {
             connectionType: EConnectionType.bunker.toInt,
           );
           await ClientAuthDBISAR.saveFromDB(newClient);
+
         } else {
           responseJson = jsonEncode({
             "id": remoteRequest.id,
@@ -176,8 +177,8 @@ class ServerNIP46Signer {
             kind: signEvent.kind,
             tags: signEvent.tags,
             content: signEvent.content,
-            pubkey: LocalNostrSigner.instance.publicKey,
-            privkey: LocalNostrSigner.instance.privateKey,
+            pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
+            privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
           );
           responseJson = jsonEncode({
             "id": remoteRequest.id,
@@ -249,7 +250,7 @@ class ServerNIP46Signer {
   Future<void> _dealwithApplication(String clientPubkey,WebSocket socket) async {
     final instance = Account.sharedInstance;
     ClientAuthDBISAR? client = instance.authToNostrConnectInfo[clientPubkey];
-    client ??= await ClientAuthDBISAR.searchFromDB(instance.currentPubkey, clientPubkey);
+    client ??= Account.sharedInstance.applicationMap[clientPubkey]?.value;
     if (client != null) {
       bool isUpdate = false;
       if(client.socketHashCode == null){

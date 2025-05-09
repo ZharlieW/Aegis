@@ -30,11 +30,10 @@ class NostrRemoteRequest {
       String? plaintext;
       bool isNip04 = ciphertext.contains('?iv=');
       if(isNip04){
-        plaintext = NIP04.decrypt(ciphertext, localNostrSigner.getAgreement(), pubkey);
+        plaintext = NIP04.decrypt(ciphertext, localNostrSigner.getAgreement(clientPubkey: pubkey), pubkey);
       }else{
         plaintext = await localNostrSigner.nip44Decrypt(pubkey, ciphertext);
       }
-
       if (StringUtil.isNotBlank(plaintext)) {
         var jsonMap = jsonDecode(plaintext!);
         var id = jsonMap["id"];
@@ -55,8 +54,7 @@ class NostrRemoteRequest {
       }
     }
     catch (e) {
-      print("NostrRemoteRequest decrypt error");
-      print(e);
+      print("NostrRemoteRequest decrypt error===$e");
     }
 
     return null;

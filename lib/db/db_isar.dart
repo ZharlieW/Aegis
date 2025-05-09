@@ -23,7 +23,7 @@ class DBISAR {
     ClientAuthDBISARSchema
   ];
 
-  Future open(String pubkey) async {
+  Future<Isar> open(String pubkey) async {
     bool isOS = Platform.isIOS || Platform.isMacOS;
     Directory directory = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
     var dbPath = directory.path;
@@ -34,6 +34,7 @@ class DBISAR {
           directory: dbPath,
           name: pubkey,
         );
+    return isar;
   }
 
   Map<Type, List<dynamic>> getBuffers() {

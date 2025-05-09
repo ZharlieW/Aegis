@@ -13,21 +13,20 @@ class LocalNostrSigner implements NostrSigner {
 
   late String privateKey;
   late String publicKey;
-  ECDHBasicAgreement? _agreement;
 
   void init(){
     privateKey = Account.sharedInstance.currentPrivkey;
     publicKey = Account.sharedInstance.currentPubkey;
   }
 
-
-  @override
-  Future<String?> getPublicKey() async {
-    return publicKey;
+  String? getPublicKey(String clientPubkey) {
+    return Account.sharedInstance.applicationMap[clientPubkey]?.value.pubkey ?? publicKey;
   }
 
-  Future<String?> getPrivateKey() async {
-    return privateKey;
+  String? getPrivateKey(String clientPubkey) {
+    Account instance = Account.sharedInstance;
+    final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
+    return instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
   }
 
   @override
@@ -41,32 +40,46 @@ class LocalNostrSigner implements NostrSigner {
     return event;
   }
 
-  ECDHBasicAgreement getAgreement() {
-    _agreement ??= NIP04.getAgreement(privateKey);
-    return _agreement!;
+  ECDHBasicAgreement getAgreement({String? clientPubkey}) {
+    Account instance = Account.sharedInstance;
+    final pubkey = clientPubkey != null
+        ? instance.applicationMap[clientPubkey]?.value.pubkey
+        : null;
+
+    final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
+
+    return NIP04.getAgreement(privateKeyToUse);
   }
 
   @override
-  Future<String?> nip44Decrypt(pubkey, ciphertext) async {
-    var sealKey = NIP44V2.shareSecret(privateKey, pubkey);
+  Future<String?> nip44Decrypt(clientPubkey, ciphertext) async {
+    Account instance = Account.sharedInstance;
+    final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
+    final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
+
+    final sealKey = NIP44V2.shareSecret(privateKeyToUse, clientPubkey);
     return await NIP44V2.decrypt(ciphertext, sealKey);
   }
 
   @override
-  Future<String?> nip44Encrypt(pubkey, plaintext) async {
-    var conversationKey = NIP44V2.shareSecret(privateKey, pubkey);
+  Future<String?> nip44Encrypt(clientPubkey, plaintext) async {
+    Account instance = Account.sharedInstance;
+    final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
+    final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
+
+    final conversationKey = NIP44V2.shareSecret(privateKeyToUse, clientPubkey);
     return await NIP44V2.encrypt(plaintext, conversationKey);
   }
 
   @override
-  Future<String?> decrypt(pubkey, ciphertext) async {
-    var agreement = getAgreement();
-    return NIP04.decrypt(ciphertext, agreement, pubkey);
+  Future<String?> decrypt(clientPubkey, ciphertext) async {
+    var agreement = getAgreement(clientPubkey:clientPubkey);
+    return NIP04.decrypt(ciphertext, agreement, clientPubkey);
   }
 
   @override
-  Future<String?> encrypt(pubkey, plaintext) async {
-    var agreement = getAgreement();
-    return NIP04.encrypt(plaintext, agreement, pubkey);
+  Future<String?> encrypt(clientPubkey, plaintext) async {
+    var agreement = getAgreement(clientPubkey:clientPubkey);
+    return NIP04.encrypt(plaintext, agreement, clientPubkey);
   }
 }

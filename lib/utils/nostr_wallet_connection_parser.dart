@@ -80,8 +80,8 @@ class NostrWalletConnectionParserHandler {
         ['p', clientPubkey]
       ],
       content: content,
-      pubkey: instance.publicKey,
-      privkey: instance.privateKey,
+      pubkey: instance.getPublicKey(clientPubkey) ?? '',
+      privkey: instance.getPrivateKey(clientPubkey) ?? '',
     );
     socket.add(signEvent.serialize());
     print('Event sent: ${signEvent.serialize()}');
@@ -99,8 +99,7 @@ class NostrWalletConnectionParserHandler {
       'error': '',
     });
 
-    final authEncrypted =
-        await signAndEncrypt(connectInfo.clientPubkey, authResponse);
+    final authEncrypted = await signAndEncrypt(connectInfo.clientPubkey, authResponse);
     if (authEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, authEncrypted);
     }
@@ -126,7 +125,7 @@ class NostrWalletConnectionParserHandler {
     String clientPubkey = result.clientPubkey;
     Account instance = Account.sharedInstance;
 
-    ClientAuthDBISAR? hasClient = await ClientAuthDBISAR.searchFromDB(instance.currentPubkey, result.clientPubkey);
+    ClientAuthDBISAR? hasClient = instance.applicationMap[clientPubkey]?.value;
     if(hasClient == null) {
       bool isSuccess = await Account.authToClient();
       if(!isSuccess) return;
@@ -135,7 +134,7 @@ class NostrWalletConnectionParserHandler {
     await ClientAuthDBISAR.saveFromDB(result);
 
     List<dynamic>? reqInfo = instance.clientReqMap[clientPubkey];
-    instance.authToNostrConnectInfo[result.clientPubkey] = result;
+    instance.addAuthToNostrConnectInfo(result);
     if (reqInfo != null) {
       sendAuthUrl(reqInfo[1], result);
     }

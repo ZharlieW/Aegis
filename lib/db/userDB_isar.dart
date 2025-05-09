@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+import '../nostr/utils.dart';
+import '../utils/account.dart';
 import 'db_isar.dart';
 
 part 'userDB_isar.g.dart';
@@ -19,6 +21,11 @@ class UserDBISAR {
     this.encryptedPrivkey,
     this.defaultPassword,
   });
+
+  String get getPrivkey {
+    final decryptedPrivkey = Account.sharedInstance.decryptPrivkey(this);
+    return bytesToHex(decryptedPrivkey);
+  }
 
   static Future<UserDBISAR?> searchFromDB(String pubkey) {
     return DBISAR.sharedInstance.isar.userDBISARs

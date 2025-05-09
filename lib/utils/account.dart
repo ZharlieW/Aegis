@@ -4,6 +4,7 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
 
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
@@ -47,6 +48,8 @@ class Account {
   // key: pubkey.toLowerCase()
   // value : []
   final Map<String, List> clientReqMap = {};
+
+  final Map<String, UserDBISAR> accountMap = {};
 
   String _currentPubkey = '';
   String _currentPrivkey = '';
@@ -127,7 +130,7 @@ class Account {
         user = await UserDBISAR.searchFromDB(pubkey);
         if (user == null) return;
 
-        final decryptedPrivkey = _decryptPrivkey(user);
+        final decryptedPrivkey = decryptPrivkey(user);
         _currentPrivkey = bytesToHex(decryptedPrivkey);
       } else {
         _currentPrivkey = privkey;
@@ -144,18 +147,15 @@ class Account {
         await DBISAR.sharedInstance.saveToDB(user);
       }
 
-
       final clientList = await ClientAuthDBISAR.getAllFromDB();
-
-      applicationMap = {
-        for (var client in clientList) client.clientPubkey: ValueNotifier<ClientAuthDBISAR>(client),
-      };
+      clientList.map(( item ) => addApplicationMap(item)).toList();
 
       await LocalStorage.set('pubkey', pubkey);
 
       await AccountManager.saveAccount(user);
 
       LocalNostrSigner.instance.init();
+      accountMap[user.pubkey] = user;
       await ServerNIP46Signer.instance.start('8081');
 
       for (final observer in _observers) {
@@ -198,7 +198,7 @@ class Account {
     return true;
   }
 
-  Uint8List _decryptPrivkey(UserDBISAR user) {
+  Uint8List decryptPrivkey(UserDBISAR user) {
     final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
     return decryptPrivateKey(encryptedBytes, user.defaultPassword!);
   }
@@ -210,13 +210,17 @@ class Account {
 
     if(clientNotifier == null){
       applicationMap[clientPubkey] = ValueNotifier<ClientAuthDBISAR>(client);
-    }else{
+    } else {
       clientNotifier.value = client;
     }
 
     for (final observer in _observers) {
       observer.didAddApplicationMap();
     }
+  }
+
+  void addAuthToNostrConnectInfo(ClientAuthDBISAR client){
+    authToNostrConnectInfo[client.clientPubkey] = client;
   }
 
   void removeApplicationMap(String clientPubkey){

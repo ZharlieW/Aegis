@@ -1,7 +1,6 @@
 import '../event.dart';
 
 abstract class NostrSigner {
-  Future<String?> getPublicKey();
 
   Future<Event?> signEvent(Event event);
 
