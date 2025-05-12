@@ -90,7 +90,6 @@ class Account {
   void clear(){
     _currentPubkey = '';
     _currentPrivkey = '';
-    applicationMap.clear();
     authToNostrConnectInfo.clear();
     clientReqMap.clear();
   }
@@ -140,6 +139,7 @@ class Account {
 
         user = UserDBISAR(
           pubkey: pubkey,
+          // privkey: privkey,
           encryptedPrivkey: bytesToHex(encrypted),
           defaultPassword: defaultPassword,
         );
@@ -231,9 +231,5 @@ class Account {
   }
 
   void updateApplicationMap(String clientPubkey){
-    applicationMap.remove(clientPubkey);
-    for (final observer in _observers) {
-      observer.didRemoveApplicationMap();
-    }
   }
 }

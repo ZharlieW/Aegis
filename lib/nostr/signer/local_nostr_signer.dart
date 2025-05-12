@@ -52,22 +52,22 @@ class LocalNostrSigner implements NostrSigner {
   }
 
   @override
-  Future<String?> nip44Decrypt(clientPubkey, ciphertext) async {
+  Future<String?> nip44Decrypt(clientPubkey, ciphertext,{String? shareSecretPubkey}) async {
     Account instance = Account.sharedInstance;
     final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
     final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
 
-    final sealKey = NIP44V2.shareSecret(privateKeyToUse, clientPubkey);
+    final sealKey = NIP44V2.shareSecret(privateKeyToUse, shareSecretPubkey ?? clientPubkey);
     return await NIP44V2.decrypt(ciphertext, sealKey);
   }
 
   @override
-  Future<String?> nip44Encrypt(clientPubkey, plaintext) async {
+  Future<String?> nip44Encrypt(clientPubkey, plaintext,{String? shareSecretPubkey}) async {
     Account instance = Account.sharedInstance;
     final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
     final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
 
-    final conversationKey = NIP44V2.shareSecret(privateKeyToUse, clientPubkey);
+    final conversationKey = NIP44V2.shareSecret(privateKeyToUse,shareSecretPubkey ??  clientPubkey);
     return await NIP44V2.encrypt(plaintext, conversationKey);
   }
 

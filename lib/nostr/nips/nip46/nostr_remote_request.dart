@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/utils/account.dart';
+
 import '../../signer/local_nostr_signer.dart';
 import '../../signer/nostr_signer.dart';
 import '../../string_util.dart';

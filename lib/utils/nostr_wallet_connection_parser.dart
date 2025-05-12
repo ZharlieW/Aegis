@@ -55,10 +55,10 @@ class NostrWalletConnectionParserHandler {
   }
 
   static Future<String?> signAndEncrypt(
-      String clientPubkey, String message) async {
+      String clientPubkey, String message,String shareSecretPubkey) async {
     try {
       return await LocalNostrSigner.instance
-          .nip44Encrypt(clientPubkey, message);
+          .nip44Encrypt(clientPubkey, message,shareSecretPubkey: shareSecretPubkey);
     } catch (e) {
       print('Error during encryption: $e');
       return null;
@@ -99,7 +99,7 @@ class NostrWalletConnectionParserHandler {
       'error': '',
     });
 
-    final authEncrypted = await signAndEncrypt(connectInfo.clientPubkey, authResponse);
+    final authEncrypted = await signAndEncrypt(Account.sharedInstance.currentPubkey, authResponse,connectInfo.clientPubkey);
     if (authEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, authEncrypted);
     }
@@ -110,7 +110,7 @@ class NostrWalletConnectionParserHandler {
     });
 
     final secretEncrypted =
-        await signAndEncrypt(connectInfo.clientPubkey, secretResponse);
+        await signAndEncrypt(Account.sharedInstance.currentPubkey, secretResponse,connectInfo.clientPubkey);
     if (secretEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, secretEncrypted);
     }
@@ -131,11 +131,14 @@ class NostrWalletConnectionParserHandler {
       if(!isSuccess) return;
     }
 
+    instance.addApplicationMap(result);
+
     await ClientAuthDBISAR.saveFromDB(result);
 
     List<dynamic>? reqInfo = instance.clientReqMap[clientPubkey];
     instance.addAuthToNostrConnectInfo(result);
     if (reqInfo != null) {
+
       sendAuthUrl(reqInfo[1], result);
     }
 

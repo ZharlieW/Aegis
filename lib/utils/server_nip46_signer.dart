@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../nostr/event.dart';
@@ -93,6 +94,7 @@ class ServerNIP46Signer {
   }
 
   void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
+    print('eventData===$eventData');
     final event = Event.fromJson(eventData);
     if (event == null) return;
 
@@ -154,6 +156,7 @@ class ServerNIP46Signer {
             name: event.pubkey,
             connectionType: EConnectionType.bunker.toInt,
           );
+          instance.addApplicationMap(newClient);
           await ClientAuthDBISAR.saveFromDB(newClient);
 
         } else {
@@ -204,14 +207,14 @@ class ServerNIP46Signer {
 
       case "nip44_decrypt":
         String? result = await LocalNostrSigner.instance
-            .nip44Decrypt(remoteRequest.params[0], remoteRequest.params[1]);
+            .nip44Decrypt(event.pubkey, remoteRequest.params[1],shareSecretPubkey: remoteRequest.params[0]);
         responseJson = jsonEncode(
             {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
 
       case "nip44_encrypt":
         String? result = await LocalNostrSigner.instance
-            .nip44Encrypt(remoteRequest.params[0], remoteRequest.params[1]);
+            .nip44Encrypt(event.pubkey, remoteRequest.params[1],shareSecretPubkey: remoteRequest.params[0]);
         responseJson = jsonEncode(
             {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
