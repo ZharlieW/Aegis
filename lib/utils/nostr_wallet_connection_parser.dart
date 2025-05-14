@@ -55,10 +55,9 @@ class NostrWalletConnectionParserHandler {
   }
 
   static Future<String?> signAndEncrypt(
-      String clientPubkey, String message,String shareSecretPubkey) async {
+      String serverPrivate, String message,String clientPubkey) async {
     try {
-      return await LocalNostrSigner.instance
-          .nip44Encrypt(clientPubkey, message,shareSecretPubkey: shareSecretPubkey);
+      return await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, message,clientPubkey);
     } catch (e) {
       print('Error during encryption: $e');
       return null;
@@ -84,7 +83,7 @@ class NostrWalletConnectionParserHandler {
       privkey: instance.getPrivateKey(clientPubkey) ?? '',
     );
     socket.add(signEvent.serialize());
-    print('Event sent: ${signEvent.serialize()}');
+    print('Event sent: ===>${signEvent.serialize()}');
   }
 
   static void sendAuthUrl(
@@ -99,7 +98,9 @@ class NostrWalletConnectionParserHandler {
       'error': '',
     });
 
-    final authEncrypted = await signAndEncrypt(Account.sharedInstance.currentPubkey, authResponse,connectInfo.clientPubkey);
+    String serverPrivate = Account.sharedInstance.currentPrivkey;
+
+    final authEncrypted = await signAndEncrypt(serverPrivate, authResponse,connectInfo.clientPubkey);
     if (authEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, authEncrypted);
     }
@@ -110,7 +111,7 @@ class NostrWalletConnectionParserHandler {
     });
 
     final secretEncrypted =
-        await signAndEncrypt(Account.sharedInstance.currentPubkey, secretResponse,connectInfo.clientPubkey);
+        await signAndEncrypt(serverPrivate, secretResponse,connectInfo.clientPubkey);
     if (secretEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, secretEncrypted);
     }

@@ -10,7 +10,7 @@ abstract class NostrSigner {
 
   Future<String?> decrypt(pubkey, ciphertext);
 
-  Future<String?> nip44Encrypt(pubkey, plaintext,{String? shareSecretPubkey});
+  Future<String?> nip44Encrypt(String serverPrivate,String plaintext,String clientPubkey);
 
-  Future<String?> nip44Decrypt(pubkey, ciphertext,{String? shareSecretPubkey});
+  Future<String?> nip44Decrypt(String serverPrivate,String ciphertext,String clientPubkey);
 }

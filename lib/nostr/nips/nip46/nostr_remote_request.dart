@@ -17,25 +17,16 @@ class NostrRemoteRequest {
 
   NostrRemoteRequest(this.method, this.params) : id = StringUtil.rndNameStr(12);
 
-  Future<String?> encrypt(NostrSigner signer, String pubkey) async {
-    Map<String, dynamic> jsonMap = {};
-    jsonMap["id"] = id;
-    jsonMap["method"] = method;
-    jsonMap["params"] = params;
-
-    var jsonStr = jsonEncode(jsonMap);
-    return await signer.nip44Encrypt(pubkey, jsonStr);
-  }
 
   static Future<NostrRemoteRequest?> decrypt(
-      String ciphertext, String pubkey,LocalNostrSigner localNostrSigner) async {
+      String ciphertext, String clientPubkey,LocalNostrSigner localNostrSigner,String serverPrivate) async {
     try {
       String? plaintext;
       bool isNip04 = ciphertext.contains('?iv=');
       if(isNip04){
-        plaintext = NIP04.decrypt(ciphertext, localNostrSigner.getAgreement(clientPubkey: pubkey), pubkey);
+        plaintext = NIP04.decrypt(ciphertext, localNostrSigner.getAgreement(clientPubkey: clientPubkey), clientPubkey);
       }else{
-        plaintext = await localNostrSigner.nip44Decrypt(pubkey, ciphertext);
+        plaintext = await localNostrSigner.nip44Decrypt(serverPrivate,ciphertext,clientPubkey);
       }
       if (StringUtil.isNotBlank(plaintext)) {
         var jsonMap = jsonDecode(plaintext!);

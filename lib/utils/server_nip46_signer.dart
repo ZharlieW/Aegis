@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
-import 'package:flutter/cupertino.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../nostr/event.dart';
@@ -28,7 +27,8 @@ class ServerNIP46Signer {
   factory ServerNIP46Signer() => instance;
   ServerNIP46Signer._internal();
 
-  String subscriptionId = '';
+  // String subscriptionId = '';
+  final Map<int, String> _subscriptionIds = {};
   String port = '8080';
 
   AegisWebSocketServer? server;
@@ -55,7 +55,6 @@ class ServerNIP46Signer {
     final request = jsonDecode(message);
     final messageType = request[0];
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
-
     if (messageType == 'REQ') {
       List<dynamic> kindList = request?[2]?['kinds'];
       if (!kindList.contains(24133)) return;
@@ -88,8 +87,8 @@ class ServerNIP46Signer {
   }
 
   void _handleRequest(WebSocket socket, String subscriptionId) {
-    this.subscriptionId = subscriptionId;
-    final jsonResponseEOSE = jsonEncode(['EOSE', this.subscriptionId]);
+    _subscriptionIds[socket.hashCode] = subscriptionId;
+    final jsonResponseEOSE = jsonEncode(['EOSE', subscriptionId]);
     socket.add(jsonResponseEOSE);
   }
 
@@ -98,18 +97,22 @@ class ServerNIP46Signer {
     final event = Event.fromJson(eventData);
     if (event == null) return;
 
+    String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+    if(serverPrivate == null) return;
+
     NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
-        event.content, event.pubkey, LocalNostrSigner.instance);
+        event.content, event.pubkey, LocalNostrSigner.instance,serverPrivate);
     if (remoteRequest == null) return;
+
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
     socket.add(jsonResponseOk);
-    String? responseJson = await _processRemoteRequest(remoteRequest, event);
+    String? responseJson = await _processRemoteRequest(remoteRequest, event, socket);
     if (responseJson == null) return;
-    String? responseJsonEncrypt = await LocalNostrSigner.instance
-        .nip44Encrypt(event.pubkey, responseJson);
+
+    String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
 
     final signEvent = Event.from(
-      subscriptionId: subscriptionId,
+      subscriptionId: _subscriptionIds[socket.hashCode],
       kind: event.kind,
       tags: [["p", event.pubkey]],
       content: responseJsonEncrypt ?? '',
@@ -121,8 +124,9 @@ class ServerNIP46Signer {
   }
 
   Future<String?> _processRemoteRequest(
-      NostrRemoteRequest remoteRequest, Event event) async {
+      NostrRemoteRequest remoteRequest, Event event,WebSocket socket) async {
     String responseJson = '';
+    String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
     switch (remoteRequest.method) {
       case "connect":
         responseJson =
@@ -176,7 +180,7 @@ class ServerNIP46Signer {
           if (signEvent == null) return null;
           final eventFromJ = Event.from(
             createdAt: signEvent.createdAt,
-            subscriptionId: subscriptionId,
+            subscriptionId: _subscriptionIds[socket.hashCode],
             kind: signEvent.kind,
             tags: signEvent.tags,
             content: signEvent.content,
@@ -206,15 +210,18 @@ class ServerNIP46Signer {
         break;
 
       case "nip44_decrypt":
+        if(serverPrivate == null ||  remoteRequest.params[1] is! String || remoteRequest.params[0] is! String ) break;
         String? result = await LocalNostrSigner.instance
-            .nip44Decrypt(event.pubkey, remoteRequest.params[1],shareSecretPubkey: remoteRequest.params[0]);
+            .nip44Decrypt(serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);
         responseJson = jsonEncode(
             {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;
 
       case "nip44_encrypt":
+        if(serverPrivate == null ||  remoteRequest.params[1] is! String || remoteRequest.params[0] is! String ) break;
+
         String? result = await LocalNostrSigner.instance
-            .nip44Encrypt(event.pubkey, remoteRequest.params[1],shareSecretPubkey: remoteRequest.params[0]);
+            .nip44Encrypt(serverPrivate, remoteRequest.params[1]!,remoteRequest.params[0]! );
         responseJson = jsonEncode(
             {"id": remoteRequest.id, "result": result ?? '', "error": ''});
         break;

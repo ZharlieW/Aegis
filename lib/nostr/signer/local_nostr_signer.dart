@@ -52,34 +52,47 @@ class LocalNostrSigner implements NostrSigner {
   }
 
   @override
-  Future<String?> nip44Decrypt(clientPubkey, ciphertext,{String? shareSecretPubkey}) async {
-    Account instance = Account.sharedInstance;
-    final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
-    final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
-
-    final sealKey = NIP44V2.shareSecret(privateKeyToUse, shareSecretPubkey ?? clientPubkey);
-    return await NIP44V2.decrypt(ciphertext, sealKey);
+  Future<String?> nip44Decrypt(String serverPrivate,String ciphertext,String clientPubkey) async {
+    try{
+      final sealKey = NIP44V2.shareSecret(serverPrivate, clientPubkey);
+      return await NIP44V2.decrypt(ciphertext, sealKey);
+    }catch(e){
+      print('nip44Decrypt:=====>>>$e');
+      return null;
+    }
   }
 
   @override
-  Future<String?> nip44Encrypt(clientPubkey, plaintext,{String? shareSecretPubkey}) async {
-    Account instance = Account.sharedInstance;
-    final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
-    final privateKeyToUse = instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
-
-    final conversationKey = NIP44V2.shareSecret(privateKeyToUse,shareSecretPubkey ??  clientPubkey);
-    return await NIP44V2.encrypt(plaintext, conversationKey);
+  Future<String?> nip44Encrypt(String serverPrivate,String plaintext,String clientPubkey) async {
+    try{
+      final conversationKey = NIP44V2.shareSecret(serverPrivate, clientPubkey);
+      return await NIP44V2.encrypt(plaintext, conversationKey);
+    }catch(e){
+      print('nip44Encrypt:=====>>>$e');
+      return null;
+    }
   }
 
   @override
   Future<String?> decrypt(clientPubkey, ciphertext) async {
-    var agreement = getAgreement(clientPubkey:clientPubkey);
-    return NIP04.decrypt(ciphertext, agreement, clientPubkey);
+   try{
+     var agreement = getAgreement(clientPubkey:clientPubkey);
+     return NIP04.decrypt(ciphertext, agreement, clientPubkey);
+   }catch(e){
+     print('decrypt:=====>>>$e');
+     return null;
+   }
   }
 
   @override
   Future<String?> encrypt(clientPubkey, plaintext) async {
-    var agreement = getAgreement(clientPubkey:clientPubkey);
-    return NIP04.encrypt(plaintext, agreement, clientPubkey);
+    try{
+      var agreement = getAgreement(clientPubkey:clientPubkey);
+      return NIP04.encrypt(plaintext, agreement, clientPubkey);
+    }catch(e){
+      print('encrypt:=====>>>$e');
+      return null;
+    }
+
   }
 }

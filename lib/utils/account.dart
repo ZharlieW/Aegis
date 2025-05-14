@@ -4,7 +4,6 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
 
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
@@ -90,8 +89,6 @@ class Account {
   void clear(){
     _currentPubkey = '';
     _currentPrivkey = '';
-    authToNostrConnectInfo.clear();
-    clientReqMap.clear();
   }
 
   Future<void> logout() async {
@@ -153,9 +150,8 @@ class Account {
       await LocalStorage.set('pubkey', pubkey);
 
       await AccountManager.saveAccount(user);
-
-      LocalNostrSigner.instance.init();
       accountMap[user.pubkey] = user;
+      LocalNostrSigner.instance.init();
       await ServerNIP46Signer.instance.start('8081');
 
       for (final observer in _observers) {

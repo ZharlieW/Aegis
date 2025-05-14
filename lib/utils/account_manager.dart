@@ -61,10 +61,7 @@ class AccountManager {
 
       final storedClient = await ClientAuthDBISAR.getAllFromDB();
       storedClient.map((item) => Account.sharedInstance.addApplicationMap(item)).toList();
-      if(getCurrentPubkey != null && getCurrentPubkey == pubkey){
-        continue;
-      }
-      await isar.close();
+
     }
   }
 }
