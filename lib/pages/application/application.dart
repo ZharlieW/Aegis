@@ -1,13 +1,12 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
-import 'package:aegis/db/userDB_isar.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
-import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../db/clientAuthDB_isar.dart';
@@ -26,13 +25,13 @@ class Application extends StatefulWidget {
   ApplicationState createState() => ApplicationState();
 }
 
-class ApplicationState extends State<Application> with AccountObservers {
+class ApplicationState extends State<Application> with AccountManagerObservers {
   late WebViewController controller;
 
   bool isPortAvailable = true;
 
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
-    final list = Account.sharedInstance.applicationMap.values.toList();
+    final list = AccountManager.sharedInstance.applicationMap.values.toList();
     list.sort((a, b) {
       if (a.value.socketHashCode == null && b.value.socketHashCode != null) {
         return 1; // a > b
@@ -46,53 +45,52 @@ class ApplicationState extends State<Application> with AccountObservers {
     return list;
   }
 
-
-  String get _getCurrentKeyToStr {
-    Account instance = Account.sharedInstance;
-    String pubkey = instance.currentPubkey;
-    String private = instance.currentPrivkey;
-    if (pubkey.isEmpty || private.isEmpty) return '--';
-    return _getNpubKeyToStr(pubkey);
-  }
-
-  String _getNpubKeyToStr(String pubkey) {
-    String nupKey = Account.getNupPublicKey(pubkey);
-    return '${nupKey.substring(0, 15)}:${nupKey.substring(nupKey.length - 15)}';
-  }
-
-  Map<String,UserDBISAR> accountMap = {};
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     LaunchSchemeUtils.getSchemeData();
-    Account.sharedInstance.addObserver(this);
-    getAccountList();
+    AccountManager.sharedInstance.addObserver(this);
   }
 
   @override
   void dispose() {
-    Account.sharedInstance.removeObserver(this);
+    AccountManager.sharedInstance.removeObserver(this);
     super.dispose();
   }
 
-  void getAccountList() async {
-    accountMap = await AccountManager.getAllAccount();
-    accountMap.remove(Account.sharedInstance.currentPubkey);
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 250,
+        leading: Builder(
+          builder: (context) => GestureDetector(
+            onTap: () => Scaffold.of(context).openDrawer(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CommonImage(
+                      iconName: 'more_icon.png',
+                      size: 20,
+                    ).setPaddingOnly(left: 20.0,right: 8.0),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
           GestureDetector(
             onTap: () => AegisNavigator.pushPage(context, (context) => const Settings()),
             child: CommonImage(
-              iconName: 'settings_icon.png',
-              size: 24,
+              iconName: 'user_icon.png',
+              size: 20,
             ).setPaddingOnly(right: 16.0),
           ),
         ],
@@ -105,57 +103,47 @@ class ApplicationState extends State<Application> with AccountObservers {
               color: Theme.of(context).colorScheme.surfaceContainer,
               child: SafeArea(
                 bottom: false,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Current Account: ',
-                        style: Theme.of(context).textTheme.titleMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Aegis for Nostr',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 24,
+                        ),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        _getCurrentKeyToStr,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            ...accountMap.values.toList().map((account) {
-              return ListTile(
-                title: Text(
-                  _getNpubKeyToStr(account.pubkey),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                trailing: CommonImage(
-                  iconName: 'change_icon.png',
-                  size: 22,
-                ),
-                onTap: () {
-                  _switchAccount(account);
-                  Navigator.pop(context);
-                },
-              );
-            }),
-            const Divider(),
             ListTile(
               title: Text(
-                'Add Account',
+                'Github',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               trailing: CommonImage(
-                iconName: 'add_circle_icon.png',
+                iconName: 'github_icon.png',
                 size: 22,
               ),
-              onTap: () {
-                AegisNavigator.pop(context);
-                AegisNavigator.pushPage(context, (context) => const Login());
+              onTap: () async {
+                final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
+                await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
               },
+            ),
+            ListTile(
+              title: Text(
+                'Version: 0.1.3',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              trailing: CommonImage(
+                iconName: 'version_icon.png',
+                size: 22,
+              ),
+              onTap: () {},
             ),
           ],
         ),
@@ -227,15 +215,17 @@ class ApplicationState extends State<Application> with AccountObservers {
 
   Widget _applicationList(
       List<ValueNotifier<ClientAuthDBISAR>> applicationList) {
-    if (applicationList.isEmpty) return _noBunkerSocketWidget();
+    final filterApplication = applicationList
+        .where((notifier) => notifier.value.pubkey == Account.sharedInstance.currentPubkey)
+        .toList();
+    if (filterApplication.isEmpty) return _noBunkerSocketWidget();
     return SingleChildScrollView(
       child: Column(
         children:
-            applicationList.map((ValueNotifier<ClientAuthDBISAR> dbNotifier) {
+        filterApplication.map((ValueNotifier<ClientAuthDBISAR> dbNotifier) {
           return ValueListenableBuilder(
               valueListenable: dbNotifier,
               builder: (context, value, child) {
-
                 int timestamp = value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
                 bool isBunker = value.connectionType == EConnectionType.bunker.toInt;
                 String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
@@ -243,7 +233,7 @@ class ApplicationState extends State<Application> with AccountObservers {
                 String name = value.name ?? '--';
 
                 if (name.length > 20) {
-                  name = '${name.substring(0, 5)}...${name.substring(0, 5)}';
+                  name = '${name.substring(0, 6)}:${name.substring(name.length - 6)}';
                 }
 
                 Widget iconWidget() {
@@ -418,39 +408,6 @@ class ApplicationState extends State<Application> with AccountObservers {
     );
   }
 
-  void _switchAccount(UserDBISAR account){
-    Account.sharedInstance.loginSuccess(account.pubkey,null);
-    CommonTips.success(context, 'Switch successfully!');
-  }
-
-  @override
-  void didAddApplicationMap() {
-    // TODO: implement didAddApplicationMap
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  void didLoginSuccess() {
-    // TODO: implement didLoginSuccess
-    if(mounted){
-      getAccountList();
-    }
-  }
-
-  @override
-  void didLogout() {
-    // TODO: implement didLogout
-    if(mounted){
-      getAccountList();
-    }
-  }
-
-  @override
-  void didSwitchUser() {
-    // TODO: implement didSwitchUser
-  }
 
   @override
   void didRemoveApplicationMap() {
@@ -461,8 +418,8 @@ class ApplicationState extends State<Application> with AccountObservers {
   }
 
   @override
-  void didUpdateApplicationMap() {
-    // TODO: implement didUpdateApplicationMap
+  void didAddApplicationMap() {
+    // TODO: implement didAddApplicationMap
     if (mounted) {
       setState(() {});
     }
