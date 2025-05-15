@@ -1,4 +1,5 @@
 import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
 import 'package:pointycastle/export.dart';
 import '../event.dart';
 import '../nips/nip04/nip04.dart';
@@ -20,11 +21,11 @@ class LocalNostrSigner implements NostrSigner {
   }
 
   String? getPublicKey(String clientPubkey) {
-    return Account.sharedInstance.applicationMap[clientPubkey]?.value.pubkey ?? publicKey;
+    return AccountManager.sharedInstance.applicationMap[clientPubkey]?.value.pubkey ?? publicKey;
   }
 
   String? getPrivateKey(String clientPubkey) {
-    Account instance = Account.sharedInstance;
+    AccountManager instance = AccountManager.sharedInstance;
     final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
     return instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
   }
@@ -41,7 +42,7 @@ class LocalNostrSigner implements NostrSigner {
   }
 
   ECDHBasicAgreement getAgreement({String? clientPubkey}) {
-    Account instance = Account.sharedInstance;
+    AccountManager instance = AccountManager.sharedInstance;
     final pubkey = clientPubkey != null
         ? instance.applicationMap[clientPubkey]?.value.pubkey
         : null;

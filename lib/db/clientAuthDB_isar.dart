@@ -79,8 +79,7 @@ class ClientAuthDBISAR {
     required this.connectionType,
   });
 
-  static Future<ClientAuthDBISAR?> searchFromDB(
-      String pubkey, String clientPubkey) async {
+  static Future<ClientAuthDBISAR?> searchFromDB(String pubkey, String clientPubkey) async {
     final application = await DBISAR.sharedInstance.isar.clientAuthDBISARs
         .filter()
         .pubkeyEqualTo(pubkey)

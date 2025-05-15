@@ -1,4 +1,5 @@
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
@@ -163,12 +164,11 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                         ),
                         ElevatedButton.icon(
                           onPressed: () async {
-                            Account instance = Account.sharedInstance;
-                            String clientPubkey =
-                                widget.clientAuthDBISAR.clientPubkey;
-                            instance.removeApplicationMap(clientPubkey);
+                            String currentPubkey = Account.sharedInstance.currentPubkey;
+                            String clientPubkey = widget.clientAuthDBISAR.clientPubkey;
+                            AccountManager.sharedInstance.removeApplicationMap(clientPubkey);
                             await ClientAuthDBISAR.deleteFromDB(
-                                instance.currentPubkey, clientPubkey);
+                                currentPubkey, clientPubkey);
                             CommonTips.success(context, 'Remove success');
                             AegisNavigator.popToRoot(context);
                           },

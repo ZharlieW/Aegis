@@ -35,7 +35,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     await LocalStorage.init();
     await Account.sharedInstance.autoLogin();
-    await AccountManager.initAccountList();
+    await AccountManager.sharedInstance.initAccountList();
 
   }
 

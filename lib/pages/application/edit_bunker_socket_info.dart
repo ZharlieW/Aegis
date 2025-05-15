@@ -1,10 +1,10 @@
 import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../db/clientAuthDB_isar.dart';
 import '../../navigator/navigator.dart';
-import '../../utils/account.dart';
 
 class EditApplicationInfo extends StatefulWidget {
 
@@ -82,9 +82,8 @@ class EditApplicationInfoState extends State<EditApplicationInfo> {
       CommonTips.error(context,'The name is too long.');
       return;
     }
-    Account instance = Account.sharedInstance;
 
-    ValueNotifier<ClientAuthDBISAR> clientNotifier = instance.applicationMap[widget.clientAuthDBISAR.clientPubkey]!;
+    ValueNotifier<ClientAuthDBISAR> clientNotifier = AccountManager.sharedInstance.applicationMap[widget.clientAuthDBISAR.clientPubkey]!;
     clientNotifier.value.name = name;
 
     ClientAuthDBISAR.saveFromDB(clientNotifier.value,isUpdate: true);

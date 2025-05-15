@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../nostr/event.dart';
@@ -77,11 +78,12 @@ class ServerNIP46Signer {
   }
 
   void _onDoneFromSocket(WebSocket socket) async {
-    final list = Account.sharedInstance.applicationMap.values.toList();
+    AccountManager instance = AccountManager.sharedInstance;
+    final list = instance.applicationMap.values.toList();
     for(var client in list){
       if(client.value.socketHashCode == socket.hashCode){
         client.value.socketHashCode = null;
-        Account.sharedInstance.addApplicationMap(client.value,isUpdate: true);
+        instance.addApplicationMap(client.value,isUpdate: true);
       }
     }
   }
@@ -147,7 +149,7 @@ class ServerNIP46Signer {
         });
 
         ClientAuthDBISAR? client = instance.authToNostrConnectInfo[event.pubkey];
-        client ??= instance.applicationMap[event.pubkey]?.value;
+        client ??= AccountManager.sharedInstance.applicationMap[event.pubkey]?.value;
 
         if (client != null)  break;
 
@@ -160,7 +162,7 @@ class ServerNIP46Signer {
             name: event.pubkey,
             connectionType: EConnectionType.bunker.toInt,
           );
-          instance.addApplicationMap(newClient);
+          AccountManager.sharedInstance.addApplicationMap(newClient);
           await ClientAuthDBISAR.saveFromDB(newClient);
 
         } else {
@@ -258,16 +260,17 @@ class ServerNIP46Signer {
   }
 
   Future<void> _dealwithApplication(String clientPubkey,WebSocket socket) async {
-    final instance = Account.sharedInstance;
-    ClientAuthDBISAR? client = instance.authToNostrConnectInfo[clientPubkey];
-    client ??= Account.sharedInstance.applicationMap[clientPubkey]?.value;
+    final accountInstance = Account.sharedInstance;
+    final accountManagerInstance = AccountManager.sharedInstance;
+    ClientAuthDBISAR? client = accountInstance.authToNostrConnectInfo[clientPubkey];
+    client ??= accountManagerInstance.applicationMap[clientPubkey]?.value;
     if (client != null) {
       bool isUpdate = false;
       if(client.socketHashCode == null){
         client.socketHashCode = socket.hashCode;
         isUpdate = true;
       }
-      Account.sharedInstance.addApplicationMap(client,isUpdate:isUpdate);
+      accountManagerInstance.addApplicationMap(client,isUpdate:isUpdate);
     }
   }
 }

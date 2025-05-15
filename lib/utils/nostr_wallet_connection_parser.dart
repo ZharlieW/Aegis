@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/utils/account_manager.dart';
 import '../common/common_constant.dart';
 import '../nostr/event.dart';
 import '../nostr/signer/local_nostr_signer.dart';
@@ -124,20 +125,22 @@ class NostrWalletConnectionParserHandler {
     if (result == null) return;
 
     String clientPubkey = result.clientPubkey;
-    Account instance = Account.sharedInstance;
+    Account accountInstance = Account.sharedInstance;
+    AccountManager accountManagerInstance = AccountManager.sharedInstance;
 
-    ClientAuthDBISAR? hasClient = instance.applicationMap[clientPubkey]?.value;
+
+    ClientAuthDBISAR? hasClient = accountManagerInstance.applicationMap[clientPubkey]?.value;
     if(hasClient == null) {
       bool isSuccess = await Account.authToClient();
       if(!isSuccess) return;
     }
 
-    instance.addApplicationMap(result);
+    accountManagerInstance.addApplicationMap(result);
 
     await ClientAuthDBISAR.saveFromDB(result);
 
-    List<dynamic>? reqInfo = instance.clientReqMap[clientPubkey];
-    instance.addAuthToNostrConnectInfo(result);
+    List<dynamic>? reqInfo = accountInstance.clientReqMap[clientPubkey];
+    accountInstance.addAuthToNostrConnectInfo(result);
     if (reqInfo != null) {
 
       sendAuthUrl(reqInfo[1], result);
