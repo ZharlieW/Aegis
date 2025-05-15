@@ -90,4 +90,11 @@ class DBISAR {
     _timer = null;
     if (isar.isOpen) await isar.close();
   }
+
+  Future<void> closeDatabaseFor(String pubkey) async {
+    final instance = Isar.getInstance(pubkey);
+    if (instance != null && instance.isOpen) {
+      await instance.close();
+    }
+  }
 }
