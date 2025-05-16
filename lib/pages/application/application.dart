@@ -424,4 +424,14 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       setState(() {});
     }
   }
+
+  @override
+  void didUpdateApplicationMap() {
+    // TODO: implement didAddApplicationMap
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+
 }

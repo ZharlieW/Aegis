@@ -10,6 +10,7 @@ import 'local_storage.dart';
 abstract mixin class AccountManagerObservers {
   void didAddApplicationMap();
   void didRemoveApplicationMap();
+  void didUpdateApplicationMap();
 }
 
 class AccountManager {
@@ -32,23 +33,23 @@ class AccountManager {
     }
   }
 
-  void addApplicationMap(ClientAuthDBISAR client, {bool isUpdate = false}) {
-    final key = client.clientPubkey;
-    final notifier = applicationMap[key];
-    if (notifier != null && !isUpdate) return;
-
-    if (notifier == null) {
-      applicationMap[key] = ValueNotifier<ClientAuthDBISAR>(client);
-      _notify((o) => o.didAddApplicationMap());
-    } else {
-      notifier.value = client;
-    }
+  void addApplicationMap(ClientAuthDBISAR client) {
+    applicationMap[client.clientPubkey] = ValueNotifier<ClientAuthDBISAR>(client);
+    _notify((o) => o.didAddApplicationMap());
   }
 
   void removeApplicationMap(String clientPubkey) {
     if (applicationMap.remove(clientPubkey) != null) {
       _notify((o) => o.didRemoveApplicationMap());
     }
+  }
+
+  void updateApplicationMap(ClientAuthDBISAR client) {
+    final key = client.clientPubkey;
+    final notifier = applicationMap[key];
+    if(notifier == null) return;
+    notifier.value = client;
+    _notify((o) => o.didUpdateApplicationMap());
   }
 
 
@@ -84,7 +85,7 @@ class AccountManager {
         accountMap[pubkey] = user;
       }
 
-      final clients = await ClientAuthDBISAR.getAllFromDB();
+      final clients = await ClientAuthDBISAR.getAllFromDB(pubkey);
       for (final client in clients) {
         addApplicationMap(client);
       }

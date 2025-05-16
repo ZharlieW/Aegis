@@ -27,8 +27,10 @@ class UserDBISAR {
     return bytesToHex(decryptedPrivkey);
   }
 
-  static Future<UserDBISAR?> searchFromDB(String pubkey) {
-    return DBISAR.sharedInstance.isar.userDBISARs
+  static Future<UserDBISAR?> searchFromDB(String pubkey) async {
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+
+    return await isar.userDBISARs
         .filter()
         .pubkeyEqualTo(pubkey)
         .findFirst();

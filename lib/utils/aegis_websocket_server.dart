@@ -95,6 +95,7 @@ class AegisWebSocketServer {
       print("🛑 Stopping WebSocket server...");
       await serverNotifier.value!.close();
       for (var client in clients) {
+
         client.close();
       }
       clients.clear();
@@ -104,4 +105,22 @@ class AegisWebSocketServer {
       print("⚠️ WebSocket server is not running.");
     }
   }
+
+  Future<void> closeClientByHashCode(int socketHashCode) async {
+    final index = clients.indexWhere((s) => s.hashCode == socketHashCode);
+    if (index != -1) {
+      final client = clients[index];
+      print("🔒 Closing client by hashCode: $socketHashCode");
+      try {
+        await client.close();
+      } catch (e) {
+        print("⚠️ Error closing client $socketHashCode: $e");
+      }
+      clients.removeAt(index);
+      // _onDoneFromSocket?.call(client);
+    } else {
+      print("⚠️ No client found with hashCode: $socketHashCode");
+    }
+  }
+
 }

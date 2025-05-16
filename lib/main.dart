@@ -1,6 +1,5 @@
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
-import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/background_audio_manager.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
@@ -35,8 +34,6 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     await LocalStorage.init();
     await Account.sharedInstance.autoLogin();
-    await AccountManager.sharedInstance.initAccountList();
-
   }
 
   @override

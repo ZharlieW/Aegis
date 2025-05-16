@@ -80,7 +80,8 @@ class ClientAuthDBISAR {
   });
 
   static Future<ClientAuthDBISAR?> searchFromDB(String pubkey, String clientPubkey) async {
-    final application = await DBISAR.sharedInstance.isar.clientAuthDBISARs
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+    final application = await isar.clientAuthDBISARs
         .filter()
         .pubkeyEqualTo(pubkey)
         .clientPubkeyEqualTo(clientPubkey)
@@ -88,26 +89,27 @@ class ClientAuthDBISAR {
     return application;
   }
 
-  static Future<List<ClientAuthDBISAR>> getAllFromDB() async {
-    final list =
-        await DBISAR.sharedInstance.isar.clientAuthDBISARs.where().findAll();
+  static Future<List<ClientAuthDBISAR>> getAllFromDB(String pubkey) async {
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+    final list = await isar.clientAuthDBISARs.where().findAll();
     return list;
   }
 
-  static Future<void> saveFromDB(ClientAuthDBISAR client,
-      {bool isUpdate = false}) async {
-    final existingClient =
-        await searchFromDB(client.pubkey, client.clientPubkey);
+  static Future<void> saveFromDB(ClientAuthDBISAR client, {bool isUpdate = false}) async {
+    final existingClient = await searchFromDB(client.pubkey, client.clientPubkey);
 
     if (existingClient == null || isUpdate) {
-      await DBISAR.sharedInstance.isar.writeTxn(() async {
-        await DBISAR.sharedInstance.isar.clientAuthDBISARs.put(client);
+      final isar = await DBISAR.sharedInstance.open(client.pubkey);
+
+      await isar.writeTxn(() async {
+        await isar.clientAuthDBISARs.put(client);
       });
     }
   }
 
   static Future<void> deleteFromDB(String pubkey, String clientPubkey) async {
-    final isar = DBISAR.sharedInstance.isar;
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+
     final target = await isar.clientAuthDBISARs
         .filter()
         .pubkeyEqualTo(pubkey)

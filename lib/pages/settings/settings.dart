@@ -63,8 +63,8 @@ class SettingsState extends State<Settings> with AccountObservers {
       body: SafeArea(
         child: Column(
           children: [
-            Center(
-              child: GestureDetector(
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
                     _accountView(),
@@ -89,30 +89,31 @@ class SettingsState extends State<Settings> with AccountObservers {
                         ),
                       );
                     }),
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(top: 20),
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          AegisNavigator.pop(context);
-                          AegisNavigator.pushPage(context, (context) => const Login());
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(
-                              Theme.of(context).colorScheme.primary),
-                        ),
-                        label: Text(
-                          "Add Account",
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ).setPadding(const EdgeInsets.symmetric(horizontal: 20)),
                   ],
                 ),
               ),
             ),
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 20),
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  AegisNavigator.pop(context);
+                  AegisNavigator.pushPage(context, (context) => const Login());
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                      Theme.of(context).colorScheme.primary),
+                ),
+                label: Text(
+                  "Add Account",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ).setPadding(const EdgeInsets.symmetric(horizontal: 20)),
+
           ],
         ),
       ),
@@ -319,7 +320,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   void didLoginSuccess() {
     // TODO: implement didLoginSuccess
     if (mounted) {
-      setState(() {});
+      getAccountList();
     }
   }
 
@@ -327,7 +328,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   void didLogout() {
     // TODO: implement didLogout
     if (mounted) {
-      setState(() {});
+      getAccountList();
     }
   }
 

@@ -8,93 +8,87 @@ import 'package:path_provider/path_provider.dart';
 import 'clientAuthDB_isar.dart';
 
 class DBISAR {
-  static final DBISAR sharedInstance = DBISAR._internal();
   DBISAR._internal();
+  static final DBISAR sharedInstance = DBISAR._internal();
   factory DBISAR() => sharedInstance;
 
-  late Isar isar;
+  final Map<String, Isar> _instances = {};
+  final Map<String, Map<Type, List<dynamic>>> _buffers = {};
+  final Map<String, Timer?> _timers = {};
 
-  final Map<Type, List<dynamic>> _buffers = {};
-
-  Timer? _timer;
-
-  List<CollectionSchema<dynamic>> schemas = [
+  final List<CollectionSchema<dynamic>> schemas = [
     UserDBISARSchema,
-    ClientAuthDBISARSchema
+    ClientAuthDBISARSchema,
   ];
 
   Future<Isar> open(String pubkey) async {
-    bool isOS = Platform.isIOS || Platform.isMacOS;
-    Directory directory = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
-    var dbPath = directory.path;
-    print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
-    isar = Isar.getInstance(pubkey) ??
-        await Isar.open(
-          schemas,
-          directory: dbPath,
-          name: pubkey,
-        );
+    if (_instances.containsKey(pubkey) && _instances[pubkey]!.isOpen) {
+      print('=====>hasOpen');
+      return _instances[pubkey]!;
+    }
+    final isOS = Platform.isIOS || Platform.isMacOS;
+    final dir = isOS
+        ? await getLibraryDirectory()
+        : await getApplicationDocumentsDirectory();
+    final isar = await Isar.open(
+      schemas,
+      directory: dir.path,
+      name: pubkey,
+    );
+    _instances[pubkey] = isar;
+    _buffers.putIfAbsent(pubkey, () => {});
+    print('DBISAR open: $dir, pubkey: $pubkey');
+
     return isar;
   }
 
-  Map<Type, List<dynamic>> getBuffers() {
-    return Map.from(_buffers);
-  }
-
-  Future<void> saveObjectsToDB<T>(List<T> objects) async {
-    for (var object in objects) {
-      await saveToDB(object);
-    }
-  }
-
-  Future<void> saveToDB<T>(T object) async {
+  Future<void> saveToDB<T>(String pubkey, T object) async {
+    final isar = await open(pubkey);
+    final map = _buffers[pubkey]!;
     final type = T;
-    if (!_buffers.containsKey(type)) {
-      _buffers[type] = <T>[];
-    }
-    _buffers[type]!.add(object);
+    map[type] = (map[type] ?? <T>[])..add(object);
 
-    _timer?.cancel();
-    _timer = Timer(const Duration(milliseconds: 200), () async {
-      await _putAll();
+    _timers[pubkey]?.cancel();
+    _timers[pubkey] = Timer(const Duration(milliseconds: 200), () async {
+      await _putAll(pubkey);
     });
   }
 
-  Future<void> _putAll() async {
-    _timer?.cancel();
-    _timer = null;
+  Future<void> _putAll(String pubkey) async {
+    _timers[pubkey]?.cancel();
+    _timers.remove(pubkey);
 
-    if (_buffers.isEmpty) return;
+    final map = Map<Type, List<dynamic>>.from(_buffers[pubkey] ?? {});
+    _buffers[pubkey]?.clear();
+    if (map.isEmpty) return;
 
-    final Map<Type, List<dynamic>> typeMap = Map.from(_buffers);
-    _buffers.clear();
+    final isar = _instances[pubkey]!;
+    if (!isar.isOpen) return;
 
     await isar.writeTxn(() async {
-      await Future.forEach(typeMap.keys, (type) async {
-        await _saveTOISAR(typeMap[type]!, type);
-      });
+      for (final entry in map.entries) {
+        final name = entry.key.toString().replaceAll('?', '');
+        final col = isar.getCollectionByNameInternal(name);
+        if (col != null) {
+          await col.putAll(entry.value);
+        }
+      }
     });
-  }
-
-  Future<void> _saveTOISAR(List<dynamic> objects, Type type) async {
-    String typeName = type.toString().replaceAll('?', '');
-    IsarCollection? collection = isar.getCollectionByNameInternal(typeName);
-    if (collection != null) {
-      await collection.putAll(objects);
-    }
-  }
-
-  Future<void> closeDatabase() async {
-    _buffers.clear();
-    _timer?.cancel();
-    _timer = null;
-    if (isar.isOpen) await isar.close();
   }
 
   Future<void> closeDatabaseFor(String pubkey) async {
-    final instance = Isar.getInstance(pubkey);
-    if (instance != null && instance.isOpen) {
-      await instance.close();
+    final isar = _instances.remove(pubkey);
+    _timers[pubkey]?.cancel();
+    _timers.remove(pubkey);
+    _buffers.remove(pubkey);
+    if (isar != null && isar.isOpen) {
+      await isar.close();
+    }
+  }
+
+  Future<void> closeAllDatabases() async {
+    for (final key in List<String>.from(_instances.keys)) {
+      await closeDatabaseFor(key);
     }
   }
 }

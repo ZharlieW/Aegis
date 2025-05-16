@@ -83,7 +83,7 @@ class ServerNIP46Signer {
     for(var client in list){
       if(client.value.socketHashCode == socket.hashCode){
         client.value.socketHashCode = null;
-        instance.addApplicationMap(client.value,isUpdate: true);
+        instance.updateApplicationMap(client.value);
       }
     }
   }
@@ -259,18 +259,23 @@ class ServerNIP46Signer {
     }
   }
 
-  Future<void> _dealwithApplication(String clientPubkey,WebSocket socket) async {
-    final accountInstance = Account.sharedInstance;
-    final accountManagerInstance = AccountManager.sharedInstance;
-    ClientAuthDBISAR? client = accountInstance.authToNostrConnectInfo[clientPubkey];
-    client ??= accountManagerInstance.applicationMap[clientPubkey]?.value;
-    if (client != null) {
-      bool isUpdate = false;
-      if(client.socketHashCode == null){
-        client.socketHashCode = socket.hashCode;
-        isUpdate = true;
-      }
-      accountManagerInstance.addApplicationMap(client,isUpdate:isUpdate);
+  Future<void> _dealwithApplication(String clientPubkey, WebSocket socket) async {
+    final account = Account.sharedInstance;
+    final manager = AccountManager.sharedInstance;
+
+    ClientAuthDBISAR? app = account.authToNostrConnectInfo[clientPubkey] ?? manager.applicationMap[clientPubkey]?.value;
+    if (app == null) return;
+
+    if (!manager.applicationMap.containsKey(clientPubkey)) {
+      app.socketHashCode = socket.hashCode;
+      manager.addApplicationMap(app);
+      return;
+    }
+
+    final notifier = manager.applicationMap[clientPubkey]!;
+    if (notifier.value.socketHashCode == null) {
+      notifier.value.socketHashCode = socket.hashCode;
+      manager.updateApplicationMap(notifier.value);
     }
   }
 }

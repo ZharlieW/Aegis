@@ -65,6 +65,17 @@ class Account {
   }
 
   Future<void> logout() async {
+
+    final clientList = await ClientAuthDBISAR.getAllFromDB(_currentPubkey);
+    for(final client in clientList){
+      AccountManager.sharedInstance.removeApplicationMap(client.clientPubkey);
+
+      if(client.socketHashCode != null){
+        AegisWebSocketServer.instance.closeClientByHashCode(client.socketHashCode!);
+      }
+    }
+
+
     await AccountManager.deleteAccount(_currentPubkey);
     clear();
 
@@ -85,7 +96,7 @@ class Account {
     _notify((o) => o.didLogout());
   }
 
-  Future<void> loginSuccess(String pubkey, String? privkey) async {
+  Future<void> loginSuccess(String pubkey, String? privkey,{ bool isInit = false}) async {
     clear();
     _currentPubkey = pubkey;
 
@@ -105,10 +116,10 @@ class Account {
         encryptedPrivkey: bytesToHex(encrypted),
         defaultPassword: defaultPassword,
       );
-      await DBISAR.sharedInstance.saveToDB(user);
+      await DBISAR.sharedInstance.saveToDB(user.pubkey,user);
     }
 
-    final clientList = await ClientAuthDBISAR.getAllFromDB();
+    final clientList = await ClientAuthDBISAR.getAllFromDB(user.pubkey);
     for (final item in clientList) {
       AccountManager.sharedInstance.addApplicationMap(item);
     }
@@ -120,6 +131,9 @@ class Account {
     LocalNostrSigner.instance.init();
     await ServerNIP46Signer.instance.start('8081');
 
+    if(isInit){
+      await AccountManager.sharedInstance.initAccountList();
+    }
     _notify((o) => o.didLoginSuccess());
   }
 
