@@ -45,6 +45,8 @@ class NostrRemoteRequest {
           request.id = id;
           return request;
         }
+      }else{
+        return null;
       }
     }
     catch (e) {

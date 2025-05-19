@@ -47,7 +47,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
         ),
         useMaterial3: true,
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 

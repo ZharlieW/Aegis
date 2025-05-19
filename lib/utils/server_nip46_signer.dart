@@ -104,10 +104,16 @@ class ServerNIP46Signer {
 
     NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
         event.content, event.pubkey, LocalNostrSigner.instance,serverPrivate);
-    if (remoteRequest == null) return;
+
+    if (remoteRequest == null) {
+      final jsonResponseClosed = jsonEncode(['CLOSED', event.id, 'The remote signing server has disconnected. You can no longer use the remote signing service until you re-establish the connection. Please reconnect and add the client again. ']);
+      socket.add(jsonResponseClosed);
+      return;
+    }
 
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
     socket.add(jsonResponseOk);
+
     String? responseJson = await _processRemoteRequest(remoteRequest, event, socket);
     if (responseJson == null) return;
 
