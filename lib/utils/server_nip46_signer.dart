@@ -88,10 +88,10 @@ class ServerNIP46Signer {
     }
   }
 
-  void _handleRequest(WebSocket socket, String subscriptionId) {
+  void _handleRequest(WebSocket socket, String subscriptionId) async {
     _subscriptionIds[socket.hashCode] = subscriptionId;
-    final jsonResponseEOSE = jsonEncode(['EOSE', subscriptionId]);
-    socket.add(jsonResponseEOSE);
+    final jsonResponseEOSE =  jsonEncode(['EOSE', subscriptionId]);
+    socket.send(jsonResponseEOSE);
   }
 
   void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
@@ -107,16 +107,15 @@ class ServerNIP46Signer {
 
     if (remoteRequest == null) {
       final jsonResponseClosed = jsonEncode(['CLOSED', event.id, 'The remote signing server has disconnected. You can no longer use the remote signing service until you re-establish the connection. Please reconnect and add the client again. ']);
-      socket.add(jsonResponseClosed);
+      socket.send(jsonResponseClosed);
       return;
     }
 
     final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
-    socket.add(jsonResponseOk);
+    socket.send(jsonResponseOk);
 
     String? responseJson = await _processRemoteRequest(remoteRequest, event, socket);
     if (responseJson == null) return;
-
     String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
 
     final signEvent = Event.from(
@@ -127,32 +126,31 @@ class ServerNIP46Signer {
       pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
       privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
     );
-    print('jsonResponse===${signEvent.serialize()}');
-    socket.add(signEvent.serialize());
+    final encodeJson = signEvent.serialize();
+    socket.send(encodeJson);
+
   }
 
   Future<String?> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event,WebSocket socket) async {
-    String responseJson = '';
+    Map responseJson = {};
     String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
     switch (remoteRequest.method) {
       case "connect":
-        responseJson =
-            jsonEncode({"id": remoteRequest.id, "result": "ack", "error": ''});
+        responseJson = {"id": remoteRequest.id, "result": "ack", "error": ''};
         break;
 
       case "ping":
-        responseJson =
-            jsonEncode({"id": remoteRequest.id, "result": "pong", "error": ''});
+        responseJson = {"id": remoteRequest.id, "result": "pong", "error": ''};
         break;
 
       case "get_public_key":
         final instance = Account.sharedInstance;
-        responseJson = jsonEncode({
+        responseJson = {
           "id": remoteRequest.id,
           "result": LocalNostrSigner.instance.getPublicKey(event.pubkey),
           "error": "",
-        });
+        };
 
         ClientAuthDBISAR? client = instance.authToNostrConnectInfo[event.pubkey];
         client ??= AccountManager.sharedInstance.applicationMap[event.pubkey]?.value;

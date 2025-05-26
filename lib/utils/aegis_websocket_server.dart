@@ -3,6 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 
+extension AegisWebSocket on WebSocket {
+  void send(String message) {
+    AegisWebSocketServer.instance.out(this, message);
+  }
+}
+
 class AegisWebSocketServer {
   static final AegisWebSocketServer instance = AegisWebSocketServer._internal();
   factory AegisWebSocketServer() => instance;
@@ -19,6 +25,8 @@ class AegisWebSocketServer {
 
   final int restartServerDelayedTimer = 3;
   final int timeoutServer = 3;
+
+  final Map<int, StreamController<String>> _sendControllers = {};
 
   /// Start the WebSocket server
   Future<void> start({
@@ -40,32 +48,47 @@ class AegisWebSocketServer {
 
     // server = await HttpServer.bind(InternetAddress.anyIPv4, int.tryParse(_port) ?? 7651);
 
-    HttpServer server = await HttpServer.bind(ip, int.tryParse(_port) ?? 7651);
+    HttpServer server = await HttpServer.bind(ip, int.tryParse(_port) ?? 8081);
     serverNotifier.value = server;
 
 
     serverNotifier.value!.listen((HttpRequest request) async {
       if (WebSocketTransformer.isUpgradeRequest(request)) {
         WebSocket socket = await WebSocketTransformer.upgrade(request);
+        final id = socket.hashCode;
         clients.add(socket);
+
+        // Create a single-subscription controller for outgoing messages
+        final controller = StreamController<String>();
+        _sendControllers[id] = controller;
+        controller.stream
+            .asyncMap((msg) => socket.add(msg))
+            .listen(null, onDone: () {
+          controller.close();
+          _sendControllers.remove(id);
+        });
+
+
         socket.listen(
               (message) {
             if (message == "server_heartbeat") {
               print("💓 Received heartbeat check, sending ACK...");
-              socket.add("server_heartbeat_ack");
+              out(socket, "server_heartbeat_ack");
               return;
             }
 
             _onMessageReceived?.call(message, socket);
           },
           onDone: () {
-            print("❌ Client disconnected: ${socket.hashCode}");
+            print("❌ Client disconnected: $id");
             _onDoneFromSocket?.call(socket);
             clients.remove(socket);
+            _sendControllers.remove(id)?.close();
           },
           onError: (error) {
             print("🚨 WebSocket error: $error");
             clients.remove(socket);
+            _sendControllers.remove(id)?.close();
           },
         );
         print("🔗 Client connected: ${request.connectionInfo?.remoteAddress}");
@@ -77,6 +100,17 @@ class AegisWebSocketServer {
     });
 
     print("✅ WebSocket server started on ws://127.0.0.1:$_port");
+  }
+
+  /// Enqueue an outgoing message; messages are sent in order
+  void out(WebSocket socket, String message) {
+    final controller = _sendControllers[socket.hashCode];
+    if (controller != null && !controller.isClosed) {
+      controller.add(message);
+    } else {
+      // Fallback if controller not ready
+      socket.add(message);
+    }
   }
 
   Future<bool> isPortAvailable() async {
@@ -95,8 +129,8 @@ class AegisWebSocketServer {
       print("🛑 Stopping WebSocket server...");
       await serverNotifier.value!.close();
       for (var client in clients) {
-
         client.close();
+        _sendControllers.remove(client.hashCode)?.close();
       }
       clients.clear();
       serverNotifier.value = null;
@@ -106,6 +140,7 @@ class AegisWebSocketServer {
     }
   }
 
+  /// Close a single client by its hashCode
   Future<void> closeClientByHashCode(int socketHashCode) async {
     final index = clients.indexWhere((s) => s.hashCode == socketHashCode);
     if (index != -1) {
@@ -117,10 +152,9 @@ class AegisWebSocketServer {
         print("⚠️ Error closing client $socketHashCode: $e");
       }
       clients.removeAt(index);
-      // _onDoneFromSocket?.call(client);
+      _sendControllers.remove(socketHashCode)?.close();
     } else {
       print("⚠️ No client found with hashCode: $socketHashCode");
     }
   }
-
 }
