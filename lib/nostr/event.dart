@@ -6,6 +6,8 @@ import 'package:pointycastle/export.dart';
 import 'package:flutter/foundation.dart';
 import 'package:bip340/bip340.dart' as bip340;
 
+import '../utils/aegis_isolate.dart';
+
 
 /// The only object type that exists is the event, which has the following format on the wire:
 ///
@@ -227,9 +229,9 @@ class Event {
   /// - ["EVENT", subscription_id, event JSON as defined above]
   String serialize() {
     if (subscriptionId != null) {
-      return jsonEncode(["EVENT", subscriptionId, toJson()]);
+      return AegisIsolate.encodeJson(["EVENT", subscriptionId, toJson()]);
     } else {
-      return jsonEncode(["EVENT", toJson()]);
+      return AegisIsolate.encodeJson(["EVENT", toJson()]);
     }
   }
 

@@ -1,12 +1,8 @@
-import 'dart:convert';
-
-import 'package:aegis/db/userDB_isar.dart';
-import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/aegis_isolate.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../signer/local_nostr_signer.dart';
-import '../../signer/nostr_signer.dart';
 import '../../string_util.dart';
-import '../nip04/nip04.dart';
 
 class NostrRemoteRequest {
   String id;
@@ -24,12 +20,12 @@ class NostrRemoteRequest {
       String? plaintext;
       bool isNip04 = ciphertext.contains('?iv=');
       if(isNip04){
-        plaintext = NIP04.decrypt(ciphertext, localNostrSigner.getAgreement(clientPubkey: clientPubkey), clientPubkey);
+        plaintext = await localNostrSigner.decrypt(clientPubkey, ciphertext);
       }else{
         plaintext = await localNostrSigner.nip44Decrypt(serverPrivate,ciphertext,clientPubkey);
       }
       if (StringUtil.isNotBlank(plaintext)) {
-        var jsonMap = jsonDecode(plaintext!);
+        var jsonMap = await compute(AegisIsolate.parseJson, plaintext!);
         var id = jsonMap["id"];
         var method = jsonMap["method"];
         var _params = jsonMap["params"];
