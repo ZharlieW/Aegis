@@ -172,6 +172,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                         currentUser.username = newName;
                         await AccountManager.sharedInstance.saveAccount(currentUser);
                         getAccountList();
+                        CommonTips.success(context, 'Update successful!');
                       },
                     );
                   },
@@ -367,11 +368,23 @@ class SettingsState extends State<Settings> with AccountObservers {
           autofocus: true,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+          ElevatedButton.icon(
+            onPressed: () => AegisNavigator.pop(context),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                  Theme.of(context).colorScheme.surfaceBright),
+            ),
+            label: Text(
+              "Cancel",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(
+                color: Colors.black,
+              ),
+            ),
           ),
-          TextButton(
+          ElevatedButton.icon(
             onPressed: () {
               final newName = controller.text.trim();
               if (newName.isNotEmpty) {
@@ -379,7 +392,20 @@ class SettingsState extends State<Settings> with AccountObservers {
                 Navigator.of(context).pop();
               }
             },
-            child: const Text('Confirm'),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            label: Text(
+              "Confirm",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),
