@@ -95,13 +95,20 @@ class AccountManager {
     final autoPubkey = LocalStorage.get('pubkey');
     for (final entry in storedAccounts.entries) {
       final pubkey = entry.key;
+      final localUser = entry.value;
+
       if (pubkey == autoPubkey) continue;
 
       await DBISAR.sharedInstance.open(pubkey);
-      final user = await UserDBISAR.searchFromDB(pubkey);
-      if (user != null) {
-        user.privkey = bytesToHex(Account.sharedInstance.decryptPrivkey(user));
-        accountMap[pubkey] = user;
+      final isarUser = await UserDBISAR.searchFromDB(pubkey);
+
+      if (isarUser != null) {
+        isarUser.privkey =
+            bytesToHex(Account.sharedInstance.decryptPrivkey(isarUser));
+
+        isarUser.username = localUser.username;
+
+        accountMap[pubkey] = isarUser;
       }
 
       final clients = await ClientAuthDBISAR.getAllFromDB(pubkey);

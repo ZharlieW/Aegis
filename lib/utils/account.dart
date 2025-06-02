@@ -107,6 +107,12 @@ class Account {
       user = await UserDBISAR.searchFromDB(pubkey);
       if (user == null) return;
       _currentPrivkey = bytesToHex(decryptPrivkey(user));
+
+      final all = await AccountManager.getAllAccount();
+      final local = all[pubkey];
+      if (local?.username != null) {
+        user.username = local!.username;
+      }
     } else {
       _currentPrivkey = privkey;
       final defaultPassword = generateStrongPassword(16);

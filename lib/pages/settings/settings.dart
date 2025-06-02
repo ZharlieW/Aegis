@@ -123,7 +123,9 @@ class SettingsState extends State<Settings> with AccountObservers {
 
   Widget _accountView() {
     Account account = Account.sharedInstance;
-    String name = accountMap[account.currentPubkey]?.username ?? '--';
+    UserDBISAR? currentUser = accountMap[account.currentPubkey];
+    if(currentUser == null) return const SizedBox();
+    String name = currentUser.username ?? 'Unnamed';
 
     return GestureDetector(
       onTap: () {
@@ -160,6 +162,31 @@ class SettingsState extends State<Settings> with AccountObservers {
             ),
             Row(
               children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    showRenameDialog(
+                      context: context,
+                      initialName: name,
+                      onConfirm: (newName) async {
+                        currentUser.username = newName;
+                        await AccountManager.sharedInstance.saveAccount(currentUser);
+                        getAccountList();
+                      },
+                    );
+                  },
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Center(
+                      child: CommonImage(
+                        iconName: 'edit_icon.png',
+                        size: 24,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
                 GestureDetector(
                   onTap: () {
                     Account account = Account.sharedInstance;
@@ -317,6 +344,45 @@ class SettingsState extends State<Settings> with AccountObservers {
           ],
         );
       },
+    );
+  }
+
+  Future<void> showRenameDialog({
+    required BuildContext context,
+    required String initialName,
+    required void Function(String newName) onConfirm,
+  }) async {
+    final controller = TextEditingController(text: initialName);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Account'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Account Name',
+            hintText: 'Enter new name',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                onConfirm(newName);
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
     );
   }
 
