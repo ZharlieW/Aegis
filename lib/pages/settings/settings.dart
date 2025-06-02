@@ -45,7 +45,6 @@ class SettingsState extends State<Settings> with AccountObservers {
 
   void getAccountList() async {
     accountMap = await AccountManager.getAllAccount();
-    accountMap.remove(Account.sharedInstance.currentPubkey);
     setState(() {});
   }
 
@@ -69,12 +68,14 @@ class SettingsState extends State<Settings> with AccountObservers {
                   children: [
                     _accountView(),
                     ...accountMap.values.toList().map((account) {
-                      int findIndex = accountMap.values.toList().indexOf(account);
+                      if(Account.sharedInstance.currentPubkey == account.pubkey){
+                        return const SizedBox();
+                      }
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: ListTile(
                           title: Text(
-                            'Account ${findIndex + 2}',
+                            account.username ?? '--',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           subtitle: Text(
@@ -121,6 +122,9 @@ class SettingsState extends State<Settings> with AccountObservers {
   }
 
   Widget _accountView() {
+    Account account = Account.sharedInstance;
+    String name = accountMap[account.currentPubkey]?.username ?? '--';
+
     return GestureDetector(
       onTap: () {
         AegisNavigator.pushPage(context, (context) => const AccountBackup());
@@ -139,7 +143,7 @@ class SettingsState extends State<Settings> with AccountObservers {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Account 1',
+                  name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,

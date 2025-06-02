@@ -52,11 +52,30 @@ class AccountManager {
     _notify((o) => o.didUpdateApplicationMap());
   }
 
-
   static Future<Map<String, UserDBISAR>> getAllAccount() async {
     final raw = await LocalStorage.get(_accountPrefix) as Map<String, dynamic>? ?? {};
-    return raw.map((k, v) => MapEntry(k, UserDBISAR.fromJson(v)));
+
+    final result = <String, UserDBISAR>{};
+    int index = 1;
+
+    for (final entry in raw.entries) {
+      final key = entry.key;
+      final value = Map<String, dynamic>.from(entry.value);
+      final user = UserDBISAR.fromJson(value);
+
+      if (user.username == null) {
+        user.username = 'Account $index';
+        await AccountManager.sharedInstance.saveAccount(user);
+      }
+
+      result[key] = user;
+      index++;
+    }
+
+    return result;
   }
+
+
 
   Future<void> saveAccount(UserDBISAR user) async {
     final raw = await LocalStorage.get(_accountPrefix) as Map<String, dynamic>? ?? {};

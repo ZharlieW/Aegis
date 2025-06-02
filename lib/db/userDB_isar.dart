@@ -20,7 +20,11 @@ class UserDBISAR {
     this.privkey,
     this.encryptedPrivkey,
     this.defaultPassword,
+    this.username,
   });
+
+  @ignore
+  String? username;
 
   String get getPrivkey {
     final decryptedPrivkey = Account.sharedInstance.decryptPrivkey(this);
@@ -40,7 +44,8 @@ class UserDBISAR {
     'pubkey': pubkey,
     'privkey': privkey,
     'encryptedPrivkey':encryptedPrivkey,
-    'defaultPassword':defaultPassword
+    'defaultPassword':defaultPassword,
+    if (username != null) 'username': username,
   };
 
   static UserDBISAR fromJson(Map<String, dynamic> json) => UserDBISAR(
@@ -48,5 +53,6 @@ class UserDBISAR {
     privkey: json['privkey'],
     encryptedPrivkey: json['encryptedPrivkey'],
     defaultPassword: json['defaultPassword'],
+    username: json['username'],
   );
 }
