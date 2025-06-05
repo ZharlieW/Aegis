@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/aegis_isolate.dart';
+import 'package:flutter/foundation.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../nostr/event.dart';
@@ -10,6 +12,8 @@ import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'aegis_websocket_server.dart';
 import 'nostr_wallet_connection_parser.dart';
+
+
 
 class ClientRequest {
   final String method;
@@ -53,7 +57,9 @@ class ServerNIP46Signer {
   }
 
   void _handleMessage(String message, WebSocket socket) async {
-    final request = jsonDecode(message);
+    final request = AegisIsolate.parseJson(message);
+    // final request = await compute(AegisIsolate.parseJson, message);
+
     final messageType = request[0];
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
     if (messageType == 'REQ') {
@@ -170,11 +176,11 @@ class ServerNIP46Signer {
           await ClientAuthDBISAR.saveFromDB(newClient);
 
         } else {
-          responseJson = jsonEncode({
+          responseJson = {
             "id": remoteRequest.id,
             "result": null,
             "error": "unauthorized",
-          });
+          };
         }
         break;
 
@@ -193,34 +199,33 @@ class ServerNIP46Signer {
             pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
             privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
           );
-          responseJson = jsonEncode({
+          // final result = await compute(AegisIsolate.encodeJson, eventFromJ.toJson());
+          final result = AegisIsolate.encodeJson(eventFromJ.toJson());
+          responseJson = {
             "id": remoteRequest.id,
-            "result": jsonEncode(eventFromJ.toJson()),
+            "result": result,
             "error": null
-          });
+          };
         }
         break;
 
       case "nip04_encrypt":
         String? result = await LocalNostrSigner.instance
             .encrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        responseJson = jsonEncode(
-            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
+        responseJson = {"id": remoteRequest.id, "result": result ?? '', "error": ''};
         break;
 
       case "nip04_decrypt":
         String? result = await LocalNostrSigner.instance
             .decrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        responseJson = jsonEncode(
-            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
+        responseJson ={"id": remoteRequest.id, "result": result ?? '', "error": ''};
         break;
 
       case "nip44_decrypt":
         if(serverPrivate == null ||  remoteRequest.params[1] is! String || remoteRequest.params[0] is! String ) break;
         String? result = await LocalNostrSigner.instance
             .nip44Decrypt(serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);
-        responseJson = jsonEncode(
-            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
+        responseJson = {"id": remoteRequest.id, "result": result ?? '', "error": ''};
         break;
 
       case "nip44_encrypt":
@@ -228,18 +233,20 @@ class ServerNIP46Signer {
 
         String? result = await LocalNostrSigner.instance
             .nip44Encrypt(serverPrivate, remoteRequest.params[1]!,remoteRequest.params[0]! );
-        responseJson = jsonEncode(
-            {"id": remoteRequest.id, "result": result ?? '', "error": ''});
+        responseJson = {"id": remoteRequest.id, "result": result ?? '', "error": ''};
         break;
 
       default:
-        responseJson = jsonEncode({
+        responseJson = {
           "id": remoteRequest.id,
           "result": "no ${remoteRequest.method} method",
           "error": ''
-        });
+        };
     }
-    return responseJson;
+    String? encodeResponseJson = await compute(AegisIsolate.encodeJson, responseJson);
+    // String? encodeResponseJson = AegisIsolate.encodeJson(responseJson);
+
+    return encodeResponseJson;
   }
 
   String getBunkerUrl()  {
