@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_isolate.dart';
+import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:flutter/foundation.dart';
 
 import '../db/clientAuthDB_isar.dart';
@@ -37,10 +38,18 @@ class ServerNIP46Signer {
   String port = '8080';
 
   AegisWebSocketServer? server;
+  final ThreadPoolManager _threadPool = ThreadPoolManager();
 
   Future<void> start(String getPort) async {
     port = getPort;
-    // generateKeyPair();
+    
+    try {
+      await _threadPool.initialize();
+      print('The thread pool has been initialized successfully and can start processing requests');
+    } catch (e) {
+      print('Thread pool initialization failed: $e');
+    }
+    
     await _startWebSocketServer();
   }
 
@@ -57,8 +66,10 @@ class ServerNIP46Signer {
   }
 
   void _handleMessage(String message, WebSocket socket) async {
-    final request = AegisIsolate.parseJson(message);
-    // final request = await compute(AegisIsolate.parseJson, message);
+
+    final request = await _threadPool.runOtherTask(() async {
+      return AegisIsolate.parseJson(message);
+    });
 
     final messageType = request[0];
     print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
@@ -96,12 +107,28 @@ class ServerNIP46Signer {
 
   void _handleRequest(WebSocket socket, String subscriptionId) async {
     _subscriptionIds[socket.hashCode] = subscriptionId;
-    final jsonResponseEOSE =  jsonEncode(['EOSE', subscriptionId]);
+
+    final jsonResponseEOSE = await _threadPool.runOtherTask(() async {
+      return jsonEncode(['EOSE', subscriptionId]);
+    });
     socket.send(jsonResponseEOSE);
   }
 
   void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
     print('eventData===$eventData');
+    
+    if (!_threadPool.isInitialized) {
+      print('The thread pool is not initialized. Attempt to reinitialize...');
+      try {
+        await _threadPool.initialize();
+        print('The reinitialization of the thread pool was successful');
+      } catch (e) {
+        print('Thread pool reinitialization failed: $e');
+        socket.send(jsonEncode(['CLOSED', '', 'The server thread pool is not initialized. Please try again later']));
+        return;
+      }
+    }
+    
     final event = Event.fromJson(eventData);
     if (event == null) return;
 
@@ -132,9 +159,11 @@ class ServerNIP46Signer {
       pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
       privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
     );
-    final encodeJson = signEvent.serialize();
+    
+    final encodeJson = await _threadPool.runOtherTask(() async {
+      return signEvent.serialize();
+    });
     socket.send(encodeJson);
-
   }
 
   Future<String?> _processRemoteRequest(
@@ -173,8 +202,13 @@ class ServerNIP46Signer {
             connectionType: EConnectionType.bunker.toInt,
           );
           AccountManager.sharedInstance.addApplicationMap(newClient);
-          await ClientAuthDBISAR.saveFromDB(newClient);
-
+          try {
+            await _threadPool.runDatabaseTask(() async {
+              return await ClientAuthDBISAR.saveFromDB(newClient);
+            });
+          } catch (e) {
+            print('Database saving failed: $e');
+          }
         } else {
           responseJson = {
             "id": remoteRequest.id,
@@ -187,8 +221,16 @@ class ServerNIP46Signer {
       case "sign_event":
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null) {
-          Event? signEvent =
-              Event.fromJson(jsonDecode(contentStr), verify: false);
+          Event? signEvent;
+          try {
+            signEvent = await _threadPool.runOtherTask(() async {
+              return Event.fromJson(jsonDecode(contentStr), verify: false);
+            });
+          } catch (e) {
+            print('JSON decoding failed: $e');
+            signEvent = null;
+          }
+          
           if (signEvent == null) return null;
           final eventFromJ = Event.from(
             createdAt: signEvent.createdAt,
@@ -199,12 +241,21 @@ class ServerNIP46Signer {
             pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
             privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
           );
-          // final result = await compute(AegisIsolate.encodeJson, eventFromJ.toJson());
-          final result = AegisIsolate.encodeJson(eventFromJ.toJson());
+          
+          String? result;
+          try {
+            result = await _threadPool.runOtherTask(() async {
+              return AegisIsolate.encodeJson(eventFromJ.toJson());
+            });
+          } catch (e) {
+            print('JSON decoding failed: $e');
+            result = null;
+          }
+          
           responseJson = {
             "id": remoteRequest.id,
             "result": result,
-            "error": null
+            "error": result == null ? 'encoding_failed' : null
           };
         }
         break;
@@ -243,8 +294,16 @@ class ServerNIP46Signer {
           "error": ''
         };
     }
-    String? encodeResponseJson = await compute(AegisIsolate.encodeJson, responseJson);
-    // String? encodeResponseJson = AegisIsolate.encodeJson(responseJson);
+    
+    String? encodeResponseJson;
+    try {
+      encodeResponseJson = await _threadPool.runOtherTask(() async {
+        return AegisIsolate.encodeJson(responseJson);
+      });
+    } catch (e) {
+      print('JSON decoding failed: $e');
+      encodeResponseJson = null;
+    }
 
     return encodeResponseJson;
   }
@@ -288,5 +347,9 @@ class ServerNIP46Signer {
       notifier.value.socketHashCode = socket.hashCode;
       manager.updateApplicationMap(notifier.value);
     }
+  }
+
+  void dispose() {
+    _threadPool.dispose();
   }
 }
