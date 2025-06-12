@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:aegis/db/userDB_isar.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import '../utils/logger.dart';
 
 import 'clientAuthDB_isar.dart';
 
@@ -23,7 +24,6 @@ class DBISAR {
 
   Future<Isar> open(String pubkey) async {
     if (_instances.containsKey(pubkey) && _instances[pubkey]!.isOpen) {
-      print('=====>hasOpen');
       return _instances[pubkey]!;
     }
     final isOS = Platform.isIOS || Platform.isMacOS;
@@ -37,7 +37,7 @@ class DBISAR {
     );
     _instances[pubkey] = isar;
     _buffers.putIfAbsent(pubkey, () => {});
-    print('DBISAR open: $dir, pubkey: $pubkey');
+    AegisLogger.info('DBISAR open: $dir, pubkey: $pubkey');
 
     return isar;
   }

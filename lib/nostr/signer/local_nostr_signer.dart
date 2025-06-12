@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
+import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/lru_cache.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
 import '../../utils/aegis_isolate.dart';
@@ -14,7 +16,6 @@ import '../nips/nip44/nip44_native_channel.dart';
 import 'nostr_signer.dart';
 
 class LocalNostrSigner implements NostrSigner {
-
   static final LocalNostrSigner instance = LocalNostrSigner._internal();
   factory LocalNostrSigner() => instance;
   LocalNostrSigner._internal();
@@ -23,8 +24,10 @@ class LocalNostrSigner implements NostrSigner {
   late String publicKey;
 
   final ThreadPoolManager _threadPool = ThreadPoolManager();
-  final Map<String, ECDHBasicAgreement> _agreementCache = {};
-  final Map<String, Uint8List> _nip44KeyCache = {};
+  final LRUCache<String, ECDHBasicAgreement> _agreementCache = 
+      LRUCache(maxSize: 100, defaultTtl: const Duration(hours: 1));
+  final LRUCache<String, Uint8List> _nip44KeyCache = 
+      LRUCache(maxSize: 200, defaultTtl: const Duration(hours: 2));
   final NIP44NativeChannel _nativeChannel = NIP44NativeChannel();
   final NIP04NativeChannel _nip04NativeChannel = NIP04NativeChannel();
 
@@ -37,12 +40,14 @@ class LocalNostrSigner implements NostrSigner {
     try {
       await _threadPool.initialize();
     } catch (e) {
-      print('ThreadPool init fail: $e');
+      AegisLogger.error('ThreadPool initialization failed', e);
     }
   }
 
   String? getPublicKey(String clientPubkey) {
-    return AccountManager.sharedInstance.applicationMap[clientPubkey]?.value.pubkey ?? publicKey;
+    return AccountManager
+            .sharedInstance.applicationMap[clientPubkey]?.value.pubkey ??
+        publicKey;
   }
 
   String? getPrivateKey(String clientPubkey) {
@@ -65,9 +70,13 @@ class LocalNostrSigner implements NostrSigner {
   ECDHBasicAgreement getAgreement(String clientPubkey) {
     final priv = getPrivateKey(clientPubkey)!;
     final key = '$priv|$clientPubkey';
-    return _agreementCache.putIfAbsent(key, () {
-      return NIP04.getAgreement(priv);
-    });
+    
+    final cached = _agreementCache.get(key);
+    if (cached != null) return cached;
+    
+    final agreement = NIP04.getAgreement(priv);
+    _agreementCache.put(key, agreement);
+    return agreement;
   }
 
   @override
@@ -75,39 +84,41 @@ class LocalNostrSigner implements NostrSigner {
       String serverPrivate, String ciphertext, String clientPubkey) async {
     try {
       final cacheKey = '$serverPrivate|$clientPubkey';
-      final convKey = _nip44KeyCache.putIfAbsent(cacheKey, () {
-        return NIP44V2.shareSecret(serverPrivate, clientPubkey);
-      });
-      
+      var convKey = _nip44KeyCache.get(cacheKey);
+      if (convKey == null) {
+        convKey = NIP44V2.shareSecret(serverPrivate, clientPubkey);
+        _nip44KeyCache.put(cacheKey, convKey);
+      }
+
       try {
-        final nativeResult = await _nativeChannel.nativeDecrypt(ciphertext, convKey);
+        final nativeResult =
+            await _nativeChannel.nativeDecrypt(ciphertext, convKey);
         if (nativeResult != null) {
-          print('Native NIP44 decryption successful');
+          AegisLogger.crypto('NIP44 decryption', true, true);
           return nativeResult;
         }
       } catch (e) {
-        print('Native NIP44 decryption failed, fallback to Flutter: $e');
+        AegisLogger.crypto('NIP44 decryption', true, false, e.toString());
       }
-      
+
       await _ensureThreadPoolInitialized();
-      
+
       try {
         return await _threadPool.runAlgorithmTask(() async {
           return await AegisIsolate.nip44DecryptIsolate({
-            'ciphertext':ciphertext,
-            'convKey':convKey,
+            'ciphertext': ciphertext,
+            'convKey': convKey,
           });
         });
       } catch (e) {
-        print('Thread pool decryption failed. Use the main thread: $e');
+        AegisLogger.warning('Thread pool decryption failed, using main thread', e);
         return await AegisIsolate.nip44DecryptIsolate({
           'ciphertext': ciphertext,
           'convKey': convKey,
         });
-
       }
     } catch (e) {
-      print('nip44Decrypt error: $e');
+      AegisLogger.error('nip44Decrypt error', e);
       return null;
     }
   }
@@ -117,146 +128,125 @@ class LocalNostrSigner implements NostrSigner {
       String serverPrivate, String plaintext, String clientPubkey) async {
     try {
       final cacheKey = '$serverPrivate|$clientPubkey';
-      final convKey = _nip44KeyCache.putIfAbsent(cacheKey, () {
-        return NIP44V2.shareSecret(serverPrivate, clientPubkey);
-      });
-      
+      var convKey = _nip44KeyCache.get(cacheKey);
+      if (convKey == null) {
+        convKey = NIP44V2.shareSecret(serverPrivate, clientPubkey);
+        _nip44KeyCache.put(cacheKey, convKey);
+      }
+
       try {
-        final nativeResult = await _nativeChannel.nativeEncrypt(plaintext, convKey);
+        final nativeResult =
+            await _nativeChannel.nativeEncrypt(plaintext, convKey);
         if (nativeResult != null) {
-          print('Native NIP44 encryption successful');
+          AegisLogger.crypto('NIP44 encryption', true, true);
           return nativeResult;
         }
       } catch (e) {
-        print('Native NIP44 encryption failed, fallback to Flutter: $e');
+        AegisLogger.crypto('NIP44 encryption', true, false, e.toString());
       }
-      
+
       await _ensureThreadPoolInitialized();
-      
+
       try {
         return await _threadPool.runAlgorithmTask(() async {
-          return await AegisIsolate.nip44EncryptIsolate(
-              {
-                'plaintext':plaintext,
-                'convKey':convKey,
-              }
-          );
-
+          return await AegisIsolate.nip44EncryptIsolate({
+            'plaintext': plaintext,
+            'convKey': convKey,
+          });
         });
       } catch (e) {
-        print('Thread pool encryption failed. Use the main thread: $e');
-        return await AegisIsolate.nip44EncryptIsolate(
-            {
-              'plaintext':plaintext,
-              'convKey':convKey,
-            }
-        );
-
+        AegisLogger.warning('Thread pool encryption failed, using main thread', e);
+        return await AegisIsolate.nip44EncryptIsolate({
+          'plaintext': plaintext,
+          'convKey': convKey,
+        });
       }
     } catch (e) {
-      print('nip44Encrypt error: $e');
+      AegisLogger.error('nip44Encrypt error', e);
       return null;
     }
   }
 
   @override
   Future<String?> decrypt(clientPubkey, ciphertext) async {
-   try{
-     final serverPrivate = getPrivateKey(clientPubkey)!;
-     
-     try {
-       final nativeResult = await _nip04NativeChannel.nativeNip04Decrypt(
-         ciphertext, 
-         serverPrivate, 
-         clientPubkey
-       );
-       if (nativeResult != null) {
-         print('Native NIP04 decryption successful');
-         return nativeResult;
-       }
-     } catch (e) {
-       print('Native NIP04 decryption failed, fallback to Flutter: $e');
-     }
-     
-     var agreement = getAgreement(clientPubkey);
+    try {
+      final serverPrivate = getPrivateKey(clientPubkey)!;
 
-     await _ensureThreadPoolInitialized();
-     
-     try {
-       return await _threadPool.runAlgorithmTask(() async {
-                 return await AegisIsolate.nip04DecryptIsolate(
-             {
-               'ciphertext':ciphertext,
-               'clientPubkey':clientPubkey,
-               'agreement':agreement
-             }
-         );
-       });
-     } catch (e) {
-       print('Thread pool decryption failed. Use the main thread: $e');
-       return await AegisIsolate.nip04DecryptIsolate(
-           {
-             'ciphertext':ciphertext,
-             'clientPubkey':clientPubkey,
-             'agreement':agreement
-           }
-       );
+      try {
+        final nativeResult = await _nip04NativeChannel.nativeNip04Decrypt(
+            ciphertext, serverPrivate, clientPubkey);
+        if (nativeResult != null) {
+          AegisLogger.crypto('NIP04 decryption', true, true);
+          return nativeResult;
+        }
+      } catch (e) {
+        AegisLogger.crypto('NIP04 decryption', true, false, e.toString());
+      }
 
-     }
+      var agreement = getAgreement(clientPubkey);
 
-   }catch(e){
-     print('decrypt:=====>>>$e');
-     return null;
-   }
+      await _ensureThreadPoolInitialized();
+
+      try {
+        return await _threadPool.runAlgorithmTask(() async {
+          return await AegisIsolate.nip04DecryptIsolate({
+            'ciphertext': ciphertext,
+            'clientPubkey': clientPubkey,
+            'agreement': agreement
+          });
+        });
+      } catch (e) {
+        AegisLogger.warning('Thread pool decryption failed, using main thread', e);
+        return await AegisIsolate.nip04DecryptIsolate({
+          'ciphertext': ciphertext,
+          'clientPubkey': clientPubkey,
+          'agreement': agreement
+        });
+      }
+    } catch (e) {
+      AegisLogger.error('NIP04 decrypt error', e);
+      return null;
+    }
   }
 
   @override
   Future<String?> encrypt(clientPubkey, plaintext) async {
-    try{
+    try {
       final serverPrivate = getPrivateKey(clientPubkey)!;
-      
+
       try {
         final nativeResult = await _nip04NativeChannel.nativeNip04Encrypt(
-          plaintext, 
-          serverPrivate, 
-          clientPubkey
-        );
+            plaintext, serverPrivate, clientPubkey);
         if (nativeResult != null) {
-          print('Native NIP04 encryption successful');
+          AegisLogger.crypto('NIP04 encryption', true, true);
           return nativeResult;
         }
       } catch (e) {
-        print('Native NIP04 encryption failed, fallback to Flutter: $e');
+        AegisLogger.crypto('NIP04 encryption', true, false, e.toString());
       }
-      
+
       var agreement = getAgreement(clientPubkey);
-      
+
       await _ensureThreadPoolInitialized();
-      
+
       try {
         return await _threadPool.runAlgorithmTask(() async {
-          return AegisIsolate.nip04EncryptIsolate(
-              {
-                'plaintext':plaintext,
-                'clientPubkey':clientPubkey,
-                'agreement':agreement
-              }
-          );
-
+          return AegisIsolate.nip04EncryptIsolate({
+            'plaintext': plaintext,
+            'clientPubkey': clientPubkey,
+            'agreement': agreement
+          });
         });
       } catch (e) {
-        print('Thread pool encryption failed. Use the main thread: $e');
-        return await AegisIsolate.nip04EncryptIsolate(
-            {
-              'plaintext':plaintext,
-              'clientPubkey':clientPubkey,
-              'agreement':agreement
-            }
-        );
+        AegisLogger.warning('Thread pool encryption failed, using main thread', e);
+        return await AegisIsolate.nip04EncryptIsolate({
+          'plaintext': plaintext,
+          'clientPubkey': clientPubkey,
+          'agreement': agreement
+        });
       }
-
-    }catch(e){
-      print('encrypt:=====>>>$e');
+    } catch (e) {
+      AegisLogger.error('NIP04 encrypt error', e);
       return null;
     }
   }

@@ -85,7 +85,8 @@ class NIP04 {
     try {
       y = liftX(x);
     } on Error {
-      print("error in handle pubkey");
+      // Note: This should be logged properly in production
+      rethrow;
     }
     ECPoint endPoint = secp256k1.curve.createPoint(x, y!);
     return ECPublicKey(endPoint, secp256k1);

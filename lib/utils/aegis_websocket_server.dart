@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'logger.dart';
 
 extension AegisWebSocket on WebSocket {
   void send(String message) {
@@ -38,7 +39,7 @@ class AegisWebSocketServer {
     if(!hasConnect) return;
 
     if (serverNotifier.value != null) {
-      print("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
+      AegisLogger.warning("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
       return;
     }
 
@@ -72,7 +73,7 @@ class AegisWebSocketServer {
         socket.listen(
               (message) {
             if (message == "server_heartbeat") {
-              print("💓 Received heartbeat check, sending ACK...");
+              AegisLogger.debug("💓 Received heartbeat check, sending ACK...");
               out(socket, "server_heartbeat_ack");
               return;
             }
@@ -80,18 +81,18 @@ class AegisWebSocketServer {
             _onMessageReceived?.call(message, socket);
           },
           onDone: () {
-            print("❌ Client disconnected: $id");
+            AegisLogger.info("❌ Client disconnected: $id");
             _onDoneFromSocket?.call(socket);
             clients.remove(socket);
             _sendControllers.remove(id)?.close();
           },
           onError: (error) {
-            print("🚨 WebSocket error: $error");
+            AegisLogger.error("🚨 WebSocket error", error);
             clients.remove(socket);
             _sendControllers.remove(id)?.close();
           },
         );
-        print("🔗 Client connected: ${request.connectionInfo?.remoteAddress}");
+        AegisLogger.info("🔗 Client connected: ${request.connectionInfo?.remoteAddress}");
       } else {
         request.response
           ..statusCode = HttpStatus.forbidden
@@ -99,7 +100,7 @@ class AegisWebSocketServer {
       }
     });
 
-    print("✅ WebSocket server started on ws://127.0.0.1:$_port");
+    AegisLogger.info("✅ WebSocket server started on ws://127.0.0.1:$_port");
   }
 
   /// Enqueue an outgoing message; messages are sent in order
@@ -126,7 +127,7 @@ class AegisWebSocketServer {
   /// Stop the WebSocket server
   Future<void> stop() async {
     if (serverNotifier.value != null) {
-      print("🛑 Stopping WebSocket server...");
+      AegisLogger.info("🛑 Stopping WebSocket server...");
       await serverNotifier.value!.close();
       for (var client in clients) {
         client.close();
@@ -134,9 +135,9 @@ class AegisWebSocketServer {
       }
       clients.clear();
       serverNotifier.value = null;
-      print("✅ WebSocket server stopped.");
+      AegisLogger.info("✅ WebSocket server stopped.");
     } else {
-      print("⚠️ WebSocket server is not running.");
+      AegisLogger.warning("⚠️ WebSocket server is not running.");
     }
   }
 
@@ -145,16 +146,16 @@ class AegisWebSocketServer {
     final index = clients.indexWhere((s) => s.hashCode == socketHashCode);
     if (index != -1) {
       final client = clients[index];
-      print("🔒 Closing client by hashCode: $socketHashCode");
+      AegisLogger.info("🔒 Closing client by hashCode: $socketHashCode");
       try {
         await client.close();
       } catch (e) {
-        print("⚠️ Error closing client $socketHashCode: $e");
+        AegisLogger.warning("⚠️ Error closing client $socketHashCode", e);
       }
       clients.removeAt(index);
       _sendControllers.remove(socketHashCode)?.close();
     } else {
-      print("⚠️ No client found with hashCode: $socketHashCode");
+      AegisLogger.warning("⚠️ No client found with hashCode: $socketHashCode");
     }
   }
 }

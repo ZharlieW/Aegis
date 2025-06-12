@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/services.dart';
+import 'logger.dart';
 
 class ThreadPoolManager {
   late Isolate _databaseIsolate;
@@ -37,7 +38,7 @@ class ThreadPoolManager {
 
   Future<void> _doInitialize() async {
     try {
-      print('start init ThreadPoolManager...');
+      AegisLogger.info('start init ThreadPoolManager...');
       
       _databaseSendPort = await _createIsolate((sendPort) {
         _databaseIsolate = sendPort.isolate;
@@ -55,10 +56,10 @@ class ThreadPoolManager {
       });
       
       _isInitialized = true;
-      print('ThreadPoolManager init success');
+      AegisLogger.info('ThreadPoolManager init success');
     } catch (e) {
       _initializationFuture = null; 
-      print('ThreadPoolManager init fail: $e');
+      AegisLogger.error('ThreadPoolManager init fail', e);
       rethrow;
     }
   }
@@ -123,7 +124,7 @@ class ThreadPoolManager {
       _otherIsolate.kill(priority: Isolate.immediate);
       _isInitialized = false;
       _initializationFuture = null;
-      print('ThreadPoolManager dispose');
+      AegisLogger.info('ThreadPoolManager dispose');
     }
   }
 }
@@ -150,7 +151,7 @@ void _isolateEntry(SendPort sendPort) {
         final result = await task();
         replyPort.send(result);
       } catch (e, stackTrace) {
-        print('_isolateEntry Error: $e\n$stackTrace');
+        AegisLogger.error('_isolateEntry Error: $e', stackTrace);
         replyPort.send("Error: $e");
       }
     }

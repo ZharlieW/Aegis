@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:aegis/utils/logger.dart';
 
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
@@ -148,11 +149,9 @@ class Account {
 
     if (pubkey != null) {
       await loginSuccess(pubkey, null);
-      print(
-          "🔹 The session is automatically resumed after the user logs in. Procedure");
+      AegisLogger.info("🔹 The session is automatically resumed after the user logs in. Procedure");
     } else {
-      print(
-          "🔹 No login information is detected. The user needs to log in again");
+      AegisLogger.info("🔹 No login information is detected. The user needs to log in again");
     }
   }
 

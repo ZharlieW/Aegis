@@ -5,6 +5,7 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_isolate.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
+import 'package:aegis/utils/logger.dart';
 import 'package:flutter/foundation.dart';
 
 import '../db/clientAuthDB_isar.dart';
@@ -45,9 +46,9 @@ class ServerNIP46Signer {
     
     try {
       await _threadPool.initialize();
-      print('The thread pool has been initialized successfully and can start processing requests');
+      AegisLogger.info('The thread pool has been initialized successfully and can start processing requests');
     } catch (e) {
-      print('Thread pool initialization failed: $e');
+      AegisLogger.error('Thread pool initialization failed', e);
     }
     
     await _startWebSocketServer();
@@ -55,9 +56,9 @@ class ServerNIP46Signer {
 
   void generateKeyPair()  {
     // String getIpAddress = await ServerNIP46Signer.getIpAddress();
-    print("✅ NIP-46  ws://127.0.0.1:$port");
+    AegisLogger.info("✅ NIP-46  ws://127.0.0.1:$port");
     String bunkerUrl =  getBunkerUrl();
-    print("🔗 Bunker URL: $bunkerUrl");
+    AegisLogger.info("🔗 Bunker URL: $bunkerUrl");
   }
 
   Future<void> _startWebSocketServer() async {
@@ -72,7 +73,7 @@ class ServerNIP46Signer {
     });
 
     final messageType = request[0];
-    print('===getClientRequest===>>>>>>🔔🔔🔔 $request');
+    AegisLogger.debug('===getClientRequest===>>>>>>🔔🔔🔔 $request');
     if (messageType == 'REQ') {
       List<dynamic> kindList = request?[2]?['kinds'];
       if (!kindList.contains(24133)) return;
@@ -115,15 +116,15 @@ class ServerNIP46Signer {
   }
 
   void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
-    print('eventData===$eventData');
+    AegisLogger.debug('eventData===$eventData');
     
     if (!_threadPool.isInitialized) {
-      print('The thread pool is not initialized. Attempt to reinitialize...');
+      AegisLogger.warning('The thread pool is not initialized. Attempt to reinitialize...');
       try {
         await _threadPool.initialize();
-        print('The reinitialization of the thread pool was successful');
+        AegisLogger.info('The reinitialization of the thread pool was successful');
       } catch (e) {
-        print('Thread pool reinitialization failed: $e');
+        AegisLogger.error('Thread pool reinitialization failed', e);
         socket.send(jsonEncode(['CLOSED', '', 'The server thread pool is not initialized. Please try again later']));
         return;
       }
@@ -207,7 +208,7 @@ class ServerNIP46Signer {
               return await ClientAuthDBISAR.saveFromDB(newClient);
             });
           } catch (e) {
-            print('Database saving failed: $e');
+            AegisLogger.error('Database saving failed', e);
           }
         } else {
           responseJson = {
@@ -227,7 +228,7 @@ class ServerNIP46Signer {
               return Event.fromJson(jsonDecode(contentStr), verify: false);
             });
           } catch (e) {
-            print('JSON decoding failed: $e');
+            AegisLogger.error('JSON decoding failed', e);
             signEvent = null;
           }
           
@@ -248,7 +249,7 @@ class ServerNIP46Signer {
               return AegisIsolate.encodeJson(eventFromJ.toJson());
             });
           } catch (e) {
-            print('JSON decoding failed: $e');
+            AegisLogger.error('JSON decoding failed', e);
             result = null;
           }
           
@@ -301,7 +302,7 @@ class ServerNIP46Signer {
         return AegisIsolate.encodeJson(responseJson);
       });
     } catch (e) {
-      print('JSON decoding failed: $e');
+      AegisLogger.error('JSON decoding failed', e);
       encodeResponseJson = null;
     }
 

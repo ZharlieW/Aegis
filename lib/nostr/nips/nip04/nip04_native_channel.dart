@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import '../../../utils/logger.dart';
 
 class NIP04NativeChannel {
   static const MethodChannel _channel = MethodChannel('aegis_nostr');
@@ -17,10 +18,10 @@ class NIP04NativeChannel {
       
       return result as String?;
     } on PlatformException catch (e) {
-      print('Native NIP04 encrypt error: ${e.code} - ${e.message}');
+      AegisLogger.error('Native NIP04 encrypt error: ${e.code} - ${e.message}');
       return null;
     } catch (e) {
-      print('Native NIP04 encrypt unexpected error: $e');
+      AegisLogger.error('Native NIP04 encrypt unexpected error', e);
       return null;
     }
   }
@@ -35,10 +36,10 @@ class NIP04NativeChannel {
       
       return result as String?;
     } on PlatformException catch (e) {
-      print('Native NIP04 decrypt error: ${e.code} - ${e.message}');
+      AegisLogger.error('Native NIP04 decrypt error: ${e.code} - ${e.message}');
       return null;
     } catch (e) {
-      print('Native NIP04 decrypt unexpected error: $e');
+      AegisLogger.error('Native NIP04 decrypt unexpected error', e);
       return null;
     }
   }
