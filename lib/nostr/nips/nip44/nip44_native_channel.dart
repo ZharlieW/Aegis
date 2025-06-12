@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 class NIP44NativeChannel {
-  static const MethodChannel _channel = MethodChannel('nip44_native');
+  static const MethodChannel _channel = MethodChannel('aegis_nostr');
   
   static final NIP44NativeChannel _instance = NIP44NativeChannel._internal();
   factory NIP44NativeChannel() => _instance;
@@ -14,7 +14,7 @@ class NIP44NativeChannel {
   
       final conversationKeyHex = conversationKey.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
       
-      final result = await _channel.invokeMethod('encrypt', {
+      final result = await _channel.invokeMethod('nip44Encrypt', {
         'plaintext': plaintext,
         'conversationKey': conversationKeyHex,
       });
@@ -35,7 +35,7 @@ class NIP44NativeChannel {
    
       final conversationKeyHex = conversationKey.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
       
-      final result = await _channel.invokeMethod('decrypt', {
+      final result = await _channel.invokeMethod('nip44Decrypt', {
         'payload': payload,
         'conversationKey': conversationKeyHex,
       });
@@ -54,7 +54,7 @@ class NIP44NativeChannel {
   Future<bool> isNativeSupported() async {
     try {
    
-      await _channel.invokeMethod('encrypt', {
+      await _channel.invokeMethod('nip44Encrypt', {
         'plaintext': 'test',
         'conversationKey': '0' * 64, 
       });
