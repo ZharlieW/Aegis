@@ -25,9 +25,9 @@ class LocalNostrSigner implements NostrSigner {
 
   final ThreadPoolManager _threadPool = ThreadPoolManager();
   final LRUCache<String, ECDHBasicAgreement> _agreementCache = 
-      LRUCache(maxSize: 100, defaultTtl: const Duration(hours: 1));
+      LRUCache(maxSize: 100, defaultTtl: const Duration(minutes: 15));
   final LRUCache<String, Uint8List> _nip44KeyCache = 
-      LRUCache(maxSize: 200, defaultTtl: const Duration(hours: 2));
+      LRUCache(maxSize: 200, defaultTtl: const Duration(minutes: 15));
   final NIP44NativeChannel _nativeChannel = NIP44NativeChannel();
   final NIP04NativeChannel _nip04NativeChannel = NIP04NativeChannel();
 
