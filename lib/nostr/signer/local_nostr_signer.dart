@@ -9,6 +9,7 @@ import '../../utils/aegis_isolate.dart';
 import '../event.dart';
 import '../nips/nip04/nip04.dart';
 import '../nips/nip44/nip44_v2.dart';
+import '../nips/nip44/nip44_native_channel.dart';
 import 'nostr_signer.dart';
 
 class LocalNostrSigner implements NostrSigner {
@@ -23,6 +24,7 @@ class LocalNostrSigner implements NostrSigner {
   final ThreadPoolManager _threadPool = ThreadPoolManager();
   final Map<String, ECDHBasicAgreement> _agreementCache = {};
   final Map<String, Uint8List> _nip44KeyCache = {};
+  final NIP44NativeChannel _nativeChannel = NIP44NativeChannel();
 
   void init() {
     privateKey = Account.sharedInstance.currentPrivkey;
@@ -75,6 +77,16 @@ class LocalNostrSigner implements NostrSigner {
         return NIP44V2.shareSecret(serverPrivate, clientPubkey);
       });
       
+      try {
+        final nativeResult = await _nativeChannel.nativeDecrypt(ciphertext, convKey);
+        if (nativeResult != null) {
+          print('Native decryption successful');
+          return nativeResult;
+        }
+      } catch (e) {
+        print('Native decryption failed, fallback to Flutter: $e');
+      }
+      
       await _ensureThreadPoolInitialized();
       
       try {
@@ -106,6 +118,16 @@ class LocalNostrSigner implements NostrSigner {
       final convKey = _nip44KeyCache.putIfAbsent(cacheKey, () {
         return NIP44V2.shareSecret(serverPrivate, clientPubkey);
       });
+      
+      try {
+        final nativeResult = await _nativeChannel.nativeEncrypt(plaintext, convKey);
+        if (nativeResult != null) {
+          print('Native encryption successful');
+          return nativeResult;
+        }
+      } catch (e) {
+        print('Native encryption failed, fallback to Flutter: $e');
+      }
       
       await _ensureThreadPoolInitialized();
       
