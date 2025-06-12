@@ -12,32 +12,37 @@ import CryptoSwift
     ) -> Bool {
         let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
         
-        let channel = FlutterMethodChannel(name: "nip44_native", 
+
+        let channel = FlutterMethodChannel(name: "aegis_nostr", 
                                          binaryMessenger: controller.binaryMessenger)
         channel.setMethodCallHandler({
             (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-            self.handleNIP44MethodCall(call, result: result)
+            self.handleNostrMethodCall(call, result: result)
         })
         
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
-    private func handleNIP44MethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    private func handleNostrMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
             result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
             return
         }
         
         switch call.method {
-        case "encrypt":
+        case "nip44Encrypt":
             handleNIP44Encrypt(args: args, result: result)
-        case "decrypt":
+        case "nip44Decrypt":
             handleNIP44Decrypt(args: args, result: result)
         case "encryptWithKeys":
             handleNIP44EncryptWithKeys(args: args, result: result)
         case "decryptWithKeys":
             handleNIP44DecryptWithKeys(args: args, result: result)
+        case "nip04Encrypt":
+            handleNIP04Encrypt(args: args, result: result)
+        case "nip04Decrypt":
+            handleNIP04Decrypt(args: args, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -88,7 +93,6 @@ import CryptoSwift
     
     private func handleNIP44DecryptWithKeys(args: [String: Any], result: @escaping FlutterResult) {
         do {
-           
             let decrypted = try NIP44Native.shared.decryptWithKeys(
                 payload: args["payload"] as! String,
                 privateKeyA: args["privateKeyA"] as! String,
@@ -97,6 +101,36 @@ import CryptoSwift
             result(decrypted)
         } catch let error as NIP44Native.NIP44Error {
             result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
+        } catch {
+            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        }
+    }
+    
+    private func handleNIP04Encrypt(args: [String: Any], result: @escaping FlutterResult) {
+        do {
+            let encrypted = try NIP44Native.shared.nip04Encrypt(
+                plaintext: args["plaintext"] as! String,
+                privateKey: args["privateKey"] as! String,
+                publicKey: args["publicKey"] as! String
+            )
+            result(encrypted)
+        } catch let error as NIP44Native.NIP44Error {
+            result(FlutterError(code: "NIP04_ERROR", message: error.localizedDescription, details: nil))
+        } catch {
+            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        }
+    }
+    
+    private func handleNIP04Decrypt(args: [String: Any], result: @escaping FlutterResult) {
+        do {
+            let decrypted = try NIP44Native.shared.nip04Decrypt(
+                ciphertext: args["ciphertext"] as! String,
+                privateKey: args["privateKey"] as! String,
+                publicKey: args["publicKey"] as! String
+            )
+            result(decrypted)
+        } catch let error as NIP44Native.NIP44Error {
+            result(FlutterError(code: "NIP04_ERROR", message: error.localizedDescription, details: nil))
         } catch {
             result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
         }
@@ -195,20 +229,20 @@ class NIP44Native: EventCreating {
         }
     }
     
-   
+
     func decryptWithKeys(payload: String, privateKeyA: String, publicKeyB: String) throws -> String {
-       
+     
         guard let privKeyA = parsePrivateKey(privateKeyA) else {
             throw NIP44Error.invalidPrivateKey
         }
         
-       
+    
         guard let pubKeyB = parsePublicKey(publicKeyB) else {
             throw NIP44Error.invalidPublicKey
         }
         
         do {
-          
+ 
             return try decrypt(payload: payload, privateKeyA: privKeyA, publicKeyB: pubKeyB)
         } catch {
             throw NIP44Error.decryptionFailed("NostrSDK decryption failed: \(error.localizedDescription)")
@@ -216,6 +250,44 @@ class NIP44Native: EventCreating {
     }
     
 
+    func nip04Encrypt(plaintext: String, privateKey: String, publicKey: String) throws -> String {
+  
+        guard let privKey = parsePrivateKey(privateKey) else {
+            throw NIP44Error.invalidPrivateKey
+        }
+        
+  
+        guard let pubKey = parsePublicKey(publicKey) else {
+            throw NIP44Error.invalidPublicKey
+        }
+        
+        do {
+     
+            return try legacyEncrypt(content: plaintext, privateKey: privKey, publicKey: pubKey)
+        } catch {
+            throw NIP44Error.encryptionFailed("NostrSDK NIP04 encryption failed: \(error.localizedDescription)")
+        }
+    }
+    
+
+    func nip04Decrypt(ciphertext: String, privateKey: String, publicKey: String) throws -> String {
+     
+        guard let privKey = parsePrivateKey(privateKey) else {
+            throw NIP44Error.invalidPrivateKey
+        }
+        
+ 
+        guard let pubKey = parsePublicKey(publicKey) else {
+            throw NIP44Error.invalidPublicKey
+        }
+        
+        do {
+         
+            return try legacyDecrypt(encryptedContent: ciphertext, privateKey: privKey, publicKey: pubKey)
+        } catch {
+            throw NIP44Error.decryptionFailed("NostrSDK NIP04 decryption failed: \(error.localizedDescription)")
+        }
+    }
     
     private func nip44Encrypt(plaintext: String, conversationKey: Data, nonce: Data? = nil) throws -> String {
         let nonceData: Data
