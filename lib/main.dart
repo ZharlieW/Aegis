@@ -10,7 +10,6 @@ import 'pages/home/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await BackgroundAudioManager().init();
   runApp(MainApp());
 }
 
@@ -32,6 +31,8 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   void init() async {
+    await BackgroundAudioManager().init();
+
     WidgetsBinding.instance.addObserver(this);
     await LocalStorage.init();
     await Account.sharedInstance.autoLogin();

@@ -37,9 +37,10 @@ class BackgroundAudioManager {
       ),
     );
 
-    Future.microtask(() async {
+    Future.delayed(Duration(seconds: 3),()async{
       await _audioHandler.play();
     });
+
   }
 }
 
