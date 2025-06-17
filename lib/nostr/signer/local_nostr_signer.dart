@@ -31,6 +31,34 @@ class LocalNostrSigner implements NostrSigner {
   final NIP44NativeChannel _nativeChannel = NIP44NativeChannel();
   final NIP04NativeChannel _nip04NativeChannel = NIP04NativeChannel();
 
+  Future<Uint8List?> _getNip44ConvKey(
+      String serverPrivate, String clientPubkey) async {
+    final cacheKey = '$serverPrivate|$clientPubkey';
+    var convKey = _nip44KeyCache.get(cacheKey);
+    if (convKey != null) return convKey;
+
+    await _ensureThreadPoolInitialized();
+    convKey = await _threadPool.runAlgorithmTask(() async {
+      return NIP44V2.shareSecret(serverPrivate, clientPubkey);
+    });
+
+    if (convKey != null) {
+      _nip44KeyCache.put(cacheKey, convKey);
+    }
+    return convKey;
+  }
+
+  Future<T?> _computeWithThreadPool<T>(
+      String context, Future<T?> Function() computation) async {
+    await _ensureThreadPoolInitialized();
+    try {
+      return await _threadPool.runAlgorithmTask(computation);
+    } catch (e) {
+      AegisLogger.warning('Thread pool $context failed, using main thread', e);
+      return await computation();
+    }
+  }
+
   void init() {
     privateKey = Account.sharedInstance.currentPrivkey;
     publicKey = Account.sharedInstance.currentPubkey;
@@ -83,12 +111,8 @@ class LocalNostrSigner implements NostrSigner {
   Future<String?> nip44Decrypt(
       String serverPrivate, String ciphertext, String clientPubkey) async {
     try {
-      final cacheKey = '$serverPrivate|$clientPubkey';
-      var convKey = _nip44KeyCache.get(cacheKey);
-      if (convKey == null) {
-        convKey = NIP44V2.shareSecret(serverPrivate, clientPubkey);
-        _nip44KeyCache.put(cacheKey, convKey);
-      }
+      final convKey = await _getNip44ConvKey(serverPrivate, clientPubkey);
+      if (convKey == null) return null;
 
       try {
         final nativeResult =
@@ -101,22 +125,12 @@ class LocalNostrSigner implements NostrSigner {
         AegisLogger.crypto('NIP44 decryption', true, false, e.toString());
       }
 
-      await _ensureThreadPoolInitialized();
-
-      try {
-        return await _threadPool.runAlgorithmTask(() async {
-          return await AegisIsolate.nip44DecryptIsolate({
-            'ciphertext': ciphertext,
-            'convKey': convKey,
-          });
-        });
-      } catch (e) {
-        AegisLogger.warning('Thread pool decryption failed, using main thread', e);
+      return await _computeWithThreadPool('NIP44 decryption', () async {
         return await AegisIsolate.nip44DecryptIsolate({
           'ciphertext': ciphertext,
           'convKey': convKey,
         });
-      }
+      });
     } catch (e) {
       AegisLogger.error('nip44Decrypt error', e);
       return null;
@@ -127,12 +141,8 @@ class LocalNostrSigner implements NostrSigner {
   Future<String?> nip44Encrypt(
       String serverPrivate, String plaintext, String clientPubkey) async {
     try {
-      final cacheKey = '$serverPrivate|$clientPubkey';
-      var convKey = _nip44KeyCache.get(cacheKey);
-      if (convKey == null) {
-        convKey = NIP44V2.shareSecret(serverPrivate, clientPubkey);
-        _nip44KeyCache.put(cacheKey, convKey);
-      }
+      final convKey = await _getNip44ConvKey(serverPrivate, clientPubkey);
+      if (convKey == null) return null;
 
       try {
         final nativeResult =
@@ -145,22 +155,12 @@ class LocalNostrSigner implements NostrSigner {
         AegisLogger.crypto('NIP44 encryption', true, false, e.toString());
       }
 
-      await _ensureThreadPoolInitialized();
-
-      try {
-        return await _threadPool.runAlgorithmTask(() async {
-          return await AegisIsolate.nip44EncryptIsolate({
-            'plaintext': plaintext,
-            'convKey': convKey,
-          });
-        });
-      } catch (e) {
-        AegisLogger.warning('Thread pool encryption failed, using main thread', e);
+      return await _computeWithThreadPool('NIP44 encryption', () async {
         return await AegisIsolate.nip44EncryptIsolate({
           'plaintext': plaintext,
           'convKey': convKey,
         });
-      }
+      });
     } catch (e) {
       AegisLogger.error('nip44Encrypt error', e);
       return null;
@@ -185,24 +185,13 @@ class LocalNostrSigner implements NostrSigner {
 
       var agreement = getAgreement(clientPubkey);
 
-      await _ensureThreadPoolInitialized();
-
-      try {
-        return await _threadPool.runAlgorithmTask(() async {
-          return await AegisIsolate.nip04DecryptIsolate({
-            'ciphertext': ciphertext,
-            'clientPubkey': clientPubkey,
-            'agreement': agreement
-          });
-        });
-      } catch (e) {
-        AegisLogger.warning('Thread pool decryption failed, using main thread', e);
+      return await _computeWithThreadPool('NIP04 decryption', () async {
         return await AegisIsolate.nip04DecryptIsolate({
           'ciphertext': ciphertext,
           'clientPubkey': clientPubkey,
           'agreement': agreement
         });
-      }
+      });
     } catch (e) {
       AegisLogger.error('NIP04 decrypt error', e);
       return null;
@@ -227,24 +216,13 @@ class LocalNostrSigner implements NostrSigner {
 
       var agreement = getAgreement(clientPubkey);
 
-      await _ensureThreadPoolInitialized();
-
-      try {
-        return await _threadPool.runAlgorithmTask(() async {
-          return AegisIsolate.nip04EncryptIsolate({
-            'plaintext': plaintext,
-            'clientPubkey': clientPubkey,
-            'agreement': agreement
-          });
-        });
-      } catch (e) {
-        AegisLogger.warning('Thread pool encryption failed, using main thread', e);
-        return await AegisIsolate.nip04EncryptIsolate({
+      return await _computeWithThreadPool('NIP04 encryption', () async {
+        return AegisIsolate.nip04EncryptIsolate({
           'plaintext': plaintext,
           'clientPubkey': clientPubkey,
           'agreement': agreement
         });
-      }
+      });
     } catch (e) {
       AegisLogger.error('NIP04 encrypt error', e);
       return null;
