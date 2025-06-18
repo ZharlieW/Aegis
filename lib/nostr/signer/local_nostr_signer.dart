@@ -7,7 +7,6 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/lru_cache.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
-import '../../utils/aegis_isolate.dart';
 import '../event.dart';
 import '../nips/nip04/nip04.dart';
 import '../nips/nip04/nip04_native_channel.dart';
@@ -38,25 +37,12 @@ class LocalNostrSigner implements NostrSigner {
     if (convKey != null) return convKey;
 
     await _ensureThreadPoolInitialized();
-    convKey = await _threadPool.runAlgorithmTask(() async {
-      return NIP44V2.shareSecret(serverPrivate, clientPubkey);
-    });
+    convKey = await _threadPool.runOtherTask(() async => NIP44V2.shareSecret(serverPrivate, clientPubkey));
 
     if (convKey != null) {
       _nip44KeyCache.put(cacheKey, convKey);
     }
     return convKey;
-  }
-
-  Future<T?> _computeWithThreadPool<T>(
-      String context, Future<T?> Function() computation) async {
-    await _ensureThreadPoolInitialized();
-    try {
-      return await _threadPool.runAlgorithmTask(computation);
-    } catch (e) {
-      AegisLogger.warning('Thread pool $context failed, using main thread', e);
-      return await computation();
-    }
   }
 
   void init() {
@@ -111,12 +97,11 @@ class LocalNostrSigner implements NostrSigner {
   Future<String?> nip44Decrypt(
       String serverPrivate, String ciphertext, String clientPubkey) async {
     try {
-      final convKey = await _getNip44ConvKey(serverPrivate, clientPubkey);
-      if (convKey == null) return null;
+      await _ensureThreadPoolInitialized();
 
       try {
         final nativeResult =
-            await _nativeChannel.nativeDecrypt(ciphertext, convKey);
+            await _nativeChannel.nativeDecrypt(ciphertext, serverPrivate, clientPubkey);
         if (nativeResult != null) {
           AegisLogger.crypto('NIP44 decryption', true, true);
           return nativeResult;
@@ -124,29 +109,22 @@ class LocalNostrSigner implements NostrSigner {
       } catch (e) {
         AegisLogger.crypto('NIP44 decryption', true, false, e.toString());
       }
-
-      return await _computeWithThreadPool('NIP44 decryption', () async {
-        return await AegisIsolate.nip44DecryptIsolate({
-          'ciphertext': ciphertext,
-          'convKey': convKey,
-        });
-      });
     } catch (e) {
       AegisLogger.error('nip44Decrypt error', e);
       return null;
     }
+    return null;
   }
 
   @override
   Future<String?> nip44Encrypt(
       String serverPrivate, String plaintext, String clientPubkey) async {
     try {
-      final convKey = await _getNip44ConvKey(serverPrivate, clientPubkey);
-      if (convKey == null) return null;
+      await _ensureThreadPoolInitialized();
 
       try {
         final nativeResult =
-            await _nativeChannel.nativeEncrypt(plaintext, convKey);
+            await _nativeChannel.nativeEncrypt(plaintext, serverPrivate, clientPubkey);
         if (nativeResult != null) {
           AegisLogger.crypto('NIP44 encryption', true, true);
           return nativeResult;
@@ -154,17 +132,11 @@ class LocalNostrSigner implements NostrSigner {
       } catch (e) {
         AegisLogger.crypto('NIP44 encryption', true, false, e.toString());
       }
-
-      return await _computeWithThreadPool('NIP44 encryption', () async {
-        return await AegisIsolate.nip44EncryptIsolate({
-          'plaintext': plaintext,
-          'convKey': convKey,
-        });
-      });
     } catch (e) {
       AegisLogger.error('nip44Encrypt error', e);
       return null;
     }
+    return null;
   }
 
   @override
@@ -182,20 +154,11 @@ class LocalNostrSigner implements NostrSigner {
       } catch (e) {
         AegisLogger.crypto('NIP04 decryption', true, false, e.toString());
       }
-
-      var agreement = getAgreement(clientPubkey);
-
-      return await _computeWithThreadPool('NIP04 decryption', () async {
-        return await AegisIsolate.nip04DecryptIsolate({
-          'ciphertext': ciphertext,
-          'clientPubkey': clientPubkey,
-          'agreement': agreement
-        });
-      });
     } catch (e) {
       AegisLogger.error('NIP04 decrypt error', e);
       return null;
     }
+    return null;
   }
 
   @override
@@ -213,19 +176,10 @@ class LocalNostrSigner implements NostrSigner {
       } catch (e) {
         AegisLogger.crypto('NIP04 encryption', true, false, e.toString());
       }
-
-      var agreement = getAgreement(clientPubkey);
-
-      return await _computeWithThreadPool('NIP04 encryption', () async {
-        return AegisIsolate.nip04EncryptIsolate({
-          'plaintext': plaintext,
-          'clientPubkey': clientPubkey,
-          'agreement': agreement
-        });
-      });
     } catch (e) {
       AegisLogger.error('NIP04 encrypt error', e);
       return null;
     }
+    return null;
   }
 }

@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
-import 'package:aegis/utils/aegis_isolate.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
-import 'package:flutter/foundation.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../nostr/event.dart';
@@ -67,10 +65,7 @@ class ServerNIP46Signer {
   }
 
   void _handleMessage(String message, WebSocket socket) async {
-
-    final request = await _threadPool.runOtherTask(() async {
-      return AegisIsolate.parseJson(message);
-    });
+    final request = jsonDecode(message);
 
     final messageType = request[0];
     AegisLogger.debug('===getClientRequest===>>>>>>🔔🔔🔔 $request');
@@ -109,9 +104,7 @@ class ServerNIP46Signer {
   void _handleRequest(WebSocket socket, String subscriptionId) async {
     _subscriptionIds[socket.hashCode] = subscriptionId;
 
-    final jsonResponseEOSE = await _threadPool.runOtherTask(() async {
-      return jsonEncode(['EOSE', subscriptionId]);
-    });
+    final jsonResponseEOSE = jsonEncode(['EOSE', subscriptionId]);
     socket.send(jsonResponseEOSE);
   }
 
@@ -161,9 +154,7 @@ class ServerNIP46Signer {
       privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
     );
     
-    final encodeJson = await _threadPool.runOtherTask(() async {
-      return signEvent.serialize();
-    });
+    final encodeJson = signEvent.serialize();
     socket.send(encodeJson);
   }
 
@@ -204,9 +195,7 @@ class ServerNIP46Signer {
           );
           AccountManager.sharedInstance.addApplicationMap(newClient);
           try {
-            await _threadPool.runDatabaseTask(() async {
-              return await ClientAuthDBISAR.saveFromDB(newClient);
-            });
+            await ClientAuthDBISAR.saveFromDB(newClient);
           } catch (e) {
             AegisLogger.error('Database saving failed', e);
           }
@@ -224,9 +213,7 @@ class ServerNIP46Signer {
         if (contentStr != null) {
           Event? signEvent;
           try {
-            signEvent = await _threadPool.runOtherTask(() async {
-              return Event.fromJson(jsonDecode(contentStr), verify: false);
-            });
+            signEvent = Event.fromJson(jsonDecode(contentStr), verify: false);
           } catch (e) {
             AegisLogger.error('JSON decoding failed', e);
             signEvent = null;
@@ -245,9 +232,7 @@ class ServerNIP46Signer {
           
           String? result;
           try {
-            result = await _threadPool.runOtherTask(() async {
-              return AegisIsolate.encodeJson(eventFromJ.toJson());
-            });
+            result = jsonEncode(eventFromJ.toJson());
           } catch (e) {
             AegisLogger.error('JSON decoding failed', e);
             result = null;
@@ -298,9 +283,7 @@ class ServerNIP46Signer {
     
     String? encodeResponseJson;
     try {
-      encodeResponseJson = await _threadPool.runOtherTask(() async {
-        return AegisIsolate.encodeJson(responseJson);
-      });
+      encodeResponseJson = jsonEncode(responseJson);
     } catch (e) {
       AegisLogger.error('JSON decoding failed', e);
       encodeResponseJson = null;

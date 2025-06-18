@@ -1,4 +1,5 @@
-import 'package:aegis/utils/aegis_isolate.dart';
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 import '../../signer/local_nostr_signer.dart';
@@ -25,7 +26,7 @@ class NostrRemoteRequest {
         plaintext = await localNostrSigner.nip44Decrypt(serverPrivate,ciphertext,clientPubkey);
       }
       if (StringUtil.isNotBlank(plaintext)) {
-        var jsonMap = await compute(AegisIsolate.parseJson, plaintext!);
+        var jsonMap = jsonDecode(plaintext!);
         var id = jsonMap["id"];
         var method = jsonMap["method"];
         var _params = jsonMap["params"];

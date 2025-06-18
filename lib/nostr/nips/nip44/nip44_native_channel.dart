@@ -11,14 +11,12 @@ class NIP44NativeChannel {
   NIP44NativeChannel._internal();
 
 
-  Future<String?> nativeEncrypt(String plaintext, Uint8List conversationKey) async {
+  Future<String?> nativeEncrypt(String plaintext, String privateKey, String publicKey) async {
     try {
-
-      final conversationKeyHex = conversationKey.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
-
       final result = await _channel.invokeMethod('nip44Encrypt', {
         'plaintext': plaintext,
-        'conversationKey': conversationKeyHex,
+        'privateKey': privateKey,
+        'publicKey': publicKey,
       });
 
       return result as String?;
@@ -32,14 +30,12 @@ class NIP44NativeChannel {
   }
 
 
-  Future<String?> nativeDecrypt(String payload, Uint8List conversationKey) async {
+  Future<String?> nativeDecrypt(String ciphertext, String privateKey, String publicKey) async {
     try {
-
-      final conversationKeyHex = conversationKey.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
-
       final result = await _channel.invokeMethod('nip44Decrypt', {
-        'payload': payload,
-        'conversationKey': conversationKeyHex,
+        'ciphertext': ciphertext,
+        'privateKey': privateKey,
+        'publicKey': publicKey,
       });
 
       return result as String?;
@@ -55,10 +51,10 @@ class NIP44NativeChannel {
 
   Future<bool> isNativeSupported() async {
     try {
-
       await _channel.invokeMethod('nip44Encrypt', {
         'plaintext': 'test',
-        'conversationKey': '0' * 64,
+        'privateKey': '0' * 64,
+        'publicKey': '0' * 64,
       });
       return true;
     } catch (e) {
