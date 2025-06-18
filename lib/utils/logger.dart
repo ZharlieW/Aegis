@@ -39,9 +39,8 @@ class AegisLogger {
   static void _log(LogLevel level, String emoji, String message, [Object? error]) {
     if (!_shouldLog(level)) return;
 
-    final timestamp = DateTime.now().toIso8601String();
     final levelStr = level.name.toUpperCase();
-    final fullMessage = '[$timestamp] [$levelStr] $emoji $message';
+    final fullMessage = '[[$levelStr] $emoji $message';
     
     if (kDebugMode || _enableLogsInRelease) {
       print(fullMessage);

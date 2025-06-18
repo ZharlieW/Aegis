@@ -12,6 +12,7 @@ import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'aegis_websocket_server.dart';
 import 'nostr_wallet_connection_parser.dart';
+import 'package:aegis/nostr/nips/nip44/nip44_native_channel.dart';
 
 
 
@@ -210,44 +211,14 @@ class ServerNIP46Signer {
 
       case "sign_event":
         String? contentStr = remoteRequest.params[0];
-        if (contentStr != null) {
-          Event? signEvent;
-          try {
-            signEvent = await _threadPool.runOtherTask(() async {
-              try {
-                return Event.fromJson(jsonDecode(contentStr), verify: false);
-              } catch (_) {
-                return null;
-              }
-            });
-          } catch (e) {
-            AegisLogger.error('JSON decoding failed', e);
-            signEvent = null;
-          }
-          
-          if (signEvent == null) return null;
-          final eventFromJ = Event.from(
-            createdAt: signEvent.createdAt,
-            subscriptionId: _subscriptionIds[socket.hashCode],
-            kind: signEvent.kind,
-            tags: signEvent.tags,
-            content: signEvent.content,
-            pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
-            privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
-          );
-          
-          String? result;
-          try {
-            result = await _threadPool.runOtherTask(() async => jsonEncode(eventFromJ.toJson()));
-          } catch (e) {
-            AegisLogger.error('JSON encoding failed', e);
-            result = null;
-          }
-          
+        if (contentStr != null && serverPrivate != null) {
+          final privateKey = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+          final nativeRes = await NIP44NativeChannel().nativeSignRumorEvent(contentStr, privateKey!);
+
           responseJson = {
             "id": remoteRequest.id,
-            "result": result,
-            "error": result == null ? 'encoding_failed' : null
+            "result": nativeRes,
+            "error": nativeRes == null ? 'sign_failed' : null,
           };
         }
         break;

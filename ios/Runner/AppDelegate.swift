@@ -1,7 +1,7 @@
 import CryptoKit
 import Flutter
-import NostrSDK
 import UIKit
+import NostrSDK
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, EventCreating {
@@ -37,6 +37,8 @@ import UIKit
             handleNIP04Encrypt(args: args, result: result)
         case "nip04Decrypt":
             handleNIP04Decrypt(args: args, result: result)
+        case "signRumorEvent":
+            handleSignRumorEvent(args: args, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -134,6 +136,31 @@ import UIKit
         }
     }
 
+    private func handleSignRumorEvent(args: [String: Any], result: @escaping FlutterResult) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                guard let rumorJson = args["rumorJsonString"] as? String,
+                      let privKey = args["privateKey"] as? String else {
+                    throw NIP44Native.NIP44Error.signingFailed("Missing required arguments")
+                }
+
+                let signed = try NIP44Native.shared.signRumorEvent(rumorJsonString: rumorJson,
+                                                                     privateKey: privKey)
+                DispatchQueue.main.async {
+                    result(signed)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "SIGN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
+        }
+    }
+
     override func application(
         _: UIApplication,
         open url: URL,
@@ -158,6 +185,7 @@ class NIP44Native: EventCreating {
         case encryptionFailed(String)
         case decryptionFailed(String)
         case keyParsingFailed(String)
+        case signingFailed(String)
 
         var localizedDescription: String {
             switch self {
@@ -173,8 +201,68 @@ class NIP44Native: EventCreating {
                 return "decryption failure: \(message)"
             case let .keyParsingFailed(message):
                 return "Key parsing failed.: \(message)"
+            case let .signingFailed(message):
+                return "Signing failed: \(message)"
             }
         }
+    }
+
+    // Cache for conversation keys: key is "privHex|pubHex"
+    private static var conversationKeyCache = [String: Data]()
+    // Provide a thread-safe concurrent queue for the cache dictionary above
+    private static let cacheQueue = DispatchQueue(label: "NIP44Native.conversationKeyCacheQueue", attributes: .concurrent)
+
+    // MARK: - Shared secret cache for NIP04 (legacy) -------------------------
+    /// Obtain and cache the shared secret used by NIP04 to avoid redundant calculations.
+    private func getSharedSecretKey(privateKey: PrivateKey, publicKey: PublicKey) throws -> Data {
+        // Reuse the same cache dictionary, key format: "privHex|pubHex"
+        let cacheKey = "\(privateKey.hex)|\(publicKey.hex)"
+
+        // Perform a lock-free read first
+        var cached: Data?
+        NIP44Native.cacheQueue.sync {
+            cached = NIP44Native.conversationKeyCache[cacheKey]
+        }
+
+        if let existing = cached {
+            return existing
+        }
+
+        // Cache miss, derive a new shared secret
+        let secretBytes = try getSharedSecret(privateKey: privateKey, recipient: publicKey)
+        let secretData = Data(secretBytes)
+
+        // Write with a barrier to ensure exclusive access during writes
+        NIP44Native.cacheQueue.async(flags: .barrier) {
+            NIP44Native.conversationKeyCache[cacheKey] = secretData
+        }
+
+        return secretData
+    }
+
+    private func getConversationKey(privateKey: PrivateKey, publicKey: PublicKey) throws -> Data {
+        let cacheKey = "\(privateKey.hex)|\(publicKey.hex)"
+
+        // First attempt a lock-free read
+        var cached: Data?
+        NIP44Native.cacheQueue.sync {
+            cached = NIP44Native.conversationKeyCache[cacheKey]
+        }
+
+        if let existing = cached {
+            return existing
+        }
+
+        // Cache miss, derive a new session key
+        let convKeyBytes = try conversationKey(privateKeyA: privateKey, publicKeyB: publicKey)
+        let convKeyData = Data(convKeyBytes.bytes)
+
+        // Write with a barrier to guarantee exclusive access for writes
+        NIP44Native.cacheQueue.async(flags: .barrier) {
+            NIP44Native.conversationKeyCache[cacheKey] = convKeyData
+        }
+
+        return convKeyData
     }
 
     func encryptWithKeys(plaintext: String, privateKeyA: String, publicKeyB: String) throws -> String {
@@ -187,9 +275,10 @@ class NIP44Native: EventCreating {
         }
 
         do {
-            return try encrypt(plaintext: plaintext, privateKeyA: privKeyA, publicKeyB: pubKeyB)
+            let convKey = try getConversationKey(privateKey: privKeyA, publicKey: pubKeyB)
+            return try encrypt(plaintext: plaintext, conversationKey: convKey)
         } catch {
-            throw NIP44Error.encryptionFailed("NostrSDK encryption failed: \(error.localizedDescription)")
+            throw NIP44Error.encryptionFailed("NIP44v2 encryption failed: \(error.localizedDescription)")
         }
     }
 
@@ -203,9 +292,10 @@ class NIP44Native: EventCreating {
         }
 
         do {
-            return try decrypt(payload: payload, privateKeyA: privKeyA, publicKeyB: pubKeyB)
+            let convKey = try getConversationKey(privateKey: privKeyA, publicKey: pubKeyB)
+            return try decrypt(payload: payload, conversationKey: convKey)
         } catch {
-            throw NIP44Error.decryptionFailed("NostrSDK decryption failed: \(error.localizedDescription)")
+            throw NIP44Error.decryptionFailed("NIP44v2 decryption failed: \(error.localizedDescription)")
         }
     }
 
@@ -219,9 +309,11 @@ class NIP44Native: EventCreating {
         }
 
         do {
-            return try legacyEncrypt(content: plaintext, privateKey: privKey, publicKey: pubKey)
+            // Use cached shared secret to avoid repeated calculation
+            let sharedSecret = try getSharedSecretKey(privateKey: privKey, publicKey: pubKey)
+            return try legacyEncrypt(content: plaintext, conversationKey: sharedSecret)
         } catch {
-            throw NIP44Error.encryptionFailed("NostrSDK NIP04 encryption failed: \(error.localizedDescription)")
+            throw NIP44Error.encryptionFailed("NIP04 encryption failed: \(error.localizedDescription)")
         }
     }
 
@@ -235,9 +327,50 @@ class NIP44Native: EventCreating {
         }
 
         do {
-            return try legacyDecrypt(encryptedContent: ciphertext, privateKey: privKey, publicKey: pubKey)
+            // Use cached shared secret to avoid repeated calculation
+            let sharedSecret = try getSharedSecretKey(privateKey: privKey, publicKey: pubKey)
+            return try legacyDecrypt(payload: ciphertext, conversationKey: sharedSecret)
         } catch {
-            throw NIP44Error.decryptionFailed("NostrSDK NIP04 decryption failed: \(error.localizedDescription)")
+            throw NIP44Error.decryptionFailed("NIP04 decryption failed: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Nostr Event Signing -----------------------------------------
+
+    /// Sign a rumor JSON string (draft event produced by Rumor) with the provided private key and return the final signed event JSON string.
+    /// - Parameters:
+    ///   - rumorJsonString: A JSON string that represents an unsigned Nostr event (Rumor format).
+    ///   - privateKey: The signer private key in hex or bech32 `nsec` format.
+    /// - Returns: The signed event encoded as a JSON string ready to be sent to relays.
+    func signRumorEvent(rumorJsonString: String, privateKey: String) throws -> String {
+        guard let privKey = parsePrivateKey(privateKey) else {
+            throw NIP44Error.invalidPrivateKey
+        }
+
+        do {
+            // Leverage the new initializer added in NostrSDK
+            let event = try NostrEvent(rumorJsonString: rumorJsonString, privkey: privKey)
+
+            // Attempt to obtain JSON string representation. Prefer `json()` if the SDK provides it, otherwise fallback to encoder.
+            if let jsonConvertible = event as? NSObject,
+               jsonConvertible.responds(to: Selector("json")) {
+                if let jsonString = jsonConvertible.value(forKey: "json") as? String {
+                    return jsonString
+                }
+            }
+
+            // Fallback: use JSONEncoder
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = []
+            let data = try encoder.encode(event)
+            guard let jsonString = String(data: data, encoding: .utf8) else {
+                throw NIP44Error.signingFailed("Unable to encode event to UTF-8 string")
+            }
+            return jsonString
+        } catch let error as NIP44Error {
+            throw error
+        } catch {
+            throw NIP44Error.signingFailed(error.localizedDescription)
         }
     }
 

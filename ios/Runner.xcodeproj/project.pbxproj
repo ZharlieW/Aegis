@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		09E567A82DF9C19700EB5CEF /* NostrSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 09E567A72DF9C19700EB5CEF /* NostrSDK */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		5E5640482E02A6D00027CF2A /* NostrSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 5E5640472E02A6D00027CF2A /* NostrSDK */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -81,7 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				09E567A82DF9C19700EB5CEF /* NostrSDK in Frameworks */,
+				5E5640482E02A6D00027CF2A /* NostrSDK in Frameworks */,
 				9EA054BB9110DC474B55AE9F /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -240,7 +240,7 @@
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
-				09586DC92DF9BDAA00682CE3 /* XCRemoteSwiftPackageReference "nostr-sdk-ios" */,
+				5E5640462E02A6D00027CF2A /* XCLocalSwiftPackageReference "../../nostr-sdk-ios" */,
 			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
@@ -740,21 +740,16 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		09586DC92DF9BDAA00682CE3 /* XCRemoteSwiftPackageReference "nostr-sdk-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/nostr-sdk/nostr-sdk-ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.3.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		5E5640462E02A6D00027CF2A /* XCLocalSwiftPackageReference "../../nostr-sdk-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../nostr-sdk-ios";
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		09E567A72DF9C19700EB5CEF /* NostrSDK */ = {
+		5E5640472E02A6D00027CF2A /* NostrSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 09586DC92DF9BDAA00682CE3 /* XCRemoteSwiftPackageReference "nostr-sdk-ios" */;
 			productName = NostrSDK;
 		};
 /* End XCSwiftPackageProductDependency section */

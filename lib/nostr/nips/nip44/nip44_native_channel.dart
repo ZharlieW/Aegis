@@ -61,4 +61,24 @@ class NIP44NativeChannel {
       return false;
     }
   }
+
+  // ----------------------------------------------------------------
+  // Rumor Event signing (custom helper)
+  // ----------------------------------------------------------------
+
+  Future<String?> nativeSignRumorEvent(String rumorJsonString, String privateKey) async {
+    try {
+      final result = await _channel.invokeMethod('signRumorEvent', {
+        'rumorJsonString': rumorJsonString,
+        'privateKey': privateKey,
+      });
+      return result as String?;
+    } on PlatformException catch (e) {
+      AegisLogger.error('Native signRumorEvent error: \\${e.code} - \\${e.message}');
+      return null;
+    } catch (e) {
+      AegisLogger.error('Native signRumorEvent unexpected error', e);
+      return null;
+    }
+  }
 }
