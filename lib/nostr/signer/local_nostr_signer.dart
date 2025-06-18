@@ -23,6 +23,7 @@ class LocalNostrSigner implements NostrSigner {
   void init() {
     privateKey = Account.sharedInstance.currentPrivkey;
     publicKey = Account.sharedInstance.currentPubkey;
+    _threadPool.initialize();
   }
 
   Future<void> _ensureThreadPoolInitialized() async {

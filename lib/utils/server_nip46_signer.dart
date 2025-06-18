@@ -65,7 +65,7 @@ class ServerNIP46Signer {
   }
 
   void _handleMessage(String message, WebSocket socket) async {
-    final request = jsonDecode(message);
+    final request = await _threadPool.runOtherTask(() async => jsonDecode(message));
 
     final messageType = request[0];
     AegisLogger.debug('===getClientRequest===>>>>>>🔔🔔🔔 $request');
@@ -123,7 +123,7 @@ class ServerNIP46Signer {
       }
     }
     
-    final event = Event.fromJson(eventData);
+    final event = await _threadPool.runOtherTask(() async => Event.fromJson(eventData));
     if (event == null) return;
 
     String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
@@ -213,7 +213,13 @@ class ServerNIP46Signer {
         if (contentStr != null) {
           Event? signEvent;
           try {
-            signEvent = Event.fromJson(jsonDecode(contentStr), verify: false);
+            signEvent = await _threadPool.runOtherTask(() async {
+              try {
+                return Event.fromJson(jsonDecode(contentStr), verify: false);
+              } catch (_) {
+                return null;
+              }
+            });
           } catch (e) {
             AegisLogger.error('JSON decoding failed', e);
             signEvent = null;
@@ -232,9 +238,9 @@ class ServerNIP46Signer {
           
           String? result;
           try {
-            result = jsonEncode(eventFromJ.toJson());
+            result = await _threadPool.runOtherTask(() async => jsonEncode(eventFromJ.toJson()));
           } catch (e) {
-            AegisLogger.error('JSON decoding failed', e);
+            AegisLogger.error('JSON encoding failed', e);
             result = null;
           }
           
@@ -283,9 +289,9 @@ class ServerNIP46Signer {
     
     String? encodeResponseJson;
     try {
-      encodeResponseJson = jsonEncode(responseJson);
+      encodeResponseJson = await _threadPool.runOtherTask(() async => jsonEncode(responseJson));
     } catch (e) {
-      AegisLogger.error('JSON decoding failed', e);
+      AegisLogger.error('JSON encoding failed', e);
       encodeResponseJson = null;
     }
 

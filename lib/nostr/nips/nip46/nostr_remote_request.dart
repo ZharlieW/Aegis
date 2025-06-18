@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../signer/local_nostr_signer.dart';
 import '../../string_util.dart';
+import 'package:aegis/utils/thread_pool_manager.dart';
 
 class NostrRemoteRequest {
   String id;
@@ -11,6 +12,9 @@ class NostrRemoteRequest {
   String method;
 
   List<String?> params;
+
+  // Thread pool for JSON parsing (lazy initialization)
+  static final ThreadPoolManager _threadPool = ThreadPoolManager();
 
   NostrRemoteRequest(this.method, this.params) : id = StringUtil.rndNameStr(12);
 
@@ -26,7 +30,21 @@ class NostrRemoteRequest {
         plaintext = await localNostrSigner.nip44Decrypt(serverPrivate,ciphertext,clientPubkey);
       }
       if (StringUtil.isNotBlank(plaintext)) {
-        var jsonMap = jsonDecode(plaintext!);
+        // Ensure the thread pool is ready
+        if (!_threadPool.isInitialized) {
+          try {
+            await _threadPool.initialize();
+          } catch (e) {
+            // If initialization fails, fall back to synchronous parsing
+          }
+        }
+
+        Map<String, dynamic> jsonMap;
+        if (_threadPool.isInitialized) {
+          jsonMap = await _threadPool.runOtherTask(() async => jsonDecode(plaintext!));
+        } else {
+          jsonMap = jsonDecode(plaintext!);
+        }
         var id = jsonMap["id"];
         var method = jsonMap["method"];
         var _params = jsonMap["params"];
