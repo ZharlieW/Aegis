@@ -49,90 +49,138 @@ import CryptoSwift
     }
     
     private func handleNIP44Encrypt(args: [String: Any], result: @escaping FlutterResult) {
-        do {
-            let encrypted = try NIP44Native.shared.encryptWithConversationKey(
-                plaintext: args["plaintext"] as! String,
-                conversationKeyHex: args["conversationKey"] as! String
-            )
-            result(encrypted)
-        } catch let error as NIP44Native.NIP44Error {
-            result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
-        } catch {
-            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let encrypted = try NIP44Native.shared.encryptWithConversationKey(
+                    plaintext: args["plaintext"] as! String,
+                    conversationKeyHex: args["conversationKey"] as! String
+                )
+                DispatchQueue.main.async {
+                    result(encrypted)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
         }
     }
     
     private func handleNIP44Decrypt(args: [String: Any], result: @escaping FlutterResult) {
-        do {
-            let decrypted = try NIP44Native.shared.decryptWithConversationKey(
-                payload: args["payload"] as! String,
-                conversationKeyHex: args["conversationKey"] as! String
-            )
-            result(decrypted)
-        } catch let error as NIP44Native.NIP44Error {
-            result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
-        } catch {
-            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let decrypted = try NIP44Native.shared.decryptWithConversationKey(
+                    payload: args["payload"] as! String,
+                    conversationKeyHex: args["conversationKey"] as! String
+                )
+                DispatchQueue.main.async {
+                    result(decrypted)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
         }
     }
     
     private func handleNIP44EncryptWithKeys(args: [String: Any], result: @escaping FlutterResult) {
-        do {
-            let encrypted = try NIP44Native.shared.encryptWithKeys(
-                plaintext: args["plaintext"] as! String,
-                privateKeyA: args["privateKeyA"] as! String,
-                publicKeyB: args["publicKeyB"] as! String
-            )
-            result(encrypted)
-        } catch let error as NIP44Native.NIP44Error {
-            result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
-        } catch {
-            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let encrypted = try NIP44Native.shared.encryptWithKeys(
+                    plaintext: args["plaintext"] as! String,
+                    privateKeyA: args["privateKeyA"] as! String,
+                    publicKeyB: args["publicKeyB"] as! String
+                )
+                DispatchQueue.main.async {
+                    result(encrypted)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
         }
     }
     
     private func handleNIP44DecryptWithKeys(args: [String: Any], result: @escaping FlutterResult) {
-        do {
-            let decrypted = try NIP44Native.shared.decryptWithKeys(
-                payload: args["payload"] as! String,
-                privateKeyA: args["privateKeyA"] as! String,
-                publicKeyB: args["publicKeyB"] as! String
-            )
-            result(decrypted)
-        } catch let error as NIP44Native.NIP44Error {
-            result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
-        } catch {
-            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let decrypted = try NIP44Native.shared.decryptWithKeys(
+                    payload: args["payload"] as! String,
+                    privateKeyA: args["privateKeyA"] as! String,
+                    publicKeyB: args["publicKeyB"] as! String
+                )
+                DispatchQueue.main.async {
+                    result(decrypted)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "NIP44_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
         }
     }
     
     private func handleNIP04Encrypt(args: [String: Any], result: @escaping FlutterResult) {
-        do {
-            let encrypted = try NIP44Native.shared.nip04Encrypt(
-                plaintext: args["plaintext"] as! String,
-                privateKey: args["privateKey"] as! String,
-                publicKey: args["publicKey"] as! String
-            )
-            result(encrypted)
-        } catch let error as NIP44Native.NIP44Error {
-            result(FlutterError(code: "NIP04_ERROR", message: error.localizedDescription, details: nil))
-        } catch {
-            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let encrypted = try NIP44Native.shared.nip04Encrypt(
+                    plaintext: args["plaintext"] as! String,
+                    privateKey: args["privateKey"] as! String,
+                    publicKey: args["publicKey"] as! String
+                )
+                DispatchQueue.main.async {
+                    result(encrypted)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "NIP04_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
         }
     }
     
     private func handleNIP04Decrypt(args: [String: Any], result: @escaping FlutterResult) {
-        do {
-            let decrypted = try NIP44Native.shared.nip04Decrypt(
-                ciphertext: args["ciphertext"] as! String,
-                privateKey: args["privateKey"] as! String,
-                publicKey: args["publicKey"] as! String
-            )
-            result(decrypted)
-        } catch let error as NIP44Native.NIP44Error {
-            result(FlutterError(code: "NIP04_ERROR", message: error.localizedDescription, details: nil))
-        } catch {
-            result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let decrypted = try NIP44Native.shared.nip04Decrypt(
+                    ciphertext: args["ciphertext"] as! String,
+                    privateKey: args["privateKey"] as! String,
+                    publicKey: args["publicKey"] as! String
+                )
+                DispatchQueue.main.async {
+                    result(decrypted)
+                }
+            } catch let error as NIP44Native.NIP44Error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "NIP04_ERROR", message: error.localizedDescription, details: nil))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil))
+                }
+            }
         }
     }
 
