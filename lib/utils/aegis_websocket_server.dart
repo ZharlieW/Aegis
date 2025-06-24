@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:flutter/cupertino.dart';
+import '../nostr/event.dart';
 import 'logger.dart';
 
 extension AegisWebSocket on WebSocket {
@@ -18,7 +21,7 @@ class AegisWebSocketServer {
 
   ValueNotifier<HttpServer?> serverNotifier = ValueNotifier(null);
   final List<WebSocket> clients = [];
-  Function(String, WebSocket)? _onMessageReceived;
+  Function(List, WebSocket,Event? event)? _onMessageReceived;
   Function(WebSocket)? _onDoneFromSocket;
   String _port = "8081";
 
@@ -32,7 +35,7 @@ class AegisWebSocketServer {
   /// Start the WebSocket server
   Future<void> start({
     String port = "8081",
-    required Function(String, WebSocket) onMessageReceived,
+    required Function(List, WebSocket,Event? event) onMessageReceived,
     required Function(WebSocket) onDoneFromSocket,
   }) async {
     bool hasConnect = await isPortAvailable();
@@ -68,17 +71,31 @@ class AegisWebSocketServer {
           controller.close();
           _sendControllers.remove(id);
         });
-
-
+        
         socket.listen(
-              (message) {
+              (message)async {
             if (message == "server_heartbeat") {
               AegisLogger.debug("💓 Received heartbeat check, sending ACK...");
               out(socket, "server_heartbeat_ack");
               return;
             }
+            List request = message.length < 5000 ? jsonDecode(message) : await ThreadPoolManager.sharedInstance.runOtherTask(() async => jsonDecode(message));
+            Event? event = await request[1].length > 5000 ?  await ThreadPoolManager.sharedInstance.runOtherTask(() async => Event.fromJson(request[1])) : Event.fromJson(request[1]);
 
-            _onMessageReceived?.call(message, socket);
+              final messageType = request[0];
+              AegisLogger.debug('===getClientRequest===>>>>>>🔔🔔🔔 $request');
+              if (messageType == 'REQ') {
+
+                final jsonResponseEOSE = jsonEncode(['EOSE', request[1]]);
+                socket.send(jsonResponseEOSE);
+              } else if (messageType == 'EVENT') {
+
+                if(event == null) return;
+                final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
+                socket.send(jsonResponseOk);
+              }
+
+            _onMessageReceived?.call(request, socket,event);
           },
           onDone: () {
             AegisLogger.info("❌ Client disconnected: $id");
