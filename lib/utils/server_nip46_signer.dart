@@ -5,7 +5,6 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
-import 'package:aegis/utils/request_case_timer.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import '../nostr/event.dart';
@@ -160,7 +159,6 @@ class ServerNIP46Signer {
 
   Future<String?> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event,WebSocket socket) async {
-    final Stopwatch _sw = Stopwatch()..start();
 
     Map responseJson = {};
     String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
@@ -267,7 +265,6 @@ class ServerNIP46Signer {
       encodeResponseJson = null;
     }
 
-    RequestCaseTimer.record(remoteRequest.method, _sw);
 
     return encodeResponseJson;
   }

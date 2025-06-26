@@ -105,7 +105,6 @@ class AccountManager {
       if (isarUser != null) {
         isarUser.privkey =
             bytesToHex(Account.sharedInstance.decryptPrivkey(isarUser));
-
         isarUser.username = localUser.username;
 
         accountMap[pubkey] = isarUser;

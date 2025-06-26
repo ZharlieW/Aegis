@@ -131,6 +131,7 @@ class Account {
       AccountManager.sharedInstance.addApplicationMap(item);
     }
 
+    user.privkey = _currentPrivkey;
     await LocalStorage.set('pubkey', pubkey);
     await AccountManager.sharedInstance.saveAccount(user);
     AccountManager.sharedInstance.accountMap[user.pubkey] = user;

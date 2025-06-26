@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 
 import '../nostr/utils.dart';
 import '../utils/account.dart';
+import '../utils/account_manager.dart';
 import 'db_isar.dart';
 
 part 'userDB_isar.g.dart';
@@ -27,6 +28,12 @@ class UserDBISAR {
   String? username;
 
   String get getPrivkey {
+    if(privkey != null && privkey!.isNotEmpty) {
+      if(AccountManager.sharedInstance.accountMap[pubkey] != null) {
+        AccountManager.sharedInstance.accountMap[pubkey]!.privkey = privkey;
+      }
+      return privkey!;
+    }
     final decryptedPrivkey = Account.sharedInstance.decryptPrivkey(this);
     return bytesToHex(decryptedPrivkey);
   }
