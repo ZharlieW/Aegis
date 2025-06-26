@@ -66,14 +66,15 @@ class ServerNIP46Signer {
         .start(onMessageReceived: _handleMessage, port: port,onDoneFromSocket:_onDoneFromSocket);
   }
 
-  void _handleMessage(List request, WebSocket socket,Event? event) async {
+  void _handleMessage(String message, WebSocket socket) async {
+    final request = await _threadPool.runOtherTask(() async => jsonDecode(message));
 
     final messageType = request[0];
     AegisLogger.debug('===getClientRequest===>>>>>>🔔🔔🔔 $request');
     if (messageType == 'REQ') {
-      List<dynamic> kindList = request[2]?['kinds'];
+      List<dynamic> kindList = request?[2]?['kinds'];
       if (!kindList.contains(24133)) return;
-      String? getPubKey = request[2]?['#p']?[0]?.toLowerCase();
+      String? getPubKey = request?[2]?['#p']?[0]?.toLowerCase();
       if (getPubKey != null) {
         await _dealwithApplication(getPubKey,socket);
         Account.sharedInstance.clientReqMap[getPubKey] = request;
@@ -87,7 +88,7 @@ class ServerNIP46Signer {
     } else if (messageType == 'EVENT') {
       String clientPubkey = request[1]['pubkey'];
       await _dealwithApplication(clientPubkey,socket);
-      _handleEvent(socket, event);
+      _handleEvent(socket, request[1]);
     }
   }
 
@@ -104,14 +105,14 @@ class ServerNIP46Signer {
 
   void _handleRequest(WebSocket socket, String subscriptionId) async {
     _subscriptionIds[socket.hashCode] = subscriptionId;
-    //
-    // final jsonResponseEOSE = jsonEncode(['EOSE', subscriptionId]);
-    // socket.send(jsonResponseEOSE);
+
+    final jsonResponseEOSE = jsonEncode(['EOSE', subscriptionId]);
+    socket.send(jsonResponseEOSE);
   }
 
-  void _handleEvent(WebSocket socket, Event? event) async {
-    if(event == null) return;
-
+  void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
+    AegisLogger.debug('eventData===$eventData');
+    
     if (!_threadPool.isInitialized) {
       AegisLogger.warning('The thread pool is not initialized. Attempt to reinitialize...');
       try {
@@ -123,6 +124,9 @@ class ServerNIP46Signer {
         return;
       }
     }
+    
+    final event = await _threadPool.runOtherTask(() async => Event.fromJson(eventData));
+    if (event == null) return;
 
     String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
     if(serverPrivate == null) return;
@@ -130,15 +134,14 @@ class ServerNIP46Signer {
     NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
         event.content, event.pubkey, LocalNostrSigner.instance,serverPrivate);
 
-    if(remoteRequest == null) return;
-    // if (remoteRequest == null) {
-    //   final jsonResponseClosed = jsonEncode(['CLOSED', event.id, 'The remote signing server has disconnected. You can no longer use the remote signing service until you re-establish the connection. Please reconnect and add the client again. ']);
-    //   socket.send(jsonResponseClosed);
-    //   return;
-    // }
-    //
-    // final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
-    // socket.send(jsonResponseOk);
+    if (remoteRequest == null) {
+      final jsonResponseClosed = jsonEncode(['CLOSED', event.id, 'The remote signing server has disconnected. You can no longer use the remote signing service until you re-establish the connection. Please reconnect and add the client again. ']);
+      socket.send(jsonResponseClosed);
+      return;
+    }
+
+    final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
+    socket.send(jsonResponseOk);
 
     String? responseJson = await _processRemoteRequest(remoteRequest, event, socket);
     if (responseJson == null) return;
