@@ -136,7 +136,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             ),
             ListTile(
               title: Text(
-                'Version: 0.1.6',
+                'Version: 0.1.7',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               trailing: CommonImage(
