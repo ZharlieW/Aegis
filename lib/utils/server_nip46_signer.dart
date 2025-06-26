@@ -15,8 +15,6 @@ import 'aegis_websocket_server.dart';
 import 'nostr_wallet_connection_parser.dart';
 import 'package:aegis/nostr/nips/nip44/nip44_native_channel.dart';
 
-
-
 class ClientRequest {
   final String method;
   final List<String?> params;
