@@ -24,10 +24,10 @@ class LaunchSchemeUtils {
   static void getSchemeData() {
     platform.setMethodCallHandler((MethodCall call) async {
       if (call.method == 'onSchemeCalled') {
-        String? url = call.arguments;
-        if (url == null) return;
-        String uri = url.substring(APP_SCHEME.length);
-        String schemeUrl = Uri.decodeComponent(uri);
+        String? schemeUrl = call.arguments;
+        if (schemeUrl == null) return;
+        // String uri = url.substring(APP_SCHEME.length);
+        // String schemeUrl = Uri.decodeComponent(uri);
         Account instance = Account.sharedInstance;
         if(instance.currentPrivkey.isEmpty || instance.currentPubkey.isEmpty){
            gotoLogin();

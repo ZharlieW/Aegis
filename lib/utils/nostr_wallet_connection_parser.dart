@@ -120,33 +120,79 @@ class NostrWalletConnectionParserHandler {
 
   static Future<void> handleScheme(String? url) async {
     if (url == null) return;
-    ClientAuthDBISAR? result = parseUri(url);
 
-    if (result == null) return;
+    void openError(String? cb, String code, String msg) {
+      if (cb == null) return;
+      final uriStr = '$cb?x-source=aegis&errorCode=$code&errorMessage=${Uri.encodeComponent(msg)}';
+      LaunchSchemeUtils.open(uriStr);
+    }
+
+    void openSuccess(String? cb) {
+      if (cb == null) return;
+      LaunchSchemeUtils.open('$cb?x-source=aegis');
+    }
+
+    const errInvalid = 'INVALID_PARAM';
+    const errCancel  = 'USER_CANCEL';
+    const errParse   = 'PARSE_FAIL';
+
+    String? encodedNc;
+    String? successCallback;
+    String? errorCallback;
+
+    if (url.startsWith('aegis://')) {
+      try {
+        final uri = Uri.parse(Uri.decodeComponent(url));
+        if (uri.host == 'x-callback-url' && uri.path == '/nip46Auth') {
+          encodedNc = uri.queryParameters['nostrconnect'];
+          successCallback = uri.queryParameters['x-success'];
+          errorCallback = uri.queryParameters['x-error'];
+          if (encodedNc == null) {
+            openError(errorCallback, errInvalid, 'Missing nostrconnect parameter');
+            return;
+          }
+          url = Uri.decodeComponent(encodedNc);
+        }
+      } catch (e) {
+        openError(errorCallback, errParse, 'Malformed nip46Auth uri');
+        return;
+      }
+    }
+
+    ClientAuthDBISAR? result = parseUri(url);
+    if (result == null) {
+      openError(errorCallback, errParse, 'Failed to parse nostrconnect uri');
+      return;
+    }
 
     String clientPubkey = result.clientPubkey;
     Account accountInstance = Account.sharedInstance;
     AccountManager accountManagerInstance = AccountManager.sharedInstance;
 
-
-    ClientAuthDBISAR? hasClient = accountManagerInstance.applicationMap[clientPubkey]?.value;
-    if(hasClient == null) {
+    ClientAuthDBISAR? hasClient =
+        accountManagerInstance.applicationMap[clientPubkey]?.value;
+    if (hasClient == null) {
       bool isSuccess = await Account.authToClient();
-      if(!isSuccess) return;
+      if (!isSuccess) {
+        openError(errorCallback, errCancel, 'User cancelled authorization');
+        return;
+      }
     }
 
     accountManagerInstance.addApplicationMap(result);
-
     await ClientAuthDBISAR.saveFromDB(result);
 
     List<dynamic>? reqInfo = accountInstance.clientReqMap[clientPubkey];
     accountInstance.addAuthToNostrConnectInfo(result);
     if (reqInfo != null) {
-
       sendAuthUrl(reqInfo[1], result);
     }
 
-    LaunchSchemeUtils.open(result.scheme!);
+    if (successCallback != null) {
+      openSuccess(successCallback);
+    } else if (result.scheme != null && result.scheme!.isNotEmpty) {
+      LaunchSchemeUtils.open(result.scheme!);
+    }
   }
 }
 
