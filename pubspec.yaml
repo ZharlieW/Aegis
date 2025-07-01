@@ -60,6 +60,7 @@ dependencies:
   just_audio: ^0.9.46
   audio_session: ^0.1.25
   shared_preferences: ^2.5.2
+  package_info_plus: ^8.3.0
 #  uni_links3: ^0.5.3
   url_launcher: ^6.3.1
 
