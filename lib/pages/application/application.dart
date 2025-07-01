@@ -8,6 +8,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../db/clientAuthDB_isar.dart';
 import '../../navigator/navigator.dart';
@@ -30,6 +31,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   bool isPortAvailable = true;
 
+  // App version info
+  String _appVersion = '';
+  String _buildNumber = '';
+
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = AccountManager.sharedInstance.applicationMap.values.toList();
     list.sort((a, b) {
@@ -51,6 +56,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     super.initState();
     LaunchSchemeUtils.getSchemeData();
     AccountManager.sharedInstance.addObserver(this);
+
+    // Retrieve version info
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) {
+        setState(() {
+          _appVersion = info.version;
+          _buildNumber = info.buildNumber;
+        });
+      }
+    });
   }
 
   @override
@@ -136,7 +151,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             ),
             ListTile(
               title: Text(
-                'Version: 0.1.7',
+                'Version: ${_appVersion.isNotEmpty ? _appVersion : '--'}${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               trailing: CommonImage(
