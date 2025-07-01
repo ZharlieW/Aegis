@@ -1,4 +1,3 @@
-
 # Aegis - Nostr Signer
 
 [![Download on TestFlight](https://img.shields.io/badge/TestFlight-Download-blue?logo=apple)](https://testflight.apple.com/join/DUzVMDMK)
@@ -30,52 +29,35 @@ On iOS, you can redirect users to Aegis using a custom URL scheme.
 ```text
 aegis://x-callback-url/nip46Auth?
     nostrconnect=<URLEncodedNCURI>&
-    x-source=<CallerName>&
-    x-success=<CallerName>://x-callback-url/nip46AuthSuccess&
-    x-error=<CallerName>://x-callback-url/nip46AuthError
+    x-source=<SourceApp>&
+    x-success=<SourceApp>://x-callback-url/nip46AuthSuccess&
+    x-error=<SourceApp>://x-callback-url/nip46AuthError
 ```
 
 #### Parameter Reference
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `nostrconnect` | Yes | The **Nostr Connect URI** after `Uri.encodeComponent`, containing pubkey, relay list, etc. |
-| `x-source` | Yes | Identifier (custom scheme) of the calling app, displayed in the Aegis authorization dialog |
+| `nostrconnect` | Yes | The **Nostr Connect URI** (defined in [NIP-46](https://github.com/nostr-protocol/nips/blob/master/46.md)), after `Uri.encodeComponent`; contains pubkey, relay list, etc. |
+| `x-source` | Yes | Identifier (custom scheme) of the source app |
 | `x-success` | Yes | Callback URL to invoke when the user authorises successfully |
 | `x-error` | Yes | Callback URL to invoke when an internal error occurs |
 
 ---
 
-### 2. Invocation Flow
+#### 2.1. Callback Format
 
-#### Build Invocation URL (example)
+##### 2.1.1 Success (`x-success`)
 ```text
-aegis://x-callback-url/nip46Auth?
-    nostrconnect=<URLEncodedNCURI>&
-    x-source=<CallerName>&
-    x-success=<CallerName>://x-callback-url/nip46AuthSuccess&
-    x-error=<CallerName>://x-callback-url/nip46AuthError
-```
-
-1. The calling app constructs the URL as above and launches it with `url_launcher` (Flutter) or the platform equivalent.
-2. Aegis opens, shows an authorization dialog, and waits for the user to **Authorize** or **Reject**.
-3. Aegis responds with either `x-success` or `x-error`.
-
----
-
-### 3. Callback Format
-
-#### 3.1 Success (`x-success`)
-```text
-clientapp://x-callback-url/nip46AuthSuccess?
+sourceApp://x-callback-url/nip46AuthSuccess?
     x-source=aegis
 ```
 | Parameter | Description |
 |-----------|-------------|
 | `x-source` | Always `aegis`, indicating the response comes from Aegis |
 
-#### 3.2 Failure / Rejection (`x-error`)
+##### 2.1.2 Failure / Rejection (`x-error`)
 ```text
-clientapp://x-callback-url/nip46AuthError?
+sourceApp://x-callback-url/nip46AuthError?
     x-source=aegis&
     errorCode=<Code>&
     errorMessage=<Message>
@@ -89,13 +71,13 @@ Common `errorCode` values:
 
 | Code | Meaning |
 |------|---------|
-| `USER_CANCEL` | The user rejected the authorization request |
-| `INVALID_PARAM` | Required parameter is missing or malformed |
-| `PARSE_FAIL` | Failed to parse the Nostr Connect URI |
+| 1001 | The user rejected the authorization request |
+| 2001 | Required parameter is missing or malformed |
+| 2002 | Failed to parse the Nostr Connect URI |
 
 ---
 
-### 4. Sample Code (Flutter)
+#### 2.2. Sample Code (Flutter)
 ```dart
 import 'package:url_launcher/url_launcher.dart';
 
@@ -110,15 +92,14 @@ Future<void> openAegisAuth() async {
     path: '/nip46Auth',
     queryParameters: {
       'nostrconnect': Uri.encodeComponent(ncUri),
-      'x-source': '<CallerName>',
-      'x-success': '<CallerName>://x-callback-url/nip46AuthSuccess',
-      'x-error' : '<CallerName>://x-callback-url/nip46AuthError',
+      'x-source': '<SourceApp>',
+      'x-success': '<SourceApp>://x-callback-url/nip46AuthSuccess',
+      'x-error' : '<SourceApp>://x-callback-url/nip46AuthError',
     },
   );
 
 }
 ```
-
 
 Calling this schemeURL from your iOS app will redirect to Aegis for signing authorization.
 
