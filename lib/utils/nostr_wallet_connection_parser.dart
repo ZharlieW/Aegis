@@ -121,9 +121,10 @@ class NostrWalletConnectionParserHandler {
   static Future<void> handleScheme(String? url) async {
     if (url == null) return;
 
-    void openError(String? cb, String code, String msg) {
+    void openError(String? cb, int code, String msg) {
       if (cb == null) return;
-      final uriStr = '$cb?x-source=aegis&errorCode=$code&errorMessage=${Uri.encodeComponent(msg)}';
+      final uriStr =
+          '$cb?x-source=aegis&errorCode=$code&errorMessage=${Uri.encodeComponent(msg)}';
       LaunchSchemeUtils.open(uriStr);
     }
 
@@ -132,9 +133,9 @@ class NostrWalletConnectionParserHandler {
       LaunchSchemeUtils.open('$cb?x-source=aegis');
     }
 
-    const errInvalid = 'INVALID_PARAM';
-    const errCancel  = 'USER_CANCEL';
-    const errParse   = 'PARSE_FAIL';
+    const errInvalid = 2001;
+    const errCancel = 1001;
+    const errParse = 2002;
 
     String? encodedNc;
     String? successCallback;
