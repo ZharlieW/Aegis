@@ -144,13 +144,16 @@ class NostrWalletConnectionParserHandler {
       try {
         final uri = Uri.parse(Uri.decodeComponent(url));
         if (uri.host == 'x-callback-url' && uri.path == '/nip46Auth') {
-          encodedNc = uri.queryParameters['nostrconnect'];
+          final nostrconnectStr = RegExp(r'nostrconnect=([^&]+)');
+          encodedNc = nostrconnectStr.firstMatch(url)?.group(1);
+
           successCallback = uri.queryParameters['x-success'];
           errorCallback = uri.queryParameters['x-error'];
           if (encodedNc == null) {
             openError(errorCallback, errInvalid, 'Missing nostrconnect parameter');
             return;
           }
+
           url = Uri.decodeComponent(encodedNc);
         }
       } catch (e) {
