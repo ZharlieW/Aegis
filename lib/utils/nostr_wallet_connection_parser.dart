@@ -130,7 +130,7 @@ class NostrWalletConnectionParserHandler {
 
     void openSuccess(String? cb) {
       if (cb == null) return;
-      LaunchSchemeUtils.open('$cb?x-source=aegis');
+      LaunchSchemeUtils.open('$cb?x-source=aegis&relay=ws://127.0.0.1:8081');
     }
 
     const errInvalid = 2001;

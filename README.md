@@ -49,7 +49,7 @@ aegis://x-callback-url/nip46Auth?
 ##### 2.1.1 Success (`x-success`)
 ```text
 sourceApp://x-callback-url/nip46AuthSuccess?
-    x-source=aegis
+    x-source=aegis&relay=ws://127.0.0.1:8081
 ```
 | Parameter | Description |
 |-----------|-------------|
