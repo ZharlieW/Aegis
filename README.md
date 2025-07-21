@@ -30,14 +30,16 @@ On iOS, you can redirect users to Aegis using custom URL schemes. Aegis supports
 ##### Full Invocation Format
 ```text
 # Using aegis:// scheme
-aegis://x-callback-url/nip46Auth?
+aegis://x-callback-url/auth/nip46?
+    method=connect&
     nostrconnect=<URLEncodedNCURI>&
     x-source=<SourceApp>&
     x-success=<SourceApp>://x-callback-url/nip46AuthSuccess&
     x-error=<SourceApp>://x-callback-url/nip46AuthError
 
 # Using nostrsigner:// scheme
-nostrsigner://x-callback-url/nip46Auth?
+nostrsigner://x-callback-url/auth/nip46?
+    method=connect&
     nostrconnect=<URLEncodedNCURI>&
     x-source=<SourceApp>&
     x-success=<SourceApp>://x-callback-url/nip46AuthSuccess&
@@ -47,6 +49,7 @@ nostrsigner://x-callback-url/nip46Auth?
 #### Parameter Reference
 | Parameter | Required | Description |
 |-----------|----------|-------------|
+| `method` | Yes | Must be set to `connect` for NIP-46 authentication |
 | `nostrconnect` | Yes | The **Nostr Connect URI** (defined in [NIP-46](https://github.com/nostr-protocol/nips/blob/master/46.md)), after `Uri.encodeComponent`; contains pubkey, relay list, etc. |
 | `x-source` | Yes | Identifier (custom scheme) of the source app |
 | `x-success` | Yes | Callback URL to invoke when the user authorises successfully |
@@ -94,6 +97,7 @@ Common `errorCode` values:
 | 1001 | The user rejected the authorization request |
 | 2001 | Required parameter is missing or malformed |
 | 2002 | Failed to parse the Nostr Connect URI |
+| 2003 | Invalid or missing method parameter |
 
 ---
 
@@ -109,8 +113,9 @@ Future<void> openAegisAuth() async {
   final uri = Uri(
     scheme: 'aegis',
     host: 'x-callback-url',
-    path: '/nip46Auth',
+    path: '/auth/nip46',
     queryParameters: {
+      'method': 'connect',
       'nostrconnect': Uri.encodeComponent(ncUri),
       'x-source': '<SourceApp>',
       'x-success': '<SourceApp>://x-callback-url/nip46AuthSuccess',
@@ -122,8 +127,9 @@ Future<void> openAegisAuth() async {
   final nostrsignerUri = Uri(
     scheme: 'nostrsigner',
     host: 'x-callback-url',
-    path: '/nip46Auth',
+    path: '/auth/nip46',
     queryParameters: {
+      'method': 'connect',
       'nostrconnect': Uri.encodeComponent(ncUri),
       'x-source': '<SourceApp>',
       'x-success': '<SourceApp>://x-callback-url/nip46AuthSuccess',
@@ -156,8 +162,9 @@ class AegisIntegration {
     final uri = Uri(
       scheme: scheme,
       host: 'x-callback-url',
-      path: '/nip46Auth',
+      path: '/auth/nip46',
       queryParameters: {
+        'method': 'connect',
         'nostrconnect': Uri.encodeComponent(nostrConnectUri),
         'x-source': sourceAppScheme,
         if (successCallback != null) 'x-success': successCallback,

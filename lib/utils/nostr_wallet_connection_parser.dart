@@ -8,6 +8,7 @@ import '../nostr/signer/local_nostr_signer.dart';
 import 'account.dart';
 import 'aegis_websocket_server.dart';
 import 'launch_scheme_utils.dart';
+import 'url_scheme_handler.dart';
 
 class NostrWalletConnectionParserHandler {
   static ClientAuthDBISAR? parseUri(String? uri) {
@@ -119,90 +120,7 @@ class NostrWalletConnectionParserHandler {
   }
 
   static Future<void> handleScheme(String? url) async {
-    if (url == null) return;
-
-    // Determine the source app based on the scheme
-    String sourceApp = 'aegis';
-    if (url.startsWith('nostrsigner://')) {
-      sourceApp = 'nostrsigner';
-    }
-
-    void openError(String? cb, int code, String msg) {
-      if (cb == null) return;
-      final uriStr =
-          '$cb?x-source=$sourceApp&errorCode=$code&errorMessage=${Uri.encodeComponent(msg)}';
-      LaunchSchemeUtils.open(uriStr);
-    }
-
-    void openSuccess(String? cb) {
-      if (cb == null) return;
-      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://127.0.0.1:8081');
-    }
-
-    const errInvalid = 2001;
-    const errCancel = 1001;
-    const errParse = 2002;
-
-    String? encodedNc;
-    String? successCallback;
-    String? errorCallback;
-
-    if (url.startsWith('aegis://') || url.startsWith('nostrsigner://')) {
-      try {
-        final uri = Uri.parse(Uri.decodeComponent(url));
-        if (uri.host == 'x-callback-url' && uri.path == '/nip46Auth') {
-          final nostrconnectStr = RegExp(r'nostrconnect=([^&]+)');
-          encodedNc = nostrconnectStr.firstMatch(url)?.group(1);
-
-          successCallback = uri.queryParameters['x-success'];
-          errorCallback = uri.queryParameters['x-error'];
-          if (encodedNc == null) {
-            openError(errorCallback, errInvalid, 'Missing nostrconnect parameter');
-            return;
-          }
-
-          url = Uri.decodeComponent(encodedNc);
-        }
-      } catch (e) {
-        openError(errorCallback, errParse, 'Malformed nip46Auth uri');
-        return;
-      }
-    }
-
-    ClientAuthDBISAR? result = parseUri(url);
-    if (result == null) {
-      openError(errorCallback, errParse, 'Failed to parse nostrconnect uri');
-      return;
-    }
-
-    String clientPubkey = result.clientPubkey;
-    Account accountInstance = Account.sharedInstance;
-    AccountManager accountManagerInstance = AccountManager.sharedInstance;
-
-    ClientAuthDBISAR? hasClient =
-        accountManagerInstance.applicationMap[clientPubkey]?.value;
-    if (hasClient == null) {
-      bool isSuccess = await Account.authToClient();
-      if (!isSuccess) {
-        openError(errorCallback, errCancel, 'User cancelled authorization');
-        return;
-      }
-    }
-
-    accountManagerInstance.addApplicationMap(result);
-    await ClientAuthDBISAR.saveFromDB(result);
-
-    List<dynamic>? reqInfo = accountInstance.clientReqMap[clientPubkey];
-    accountInstance.addAuthToNostrConnectInfo(result);
-    if (reqInfo != null) {
-      sendAuthUrl(reqInfo[1], result);
-    }
-
-    if (successCallback != null) {
-      openSuccess(successCallback);
-    } else if (result.scheme != null && result.scheme!.isNotEmpty) {
-      LaunchSchemeUtils.open(result.scheme!);
-    }
+    await UrlSchemeHandler.handleScheme(url);
   }
 }
 

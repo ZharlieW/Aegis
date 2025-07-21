@@ -7,6 +7,7 @@ import '../navigator/navigator.dart';
 import '../pages/login/login.dart';
 import 'account.dart';
 import 'nostr_wallet_connection_parser.dart';
+import 'url_scheme_handler.dart';
 
 
 class LaunchSchemeUtils {
@@ -30,7 +31,7 @@ class LaunchSchemeUtils {
         // String schemeUrl = Uri.decodeComponent(uri);
         Account instance = Account.sharedInstance;
         if(instance.currentPrivkey.isEmpty || instance.currentPubkey.isEmpty){
-           gotoLogin();
+           UrlSchemeHandler.showLoginDialog();
            return;
         }
         NostrWalletConnectionParserHandler.handleScheme(schemeUrl);
@@ -38,49 +39,5 @@ class LaunchSchemeUtils {
     });
   }
 
-  static Future<void> gotoLogin() async {
-    showDialog(
-      context:  AegisNavigator.navigatorKey.currentContext!,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Tips"),
-          content: const Text("Unable to resolve scheme, please login first."),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0), //
-          ),
-          actions: [
-            ElevatedButton.icon(
-              onPressed: () => AegisNavigator.pop(context),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.surfaceBright),
-              ),
-              label: Text(
-                "Cancel",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async{
-                await AegisNavigator.pushPage(context, (context) => const Login());
-                AegisNavigator.pop(context);
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.primary),
-              ),
-              label: Text(
-                "Login",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+
 }
