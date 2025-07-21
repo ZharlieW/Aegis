@@ -121,16 +121,22 @@ class NostrWalletConnectionParserHandler {
   static Future<void> handleScheme(String? url) async {
     if (url == null) return;
 
+    // Determine the source app based on the scheme
+    String sourceApp = 'aegis';
+    if (url.startsWith('nostrsigner://')) {
+      sourceApp = 'nostrsigner';
+    }
+
     void openError(String? cb, int code, String msg) {
       if (cb == null) return;
       final uriStr =
-          '$cb?x-source=aegis&errorCode=$code&errorMessage=${Uri.encodeComponent(msg)}';
+          '$cb?x-source=$sourceApp&errorCode=$code&errorMessage=${Uri.encodeComponent(msg)}';
       LaunchSchemeUtils.open(uriStr);
     }
 
     void openSuccess(String? cb) {
       if (cb == null) return;
-      LaunchSchemeUtils.open('$cb?x-source=aegis&relay=ws://127.0.0.1:8081');
+      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://127.0.0.1:8081');
     }
 
     const errInvalid = 2001;
@@ -141,7 +147,7 @@ class NostrWalletConnectionParserHandler {
     String? successCallback;
     String? errorCallback;
 
-    if (url.startsWith('aegis://')) {
+    if (url.startsWith('aegis://') || url.startsWith('nostrsigner://')) {
       try {
         final uri = Uri.parse(Uri.decodeComponent(url));
         if (uri.host == 'x-callback-url' && uri.path == '/nip46Auth') {
