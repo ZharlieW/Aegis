@@ -34,16 +34,16 @@ aegis://x-callback-url/auth/nip46?
     method=connect&
     nostrconnect=<URLEncodedNCURI>&
     x-source=<SourceApp>&
-    x-success=<SourceApp>://x-callback-url/nip46AuthSuccess&
-    x-error=<SourceApp>://x-callback-url/nip46AuthError
+    x-success=<SourceApp>://x-callback-url/authSuccess&
+    x-error=<SourceApp>://x-callback-url/authError
 
 # Using nostrsigner:// scheme
 nostrsigner://x-callback-url/auth/nip46?
     method=connect&
     nostrconnect=<URLEncodedNCURI>&
     x-source=<SourceApp>&
-    x-success=<SourceApp>://x-callback-url/nip46AuthSuccess&
-    x-error=<SourceApp>://x-callback-url/nip46AuthError
+    x-success=<SourceApp>://x-callback-url/authSuccess&
+    x-error=<SourceApp>://x-callback-url/authError
 ```
 
 #### Parameter Reference
@@ -61,11 +61,11 @@ nostrsigner://x-callback-url/auth/nip46?
 
 ##### 2.1.1 Success (`x-success`)
 ```text
-sourceApp://x-callback-url/nip46AuthSuccess?
+sourceApp://x-callback-url/authSuccess?
     x-source=aegis&relay=ws://127.0.0.1:8081
 
 # Or when using nostrsigner:// scheme:
-sourceApp://x-callback-url/nip46AuthSuccess?
+sourceApp://x-callback-url/authSuccess?
     x-source=nostrsigner&relay=ws://127.0.0.1:8081
 ```
 | Parameter | Description |
@@ -74,13 +74,13 @@ sourceApp://x-callback-url/nip46AuthSuccess?
 
 ##### 2.1.2 Failure / Rejection (`x-error`)
 ```text
-sourceApp://x-callback-url/nip46AuthError?
+sourceApp://x-callback-url/authError?
     x-source=aegis&
     errorCode=<Code>&
     errorMessage=<Message>
 
 # Or when using nostrsigner:// scheme:
-sourceApp://x-callback-url/nip46AuthError?
+sourceApp://x-callback-url/authError?
     x-source=nostrsigner&
     errorCode=<Code>&
     errorMessage=<Message>
@@ -118,8 +118,8 @@ Future<void> openAegisAuth() async {
       'method': 'connect',
       'nostrconnect': Uri.encodeComponent(ncUri),
       'x-source': '<SourceApp>',
-      'x-success': '<SourceApp>://x-callback-url/nip46AuthSuccess',
-      'x-error' : '<SourceApp>://x-callback-url/nip46AuthError',
+      'x-success': '<SourceApp>://x-callback-url/authSuccess',
+      'x-error' : '<SourceApp>://x-callback-url/authError',
     },
   );
 
@@ -132,8 +132,8 @@ Future<void> openAegisAuth() async {
       'method': 'connect',
       'nostrconnect': Uri.encodeComponent(ncUri),
       'x-source': '<SourceApp>',
-      'x-success': '<SourceApp>://x-callback-url/nip46AuthSuccess',
-      'x-error' : '<SourceApp>://x-callback-url/nip46AuthError',
+      'x-success': '<SourceApp>://x-callback-url/authSuccess',
+      'x-error' : '<SourceApp>://x-callback-url/authError',
     },
   );
 
@@ -186,8 +186,8 @@ void example() async {
     await AegisIntegration.requestNostrConnectAuth(
       nostrConnectUri: 'nostrconnect://...',
       sourceAppScheme: 'myapp',
-      successCallback: 'myapp://x-callback-url/nip46AuthSuccess',
-      errorCallback: 'myapp://x-callback-url/nip46AuthError',
+      successCallback: 'myapp://x-callback-url/authSuccess',
+      errorCallback: 'myapp://x-callback-url/authError',
     );
   } catch (e) {
     print('Failed to launch Aegis: $e');
