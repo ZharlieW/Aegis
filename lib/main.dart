@@ -31,11 +31,21 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   void init() async {
-    await BackgroundAudioManager().init();
+    try {
+      // Initialize audio service (will be skipped on Android)
+      await BackgroundAudioManager().init();
+    } catch (e) {
+      // Log error but don't crash the app
+      AegisLogger.error("Failed to initialize audio service: $e");
+    }
 
-    WidgetsBinding.instance.addObserver(this);
-    await LocalStorage.init();
-    await Account.sharedInstance.autoLogin();
+    try {
+      WidgetsBinding.instance.addObserver(this);
+      await LocalStorage.init();
+      await Account.sharedInstance.autoLogin();
+    } catch (e) {
+      AegisLogger.error("Failed to initialize app: $e");
+    }
   }
 
   @override

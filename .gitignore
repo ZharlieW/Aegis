@@ -55,5 +55,8 @@ app.*.map.json
 /android/.kotlin/
 /android/local.properties
 /android/*.iml
+
+# Fix for Android Studio APK filename bug
+build/app/outputs/flutter-apk/app--debug.apk
 /build/
 *.iml
