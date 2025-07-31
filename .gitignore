@@ -26,6 +26,9 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
+**/ios/build/
+**/ios/Pods/
+**/ios/Podfile.lock
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -48,5 +51,9 @@ app.*.map.json
 /android/app/.cxx/
 /android/app/build/
 /android/build/
+/android/.gradle/
+/android/.kotlin/
+/android/local.properties
+/android/*.iml
 /build/
 *.iml
