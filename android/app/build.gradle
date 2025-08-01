@@ -45,7 +45,7 @@ android {
         applicationId "com.example.aegis"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 26
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -65,7 +65,18 @@ flutter {
 }
 
 dependencies {
-    // Temporarily removed problematic dependencies
-    // implementation 'com.vitorpamplona.quartz:quartz:0.0.1'
-    // implementation 'fr.acinq.secp256k1:secp256k1-kmp:0.10.0'
+    // Quartz library from vitorpamplona.amethyst
+    implementation('com.github.vitorpamplona.amethyst:quartz:1db628719b') {
+        exclude group: 'net.java.dev.jna'
+    }
+    implementation('com.github.vitorpamplona.amethyst:ammolite:1db628719b') {
+        exclude group: 'net.java.dev.jna'
+    }
+    
+    // JNA dependency for Android
+    implementation('net.java.dev.jna:jna:5.17.0@aar') {
+        artifact {
+            type = "aar"
+        }
+    }
 }

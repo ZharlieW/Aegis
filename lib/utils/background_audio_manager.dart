@@ -43,7 +43,7 @@ class BackgroundAudioManager {
       _audioHandler = await AudioService.init(
         builder: () => handler,
         config: const AudioServiceConfig(
-          androidNotificationChannelId: 'com.aegis.app.audio',
+          androidNotificationChannelId: 'com.example.aegis.audio',
           androidNotificationChannelName: 'Audio Playback',
           androidNotificationOngoing: true,
         ),

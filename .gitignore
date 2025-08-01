@@ -58,5 +58,10 @@ app.*.map.json
 
 # Fix for Android Studio APK filename bug
 build/app/outputs/flutter-apk/app--debug.apk
+
+# Local development scripts (not part of the project)
+#fix_android_studio_apk.sh
+#run_android.sh
+#*.sh
 /build/
 *.iml
