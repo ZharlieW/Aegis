@@ -17,9 +17,6 @@ import '../../utils/server_nip46_signer.dart';
 import '../login/login.dart';
 import '../settings/settings.dart';
 import '../activities/activities.dart';
-import '../test/add_test_events.dart';
-import '../test/debug_database.dart';
-import '../test/simple_test.dart';
 import 'add_application.dart';
 import 'application_info.dart';
 

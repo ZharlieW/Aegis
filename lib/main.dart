@@ -6,10 +6,15 @@ import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize intl library
+  await initializeDateFormatting();
+  
   runApp(MainApp());
 }
 
