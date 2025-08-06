@@ -1,8 +1,8 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/db/signed_event_db_isar.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/utils/took_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class Activities extends StatefulWidget {
   const Activities({super.key});
@@ -51,19 +51,7 @@ class ActivitiesState extends State<Activities> {
 
 
   String _formatTimestamp(int timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    try {
-      if (difference.inDays > 0) {
-        return DateFormat('HH:mm:ss - dd MMM').format(date);
-      } else {
-        return DateFormat('HH:mm:ss').format(date);
-      }
-    } catch (e) {
-      return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
-    }
+    return TookKit.formatTimestamp(timestamp);
   }
 
   String _getEventContent(SignedEventDBISAR event) {
