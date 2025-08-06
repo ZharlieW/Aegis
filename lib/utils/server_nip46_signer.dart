@@ -281,14 +281,14 @@ class ServerNIP46Signer {
               // Parse the signed event to get event details
               final signedEvent = jsonDecode(nativeRes);
               final eventId = signedEvent['id'] as String? ?? '';
-              final eventKind = signedEvent['kind'] as int? ?? 1;
+              final eventKind = signedEvent['kind'] as int? ?? -1;
               final eventContent = signedEvent['content'] as String? ?? '';
               
               // Get application info
               await _recordSignedEvent(
                 eventId: eventId,
                 eventKind: eventKind,
-                eventContent: eventContent.isNotEmpty && eventContent.length < 20 ? eventContent : 'Signed Event',
+                eventContent: eventContent.isNotEmpty && eventContent.length < 20 ? eventContent : 'Signed Event (Kind $eventKind)',
                 pubkey: event.pubkey,
               );
             } catch (e) {

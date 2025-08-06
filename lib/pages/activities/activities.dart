@@ -4,6 +4,9 @@ import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:flutter/material.dart';
 
+import '../../db/clientAuthDB_isar.dart';
+import '../../utils/account_manager.dart';
+
 class Activities extends StatefulWidget {
   const Activities({super.key});
 
@@ -58,7 +61,7 @@ class ActivitiesState extends State<Activities> {
     if (event.eventContent.isNotEmpty) {
       return event.eventContent;
     }
-    
+
     final kindDesc = SignedEventManager.sharedInstance.getEventKindDescription(event.eventKind);
     if (event.applicationName != null) {
       return '$kindDesc - ${event.applicationName}';
@@ -77,12 +80,6 @@ class ActivitiesState extends State<Activities> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [
-          Text(
-            '${_filteredEvents.length}/${_events.length}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
           const SizedBox(width: 8),
           IconButton(
             onPressed: _loadEvents,
@@ -96,7 +93,7 @@ class ActivitiesState extends State<Activities> {
       body: SafeArea(
         child: Column(
           children: [
-            
+
             // Main content area
             Expanded(
               child: Container(
@@ -193,59 +190,58 @@ class ActivitiesState extends State<Activities> {
 
   Widget _buildEventItem(SignedEventDBISAR event) {
     String name = event.applicationName ?? '--';
+    ClientAuthDBISAR? clientAuthDBISAR = AccountManager.sharedInstance.applicationMap[event.applicationPubkey ?? '']?.value;
+    bool isBunker = clientAuthDBISAR?.connectionType == EConnectionType.bunker.toInt;
+    String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 20,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                Text(
-                  _getEventContent(event),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                connectType,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatTimestamp(event.signedTimestamp),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+            ],
           ),
-          
-          const SizedBox(width: 12),
-          
-          // Success checkmark
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.check,
-              color: Theme.of(context).colorScheme.onPrimary,
-              size: 16,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                _getEventContent(event),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _formatTimestamp(event.signedTimestamp),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ],
       ),
