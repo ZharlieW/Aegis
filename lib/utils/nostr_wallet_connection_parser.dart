@@ -1,13 +1,11 @@
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
-import 'package:aegis/utils/account_manager.dart';
 import '../common/common_constant.dart';
 import '../nostr/event.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'account.dart';
 import 'aegis_websocket_server.dart';
-import 'launch_scheme_utils.dart';
 import 'url_scheme_handler.dart';
 
 class NostrWalletConnectionParserHandler {

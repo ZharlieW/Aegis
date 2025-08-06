@@ -27,6 +27,7 @@ class UserDBISAR {
   @ignore
   String? username;
 
+  // For backward compatibility,
   String get getPrivkey {
     if(privkey != null && privkey!.isNotEmpty) {
       if(AccountManager.sharedInstance.accountMap[pubkey] != null) {
@@ -34,7 +35,20 @@ class UserDBISAR {
       }
       return privkey!;
     }
-    final decryptedPrivkey = Account.sharedInstance.decryptPrivkey(this);
+    // For backward compatibility, return cached private key if available
+    // This maintains the synchronous interface for Isar
+    return AccountManager.sharedInstance.accountMap[pubkey]?.privkey ?? '';
+  }
+
+  /// Async method to get private key with decryption
+  Future<String> getPrivkeyAsync() async {
+    if(privkey != null && privkey!.isNotEmpty) {
+      if(AccountManager.sharedInstance.accountMap[pubkey] != null) {
+        AccountManager.sharedInstance.accountMap[pubkey]!.privkey = privkey;
+      }
+      return privkey!;
+    }
+    final decryptedPrivkey = await Account.sharedInstance.decryptPrivkey(this);
     return bytesToHex(decryptedPrivkey);
   }
 

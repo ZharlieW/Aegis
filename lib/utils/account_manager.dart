@@ -103,8 +103,8 @@ class AccountManager {
       final isarUser = await UserDBISAR.searchFromDB(pubkey);
 
       if (isarUser != null) {
-        isarUser.privkey =
-            bytesToHex(Account.sharedInstance.decryptPrivkey(isarUser));
+        final decryptedPrivkey = await Account.sharedInstance.decryptPrivkey(isarUser);
+        isarUser.privkey = bytesToHex(decryptedPrivkey);
         isarUser.username = localUser.username;
 
         accountMap[pubkey] = isarUser;

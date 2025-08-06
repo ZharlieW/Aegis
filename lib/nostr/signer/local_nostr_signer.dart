@@ -2,7 +2,6 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
-import 'package:flutter/foundation.dart';
 import '../event.dart';
 import '../nips/nip04/nip04_native_channel.dart';
 import '../nips/nip44/nip44_native_channel.dart';
@@ -41,7 +40,21 @@ class LocalNostrSigner implements NostrSigner {
   String? getPrivateKey(String clientPubkey) {
     AccountManager instance = AccountManager.sharedInstance;
     final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
-    return instance.accountMap[pubkey]?.getPrivkey ?? privateKey;
+    if (pubkey != null && instance.accountMap[pubkey] != null) {
+      // Return the cached private key if available
+      return instance.accountMap[pubkey]!.privkey ?? privateKey;
+    }
+    return privateKey;
+  }
+
+  /// Async method to get private key with decryption support
+  Future<String?> getPrivateKeyAsync(String clientPubkey) async {
+    AccountManager instance = AccountManager.sharedInstance;
+    final pubkey = instance.applicationMap[clientPubkey]?.value.pubkey;
+    if (pubkey != null && instance.accountMap[pubkey] != null) {
+      return await instance.accountMap[pubkey]!.getPrivkeyAsync();
+    }
+    return privateKey;
   }
 
   @override
@@ -102,7 +115,8 @@ class LocalNostrSigner implements NostrSigner {
   @override
   Future<String?> decrypt(clientPubkey, ciphertext) async {
     try {
-      final serverPrivate = getPrivateKey(clientPubkey)!;
+      final serverPrivate = getPrivateKey(clientPubkey);
+      if (serverPrivate == null) return null;
 
       try {
         final nativeResult =
@@ -124,7 +138,8 @@ class LocalNostrSigner implements NostrSigner {
   @override
   Future<String?> encrypt(clientPubkey, plaintext) async {
     try {
-      final serverPrivate = getPrivateKey(clientPubkey)!;
+      final serverPrivate = getPrivateKey(clientPubkey);
+      if (serverPrivate == null) return null;
 
       try {
         final nativeResult =

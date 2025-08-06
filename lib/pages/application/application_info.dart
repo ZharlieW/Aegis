@@ -65,9 +65,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                     ConnectionTypeEx.fromToEnum(client.connectionType).toStr,
               ),
               _itemWidget('Client app logo',
-                  rightWidget: client.image != null
+                  rightWidget: client.image != null && client.image!.isNotEmpty
                       ? Image.network(
-                          client.image ?? '',
+                          client.image!,
                           width: 40,
                           height: 40,
                           fit: BoxFit.cover,

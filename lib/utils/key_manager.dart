@@ -1,37 +1,71 @@
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// DBKeyManager
-///
-/// Generates and persists a 256-bit random key (32 bytes) in the
-/// platform secure storage (Android Keystore / iOS Keychain).
-/// The key is created once per app installation and reused afterwards.
 class DBKeyManager {
-  DBKeyManager._();
+  static const _userPrivkeyKeyPrefix = 'aegis_user_privkey_key_';
+  static const _secureStorage = FlutterSecureStorage();
 
-  static const String _storageKey = 'aegis_db_enc_key';
-  static final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-
-  /// Returns base64-encoded 256-bit key suitable for Isar or SQLCipher.
-  static Future<String> getKey() async {
+  /// Get user private key encryption password from Keychain
+  /// If not found, returns null (for migration from database)
+  static Future<String?> getUserPrivkeyKey(String userPubkey) async {
     try {
-      final stored = await _secureStorage.read(key: _storageKey);
+      final key = '$_userPrivkeyKeyPrefix$userPubkey';
+      final stored = await _secureStorage.read(key: key);
       if (stored != null && stored.isNotEmpty) {
-        print('[DB] key: $stored');
+        print('[Keychain] User privkey key found for: $userPubkey');
         return stored;
       }
-    } on PlatformException {
-      // Ignore and regenerate.
+    } on PlatformException catch (e) {
+      print('[Keychain] Error reading user privkey key: $e');
     }
-    // Generate new key
+    return null;
+  }
+
+  /// Generate and store new user private key encryption password
+  static Future<String> generateUserPrivkeyKey(String userPubkey) async {
     final random = Random.secure();
-    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
-    final encoded = base64Encode(bytes);
-    await _secureStorage.write(key: _storageKey, value: encoded);
-    print('[DB] key: $encoded');
-    return encoded;
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    final password = base64Encode(bytes);
+    
+    final key = '$_userPrivkeyKeyPrefix$userPubkey';
+    await _secureStorage.write(key: key, value: password);
+    print('[Keychain] Generated new user privkey key for: $userPubkey');
+    return password;
+  }
+
+  /// Migrate user private key password from database to Keychain
+  /// Returns the password (either migrated or newly generated)
+  static Future<String> migrateUserPrivkeyKey(String userPubkey, String? dbPassword) async {
+    // First try to get from Keychain
+    final existingKey = await getUserPrivkeyKey(userPubkey);
+    if (existingKey != null) {
+      print('[Keychain] User privkey key already exists in Keychain for: $userPubkey');
+      return existingKey;
+    }
+
+    // If not in Keychain, migrate from database or generate new
+    if (dbPassword != null && dbPassword.isNotEmpty) {
+      // Migrate from database
+      final key = '$_userPrivkeyKeyPrefix$userPubkey';
+      await _secureStorage.write(key: key, value: dbPassword);
+      print('[Keychain] Migrated user privkey key from database for: $userPubkey');
+      return dbPassword;
+    } else {
+      // Generate new password
+      return await generateUserPrivkeyKey(userPubkey);
+    }
+  }
+
+  /// Clear user private key password from Keychain
+  static Future<void> clearUserPrivkeyKey(String userPubkey) async {
+    try {
+      final key = '$_userPrivkeyKeyPrefix$userPubkey';
+      await _secureStorage.delete(key: key);
+      print('[Keychain] Cleared user privkey key for: $userPubkey');
+    } on PlatformException catch (e) {
+      print('[Keychain] Error clearing user privkey key: $e');
+    }
   }
 }

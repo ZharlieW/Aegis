@@ -273,12 +273,17 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                       size: 40,
                     ).setPaddingOnly(right: 8.0);
                   }
-                  return Image.network(
-                    value.image ?? '',
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                  ).setPaddingOnly(right: 8.0);
+                  return value.image != null && value.image!.isNotEmpty
+                      ? Image.network(
+                          value.image!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ).setPaddingOnly(right: 8.0)
+                      : CommonImage(
+                          iconName: 'default_app_icon.png',
+                          size: 40,
+                        ).setPaddingOnly(right: 8.0);
                 }
 
                 return GestureDetector(

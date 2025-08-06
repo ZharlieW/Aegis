@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/aegis_websocket_server.dart';
@@ -17,6 +18,7 @@ import '../nostr/utils.dart';
 import '../pages/login/login.dart';
 import '../pages/request/request_permission.dart';
 import 'local_storage.dart';
+import 'package:aegis/utils/key_manager.dart';
 
 abstract mixin class AccountObservers {
   void didLoginSuccess();
@@ -107,7 +109,8 @@ class Account {
     if (privkey == null) {
       user = await UserDBISAR.searchFromDB(pubkey);
       if (user == null) return;
-      _currentPrivkey = bytesToHex(decryptPrivkey(user));
+      final decryptedPrivkey = await decryptPrivkey(user);
+      _currentPrivkey = bytesToHex(decryptedPrivkey);
 
       final all = await AccountManager.getAllAccount();
       final local = all[pubkey];
@@ -116,12 +119,15 @@ class Account {
       }
     } else {
       _currentPrivkey = privkey;
-      final defaultPassword = generateStrongPassword(16);
-      final encrypted = encryptPrivateKey(hexToBytes(privkey), defaultPassword);
+      
+      // Use Keychain for password management
+      final password = await DBKeyManager.generateUserPrivkeyKey(pubkey);
+      final encrypted = encryptPrivateKey(hexToBytes(privkey), password);
+      
       user = UserDBISAR(
         pubkey: pubkey,
         encryptedPrivkey: bytesToHex(encrypted),
-        defaultPassword: defaultPassword,
+        defaultPassword: null, // No longer store password in database
       );
       await DBISAR.sharedInstance.saveToDB(user.pubkey,user);
     }
@@ -165,9 +171,42 @@ class Account {
     return status == true;
   }
 
-  Uint8List decryptPrivkey(UserDBISAR user) {
+  Future<Uint8List> decryptPrivkey(UserDBISAR user) async {
     final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
-    return decryptPrivateKey(encryptedBytes, user.defaultPassword!);
+    
+    // Try to get password from Keychain first
+    String? password;
+    
+    // For existing users, migrate from database to Keychain if needed
+    if (user.defaultPassword != null && user.defaultPassword!.isNotEmpty) {
+      // Store the old password before clearing it
+      final oldPassword = user.defaultPassword;
+      
+      // Migrate old password to Keychain
+      try {
+        await DBKeyManager.migrateUserPrivkeyKey(user.pubkey, oldPassword);
+        // Clear the password from database after successful migration
+        user.defaultPassword = null;
+        await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
+        print('[Migration] Cleared password from database for user: ${user.pubkey}');
+        
+        // Get the migrated password from Keychain
+        password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
+      } catch (error) {
+        print('[Migration] Failed to migrate password for user: ${user.pubkey}, error: $error');
+        // Fallback to database password (keep the old password in database)
+        password = oldPassword;
+      }
+    } else {
+      // Try to get from Keychain
+      password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
+    }
+    
+    if (password == null || password.isEmpty) {
+      throw Exception('Failed to get encryption password for user: ${user.pubkey}');
+    }
+    
+    return decryptPrivateKey(encryptedBytes, password);
   }
 
   void addAuthToNostrConnectInfo(ClientAuthDBISAR client) {
