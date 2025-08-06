@@ -16,6 +16,10 @@ import '../../utils/launch_scheme_utils.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../login/login.dart';
 import '../settings/settings.dart';
+import '../activities/activities.dart';
+import '../test/add_test_events.dart';
+import '../test/debug_database.dart';
+import '../test/simple_test.dart';
 import 'add_application.dart';
 import 'application_info.dart';
 
@@ -134,6 +138,20 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   ],
                 ),
               ),
+            ),
+            ListTile(
+              title: Text(
+                'Activities',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              trailing: const Icon(
+                Icons.history,
+                size: 22,
+              ),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                AegisNavigator.pushPage(context, (context) => const Activities());
+              },
             ),
             ListTile(
               title: Text(
