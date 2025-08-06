@@ -79,4 +79,12 @@ dependencies {
             type = "aar"
         }
     }
+    
+    // Android support libraries for background service
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    
+    // Kotlin Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
 }
