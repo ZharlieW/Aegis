@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../utils/logger.dart';
 
 import 'clientAuthDB_isar.dart';
+import 'signed_event_db_isar.dart';
 
 class DBISAR {
   DBISAR._internal();
@@ -20,6 +21,7 @@ class DBISAR {
   final List<CollectionSchema<dynamic>> schemas = [
     UserDBISARSchema,
     ClientAuthDBISARSchema,
+    SignedEventDBISARSchema,
   ];
 
   Future<Isar> open(String pubkey) async {

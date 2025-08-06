@@ -27,13 +27,18 @@ const UserDBISARSchema = CollectionSchema(
       name: r'encryptedPrivkey',
       type: IsarType.string,
     ),
-    r'privkey': PropertySchema(
+    r'getPrivkey': PropertySchema(
       id: 2,
+      name: r'getPrivkey',
+      type: IsarType.string,
+    ),
+    r'privkey': PropertySchema(
+      id: 3,
       name: r'privkey',
       type: IsarType.string,
     ),
     r'pubkey': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'pubkey',
       type: IsarType.string,
     )
@@ -70,6 +75,7 @@ int _userDBISAREstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.getPrivkey.length * 3;
   {
     final value = object.privkey;
     if (value != null) {
@@ -88,8 +94,9 @@ void _userDBISARSerialize(
 ) {
   writer.writeString(offsets[0], object.defaultPassword);
   writer.writeString(offsets[1], object.encryptedPrivkey);
-  writer.writeString(offsets[2], object.privkey);
-  writer.writeString(offsets[3], object.pubkey);
+  writer.writeString(offsets[2], object.getPrivkey);
+  writer.writeString(offsets[3], object.privkey);
+  writer.writeString(offsets[4], object.pubkey);
 }
 
 UserDBISAR _userDBISARDeserialize(
@@ -101,8 +108,8 @@ UserDBISAR _userDBISARDeserialize(
   final object = UserDBISAR(
     defaultPassword: reader.readStringOrNull(offsets[0]),
     encryptedPrivkey: reader.readStringOrNull(offsets[1]),
-    privkey: reader.readStringOrNull(offsets[2]),
-    pubkey: reader.readString(offsets[3]),
+    privkey: reader.readStringOrNull(offsets[3]),
+    pubkey: reader.readString(offsets[4]),
   );
   object.id = id;
   return object;
@@ -120,8 +127,10 @@ P _userDBISARDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    case 4:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -527,6 +536,141 @@ extension UserDBISARQueryFilter
     });
   }
 
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> getPrivkeyEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'getPrivkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'getPrivkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'getPrivkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> getPrivkeyBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'getPrivkey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'getPrivkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'getPrivkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'getPrivkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> getPrivkeyMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'getPrivkey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'getPrivkey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
+      getPrivkeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'getPrivkey',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -895,6 +1039,18 @@ extension UserDBISARQuerySortBy
     });
   }
 
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByGetPrivkey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'getPrivkey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByGetPrivkeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'getPrivkey', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByPrivkey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'privkey', Sort.asc);
@@ -945,6 +1101,18 @@ extension UserDBISARQuerySortThenBy
       thenByEncryptedPrivkeyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedPrivkey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByGetPrivkey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'getPrivkey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByGetPrivkeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'getPrivkey', Sort.desc);
     });
   }
 
@@ -1003,6 +1171,13 @@ extension UserDBISARQueryWhereDistinct
     });
   }
 
+  QueryBuilder<UserDBISAR, UserDBISAR, QDistinct> distinctByGetPrivkey(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'getPrivkey', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<UserDBISAR, UserDBISAR, QDistinct> distinctByPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1037,6 +1212,12 @@ extension UserDBISARQueryProperty
       encryptedPrivkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'encryptedPrivkey');
+    });
+  }
+
+  QueryBuilder<UserDBISAR, String, QQueryOperations> getPrivkeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'getPrivkey');
     });
   }
 
