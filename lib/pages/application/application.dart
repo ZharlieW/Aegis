@@ -141,8 +141,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 'Activities',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              trailing: const Icon(
-                Icons.history,
+              trailing: CommonImage(
+                iconName: 'activities_icon.png',
                 size: 22,
               ),
               onTap: () {
@@ -260,11 +260,6 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 bool isBunker = value.connectionType == EConnectionType.bunker.toInt;
                 String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
                 bool isConnect = value.socketHashCode != null;
-                String name = value.name ?? '--';
-
-                if (name.length > 20) {
-                  name = '${name.substring(0, 6)}:${name.substring(name.length - 6)}';
-                }
 
                 Widget iconWidget() {
                   if (isBunker) {
@@ -306,7 +301,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                name,
+                                value.name ?? '--',
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleLarge

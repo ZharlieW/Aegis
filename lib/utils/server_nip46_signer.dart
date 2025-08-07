@@ -238,11 +238,17 @@ class ServerNIP46Signer {
 
         final isSuccess = await Account.authToClient();
         if (isSuccess) {
+          // Get all bunker applications to calculate index
+          final bunkerApplications = AccountManager.sharedInstance.applicationMap.values
+              .where((app) => app.value.connectionType == EConnectionType.bunker.toInt)
+              .toList();
+          final index = bunkerApplications.length + 1;
+          
           ClientAuthDBISAR newClient = ClientAuthDBISAR(
             createTimestamp: DateTime.now().millisecondsSinceEpoch,
             pubkey: instance.currentPubkey,
             clientPubkey: event.pubkey,
-            name: event.pubkey,
+            name: 'application #$index',
             connectionType: EConnectionType.bunker.toInt,
           );
           AccountManager.sharedInstance.addApplicationMap(newClient);

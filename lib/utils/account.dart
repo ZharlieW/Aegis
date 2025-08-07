@@ -133,6 +133,11 @@ class Account {
     }
 
     final clientList = await ClientAuthDBISAR.getAllFromDB(user.pubkey);
+    
+    // Process bunker applications with proper indexing and database updates
+    await _processBunkerApplicationsWithDBUpdate(clientList);
+    
+    // Add all applications to AccountManager
     for (final item in clientList) {
       AccountManager.sharedInstance.addApplicationMap(item);
     }
@@ -173,15 +178,15 @@ class Account {
 
   Future<Uint8List> decryptPrivkey(UserDBISAR user) async {
     final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
-    
+
     // Try to get password from Keychain first
     String? password;
-    
+
     // For existing users, migrate from database to Keychain if needed
     if (user.defaultPassword != null && user.defaultPassword!.isNotEmpty) {
       // Store the old password before clearing it
       final oldPassword = user.defaultPassword;
-      
+
       // Migrate old password to Keychain
       try {
         await DBKeyManager.migrateUserPrivkeyKey(user.pubkey, oldPassword);
@@ -189,7 +194,7 @@ class Account {
         user.defaultPassword = null;
         await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
         print('[Migration] Cleared password from database for user: ${user.pubkey}');
-        
+
         // Get the migrated password from Keychain
         password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
       } catch (error) {
@@ -201,15 +206,71 @@ class Account {
       // Try to get from Keychain
       password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
     }
-    
+
     if (password == null || password.isEmpty) {
       throw Exception('Failed to get encryption password for user: ${user.pubkey}');
     }
-    
+
     return decryptPrivateKey(encryptedBytes, password);
   }
 
   void addAuthToNostrConnectInfo(ClientAuthDBISAR client) {
     authToNostrConnectInfo[client.clientPubkey] = client;
+  }
+
+  /// Process bunker applications with proper indexing and database updates
+  Future<void> _processBunkerApplicationsWithDBUpdate(List<ClientAuthDBISAR> clientList) async {
+    // Get all bunker applications
+    final bunkerApplications = clientList
+        .where((app) => app.connectionType == EConnectionType.bunker.toInt)
+        .toList();
+    
+    // Sort by creation timestamp to maintain consistent ordering
+    bunkerApplications.sort((a, b) => 
+        (a.createTimestamp ?? 0).compareTo(b.createTimestamp ?? 0));
+    
+    // Process each bunker application
+    for (int i = 0; i < bunkerApplications.length; i++) {
+      final item = bunkerApplications[i];
+      final index = i + 1;
+      
+      // Check if name needs to be updated
+      if (_shouldUpdateApplicationName(item.name)) {
+        final oldName = item.name;
+        item.name = 'application #$index';
+        
+        // Update database
+        try {
+          await ClientAuthDBISAR.saveFromDB(item, isUpdate: true);
+          AegisLogger.info('Updated bunker application name in DB: $oldName -> application #$index (${item.clientPubkey})');
+        } catch (e) {
+          AegisLogger.error('Failed to update application name in database: ${item.clientPubkey}', e);
+        }
+      }
+    }
+  }
+
+  /// Check if application name should be updated
+  bool _shouldUpdateApplicationName(String? name) {
+    if (name == null || name.isEmpty) {
+      return true;
+    }
+    
+    // Update if name is a pubkey (64 hex characters)
+    if (name.length == 64 && RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(name)) {
+      return true;
+    }
+    
+    // Update if name contains ':' (likely a pubkey with prefix)
+    if (name.contains(':')) {
+      return true;
+    }
+    
+    // Update if name is too long (likely a pubkey or complex identifier)
+    if (name.length > 20) {
+      return true;
+    }
+    
+    return false;
   }
 }

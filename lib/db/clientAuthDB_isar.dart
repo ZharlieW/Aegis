@@ -30,9 +30,9 @@ extension ConnectionTypeEx on EConnectionType {
   String get toStr {
     switch (this) {
       case EConnectionType.bunker:
-        return 'bunker://';
+        return 'bunker';
       case EConnectionType.nostrconnect:
-        return 'nostrconnect://';
+        return 'nostrconnect';
     }
   }
 }
