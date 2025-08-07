@@ -67,6 +67,25 @@ class SignedEventManager {
     }
   }
 
+  /// Get signed events for specific application pubkey
+  Future<List<SignedEventDBISAR>> getSignedEventsByPubkey(String applicationPubkey) async {
+    final account = Account.sharedInstance;
+    final userPubkey = account.currentPubkey.isNotEmpty 
+        ? account.currentPubkey 
+        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    
+    print('🔍 [SignedEventManager] Getting events for application: $applicationPubkey');
+    
+    try {
+      final events = await SignedEventDBISAR.getByApplicationPubkey(userPubkey, applicationPubkey);
+      print('✅ [SignedEventManager] Found ${events.length} events for application: $applicationPubkey');
+      return events;
+    } catch (e) {
+      print('❌ [SignedEventManager] Failed to get events for application: $applicationPubkey, error: $e');
+      return [];
+    }
+  }
+
   /// Get recent signed events for current user
   Future<List<SignedEventDBISAR>> getRecentSignedEvents({int limit = 50}) async {
     final account = Account.sharedInstance;

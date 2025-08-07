@@ -141,8 +141,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 'Activities',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              trailing: CommonImage(
-                iconName: 'activities_icon.png',
+              trailing: Icon(
+                Icons.history,
                 size: 22,
               ),
               onTap: () {

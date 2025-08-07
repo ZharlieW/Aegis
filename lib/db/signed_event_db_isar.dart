@@ -99,6 +99,29 @@ class SignedEventDBISAR {
     }
   }
 
+  /// Get events by application pubkey
+  static Future<List<SignedEventDBISAR>> getByApplicationPubkey(String userPubkey, String applicationPubkey) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    
+    // If user is not logged in, get all events for the application
+    if (userPubkey.startsWith('default_user_')) {
+      final list = await isar.signedEventDBISARs
+          .filter()
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .sortBySignedTimestampDesc()
+          .findAll();
+      return list;
+    } else {
+      final list = await isar.signedEventDBISARs
+          .filter()
+          .userPubkeyEqualTo(userPubkey)
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .sortBySignedTimestampDesc()
+          .findAll();
+      return list;
+    }
+  }
+
   static Future<void> saveFromDB(SignedEventDBISAR event, {bool isUpdate = false}) async {
     final existingEvent = await searchFromDB(event.userPubkey, event.eventId);
 

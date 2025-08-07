@@ -8,7 +8,9 @@ import '../../db/clientAuthDB_isar.dart';
 import '../../utils/account_manager.dart';
 
 class Activities extends StatefulWidget {
-  const Activities({super.key});
+  final String? pubkey;
+  
+  const Activities({super.key, this.pubkey});
 
   @override
   ActivitiesState createState() => ActivitiesState();
@@ -38,7 +40,16 @@ class ActivitiesState extends State<Activities> {
     });
 
     try {
-      final events = await SignedEventManager.sharedInstance.getAllSignedEvents();
+      List<SignedEventDBISAR> events;
+      
+      if (widget.pubkey != null && widget.pubkey!.isNotEmpty) {
+        // Load events for specific pubkey
+        events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.pubkey!);
+      } else {
+        // Load all events
+        events = await SignedEventManager.sharedInstance.getAllSignedEvents();
+      }
+      
       setState(() {
         _events = events;
         _filteredEvents = events;
@@ -76,7 +87,7 @@ class ActivitiesState extends State<Activities> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Activities'),
+        title: Text('Activities'),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [
@@ -145,6 +156,8 @@ class ActivitiesState extends State<Activities> {
   }
 
   Widget _buildEmptyState() {
+    final bool isSpecificApp = widget.pubkey != null && widget.pubkey!.isNotEmpty;
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -193,6 +206,7 @@ class ActivitiesState extends State<Activities> {
     ClientAuthDBISAR? clientAuthDBISAR = AccountManager.sharedInstance.applicationMap[event.applicationPubkey ?? '']?.value;
     bool isBunker = clientAuthDBISAR?.connectionType == EConnectionType.bunker.toInt;
     String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -206,6 +220,7 @@ class ActivitiesState extends State<Activities> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -215,11 +230,11 @@ class ActivitiesState extends State<Activities> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 12,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-
             ],
           ),
           Column(
@@ -230,6 +245,7 @@ class ActivitiesState extends State<Activities> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

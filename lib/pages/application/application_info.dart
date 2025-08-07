@@ -10,6 +10,7 @@ import '../../navigator/navigator.dart';
 import '../../utils/account.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../../utils/took_kit.dart';
+import '../activities/activities.dart';
 import 'edit_bunker_socket_info.dart';
 
 class ApplicationInfo extends StatefulWidget {
@@ -59,11 +60,37 @@ class ApplicationInfoState extends State<ApplicationInfo> {
             children: [
               _qrCodeWidget(),
               const SizedBox(height: 20),
+              _optionItemWidget(
+                title: 'Application name',
+                content: client.name ?? '--',
+                iconName: 'edit_icon.png',
+                onTap: () {
+                  AegisNavigator.pushPage(
+                    context,
+                    (context) => EditApplicationInfo(
+                      clientAuthDBISAR: client,
+                    ),
+                  );
+                },
+              ),
               _itemWidget(
                 'Connect type',
                 subTitle:
                     ConnectionTypeEx.fromToEnum(client.connectionType).toStr,
               ),
+              GestureDetector(
+                onTap: () {
+                  AegisNavigator.pushPage(context, (context) => Activities(pubkey: client.clientPubkey));
+                },
+                child: _itemWidget(
+                  'Activities',
+                  rightWidget: const Icon(
+                    Icons.history,
+                    size: 22,
+                  ),
+                ),
+              ),
+
               _itemWidget('Client app logo',
                   rightWidget: client.image != null && client.image!.isNotEmpty
                       ? Image.network(
@@ -85,19 +112,6 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 'Create time',
                 subTitle: TookKit.formatTimestamp(client.createTimestamp ??
                     DateTime.now().millisecondsSinceEpoch),
-              ),
-              _optionItemWidget(
-                title: 'Application name',
-                content: client.name ?? '--',
-                iconName: 'edit_icon.png',
-                onTap: () {
-                  AegisNavigator.pushPage(
-                    context,
-                    (context) => EditApplicationInfo(
-                      clientAuthDBISAR: client,
-                    ),
-                  );
-                },
               ),
               _optionItemWidget(
                 title: 'Client pubkey',
