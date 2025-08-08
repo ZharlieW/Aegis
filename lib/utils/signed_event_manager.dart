@@ -48,6 +48,23 @@ class SignedEventManager {
     }
   }
 
+  /// Clean up old events for specific application, keeping only the latest 50
+  Future<void> _cleanupOldEventsForApplication(String userPubkey, String applicationPubkey) async {
+    try {
+      final eventCount = await SignedEventDBISAR.getEventCountByApplicationPubkey(userPubkey, applicationPubkey);
+      
+      // Cleanup if we have more than 50 events
+      if (eventCount > 50) {
+        print('🧹 [SignedEventManager] Cleaning up old events for $applicationPubkey (current: $eventCount, keeping latest 50)');
+        await SignedEventDBISAR.deleteOldEventsForApplication(userPubkey, applicationPubkey, keepCount: 50);
+      } else {
+        print('✅ [SignedEventManager] No cleanup needed for $applicationPubkey (current count: $eventCount)');
+      }
+    } catch (e) {
+      print('❌ [SignedEventManager] Failed to cleanup old events for $applicationPubkey: $e');
+    }
+  }
+
   /// Get all signed events for current user
   Future<List<SignedEventDBISAR>> getAllSignedEvents() async {
     final account = Account.sharedInstance;
@@ -86,42 +103,68 @@ class SignedEventManager {
     }
   }
 
-  /// Get recent signed events for current user
-  Future<List<SignedEventDBISAR>> getRecentSignedEvents({int limit = 50}) async {
+
+
+
+
+  /// Clean up all applications on app startup
+  Future<void> cleanupOnStartup() async {
     final account = Account.sharedInstance;
     final userPubkey = account.currentPubkey.isNotEmpty 
         ? account.currentPubkey 
         : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
-
-    return await SignedEventDBISAR.getRecentFromDB(userPubkey, limit: limit);
+    
+    print('🚀 [SignedEventManager] Starting startup cleanup for all applications');
+    
+    try {
+      // Get all events to find unique application pubkeys
+      final allEvents = await getAllSignedEvents();
+      final applicationPubkeys = allEvents
+          .where((event) => event.applicationPubkey != null && event.applicationPubkey!.isNotEmpty)
+          .map((event) => event.applicationPubkey!)
+          .toSet();
+      
+      print('📊 [SignedEventManager] Found ${applicationPubkeys.length} applications for startup cleanup');
+      
+      // Clean up each application
+      for (final applicationPubkey in applicationPubkeys) {
+        await _cleanupOldEventsForApplication(userPubkey, applicationPubkey);
+      }
+      
+      print('✅ [SignedEventManager] Startup cleanup completed for all applications');
+    } catch (e) {
+      print('❌ [SignedEventManager] Failed to cleanup on startup: $e');
+    }
   }
 
-  /// Search signed events by content
-  Future<List<SignedEventDBISAR>> searchSignedEvents(String query) async {
+  /// Periodic cleanup for all applications
+  Future<void> periodicCleanup() async {
     final account = Account.sharedInstance;
-    if (account.currentPubkey.isEmpty) return [];
-
-    final allEvents = await getAllSignedEvents();
-    return allEvents.where((event) {
-      return event.eventContent.toLowerCase().contains(query.toLowerCase()) ||
-             (event.applicationName?.toLowerCase().contains(query.toLowerCase()) ?? false);
-    }).toList();
-  }
-
-  /// Clear all signed events for current user
-  Future<void> clearAllSignedEvents() async {
-    final account = Account.sharedInstance;
-    if (account.currentPubkey.isEmpty) return;
-
-    await SignedEventDBISAR.clearAllFromDB(account.currentPubkey);
-  }
-
-  /// Delete a specific signed event
-  Future<void> deleteSignedEvent(String eventId) async {
-    final account = Account.sharedInstance;
-    if (account.currentPubkey.isEmpty) return;
-
-    await SignedEventDBISAR.deleteFromDB(account.currentPubkey, eventId);
+    final userPubkey = account.currentPubkey.isNotEmpty 
+        ? account.currentPubkey 
+        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    
+    print('🔄 [SignedEventManager] Starting periodic cleanup for all applications');
+    
+    try {
+      // Get all events to find unique application pubkeys
+      final allEvents = await getAllSignedEvents();
+      final applicationPubkeys = allEvents
+          .where((event) => event.applicationPubkey != null && event.applicationPubkey!.isNotEmpty)
+          .map((event) => event.applicationPubkey!)
+          .toSet();
+      
+      print('📊 [SignedEventManager] Found ${applicationPubkeys.length} applications for periodic cleanup');
+      
+      // Clean up each application
+      for (final applicationPubkey in applicationPubkeys) {
+        await _cleanupOldEventsForApplication(userPubkey, applicationPubkey);
+      }
+      
+      print('✅ [SignedEventManager] Periodic cleanup completed for all applications');
+    } catch (e) {
+      print('❌ [SignedEventManager] Failed to periodic cleanup: $e');
+    }
   }
 
   /// Get event kind description
@@ -233,208 +276,6 @@ class SignedEventManager {
         return 'Response';
       case 38002:
         return 'Tombstone';
-      case 39000:
-        return 'Regular Expression';
-      case 39001:
-        return 'Regular Expression Alternative';
-      case 39002:
-        return 'Regular Expression Replacement';
-      case 39003:
-        return 'Regular Expression Like';
-      case 39004:
-        return 'Regular Expression Match';
-      case 39005:
-        return 'Regular Expression Flag';
-      case 39006:
-        return 'Regular Expression Split';
-      case 39007:
-        return 'Regular Expression Replace';
-      case 39008:
-        return 'Regular Expression Test';
-      case 39009:
-        return 'Regular Expression Exec';
-      case 39010:
-        return 'Regular Expression Search';
-      case 39011:
-        return 'Regular Expression Match All';
-      case 39012:
-        return 'Regular Expression Replace All';
-      case 39013:
-        return 'Regular Expression Split All';
-      case 39014:
-        return 'Regular Expression Test All';
-      case 39015:
-        return 'Regular Expression Exec All';
-      case 39016:
-        return 'Regular Expression Search All';
-      case 39017:
-        return 'Regular Expression Match All Global';
-      case 39018:
-        return 'Regular Expression Replace All Global';
-      case 39019:
-        return 'Regular Expression Split All Global';
-      case 39020:
-        return 'Regular Expression Test All Global';
-      case 39021:
-        return 'Regular Expression Exec All Global';
-      case 39022:
-        return 'Regular Expression Search All Global';
-      case 39023:
-        return 'Regular Expression Match All Sticky';
-      case 39024:
-        return 'Regular Expression Replace All Sticky';
-      case 39025:
-        return 'Regular Expression Split All Sticky';
-      case 39026:
-        return 'Regular Expression Test All Sticky';
-      case 39027:
-        return 'Regular Expression Exec All Sticky';
-      case 39028:
-        return 'Regular Expression Search All Sticky';
-      case 39029:
-        return 'Regular Expression Match All Unicode';
-      case 39030:
-        return 'Regular Expression Replace All Unicode';
-      case 39031:
-        return 'Regular Expression Split All Unicode';
-      case 39032:
-        return 'Regular Expression Test All Unicode';
-      case 39033:
-        return 'Regular Expression Exec All Unicode';
-      case 39034:
-        return 'Regular Expression Search All Unicode';
-      case 39035:
-        return 'Regular Expression Match All Unicode Global';
-      case 39036:
-        return 'Regular Expression Replace All Unicode Global';
-      case 39037:
-        return 'Regular Expression Split All Unicode Global';
-      case 39038:
-        return 'Regular Expression Test All Unicode Global';
-      case 39039:
-        return 'Regular Expression Exec All Unicode Global';
-      case 39040:
-        return 'Regular Expression Search All Unicode Global';
-      case 39041:
-        return 'Regular Expression Match All Unicode Sticky';
-      case 39042:
-        return 'Regular Expression Replace All Unicode Sticky';
-      case 39043:
-        return 'Regular Expression Split All Unicode Sticky';
-      case 39044:
-        return 'Regular Expression Test All Unicode Sticky';
-      case 39045:
-        return 'Regular Expression Exec All Unicode Sticky';
-      case 39046:
-        return 'Regular Expression Search All Unicode Sticky';
-      case 39047:
-        return 'Regular Expression Match All Unicode Global Sticky';
-      case 39048:
-        return 'Regular Expression Replace All Unicode Global Sticky';
-      case 39049:
-        return 'Regular Expression Split All Unicode Global Sticky';
-      case 39050:
-        return 'Regular Expression Test All Unicode Global Sticky';
-      case 39051:
-        return 'Regular Expression Exec All Unicode Global Sticky';
-      case 39052:
-        return 'Regular Expression Search All Unicode Global Sticky';
-      case 39053:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode';
-      case 39054:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode';
-      case 39055:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode';
-      case 39056:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode';
-      case 39057:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode';
-      case 39058:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode';
-      case 39059:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global';
-      case 39060:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global';
-      case 39061:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global';
-      case 39062:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global';
-      case 39063:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global';
-      case 39064:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global';
-      case 39065:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global Sticky';
-      case 39066:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global Sticky';
-      case 39067:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global Sticky';
-      case 39068:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global Sticky';
-      case 39069:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global Sticky';
-      case 39070:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global Sticky';
-      case 39071:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39072:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39073:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39074:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39075:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39076:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39077:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39078:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39079:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39080:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39081:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39082:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39083:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky';
-      case 39084:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky';
-      case 39085:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky';
-      case 39086:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky';
-      case 39087:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky';
-      case 39088:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky';
-      case 39089:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39090:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39091:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39092:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39093:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39094:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode';
-      case 39095:
-        return 'Regular Expression Match All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39096:
-        return 'Regular Expression Replace All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39097:
-        return 'Regular Expression Split All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39098:
-        return 'Regular Expression Test All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39099:
-        return 'Regular Expression Exec All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode Global';
-      case 39100:
-        return 'Regular Expression Search All Unicode Global Sticky Unicode Global Sticky Unicode Global Sticky Unicode Global';
       default:
         return 'Unknown Event Kind ($eventKind)';
     }

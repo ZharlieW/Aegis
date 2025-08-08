@@ -79,8 +79,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                     ConnectionTypeEx.fromToEnum(client.connectionType).toStr,
               ),
               GestureDetector(
+                behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  AegisNavigator.pushPage(context, (context) => Activities(pubkey: client.clientPubkey));
+                  AegisNavigator.pushPage(context, (context) => Activities(clientAuthDBISAR: widget.clientAuthDBISAR));
                 },
                 child: _itemWidget(
                   'Activities',

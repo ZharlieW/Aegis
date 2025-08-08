@@ -8,9 +8,9 @@ import '../../db/clientAuthDB_isar.dart';
 import '../../utils/account_manager.dart';
 
 class Activities extends StatefulWidget {
-  final String? pubkey;
+  final ClientAuthDBISAR? clientAuthDBISAR;
   
-  const Activities({super.key, this.pubkey});
+  const Activities({super.key, this.clientAuthDBISAR});
 
   @override
   ActivitiesState createState() => ActivitiesState();
@@ -42,9 +42,9 @@ class ActivitiesState extends State<Activities> {
     try {
       List<SignedEventDBISAR> events;
       
-      if (widget.pubkey != null && widget.pubkey!.isNotEmpty) {
+      if (widget.clientAuthDBISAR != null) {
         // Load events for specific pubkey
-        events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.pubkey!);
+        events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.clientAuthDBISAR!.clientPubkey);
       } else {
         // Load all events
         events = await SignedEventManager.sharedInstance.getAllSignedEvents();
@@ -87,7 +87,7 @@ class ActivitiesState extends State<Activities> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text('Activities'),
+        title: Text(widget.clientAuthDBISAR != null ? (widget.clientAuthDBISAR?.name ?? 'Activities') : 'Activities'),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [
@@ -156,7 +156,6 @@ class ActivitiesState extends State<Activities> {
   }
 
   Widget _buildEmptyState() {
-    final bool isSpecificApp = widget.pubkey != null && widget.pubkey!.isNotEmpty;
     
     return Center(
       child: Column(

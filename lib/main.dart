@@ -5,6 +5,7 @@ import 'package:aegis/utils/background_audio_manager.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home/splash_screen.dart';
@@ -48,8 +49,45 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       await LocalStorage.init();
       await Account.sharedInstance.autoLogin();
+      
+      // Clean up on app startup
+      _performStartupCleanup();
+      
+      // Schedule periodic cleanup
+      _schedulePeriodicCleanup();
     } catch (e) {
       AegisLogger.error("Failed to initialize app: $e");
+    }
+  }
+
+  /// Perform startup cleanup
+  void _performStartupCleanup() async {
+    try {
+      AegisLogger.info("🚀 Starting startup cleanup of signed events");
+      await SignedEventManager.sharedInstance.cleanupOnStartup();
+    } catch (e) {
+      AegisLogger.error("Failed to perform startup cleanup: $e");
+    }
+  }
+
+  /// Schedule periodic cleanup for signed events
+  void _schedulePeriodicCleanup() {
+    // Run cleanup every 30 minutes when app is active
+    Future.delayed(const Duration(minutes: 30), () {
+      _performPeriodicCleanup();
+    });
+  }
+
+  /// Perform periodic cleanup
+  void _performPeriodicCleanup() async {
+    try {
+      AegisLogger.info("🔄 Starting periodic cleanup of signed events");
+      await SignedEventManager.sharedInstance.periodicCleanup();
+    } catch (e) {
+      AegisLogger.error("Failed to perform periodic cleanup: $e");
+    } finally {
+      // Schedule next cleanup
+      _schedulePeriodicCleanup();
     }
   }
 

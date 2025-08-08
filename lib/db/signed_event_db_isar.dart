@@ -60,42 +60,17 @@ class SignedEventDBISAR {
   static Future<List<SignedEventDBISAR>> getAllFromDB(String userPubkey) async {
     final isar = await DBISAR.sharedInstance.open(userPubkey);
     
-    // If user is not logged in, get all events
-    if (userPubkey.startsWith('default_user_')) {
-      final list = await isar.signedEventDBISARs
+    if (_isDefaultUser(userPubkey)) {
+      return await isar.signedEventDBISARs
           .where()
           .sortBySignedTimestampDesc()
           .findAll();
-      return list;
     } else {
-      final list = await isar.signedEventDBISARs
+      return await isar.signedEventDBISARs
           .filter()
           .userPubkeyEqualTo(userPubkey)
           .sortBySignedTimestampDesc()
           .findAll();
-      return list;
-    }
-  }
-
-  static Future<List<SignedEventDBISAR>> getRecentFromDB(String userPubkey, {int limit = 50}) async {
-    final isar = await DBISAR.sharedInstance.open(userPubkey);
-    
-    // If user is not logged in, get all events
-    if (userPubkey.startsWith('default_user_')) {
-      final list = await isar.signedEventDBISARs
-          .where()
-          .sortBySignedTimestampDesc()
-          .limit(limit)
-          .findAll();
-      return list;
-    } else {
-      final list = await isar.signedEventDBISARs
-          .filter()
-          .userPubkeyEqualTo(userPubkey)
-          .sortBySignedTimestampDesc()
-          .limit(limit)
-          .findAll();
-      return list;
     }
   }
 
@@ -103,22 +78,84 @@ class SignedEventDBISAR {
   static Future<List<SignedEventDBISAR>> getByApplicationPubkey(String userPubkey, String applicationPubkey) async {
     final isar = await DBISAR.sharedInstance.open(userPubkey);
     
-    // If user is not logged in, get all events for the application
-    if (userPubkey.startsWith('default_user_')) {
-      final list = await isar.signedEventDBISARs
+    if (_isDefaultUser(userPubkey)) {
+      return await isar.signedEventDBISARs
           .filter()
           .applicationPubkeyEqualTo(applicationPubkey)
           .sortBySignedTimestampDesc()
           .findAll();
-      return list;
     } else {
-      final list = await isar.signedEventDBISARs
+      return await isar.signedEventDBISARs
           .filter()
           .userPubkeyEqualTo(userPubkey)
           .applicationPubkeyEqualTo(applicationPubkey)
           .sortBySignedTimestampDesc()
           .findAll();
-      return list;
+    }
+  }
+
+  /// Get count of events for specific application pubkey
+  static Future<int> getEventCountByApplicationPubkey(String userPubkey, String applicationPubkey) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    
+    if (_isDefaultUser(userPubkey)) {
+      return await isar.signedEventDBISARs
+          .filter()
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .count();
+    } else {
+      return await isar.signedEventDBISARs
+          .filter()
+          .userPubkeyEqualTo(userPubkey)
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .count();
+    }
+  }
+
+  /// Helper method to check if user is default user
+  static bool _isDefaultUser(String userPubkey) {
+    return userPubkey.startsWith('default_user_');
+  }
+
+  /// Delete old events for specific application pubkey, keeping only the latest ones
+  static Future<void> deleteOldEventsForApplication(String userPubkey, String applicationPubkey, {int keepCount = 50}) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    
+    // Get the total count of events for this application
+    final totalCount = await getEventCountByApplicationPubkey(userPubkey, applicationPubkey);
+    
+    // Only delete if we have more than keepCount events
+    if (totalCount > keepCount) {
+      List<SignedEventDBISAR> eventsToDelete;
+      
+      if (_isDefaultUser(userPubkey)) {
+        eventsToDelete = await isar.signedEventDBISARs
+            .filter()
+            .applicationPubkeyEqualTo(applicationPubkey)
+            .sortBySignedTimestampDesc()
+            .offset(keepCount)
+            .findAll();
+      } else {
+        eventsToDelete = await isar.signedEventDBISARs
+            .filter()
+            .userPubkeyEqualTo(userPubkey)
+            .applicationPubkeyEqualTo(applicationPubkey)
+            .sortBySignedTimestampDesc()
+            .offset(keepCount)
+            .findAll();
+      }
+      
+      // Delete old events
+      if (eventsToDelete.isNotEmpty) {
+        await isar.writeTxn(() async {
+          for (final event in eventsToDelete) {
+            await isar.signedEventDBISARs.delete(event.id);
+          }
+        });
+        print('🗑️ [SignedEventDBISAR] Deleted ${eventsToDelete.length} old events for application: $applicationPubkey (kept $keepCount latest)');
+      }
+    } else {
+      print('📊 [SignedEventDBISAR] No cleanup needed for $applicationPubkey (current count: $totalCount, max: $keepCount)');
     }
   }
 
@@ -127,34 +164,11 @@ class SignedEventDBISAR {
 
     if (existingEvent == null || isUpdate) {
       final isar = await DBISAR.sharedInstance.open(event.userPubkey);
-
       await isar.writeTxn(() async {
         await isar.signedEventDBISARs.put(event);
       });
     }
   }
 
-  static Future<void> deleteFromDB(String userPubkey, String eventId) async {
-    final isar = await DBISAR.sharedInstance.open(userPubkey);
 
-    final target = await isar.signedEventDBISARs
-        .filter()
-        .userPubkeyEqualTo(userPubkey)
-        .eventIdEqualTo(eventId)
-        .findFirst();
-
-    if (target != null) {
-      await isar.writeTxn(() async {
-        await isar.signedEventDBISARs.delete(target.id);
-      });
-    }
-  }
-
-  static Future<void> clearAllFromDB(String userPubkey) async {
-    final isar = await DBISAR.sharedInstance.open(userPubkey);
-
-    await isar.writeTxn(() async {
-      await isar.signedEventDBISARs.clear();
-    });
-  }
 } 
