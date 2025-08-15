@@ -5,7 +5,7 @@ import 'package:aegis/utils/took_kit.dart';
 import 'package:flutter/material.dart';
 
 import '../../db/clientAuthDB_isar.dart';
-import '../../utils/account_manager.dart';
+import 'event_detail_page.dart';
 
 class Activities extends StatefulWidget {
   final ClientAuthDBISAR? clientAuthDBISAR;
@@ -17,7 +17,6 @@ class Activities extends StatefulWidget {
 }
 
 class ActivitiesState extends State<Activities> {
-  List<SignedEventDBISAR> _events = [];
   List<SignedEventDBISAR> _filteredEvents = [];
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
@@ -51,7 +50,6 @@ class ActivitiesState extends State<Activities> {
       }
       
       setState(() {
-        _events = events;
         _filteredEvents = events;
         _isLoading = false;
       });
@@ -201,33 +199,39 @@ class ActivitiesState extends State<Activities> {
   }
 
   Widget _buildEventItem(SignedEventDBISAR event) {
-    String name = event.applicationName ?? '--';
-    ClientAuthDBISAR? clientAuthDBISAR = AccountManager.sharedInstance.applicationMap[event.applicationPubkey ?? '']?.value;
-    bool isBunker = clientAuthDBISAR?.connectionType == EConnectionType.bunker.toInt;
-    String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            _getEventContent(event),
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 14
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailPage(event: event),
           ),
-          Text(
-            _formatTimestamp(event.signedTimestamp),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _getEventContent(event),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+            Text(
+              _formatTimestamp(event.signedTimestamp),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
