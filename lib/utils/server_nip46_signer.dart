@@ -173,6 +173,7 @@ class ServerNIP46Signer {
     required String eventContent,
     required String pubkey,
     String? customAppName,
+    String? metadata,
   }) async {
     try {
       final account = Account.sharedInstance;
@@ -187,6 +188,7 @@ class ServerNIP46Signer {
         applicationName: _formatApplicationName(customAppName ?? app?.name, pubkey),
         applicationPubkey: pubkey,
         status: 1,
+        metadata:metadata,
       );
     } catch (e) {
       AegisLogger.error('Failed to record signed event: $eventContent', e);
@@ -296,6 +298,8 @@ class ServerNIP46Signer {
                 eventKind: eventKind,
                 eventContent: eventContent.isNotEmpty && eventContent.length < 20 ? eventContent : 'Signed Event (Kind $eventKind)',
                 pubkey: event.pubkey,
+                metadata: contentStr,
+
               );
             } catch (e) {
               AegisLogger.error('Failed to record signed event', e);
