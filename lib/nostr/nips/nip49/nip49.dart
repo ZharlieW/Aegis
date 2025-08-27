@@ -8,7 +8,6 @@ import 'package:pointycastle/key_derivators/scrypt.dart' as pc;
 import 'package:pointycastle/pointycastle.dart' as pointycastle;
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
-export 'nip49_signer.dart';
 export 'nip49_utils.dart';
 
 class NIP49 {
