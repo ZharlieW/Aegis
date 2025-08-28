@@ -64,6 +64,7 @@ dependencies:
 #  uni_links3: ^0.5.3
   url_launcher: ^6.3.1
   flutter_secure_storage: 9.2.4
+  unorm_dart: ^0.3.1+1
 
 
 dev_dependencies:
