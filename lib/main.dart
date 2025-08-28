@@ -6,6 +6,7 @@ import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/utils/aegis_service_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home/splash_screen.dart';
@@ -50,6 +51,9 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       await LocalStorage.init();
       await Account.sharedInstance.autoLogin();
       
+      // Initialize background service for Android
+      await _initializeBackgroundService();
+      
       // Clean up on app startup
       _performStartupCleanup();
       
@@ -57,6 +61,17 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       _schedulePeriodicCleanup();
     } catch (e) {
       AegisLogger.error("Failed to initialize app: $e");
+    }
+  }
+  
+  /// Initialize background service for Android
+  Future<void> _initializeBackgroundService() async {
+    try {
+      await AegisServiceManager.initializeBackgroundService();
+      AegisLogger.info("Background service initialized successfully");
+    } catch (e) {
+      AegisLogger.error("Failed to initialize background service: $e");
+      // Don't crash the app if background service fails
     }
   }
 
@@ -120,6 +135,21 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.paused) {
       AegisLogger.info("📱 Application enter background");
       if (AegisWebSocketServer.instance.clients.isNotEmpty) {}
+      // Ensure background service is running when app goes to background
+      await _ensureBackgroundServiceRunning();
+    }
+  }
+  
+  /// Ensure background service is running when app goes to background
+  Future<void> _ensureBackgroundServiceRunning() async {
+    try {
+      final isRunning = await AegisServiceManager.isServiceRunning();
+      if (!isRunning) {
+        AegisLogger.info("Background service not running, starting it...");
+        await AegisServiceManager.startBackgroundService();
+      }
+    } catch (e) {
+      AegisLogger.error("Failed to ensure background service running: $e");
     }
   }
 }
