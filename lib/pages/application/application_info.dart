@@ -85,9 +85,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 },
                 child: _itemWidget(
                   'Activities',
-                  rightWidget: const Icon(
-                    Icons.history,
-                    size: 22,
+                  rightWidget: CommonImage(
+                    iconName: 'log_icon.png',
+                    size: 24,
                   ),
                 ),
               ),
@@ -305,17 +305,12 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               ),
               GestureDetector(
                 onTap: () => onTap?.call(),
-                child: SizedBox(
-                  width: 48,
-                  child: Center(
-                    child: CommonImage(
-                      iconName: iconName,
-                      size: 24,
-                      color: Colors.black,
-                    ),
-                  ),
+                child: CommonImage(
+                  iconName: iconName,
+                  size: 24,
+                  color: Colors.black,
                 ),
-              ),
+              ).setPaddingOnly(left: 8.0),
             ],
           ),
         ],
