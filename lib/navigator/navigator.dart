@@ -193,6 +193,7 @@ class AegisNavigator extends Navigator {
     Object? pageId,
     bool? isShortLived,
     bool fullscreenDialog = false,
+    double screenDialogHeight = 0.9,
     bool allowPageScroll = false,
   }) {
     context ??= navigatorKey.currentContext;
@@ -217,7 +218,7 @@ class AegisNavigator extends Navigator {
         enableDrag: !allowPageScroll,
         backgroundColor: Colors.transparent,
         builder: (BuildContext context) => Container(
-          height: MediaQuery.of(context).size.height * 0.9,
+          height: MediaQuery.of(context).size.height * screenDialogHeight,
           child: builder(context),
         ),
       );
