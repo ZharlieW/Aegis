@@ -172,6 +172,7 @@ class Account {
       AegisNavigator.navigatorKey.currentContext,
           (context) => const RequestPermission(),
       fullscreenDialog: false,
+      screenDialogHeight: 0.75,
     );
     return status == true;
   }

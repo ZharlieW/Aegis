@@ -136,20 +136,20 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 ),
               ),
             ),
-            ListTile(
-              title: Text(
-                'Activities',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              trailing: Icon(
-                Icons.history,
-                size: 22,
-              ),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                AegisNavigator.pushPage(context, (context) => const Activities());
-              },
-            ),
+            // ListTile(
+            //   title: Text(
+            //     'Activities',
+            //     style: Theme.of(context).textTheme.titleMedium,
+            //   ),
+            //   trailing: Icon(
+            //     Icons.history,
+            //     size: 22,
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context); // Close drawer
+            //     AegisNavigator.pushPage(context, (context) => const Activities());
+            //   },
+            // ),
             ListTile(
               title: Text(
                 'Github',
