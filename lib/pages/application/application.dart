@@ -7,7 +7,6 @@ import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../db/clientAuthDB_isar.dart';
@@ -28,7 +27,6 @@ class Application extends StatefulWidget {
 }
 
 class ApplicationState extends State<Application> with AccountManagerObservers {
-  late WebViewController controller;
 
   bool isPortAvailable = true;
 
