@@ -67,5 +67,5 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
 
     // Quartz library for Nostr functionality
-    implementation 'com.github.vitorpamplona.amethyst:quartz:v1.03.0'
+     implementation 'com.github.vitorpamplona.amethyst:quartz:v1.00.5'
 }
