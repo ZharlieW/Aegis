@@ -4,6 +4,17 @@ plugins {
     id 'dev.flutter.flutter-gradle-plugin'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+
+
+
 android {
     namespace "com.example.aegis"
     compileSdk 36
@@ -19,12 +30,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '21'
+        jvmTarget = '17'
         freeCompilerArgs += ['-Xskip-metadata-version-check']
     }
 
@@ -66,7 +77,8 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-
+    implementation "androidx.annotation:annotation:1.6.0"
     // Quartz library for Nostr functionality
      implementation 'com.github.vitorpamplona.amethyst:quartz:v1.00.5'
+
 }

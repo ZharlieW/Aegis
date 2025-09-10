@@ -19,29 +19,6 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
-        <!-- Foreground service declaration -->
-        <service
-            android:name=".service.AegisWebSocketService"
-            android:enabled="true"
-            android:foregroundServiceType="specialUse"
-            android:exported="false">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="NIP-46 Nostr Signer WebSocket Server" />
-        </service>
-        
-        <!-- Boot completion receiver -->
-        <receiver
-            android:name=".service.AegisBootReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter android:priority="1000">
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
         
         <activity
             android:name=".MainActivity"
