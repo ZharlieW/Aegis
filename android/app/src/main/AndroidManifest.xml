@@ -21,7 +21,7 @@
         
         
         <activity
-            android:name=".MainActivity"
+            android:name="com.aegis.app.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"

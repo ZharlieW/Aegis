@@ -1,4 +1,4 @@
-package com.example.aegis
+package com.aegis.app
 
 import io.flutter.embedding.android.FlutterActivity
 

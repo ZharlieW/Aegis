@@ -1,4 +1,4 @@
-package com.example.aegis
+package com.aegis.app
 
 import android.util.Log
 // Quartz library imports for NIP-04 and NIP-44 encryption
@@ -337,4 +337,4 @@ object NostrCryptoUtils {
         
         return sb.toString()
     }
-} 
+}

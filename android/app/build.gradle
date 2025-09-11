@@ -16,11 +16,11 @@ if (localPropertiesFile.exists()) {
 
 
 android {
-    namespace "com.example.aegis"
+    namespace "com.aegis.app"
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.example.aegis"
+        applicationId "com.aegis.app"
         minSdk 26
         targetSdk 36
         versionCode 1
