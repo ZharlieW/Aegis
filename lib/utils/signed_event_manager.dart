@@ -1,5 +1,6 @@
 import 'package:aegis/db/signed_event_db_isar.dart';
 import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
 
 class SignedEventManager {
   static final SignedEventManager _instance = SignedEventManager._internal();
@@ -8,7 +9,6 @@ class SignedEventManager {
 
   static SignedEventManager get sharedInstance => _instance;
 
-  /// Record a signed event
   Future<void> recordSignedEvent({
     required String eventId,
     required int eventKind,
@@ -19,9 +19,12 @@ class SignedEventManager {
     String? metadata,
   }) async {
     final account = Account.sharedInstance;
-    final userPubkey = account.currentPubkey.isNotEmpty 
-        ? account.currentPubkey 
-        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    if (account.currentPubkey.isEmpty) {
+      print('⚠️ [SignedEventManager] Skip recordSignedEvent: user not logged in');
+      return;
+    }
+
+    final userPubkey = AccountManager.sharedInstance.applicationMap[applicationPubkey]?.value.pubkey ?? account.currentPubkey;
     
     print('🔍 [SignedEventManager] Recording event: $eventContent');
     print('🔍 [SignedEventManager] User pubkey: $userPubkey');
@@ -48,12 +51,10 @@ class SignedEventManager {
     }
   }
 
-  /// Clean up old events for specific application, keeping only the latest 50
   Future<void> _cleanupOldEventsForApplication(String userPubkey, String applicationPubkey) async {
     try {
       final eventCount = await SignedEventDBISAR.getEventCountByApplicationPubkey(userPubkey, applicationPubkey);
       
-      // Cleanup if we have more than 50 events
       if (eventCount > 50) {
         print('🧹 [SignedEventManager] Cleaning up old events for $applicationPubkey (current: $eventCount, keeping latest 50)');
         await SignedEventDBISAR.deleteOldEventsForApplication(userPubkey, applicationPubkey, keepCount: 50);
@@ -65,12 +66,13 @@ class SignedEventManager {
     }
   }
 
-  /// Get all signed events for current user
   Future<List<SignedEventDBISAR>> getAllSignedEvents() async {
     final account = Account.sharedInstance;
-    final userPubkey = account.currentPubkey.isNotEmpty 
-        ? account.currentPubkey 
-        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    if (account.currentPubkey.isEmpty) {
+      print('⚠️ [SignedEventManager] Skip getAllSignedEvents: user not logged in');
+      return [];
+    }
+    final userPubkey = account.currentPubkey;
     
     print('🔍 [SignedEventManager] Getting events for user: $userPubkey');
     
@@ -84,12 +86,13 @@ class SignedEventManager {
     }
   }
 
-  /// Get signed events for specific application pubkey
   Future<List<SignedEventDBISAR>> getSignedEventsByPubkey(String applicationPubkey) async {
     final account = Account.sharedInstance;
-    final userPubkey = account.currentPubkey.isNotEmpty 
-        ? account.currentPubkey 
-        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    if (account.currentPubkey.isEmpty) {
+      print('⚠️ [SignedEventManager] Skip getSignedEventsByPubkey: user not logged in');
+      return [];
+    }
+    final userPubkey = account.currentPubkey;
     
     print('🔍 [SignedEventManager] Getting events for application: $applicationPubkey');
     
@@ -103,21 +106,17 @@ class SignedEventManager {
     }
   }
 
-
-
-
-
-  /// Clean up all applications on app startup
   Future<void> cleanupOnStartup() async {
     final account = Account.sharedInstance;
-    final userPubkey = account.currentPubkey.isNotEmpty 
-        ? account.currentPubkey 
-        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    if (account.currentPubkey.isEmpty) {
+      print('⚠️ [SignedEventManager] Skip cleanupOnStartup: user not logged in');
+      return;
+    }
+    final userPubkey = account.currentPubkey;
     
     print('🚀 [SignedEventManager] Starting startup cleanup for all applications');
     
     try {
-      // Get all events to find unique application pubkeys
       final allEvents = await getAllSignedEvents();
       final applicationPubkeys = allEvents
           .where((event) => event.applicationPubkey != null && event.applicationPubkey!.isNotEmpty)
@@ -126,7 +125,6 @@ class SignedEventManager {
       
       print('📊 [SignedEventManager] Found ${applicationPubkeys.length} applications for startup cleanup');
       
-      // Clean up each application
       for (final applicationPubkey in applicationPubkeys) {
         await _cleanupOldEventsForApplication(userPubkey, applicationPubkey);
       }
@@ -137,17 +135,17 @@ class SignedEventManager {
     }
   }
 
-  /// Periodic cleanup for all applications
   Future<void> periodicCleanup() async {
     final account = Account.sharedInstance;
-    final userPubkey = account.currentPubkey.isNotEmpty 
-        ? account.currentPubkey 
-        : 'default_user_${DateTime.now().millisecondsSinceEpoch}';
+    if (account.currentPubkey.isEmpty) {
+      print('⚠️ [SignedEventManager] Skip periodicCleanup: user not logged in');
+      return;
+    }
+    final userPubkey = account.currentPubkey;
     
     print('🔄 [SignedEventManager] Starting periodic cleanup for all applications');
     
     try {
-      // Get all events to find unique application pubkeys
       final allEvents = await getAllSignedEvents();
       final applicationPubkeys = allEvents
           .where((event) => event.applicationPubkey != null && event.applicationPubkey!.isNotEmpty)
@@ -156,7 +154,6 @@ class SignedEventManager {
       
       print('📊 [SignedEventManager] Found ${applicationPubkeys.length} applications for periodic cleanup');
       
-      // Clean up each application
       for (final applicationPubkey in applicationPubkeys) {
         await _cleanupOldEventsForApplication(userPubkey, applicationPubkey);
       }
@@ -167,7 +164,6 @@ class SignedEventManager {
     }
   }
 
-  /// Get event kind description
   String getEventKindDescription(int eventKind) {
     switch (eventKind) {
       case 0:
