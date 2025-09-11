@@ -56,7 +56,8 @@ dependencies:
   isar_flutter_libs:
     path: packages/isar_flutter_libs
   audioplayers: ^6.4.0
-  audio_service: ^0.18.17
+  audio_service:
+    path: packages/audio_service
   just_audio: ^0.9.46
   audio_session: ^0.1.25
   shared_preferences: ^2.5.2
