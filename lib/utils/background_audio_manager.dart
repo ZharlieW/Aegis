@@ -15,7 +15,13 @@ class BackgroundAudioManager {
   BackgroundAudioManager._internal();
 
   Future<void> init() async {
-    // Only initialize audio service on iOS
+    if (Platform.isAndroid) {
+      // On Android, use foreground service instead of audio service
+      print('🔧 Android: Using foreground service for background connection');
+      return;
+    }
+    
+    // Only initialize audio service on iOS for background audio playback
     if (!PlatformUtils.shouldEnableAudioService) {
       print('🔇 Skipping audio service initialization on ${PlatformUtils.platformName}');
       return;

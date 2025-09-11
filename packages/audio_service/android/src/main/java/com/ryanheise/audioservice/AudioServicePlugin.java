@@ -252,7 +252,7 @@ public class AudioServicePlugin implements FlutterPlugin, ActivityAware {
         public void onConnectionFailed() {
             if (configureResult != null) {
                 configureResult.error("Unable to bind to AudioService. Please ensure you have declared a <service> element as described in the README.", null, null);
-            } else {
+            } else if (clientInterface != null) {
                 clientInterface.setServiceConnectionFailed(true);
             }
         }
