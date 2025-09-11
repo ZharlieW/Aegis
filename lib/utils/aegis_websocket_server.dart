@@ -116,11 +116,12 @@ class AegisWebSocketServer {
 
   Future<bool> isPortAvailable() async {
     try {
-      final socket = await Socket.connect(ip, int.parse(_port), timeout: Duration(milliseconds: 300));
-      socket.destroy();
-      return false;
+      // Try to bind to the port to check if it's available
+      final server = await HttpServer.bind(ip, int.tryParse(_port) ?? 8081);
+      await server.close(force: true);
+      return true; // Port is available
     } catch (e) {
-      return true;
+      return false; // Port is in use or other error
     }
   }
 
