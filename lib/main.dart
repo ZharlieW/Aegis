@@ -8,10 +8,19 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'pages/home/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize RustLib for Nostr functionality
+  try {
+    await RustLib.init();
+    AegisLogger.info('✅ RustLib initialized successfully');
+  } catch (e) {
+    AegisLogger.error('❌ Failed to initialize RustLib: $e');
+  }
   
   // Initialize intl library
   await initializeDateFormatting();

@@ -13,7 +13,7 @@ import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import 'aegis_websocket_server.dart';
 import 'nostr_wallet_connection_parser.dart';
-import 'package:aegis/nostr/nips/nip44/nip44_native_channel.dart';
+import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
 class ClientRequest {
   final String method;
@@ -281,10 +281,11 @@ class ServerNIP46Signer {
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null && serverPrivate != null) {
           final privateKey = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
-          final nativeRes = await NIP44NativeChannel().nativeSignRumorEvent(contentStr, privateKey!);
-
+          final nativeRes = rust_api.signEvent(
+            eventJson: contentStr,
+            privateKey: privateKey!,
+          );
           // Record the signed event
-          if (nativeRes != null) {
             try {
               // Parse the signed event to get event details
               final signedEvent = jsonDecode(nativeRes);
@@ -304,12 +305,11 @@ class ServerNIP46Signer {
             } catch (e) {
               AegisLogger.error('Failed to record signed event', e);
             }
-          }
 
           responseJson = {
             "id": remoteRequest.id,
             "result": nativeRes,
-            "error": nativeRes == null ? 'sign_failed' : null,
+            "error": null,
           };
         }
         break;

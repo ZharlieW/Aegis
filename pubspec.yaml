@@ -66,6 +66,8 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_secure_storage: 9.2.4
   unorm_dart: ^0.3.1+1
+  nostr_rust:
+    path: packages/nostr-rust-flutter-plugin
 
 
 dev_dependencies:

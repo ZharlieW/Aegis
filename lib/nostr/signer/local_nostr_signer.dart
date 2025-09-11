@@ -2,9 +2,8 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import '../event.dart';
-import '../nips/nip04/nip04_native_channel.dart';
-import '../nips/nip44/nip44_native_channel.dart';
 import 'nostr_signer.dart';
 
 class LocalNostrSigner implements NostrSigner {
@@ -16,8 +15,6 @@ class LocalNostrSigner implements NostrSigner {
   late String publicKey;
 
   final ThreadPoolManager _threadPool = ThreadPoolManager();
-  final NIP44NativeChannel _nativeChannel = NIP44NativeChannel();
-  final NIP04NativeChannel _nip04NativeChannel = NIP04NativeChannel();
 
   void init() {
     privateKey = Account.sharedInstance.currentPrivkey;
@@ -74,12 +71,13 @@ class LocalNostrSigner implements NostrSigner {
       await _ensureThreadPoolInitialized();
 
       try {
-        final nativeResult =
-            await _nativeChannel.nativeDecrypt(ciphertext, serverPrivate, clientPubkey);
-        if (nativeResult != null) {
-          AegisLogger.crypto('NIP44 decryption', true, true);
-          return nativeResult;
-        }
+        final nativeResult = rust_api.nip44Decrypt(
+          ciphertext: ciphertext,
+          publicKey: clientPubkey,
+          privateKey: serverPrivate,
+        );
+        AegisLogger.crypto('NIP44 decryption', true, true);
+        return nativeResult;
       } catch (e) {
         AegisLogger.crypto('NIP44 decryption', true, false, e.toString());
       }
@@ -96,12 +94,13 @@ class LocalNostrSigner implements NostrSigner {
       await _ensureThreadPoolInitialized();
 
       try {
-        final nativeResult =
-            await _nativeChannel.nativeEncrypt(plaintext, serverPrivate, clientPubkey);
-        if (nativeResult != null) {
-          AegisLogger.crypto('NIP44 encryption', true, true);
-          return nativeResult;
-        }
+        final nativeResult = rust_api.nip44Encrypt(
+          plaintext: plaintext,
+          publicKey: clientPubkey,
+          privateKey: serverPrivate,
+        );
+        AegisLogger.crypto('NIP44 encryption', true, true);
+        return nativeResult;
       } catch (e) {
         AegisLogger.crypto('NIP44 encryption', true, false, e.toString());
       }
@@ -119,12 +118,13 @@ class LocalNostrSigner implements NostrSigner {
       if (serverPrivate == null) return null;
 
       try {
-        final nativeResult =
-            await _nip04NativeChannel.nativeNip04Decrypt(ciphertext, serverPrivate, clientPubkey);
-        if (nativeResult != null) {
-          AegisLogger.crypto('NIP04 decryption', true, true);
-          return nativeResult;
-        }
+        final nativeResult = rust_api.nip04Decrypt(
+          ciphertext: ciphertext,
+          publicKey: clientPubkey,
+          privateKey: serverPrivate,
+        );
+        AegisLogger.crypto('NIP04 decryption', true, true);
+        return nativeResult;
       } catch (e) {
         AegisLogger.crypto('NIP04 decryption', true, false, e.toString());
       }
@@ -142,12 +142,13 @@ class LocalNostrSigner implements NostrSigner {
       if (serverPrivate == null) return null;
 
       try {
-        final nativeResult =
-            await _nip04NativeChannel.nativeNip04Encrypt(plaintext, serverPrivate, clientPubkey);
-        if (nativeResult != null) {
-          AegisLogger.crypto('NIP04 encryption', true, true);
-          return nativeResult;
-        }
+        final nativeResult = rust_api.nip04Encrypt(
+          plaintext: plaintext,
+          publicKey: clientPubkey,
+          privateKey: serverPrivate,
+        );
+        AegisLogger.crypto('NIP04 encryption', true, true);
+        return nativeResult;
       } catch (e) {
         AegisLogger.crypto('NIP04 encryption', true, false, e.toString());
       }

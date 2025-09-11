@@ -65,3 +65,6 @@ build/app/outputs/flutter-apk/app--debug.apk
 #*.sh
 /build/
 *.iml
+/packages/audio_service/android/.gradle
+/packages/audio_service/example/android/.gradle
+/target

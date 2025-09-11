@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "packages/nostr-rust-flutter-plugin/rust"
+]
+resolver = "2"
