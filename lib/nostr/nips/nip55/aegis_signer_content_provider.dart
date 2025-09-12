@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:android_content_provider/android_content_provider.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:nostr_rust/src/rust/frb_generated.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
 
 /// Aegis Signer Content Provider for NIP-55
 /// 
@@ -136,11 +139,89 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     }
   }
 
+  /// Create or get client auth record for NIP-55 client
+  Future<ClientAuthDBISAR> _ensureClientAuth(String callingPackage) async {
+    final account = Account.sharedInstance;
+    final currentPubkey = account.currentPubkey;
+    
+    // Generate a client pubkey based on package name for NIP-55
+    final clientPubkey = _generateClientPubkeyFromPackage(callingPackage);
+    
+    // Check if client already exists
+    ClientAuthDBISAR? existingClient = await ClientAuthDBISAR.searchFromDB(currentPubkey, clientPubkey);
+    
+    if (existingClient != null) {
+      return existingClient;
+    }
+    
+    // Create new client auth record
+    final newClient = ClientAuthDBISAR(
+      createTimestamp: DateTime.now().millisecondsSinceEpoch,
+      pubkey: currentPubkey,
+      clientPubkey: clientPubkey,
+      name: callingPackage,
+      connectionType: EConnectionType.nip55.toInt,
+    );
+    
+    // Save to database
+    await ClientAuthDBISAR.saveFromDB(newClient);
+    
+    // Add to AccountManager
+    AccountManager.sharedInstance.addApplicationMap(newClient);
+    
+    AegisLogger.info('✅ Created NIP-55 client auth for $callingPackage');
+    return newClient;
+  }
+
+  /// Generate a consistent client pubkey from package name
+  String _generateClientPubkeyFromPackage(String packageName) {
+    // Create a consistent pubkey-like string from package name
+    // In a real implementation, you might want to use a proper hash function
+    final hash = packageName.hashCode.abs().toString().padLeft(64, '0');
+    return hash.length > 64 ? hash.substring(0, 64) : hash.padRight(64, '0');
+  }
+
+  /// Record a signed event for NIP-55 operation
+  Future<void> _recordNIP55Event({
+    required String eventId,
+    required int eventKind,
+    required String eventContent,
+    required String callingPackage,
+    String? metadata,
+  }) async {
+    try {
+      final clientAuth = await _ensureClientAuth(callingPackage);
+      
+      await SignedEventManager.sharedInstance.recordSignedEvent(
+        eventId: eventId,
+        eventKind: eventKind,
+        eventContent: eventContent,
+        applicationName: callingPackage,
+        applicationPubkey: clientAuth.clientPubkey,
+        status: 1,
+        metadata: metadata,
+      );
+      
+      AegisLogger.info('✅ Recorded NIP-55 event: $eventContent');
+    } catch (e) {
+      AegisLogger.error('❌ Failed to record NIP-55 event: $e');
+    }
+  }
+
   /// Handle GET_PUBLIC_KEY requests
   Future<CursorData> _handleGetPublicKey(String callingPackage, String authDetail, String uri) async {
     try {
       // Generate keys for demo - in production, use actual user keys
       final keys = rust_api.generateKeys();
+      
+      // Record the get_public_key event
+      await _recordNIP55Event(
+        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
+        eventKind: 24133, // NIP-55 get_public_key event kind
+        eventContent: 'get_public_key',
+        callingPackage: callingPackage,
+        metadata: '{"operation": "get_public_key", "pubkey": "${keys.publicKey}"}',
+      );
       
       AegisLogger.info('✅ Generated public key for $callingPackage: ${keys.publicKey.substring(0, 16)}...');
       
@@ -176,9 +257,21 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         privateKey: keys.privateKey,
       );
       
-      // Parse the signed event to extract signature
+      // Parse the signed event to extract signature and details
       final signedEvent = json.decode(signedEventJson);
       final signature = signedEvent['sig'] as String;
+      final eventId = signedEvent['id'] as String;
+      final eventKind = signedEvent['kind'] as int;
+      final content = signedEvent['content'] as String;
+      
+      // Record the sign_event operation
+      await _recordNIP55Event(
+        eventId: eventId,
+        eventKind: eventKind,
+        eventContent: content.length > 100 ? '${content.substring(0, 100)}...' : content,
+        callingPackage: callingPackage,
+        metadata: '{"operation": "sign_event", "signature": "$signature"}',
+      );
       
       AegisLogger.info('✅ Signed event for $callingPackage');
       
@@ -213,6 +306,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         plaintext: plaintext,
         publicKey: pubkey,
         privateKey: keys.privateKey,
+      );
+      
+      // Record the NIP-04 encryption event
+      await _recordNIP55Event(
+        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
+        eventKind: 4, // NIP-04 encrypted direct message kind
+        eventContent: 'NIP-04 encryption',
+        callingPackage: callingPackage,
+        metadata: '{"operation": "nip04_encrypt", "pubkey": "$pubkey"}',
       );
       
       AegisLogger.info('✅ NIP-04 encrypted for $callingPackage');
@@ -250,6 +352,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         privateKey: keys.privateKey,
       );
       
+      // Record the NIP-04 decryption event
+      await _recordNIP55Event(
+        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
+        eventKind: 4, // NIP-04 encrypted direct message kind
+        eventContent: 'NIP-04 decryption',
+        callingPackage: callingPackage,
+        metadata: '{"operation": "nip04_decrypt", "pubkey": "$pubkey"}',
+      );
+      
       AegisLogger.info('✅ NIP-04 decrypted for $callingPackage');
       
       var data = MatrixCursorData(
@@ -283,6 +394,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         plaintext: plaintext,
         publicKey: pubkey,
         privateKey: keys.privateKey,
+      );
+      
+      // Record the NIP-44 encryption event
+      await _recordNIP55Event(
+        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
+        eventKind: 44, // NIP-44 encrypted payloads kind
+        eventContent: 'NIP-44 encryption',
+        callingPackage: callingPackage,
+        metadata: '{"operation": "nip44_encrypt", "pubkey": "$pubkey"}',
       );
       
       AegisLogger.info('✅ NIP-44 encrypted for $callingPackage');
@@ -320,6 +440,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         privateKey: keys.privateKey,
       );
       
+      // Record the NIP-44 decryption event
+      await _recordNIP55Event(
+        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
+        eventKind: 44, // NIP-44 encrypted payloads kind
+        eventContent: 'NIP-44 decryption',
+        callingPackage: callingPackage,
+        metadata: '{"operation": "nip44_decrypt", "pubkey": "$pubkey"}',
+      );
+      
       AegisLogger.info('✅ NIP-44 decrypted for $callingPackage');
       
       var data = MatrixCursorData(
@@ -344,6 +473,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     try {
       // For demo purposes, return a placeholder
       AegisLogger.info('📱 Decrypt zap event request from $callingPackage');
+      
+      // Record the decrypt zap event operation
+      await _recordNIP55Event(
+        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
+        eventKind: 9735, // NIP-57 zap event kind
+        eventContent: 'Decrypt zap event',
+        callingPackage: callingPackage,
+        metadata: '{"operation": "decrypt_zap_event"}',
+      );
       
       var data = MatrixCursorData(
         columnNames: ['signature'],

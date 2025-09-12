@@ -4,7 +4,7 @@ import 'db_isar.dart';
 
 part 'clientAuthDB_isar.g.dart';
 
-enum EConnectionType { bunker, nostrconnect }
+enum EConnectionType { bunker, nostrconnect, nip55 }
 
 extension ConnectionTypeEx on EConnectionType {
   int get toInt {
@@ -13,6 +13,8 @@ extension ConnectionTypeEx on EConnectionType {
         return 0;
       case EConnectionType.nostrconnect:
         return 1;
+      case EConnectionType.nip55:
+        return 2;
     }
   }
 
@@ -22,6 +24,8 @@ extension ConnectionTypeEx on EConnectionType {
         return EConnectionType.bunker;
       case 1:
         return EConnectionType.nostrconnect;
+      case 2:
+        return EConnectionType.nip55;
       default:
         return EConnectionType.bunker;
     }
@@ -33,6 +37,8 @@ extension ConnectionTypeEx on EConnectionType {
         return 'bunker';
       case EConnectionType.nostrconnect:
         return 'nostrconnect';
+      case EConnectionType.nip55:
+        return 'nip55';
     }
   }
 }
