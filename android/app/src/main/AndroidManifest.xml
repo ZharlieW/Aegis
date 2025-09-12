@@ -50,12 +50,19 @@
                 <data android:scheme="aegis" />
             </intent-filter>
             
-            <!-- Scheme URL support for nostrsigner:// -->
+            <!-- NIP-55: Nostr Signer Application Intent Filter -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="nostrsigner" />
+            </intent-filter>
+            
+            <!-- NIP-55: Alternative intent for direct signer calls -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/nostr+json" />
             </intent-filter>
         </activity>
         
@@ -65,6 +72,14 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+            
+        <!-- NIP-55: Content Provider for Nostr Signer queries -->
+        <provider
+            android:name="com.aegis.app.NostrSignerProvider"
+            android:authorities="com.aegis.app.GET_PUBLIC_KEY;com.aegis.app.SIGN_EVENT;com.aegis.app.NIP04_ENCRYPT;com.aegis.app.NIP04_DECRYPT;com.aegis.app.NIP44_ENCRYPT;com.aegis.app.NIP44_DECRYPT;com.aegis.app.DECRYPT_ZAP_EVENT"
+            android:enabled="true"
+            android:exported="true"
+            android:grantUriPermissions="false" />
             
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

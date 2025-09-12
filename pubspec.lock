@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.13.0"
+  android_content_provider:
+    dependency: "direct main"
+    description:
+      name: android_content_provider
+      sha256: "992552642553e25b97a9953797058f8c3476a22700f0fa0cac6fbf4dcdc17d86"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.2"
   args:
     dependency: transitive
     description:

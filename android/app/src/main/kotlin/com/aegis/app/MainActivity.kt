@@ -1,24 +1,34 @@
 package com.aegis.app
 
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity: FlutterActivity() {
     
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("Aegis", "MainActivity created")
+    }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        Log.d("Aegis", "New intent received: ${intent.action}")
+    }
+
     override fun onResume() {
         super.onResume()
-        // Start foreground service when app is resumed
         ForegroundService.startService(this)
     }
-    
+
     override fun onPause() {
         super.onPause()
-        // Keep foreground service running even when app is paused
-        // This ensures the app stays connected in background
     }
-    
+
     override fun onDestroy() {
         super.onDestroy()
-        // Stop foreground service when app is destroyed
         ForegroundService.stopService(this)
     }
 }

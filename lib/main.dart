@@ -6,6 +6,8 @@ import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
+import 'package:aegis/nostr/nips/nip55/aegis_signer_content_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nostr_rust/src/rust/frb_generated.dart';
@@ -20,6 +22,14 @@ void main() async {
     AegisLogger.info('✅ RustLib initialized successfully');
   } catch (e) {
     AegisLogger.error('❌ Failed to initialize RustLib: $e');
+  }
+  
+  // Initialize NIP-55 handler for Android Intent communication
+  try {
+    await NIP55Handler.initialize();
+    AegisLogger.info('✅ NIP-55 handler initialized successfully');
+  } catch (e) {
+    AegisLogger.error('❌ Failed to initialize NIP-55 handler: $e');
   }
   
   // Initialize intl library
@@ -134,4 +144,15 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     }
   }
   
+}
+
+/// NIP-55 Content Provider entry point
+/// This function is called by the Android Content Provider when other apps
+/// make requests to our signer
+@pragma('vm:entry-point')
+void aegisSignerProviderEntrypoint() {
+  // Initialize the content provider with our authorities
+  AegisSignerContentProvider(
+    'com.aegis.app.GET_PUBLIC_KEY;com.aegis.app.SIGN_EVENT;com.aegis.app.NIP04_ENCRYPT;com.aegis.app.NIP04_DECRYPT;com.aegis.app.NIP44_ENCRYPT;com.aegis.app.NIP44_DECRYPT;com.aegis.app.DECRYPT_ZAP_EVENT'
+  );
 }
