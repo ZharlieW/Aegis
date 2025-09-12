@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:android_content_provider/android_content_provider.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
+import 'package:nostr_rust/src/rust/frb_generated.dart';
 
 /// Aegis Signer Content Provider for NIP-55
 /// 
@@ -124,7 +125,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
   /// Initialize the content provider
   Future<void> _doInit() async {
     AegisLogger.info('🚀 Initializing Aegis Signer Content Provider');
-    // Add any initialization logic here
+    
+    try {
+      // Initialize RustLib for Content Provider
+      await RustLib.init();
+      AegisLogger.info('✅ RustLib initialized in Content Provider');
+    } catch (e) {
+      AegisLogger.error('❌ Failed to initialize RustLib in Content Provider: $e');
+      throw e;
+    }
   }
 
   /// Handle GET_PUBLIC_KEY requests
