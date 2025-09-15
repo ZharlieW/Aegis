@@ -214,16 +214,19 @@ class ActivitiesState extends State<Activities> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              _getEventContent(event),
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14
+            Expanded(
+              child: Text(
+                _getEventContent(event),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 14
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(width: 8),
             Text(
               _formatTimestamp(event.signedTimestamp),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(

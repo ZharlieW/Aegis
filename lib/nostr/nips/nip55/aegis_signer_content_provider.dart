@@ -6,9 +6,10 @@ import 'package:aegis/utils/logger.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
-import 'package:aegis/utils/signed_event_manager.dart';
-import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/local_storage.dart';
+import 'package:aegis/db/db_isar.dart';
+import 'package:aegis/db/signed_event_db_isar.dart';
 
 /// Aegis Signer Content Provider for NIP-55
 /// 
@@ -133,16 +134,35 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       // Initialize RustLib for Content Provider
       await RustLib.init();
       AegisLogger.info('✅ RustLib initialized in Content Provider');
+      
+      // Initialize LocalStorage to access stored pubkey
+      await LocalStorage.init();
+      AegisLogger.info('✅ LocalStorage initialized in Content Provider');
+      
+      // Get current user pubkey and initialize database
+      final pubkey = LocalStorage.get('pubkey');
+      if (pubkey != null && pubkey.isNotEmpty) {
+        await DBISAR.sharedInstance.open(pubkey);
+        AegisLogger.info('✅ DBISAR initialized for user: ${pubkey.substring(0, 16)}...');
+        
+        // Note: Account.sharedInstance.currentPubkey will be empty in Content Provider
+        // We'll handle this in _ensureClientAuth by getting pubkey from LocalStorage
+      } else {
+        AegisLogger.warning('⚠️ No current user found in LocalStorage');
+      }
     } catch (e) {
-      AegisLogger.error('❌ Failed to initialize RustLib in Content Provider: $e');
+      AegisLogger.error('❌ Failed to initialize Content Provider: $e');
       throw e;
     }
   }
 
   /// Create or get client auth record for NIP-55 client
   Future<ClientAuthDBISAR> _ensureClientAuth(String callingPackage) async {
-    final account = Account.sharedInstance;
-    final currentPubkey = account.currentPubkey;
+    // Get current pubkey from LocalStorage (since Account.currentPubkey is empty in Content Provider)
+    final currentPubkey = LocalStorage.get('pubkey');
+    if (currentPubkey == null || currentPubkey.isEmpty) {
+      throw Exception('No current user found - user must be logged in');
+    }
     
     // Generate a client pubkey based on package name for NIP-55
     final clientPubkey = _generateClientPubkeyFromPackage(callingPackage);
@@ -166,8 +186,12 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     // Save to database
     await ClientAuthDBISAR.saveFromDB(newClient);
     
-    // Add to AccountManager
-    AccountManager.sharedInstance.addApplicationMap(newClient);
+    // Add to AccountManager (if it's initialized)
+    try {
+      AccountManager.sharedInstance.addApplicationMap(newClient);
+    } catch (e) {
+      AegisLogger.warning('⚠️ AccountManager not available in Content Provider: $e');
+    }
     
     AegisLogger.info('✅ Created NIP-55 client auth for $callingPackage');
     return newClient;
@@ -192,12 +216,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     try {
       final clientAuth = await _ensureClientAuth(callingPackage);
       
-      await SignedEventManager.sharedInstance.recordSignedEvent(
+      // In Content Provider, we need to directly record to database since SignedEventManager
+      // checks Account.currentPubkey which is empty in Content Provider process
+      await _recordSignedEventDirectly(
         eventId: eventId,
         eventKind: eventKind,
         eventContent: eventContent,
         applicationName: callingPackage,
         applicationPubkey: clientAuth.clientPubkey,
+        userPubkey: clientAuth.pubkey,
         status: 1,
         metadata: metadata,
       );
@@ -205,6 +232,39 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       AegisLogger.info('✅ Recorded NIP-55 event: $eventContent');
     } catch (e) {
       AegisLogger.error('❌ Failed to record NIP-55 event: $e');
+    }
+  }
+
+  /// Directly record signed event to database (bypassing SignedEventManager's login check)
+  Future<void> _recordSignedEventDirectly({
+    required String eventId,
+    required int eventKind,
+    required String eventContent,
+    required String applicationName,
+    required String applicationPubkey,
+    required String userPubkey,
+    int status = 1,
+    String? metadata,
+  }) async {
+    try {
+      // Import the SignedEventDBISAR class and record directly
+      // This bypasses the login check in SignedEventManager
+      final signedEvent = SignedEventDBISAR(
+        eventId: eventId,
+        eventKind: eventKind,
+        eventContent: eventContent,
+        applicationName: applicationName,
+        applicationPubkey: applicationPubkey,
+        userPubkey: userPubkey,
+        status: status,
+        metadata: metadata,
+        signedTimestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+      
+      await SignedEventDBISAR.saveFromDB(signedEvent);
+      AegisLogger.info('✅ Directly recorded signed event: $eventContent');
+    } catch (e) {
+      AegisLogger.error('❌ Failed to record signed event directly: $e');
     }
   }
 
