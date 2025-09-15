@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:android_content_provider/android_content_provider.dart';
 import 'package:aegis/utils/logger.dart';
@@ -7,10 +8,12 @@ import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/utils/account_manager.dart';
-import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/db/db_isar.dart';
 import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/utils/key_manager.dart';
+import 'package:aegis/nostr/utils.dart';
 
 /// Aegis Signer Content Provider for NIP-55
 /// 
@@ -206,6 +209,66 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     return hash.length > 64 ? hash.substring(0, 64) : hash.padRight(64, '0');
   }
 
+  /// Get current user's private key from database
+  Future<String> _getCurrentUserPrivateKey() async {
+    // Get current pubkey from LocalStorage
+    final currentPubkey = LocalStorage.get('pubkey');
+    if (currentPubkey == null || currentPubkey.isEmpty) {
+      throw Exception('No current user found - user must be logged in');
+    }
+    
+    // Get user from database
+    final user = await UserDBISAR.searchFromDB(currentPubkey);
+    if (user == null) {
+      throw Exception('User not found in database');
+    }
+    
+    // Decrypt private key
+    final decryptedPrivkey = await _decryptPrivkey(user);
+    return bytesToHex(decryptedPrivkey);
+  }
+
+  /// Decrypt private key for Content Provider
+  Future<Uint8List> _decryptPrivkey(UserDBISAR user) async {
+    final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
+
+    // Try to get password from Keychain first
+    String? password;
+
+    // For existing users, migrate from database to Keychain if needed
+    if (user.defaultPassword != null && user.defaultPassword!.isNotEmpty) {
+      // Store the old password before clearing it
+      final oldPassword = user.defaultPassword;
+
+      // Migrate old password to Keychain
+      try {
+        await DBKeyManager.migrateUserPrivkeyKey(user.pubkey, oldPassword);
+        // Clear the password from database after successful migration
+        user.defaultPassword = null;
+        await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
+        AegisLogger.info('[Migration] Cleared password from database for user: ${user.pubkey}');
+
+        // Get the migrated password from Keychain
+        password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
+      } catch (error) {
+        AegisLogger.warning('[Migration] Failed to migrate password for user: ${user.pubkey}, error: $error');
+        // Fallback to database password (keep the old password in database)
+        password = oldPassword;
+      }
+    } else {
+      // Try to get from Keychain
+      password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
+    }
+
+    if (password == null || password.isEmpty) {
+      throw Exception('No password found for user private key');
+    }
+
+    // Decrypt the private key
+    final decrypted = decryptPrivateKey(encryptedBytes, password);
+    return decrypted;
+  }
+
   /// Record a signed event for NIP-55 operation
   Future<void> _recordNIP55Event({
     required String eventId,
@@ -272,8 +335,8 @@ class AegisSignerContentProvider extends AndroidContentProvider {
   /// Handle GET_PUBLIC_KEY requests
   Future<CursorData> _handleGetPublicKey(String callingPackage, String authDetail, String uri) async {
     try {
-      // Get current user's private key
-      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      // Get current user's private key from database
+      final currentPrivkey = await _getCurrentUserPrivateKey();
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
@@ -316,8 +379,8 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Event JSON is empty');
       }
 
-      // Get current user's private key
-      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      // Get current user's private key from database
+      final currentPrivkey = await _getCurrentUserPrivateKey();
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
@@ -369,8 +432,8 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-04 encryption');
       }
 
-      // Get current user's private key
-      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      // Get current user's private key from database
+      final currentPrivkey = await _getCurrentUserPrivateKey();
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
@@ -416,8 +479,8 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-04 decryption');
       }
 
-      // Get current user's private key
-      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      // Get current user's private key from database
+      final currentPrivkey = await _getCurrentUserPrivateKey();
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
@@ -463,8 +526,8 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-44 encryption');
       }
 
-      // Get current user's private key
-      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      // Get current user's private key from database
+      final currentPrivkey = await _getCurrentUserPrivateKey();
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
@@ -510,8 +573,8 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-44 decryption');
       }
 
-      // Get current user's private key
-      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      // Get current user's private key from database
+      final currentPrivkey = await _getCurrentUserPrivateKey();
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
