@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
-import '../../event.dart';
 import '../../../utils/logger.dart';
+import '../../../utils/account.dart';
 
 /// NIP-55 Android Signer Intent Handler
 /// Handles communication between Android signer and Nostr clients
@@ -83,14 +83,20 @@ class NIP55Handler {
   /// Handle get_public_key request
   static Future<Map<String, dynamic>> _handleGetPublicKey(Map<dynamic, dynamic> args) async {
     try {
-      // Generate a new key pair for testing
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
-      AegisLogger.info('Generated public key: ${keys.publicKey}');
+      // Get public key from current user's private key
+      final publicKey = rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
+      
+      AegisLogger.info('Generated public key: $publicKey');
       
       return {
         'type': 'get_public_key',
-        'result': keys.publicKey,
+        'result': publicKey,
         'package': 'com.aegis.app',
       };
     } catch (e) {
@@ -105,17 +111,16 @@ class NIP55Handler {
   /// Handle sign_event request
   static Future<Map<String, dynamic>> _handleSignEvent(String eventJson, String? id, String? currentUser) async {
     try {
-      // Parse the event JSON
-      final eventData = json.decode(eventJson);
-      
-      // Get the private key for the current user
-      // This would need to be implemented based on your key management system
-      final privateKey = 'placeholder_private_key'; // Replace with actual key retrieval
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       // Sign the event using Rust
       final signedEventJson = rust_api.signEvent(
         eventJson: eventJson,
-        privateKey: privateKey,
+        privateKey: currentPrivkey,
       );
       
       return {
@@ -132,12 +137,16 @@ class NIP55Handler {
   /// Handle NIP-04 encryption request
   static Future<Map<String, dynamic>> _handleNIP04Encrypt(String plaintext, String? id, String? currentUser, String? pubkey) async {
     try {
-      final privateKey = 'placeholder_private_key'; // Replace with actual key retrieval
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final encrypted = rust_api.nip04Encrypt(
         plaintext: plaintext,
         publicKey: pubkey!,
-        privateKey: privateKey,
+        privateKey: currentPrivkey,
       );
       
       return {
@@ -152,12 +161,16 @@ class NIP55Handler {
   /// Handle NIP-04 decryption request
   static Future<Map<String, dynamic>> _handleNIP04Decrypt(String ciphertext, String? id, String? currentUser, String? pubkey) async {
     try {
-      final privateKey = 'placeholder_private_key'; // Replace with actual key retrieval
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final decrypted = rust_api.nip04Decrypt(
         ciphertext: ciphertext,
         publicKey: pubkey!,
-        privateKey: privateKey,
+        privateKey: currentPrivkey,
       );
       
       return {
@@ -172,12 +185,16 @@ class NIP55Handler {
   /// Handle NIP-44 encryption request
   static Future<Map<String, dynamic>> _handleNIP44Encrypt(String plaintext, String? id, String? currentUser, String? pubkey) async {
     try {
-      final privateKey = 'placeholder_private_key'; // Replace with actual key retrieval
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final encrypted = rust_api.nip44Encrypt(
         plaintext: plaintext,
         publicKey: pubkey!,
-        privateKey: privateKey,
+        privateKey: currentPrivkey,
       );
       
       return {
@@ -192,12 +209,16 @@ class NIP55Handler {
   /// Handle NIP-44 decryption request
   static Future<Map<String, dynamic>> _handleNIP44Decrypt(String ciphertext, String? id, String? currentUser, String? pubkey) async {
     try {
-      final privateKey = 'placeholder_private_key'; // Replace with actual key retrieval
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final decrypted = rust_api.nip44Decrypt(
         ciphertext: ciphertext,
         publicKey: pubkey!,
-        privateKey: privateKey,
+        privateKey: currentPrivkey,
       );
       
       return {

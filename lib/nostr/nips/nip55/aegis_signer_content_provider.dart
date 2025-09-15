@@ -7,6 +7,7 @@ import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/db/db_isar.dart';
 import 'package:aegis/db/signed_event_db_isar.dart';
@@ -271,8 +272,14 @@ class AegisSignerContentProvider extends AndroidContentProvider {
   /// Handle GET_PUBLIC_KEY requests
   Future<CursorData> _handleGetPublicKey(String callingPackage, String authDetail, String uri) async {
     try {
-      // Generate keys for demo - in production, use actual user keys
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
+      
+      // Get public key from current user's private key
+      final publicKey = rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
       
       // Record the get_public_key event
       await _recordNIP55Event(
@@ -280,16 +287,16 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         eventKind: 24133, // NIP-55 get_public_key event kind
         eventContent: 'get_public_key',
         callingPackage: callingPackage,
-        metadata: '{"operation": "get_public_key", "pubkey": "${keys.publicKey}"}',
+        metadata: '{"operation": "get_public_key", "pubkey": "$publicKey"}',
       );
       
-      AegisLogger.info('✅ Generated public key for $callingPackage: ${keys.publicKey.substring(0, 16)}...');
+      AegisLogger.info('✅ Generated public key for $callingPackage: ${publicKey.substring(0, 16)}...');
       
       var data = MatrixCursorData(
         columnNames: ['signature'],
         notificationUris: [uri],
       );
-      data.addRow([keys.publicKey]);
+      data.addRow([publicKey]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to get public key: $e');
@@ -309,12 +316,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Event JSON is empty');
       }
 
-      // For demo, use generated keys - in production, use user's actual private key
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final signedEventJson = rust_api.signEvent(
         eventJson: eventJson,
-        privateKey: keys.privateKey,
+        privateKey: currentPrivkey,
       );
       
       // Parse the signed event to extract signature and details
@@ -359,13 +369,16 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-04 encryption');
       }
 
-      // For demo, use generated keys - in production, use user's actual private key
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final encrypted = rust_api.nip04Encrypt(
         plaintext: plaintext,
         publicKey: pubkey,
-        privateKey: keys.privateKey,
+        privateKey: currentPrivkey,
       );
       
       // Record the NIP-04 encryption event
@@ -403,13 +416,16 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-04 decryption');
       }
 
-      // For demo, use generated keys - in production, use user's actual private key
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final decrypted = rust_api.nip04Decrypt(
         ciphertext: ciphertext,
         publicKey: pubkey,
-        privateKey: keys.privateKey,
+        privateKey: currentPrivkey,
       );
       
       // Record the NIP-04 decryption event
@@ -447,13 +463,16 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-44 encryption');
       }
 
-      // For demo, use generated keys - in production, use user's actual private key
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final encrypted = rust_api.nip44Encrypt(
         plaintext: plaintext,
         publicKey: pubkey,
-        privateKey: keys.privateKey,
+        privateKey: currentPrivkey,
       );
       
       // Record the NIP-44 encryption event
@@ -491,13 +510,16 @@ class AegisSignerContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-44 decryption');
       }
 
-      // For demo, use generated keys - in production, use user's actual private key
-      final keys = rust_api.generateKeys();
+      // Get current user's private key
+      final currentPrivkey = Account.sharedInstance.currentPrivkey;
+      if (currentPrivkey.isEmpty) {
+        throw Exception('No current user private key available');
+      }
       
       final decrypted = rust_api.nip44Decrypt(
         ciphertext: ciphertext,
         publicKey: pubkey,
-        privateKey: keys.privateKey,
+        privateKey: currentPrivkey,
       );
       
       // Record the NIP-44 decryption event
