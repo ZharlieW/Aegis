@@ -1,0 +1,3 @@
+[submodule "packages/nostr-rust-flutter-plugin"]
+	path = packages/nostr-rust-flutter-plugin
+	url = https://github.com/ZharlieW/nostr-rust-flutter-plugin.git
