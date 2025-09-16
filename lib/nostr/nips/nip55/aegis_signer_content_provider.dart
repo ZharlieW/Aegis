@@ -56,6 +56,12 @@ class AegisSignerContentProvider extends AndroidContentProvider {
 
   bool inited = false;
 
+  // Cache for private key to avoid repeated database queries and decryption
+  String? _cachedPrivateKey;
+  String? _cachedPubkey;
+  int _cacheTimestamp = 0;
+  static const int CACHE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes cache timeout
+
   @override
   Future<CursorData?> query(String uri, List<String>? projection,
       String? selection, List<String>? selectionArgs, String? sortOrder) async {
@@ -135,6 +141,9 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     AegisLogger.info('🚀 Initializing Aegis Signer Content Provider');
     
     try {
+      // Clear any existing private key cache
+      _clearPrivateKeyCache();
+      
       // Initialize RustLib for Content Provider
       await RustLib.init();
       AegisLogger.info('✅ RustLib initialized in Content Provider');
@@ -209,13 +218,32 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     return hash.length > 64 ? hash.substring(0, 64) : hash.padRight(64, '0');
   }
 
-  /// Get current user's private key from database
+  /// Clear private key cache (call when user switches or logs out)
+  void _clearPrivateKeyCache() {
+    _cachedPrivateKey = null;
+    _cachedPubkey = null;
+    _cacheTimestamp = 0;
+    AegisLogger.info('🗑️ Private key cache cleared');
+  }
+
+  /// Get current user's private key from database with caching
   Future<String> _getCurrentUserPrivateKey() async {
     // Get current pubkey from LocalStorage
     final currentPubkey = LocalStorage.get('pubkey');
     if (currentPubkey == null || currentPubkey.isEmpty) {
       throw Exception('No current user found - user must be logged in');
     }
+    
+    // Check if we have a valid cached private key for the same user
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (_cachedPrivateKey != null && 
+        _cachedPubkey == currentPubkey && 
+        (now - _cacheTimestamp) < CACHE_TIMEOUT_MS) {
+      AegisLogger.info('✅ Using cached private key for user: ${currentPubkey.substring(0, 16)}...');
+      return _cachedPrivateKey!;
+    }
+    
+    AegisLogger.info('🔄 Fetching private key from database for user: ${currentPubkey.substring(0, 16)}...');
     
     // Get user from database
     final user = await UserDBISAR.searchFromDB(currentPubkey);
@@ -225,7 +253,15 @@ class AegisSignerContentProvider extends AndroidContentProvider {
     
     // Decrypt private key
     final decryptedPrivkey = await _decryptPrivkey(user);
-    return bytesToHex(decryptedPrivkey);
+    final privateKeyHex = bytesToHex(decryptedPrivkey);
+    
+    // Cache the private key
+    _cachedPrivateKey = privateKeyHex;
+    _cachedPubkey = currentPubkey;
+    _cacheTimestamp = now;
+    
+    AegisLogger.info('✅ Private key cached for user: ${currentPubkey.substring(0, 16)}...');
+    return privateKeyHex;
   }
 
   /// Decrypt private key for Content Provider
