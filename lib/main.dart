@@ -48,14 +48,15 @@ class MainApp extends StatefulWidget {
 class MainState extends State<MainApp> with WidgetsBindingObserver {
   bool _isFirstLaunch = true;
   bool isLogin = false;
+  late Future<void> _initializationFuture;
 
   @override
   void initState() {
     super.initState();
-    init();
+    _initializationFuture = init();
   }
 
-  void init() async {
+  Future<void> init() async {
     try {
       // Initialize audio service (will be skipped on Android)
       await BackgroundAudioManager().init();
@@ -123,7 +124,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
         ),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(initializationFuture: _initializationFuture),
     );
   }
 

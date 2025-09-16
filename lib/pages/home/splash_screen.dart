@@ -9,7 +9,9 @@ import '../../utils/account.dart';
 import '../login/login.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Future<void> initializationFuture;
+  
+  const SplashScreen({super.key, required this.initializationFuture});
 
   @override
   SplashScreenState createState() => SplashScreenState();
@@ -36,14 +38,9 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
     );
 
     _controller.forward();
-
-    Timer(const Duration(seconds: 1), () async{
-      Account instance = Account.sharedInstance;
-      if(instance.currentPubkey.isEmpty || instance.currentPrivkey.isEmpty){
-        await AegisNavigator.pushPage(context, (context) => const Login(isLaunchLogin: true));
-      }
-      _replaceHome();
-    });
+    
+    // Start waiting for initialization to complete
+    _handleInitializationComplete();
   }
 
   void _replaceHome(){
@@ -68,15 +65,15 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, //
+      backgroundColor: Colors.white,
       body: Center(
         child: ScaleTransition(
-          scale: _animation, //
+          scale: _animation,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CommonImage(iconName: 'aegis_logo.png',size: 250,),
+              CommonImage(iconName: 'aegis_logo.png', size: 250),
               Text(
                 'Aegis',
                 style: TextStyle(
@@ -90,5 +87,20 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
         ),
       ),
     );
+  }
+
+  /// Handle navigation after initialization
+  Future<void> _handleInitializationComplete() async {
+    // Wait for initialization to complete
+    await widget.initializationFuture;
+    
+    // Check login status and navigate accordingly
+    if (mounted) {
+      final instance = Account.sharedInstance;
+      if (instance.currentPubkey.isEmpty || instance.currentPrivkey.isEmpty) {
+        await AegisNavigator.pushPage(context, (context) => const Login(isLaunchLogin: true));
+      }
+      _replaceHome();
+    }
   }
 }
