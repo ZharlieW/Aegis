@@ -6,6 +6,7 @@ import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/utils/intent_handler.dart';
 import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/aegis_signer_content_provider.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,14 @@ void main() async {
     AegisLogger.info('✅ NIP-55 handler initialized successfully');
   } catch (e) {
     AegisLogger.error('❌ Failed to initialize NIP-55 handler: $e');
+  }
+  
+  // Initialize Intent handler for Android MainActivity communication
+  try {
+    await IntentHandler.initialize();
+    AegisLogger.info('✅ Intent handler initialized successfully');
+  } catch (e) {
+    AegisLogger.error('❌ Failed to initialize Intent handler: $e');
   }
   
   // Initialize intl library
