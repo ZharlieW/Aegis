@@ -172,16 +172,16 @@ class ContentProvider extends AndroidContentProvider {
         return data;
       }
       
-      final publicKey = result['result'] as String;
-      AegisLogger.info('✅ Generated public key for $callingPackage: ${publicKey.substring(0, 16)}...');
+      final npub = result['result'] as String;
+      AegisLogger.info('✅ Generated public key for $callingPackage: ${npub.substring(0, 16)}...');
       
       var data = MatrixCursorData(
-        columnNames: ['result'],
+        columnNames: ['result', 'signature'], // Add signature for compatibility with nostr-signer-capacitor-plugin
         notificationUris: [uri],
       );
-      data.addRow([publicKey]);
+      data.addRow([npub, npub]); // Both fields contain the npub format public key
       
-      AegisLogger.info('📱 Content Provider returning data: result=${publicKey.substring(0, 16)}...');
+      AegisLogger.info('📱 Content Provider returning data: result=${npub.substring(0, 16)}...');
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to get public key: $e');

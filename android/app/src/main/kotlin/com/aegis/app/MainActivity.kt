@@ -246,6 +246,7 @@ class MainActivity: FlutterActivity() {
             // Create result Intent following NIP-55 protocol
             val resultIntent = Intent().apply {
                 putExtra("result", result)
+                putExtra("signature", result) // For compatibility with nostr-signer-capacitor-plugin
                 putExtra("id", eventId)
                 putExtra("event", signedEvent)
                 putExtra("package", packageName)

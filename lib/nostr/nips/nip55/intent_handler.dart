@@ -297,16 +297,17 @@ class IntentHandler {
   }
   
   /// Send public key result to Android via MethodChannel
-  static Future<void> _sendPublicKeyResultToAndroid(String publicKey, String? packageName, String? requestId) async {
+  static Future<void> _sendPublicKeyResultToAndroid(String npub, String? packageName, String? requestId) async {
     try {
       // Create result data following NIP-55 protocol
       final resultData = {
-        'result': publicKey,
+        'result': npub, // Already in npub format from NIP55Handler
         'package': packageName ?? 'com.aegis.app',
         'id': requestId,
+        'event': '', // Empty event for get_public_key requests
       };
       
-      AegisLogger.info('📱 Sending public key result to Android: ${publicKey.substring(0, 16)}..., id=$requestId');
+      AegisLogger.info('📱 Sending public key result to Android: ${npub.substring(0, 16)}..., id=$requestId');
       
       // Send result back to Android via MethodChannel
       await _channel.invokeMethod('setSignResult', resultData);

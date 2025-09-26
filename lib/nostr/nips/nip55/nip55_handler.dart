@@ -8,6 +8,7 @@ import '../../../db/userDB_isar.dart';
 import '../../../db/db_isar.dart';
 import '../../../db/signed_event_db_isar.dart';
 import '../../../utils/key_manager.dart';
+import '../nip19/nip19.dart';
 import '../../../nostr/utils.dart';
 
 /// NIP-55 Core Service Handler
@@ -277,6 +278,9 @@ class NIP55Handler {
       // Get public key from current user's private key
       final publicKey = rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
       
+      // Convert hex public key to npub format for compatibility with nostr-signer-capacitor-plugin
+      final npub = Nip19.encodePubkey(publicKey);
+      
       // Record the get_public_key event
       await recordSignedEvent(
         eventId: 'get_public_key_${DateTime.now().millisecondsSinceEpoch}',
@@ -289,7 +293,7 @@ class NIP55Handler {
       AegisLogger.info('✅ Generated public key: ${publicKey.substring(0, 16)}...');
       
       return {
-        'result': publicKey,
+        'result': npub, // Return npub format for compatibility
         'package': 'com.aegis.app',
         'id': requestId,
       };
