@@ -19,8 +19,8 @@ import 'package:aegis/nostr/utils.dart';
 /// 
 /// This class handles Content Provider queries from other Android applications
 /// for Nostr signing, encryption, and decryption operations.
-class AegisSignerContentProvider extends AndroidContentProvider {
-  AegisSignerContentProvider(super.authority);
+class ContentProvider extends AndroidContentProvider {
+  ContentProvider(super.authority);
 
   @override
   Future<int> delete(
@@ -89,6 +89,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       if (projection.length > 2) {
         currentUser = projection[2];
       }
+    } else {
+      // When projection is empty, use default values
+      authDetail = "";
+      AegisLogger.info('📱 Empty projection, using default values');
     }
 
     // Get calling package
@@ -392,10 +396,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       AegisLogger.info('✅ Generated public key for $callingPackage: ${publicKey.substring(0, 16)}...');
       
       var data = MatrixCursorData(
-        columnNames: ['result', 'signature'],
+        columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow([publicKey, publicKey]);
+      data.addRow([publicKey]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to get public key: $e');
@@ -492,10 +496,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       AegisLogger.info('✅ NIP-04 encrypted for $callingPackage');
       
       var data = MatrixCursorData(
-        columnNames: ['result', 'signature'],
+        columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow([encrypted, encrypted]);
+      data.addRow([encrypted]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to encrypt with NIP-04: $e');
@@ -539,10 +543,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       AegisLogger.info('✅ NIP-04 decrypted for $callingPackage');
       
       var data = MatrixCursorData(
-        columnNames: ['result', 'signature'],
+        columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow([decrypted, decrypted]);
+      data.addRow([decrypted]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to decrypt with NIP-04: $e');
@@ -586,10 +590,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       AegisLogger.info('✅ NIP-44 encrypted for $callingPackage');
       
       var data = MatrixCursorData(
-        columnNames: ['result', 'signature'],
+        columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow([encrypted, encrypted]);
+      data.addRow([encrypted]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to encrypt with NIP-44: $e');
@@ -633,10 +637,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       AegisLogger.info('✅ NIP-44 decrypted for $callingPackage');
       
       var data = MatrixCursorData(
-        columnNames: ['result', 'signature'],
+        columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow([decrypted, decrypted]);
+      data.addRow([decrypted]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to decrypt with NIP-44: $e');
@@ -665,10 +669,10 @@ class AegisSignerContentProvider extends AndroidContentProvider {
       );
       
       var data = MatrixCursorData(
-        columnNames: ['result', 'signature'],
+        columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow(['decrypted_zap_content', 'decrypted_zap_content']);
+      data.addRow(['decrypted_zap_content']);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to decrypt zap event: $e');

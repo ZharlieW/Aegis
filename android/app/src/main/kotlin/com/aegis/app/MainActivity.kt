@@ -32,6 +32,10 @@ class MainActivity: FlutterActivity() {
                     val intentData = getIntentData()
                     result.success(intentData)
                 }
+                "closeActivity" -> {
+                    finish()
+                    result.success(null)
+                }
                 else -> {
                     result.notImplemented()
                 }
@@ -54,6 +58,69 @@ class MainActivity: FlutterActivity() {
                 val data: Uri? = intent.data
                 if (data != null) {
                     Log.d("Aegis", "Received URI: $data")
+                    
+                    // Check if this is a simple nostrsigner: intent (no specific action)
+                    val path = data.path ?: ""
+                    val query = data.query ?: ""
+                    val host = data.host ?: ""
+                    
+                    // Handle nostrsigner:null or simple nostrsigner: intents
+                    if (data.scheme == "nostrsigner" && 
+                        (path.isEmpty() || path == "null") && 
+                        (query.isEmpty() || query == "null") &&
+                        (host.isEmpty() || host == "null")) {
+                        Log.d("Aegis", "Simple nostrsigner intent detected, requesting public key")
+                        
+                        // Request public key from Flutter and return result to calling app
+                        methodChannel?.invokeMethod("getPublicKeyForIntent", null, object : MethodChannel.Result {
+                            override fun success(result: Any?) {
+                                val publicKey = result as? String
+                                if (publicKey != null) {
+                                    Log.d("Aegis", "Public key obtained: $publicKey")
+                                    
+                                    // Set result for calling app with public key in data
+                                    val resultIntent = Intent().apply {
+                                        setData(Uri.parse("nostrsigner://public_key?key=$publicKey"))
+                                        putExtra("public_key", publicKey)
+                                        putExtra("success", true)
+                                        putExtra("result", publicKey) // Add result field for OX Pro
+                                    }
+                                    setResult(RESULT_OK, resultIntent)
+                                } else {
+                                    Log.d("Aegis", "Failed to get public key")
+                                    setResult(RESULT_CANCELED)
+                                }
+                                
+                                // Close activity after setting result
+                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                    Log.d("Aegis", "Closing activity after setting result")
+                                    finish()
+                                }, 500) // Shorter delay since we have the result
+                            }
+                            
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                Log.d("Aegis", "Error getting public key: $errorMessage")
+                                setResult(RESULT_CANCELED)
+                                
+                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                    Log.d("Aegis", "Closing activity after error")
+                                    finish()
+                                }, 500)
+                            }
+                            
+                            override fun notImplemented() {
+                                Log.d("Aegis", "getPublicKeyForIntent not implemented")
+                                setResult(RESULT_CANCELED)
+                                
+                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                    Log.d("Aegis", "Closing activity after not implemented")
+                                    finish()
+                                }, 500)
+                            }
+                        })
+                        return
+                    }
+                    
                     sendIntentDataToFlutter(data.toString())
                 }
             }

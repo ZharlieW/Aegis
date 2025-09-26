@@ -50,8 +50,8 @@ class LaunchSchemeUtils {
       // Check if user is logged in
       final account = Account.sharedInstance;
       if (account.currentPrivkey.isEmpty || account.currentPubkey.isEmpty) {
-        AegisLogger.warning('⚠️ User not logged in, showing login dialog');
-        UrlSchemeHandler.showLoginDialog();
+        AegisLogger.warning('⚠️ User not logged in, cannot handle scheme');
+        // Don't show login dialog in Content Provider context
         return;
       }
       
@@ -103,8 +103,6 @@ class LaunchSchemeUtils {
     try {
       final method = params['method'] ?? 'connect';
       final pubkey = params['pubkey'];
-      final relay = params['relay'];
-      final secret = params['secret'];
       
       AegisLogger.info('📱 NIP-46 auth request: method=$method, pubkey=$pubkey');
       

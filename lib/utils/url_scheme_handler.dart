@@ -8,6 +8,7 @@ import 'account.dart';
 import 'account_manager.dart';
 import 'launch_scheme_utils.dart';
 import 'nostr_wallet_connection_parser.dart';
+import 'logger.dart';
 import '../db/clientAuthDB_isar.dart';
 
 /// URL Scheme Handler for Aegis and NostrSigner schemes
@@ -175,8 +176,14 @@ class UrlSchemeHandler {
 
   /// Show login dialog when user is not logged in
   static Future<void> showLoginDialog() async {
+    final context = AegisNavigator.navigatorKey.currentContext;
+    if (context == null) {
+      AegisLogger.warning('⚠️ Navigator context is null, cannot show login dialog');
+      return;
+    }
+    
     showDialog(
-      context: AegisNavigator.navigatorKey.currentContext!,
+      context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Tips"),
