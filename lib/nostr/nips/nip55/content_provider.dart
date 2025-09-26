@@ -1,19 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:android_content_provider/android_content_provider.dart';
 import 'package:aegis/utils/logger.dart';
-import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:nostr_rust/src/rust/frb_generated.dart';
-import 'package:aegis/db/clientAuthDB_isar.dart';
-import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/db/db_isar.dart';
-import 'package:aegis/db/signed_event_db_isar.dart';
-import 'package:aegis/db/userDB_isar.dart';
-import 'package:aegis/utils/key_manager.dart';
-import 'package:aegis/nostr/utils.dart';
+import 'nip55_handler.dart';
 
 /// Aegis Signer Content Provider for NIP-55
 /// 
@@ -55,12 +47,6 @@ class ContentProvider extends AndroidContentProvider {
   }
 
   bool inited = false;
-
-  // Cache for private key to avoid repeated database queries and decryption
-  String? _cachedPrivateKey;
-  String? _cachedPubkey;
-  int _cacheTimestamp = 0;
-  static const int CACHE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes cache timeout
 
   @override
   Future<CursorData?> query(String uri, List<String>? projection,
@@ -145,9 +131,6 @@ class ContentProvider extends AndroidContentProvider {
     AegisLogger.info('🚀 Initializing Aegis Signer Content Provider');
     
     try {
-      // Clear any existing private key cache
-      _clearPrivateKeyCache();
-      
       // Initialize RustLib for Content Provider
       await RustLib.init();
       AegisLogger.info('✅ RustLib initialized in Content Provider');
@@ -161,9 +144,6 @@ class ContentProvider extends AndroidContentProvider {
       if (pubkey != null && pubkey.isNotEmpty) {
         await DBISAR.sharedInstance.open(pubkey);
         AegisLogger.info('✅ DBISAR initialized for user: ${pubkey.substring(0, 16)}...');
-        
-        // Note: Account.sharedInstance.currentPubkey will be empty in Content Provider
-        // We'll handle this in _ensureClientAuth by getting pubkey from LocalStorage
       } else {
         AegisLogger.warning('⚠️ No current user found in LocalStorage');
       }
@@ -173,243 +153,35 @@ class ContentProvider extends AndroidContentProvider {
     }
   }
 
-  /// Create or get client auth record for NIP-55 client
-  Future<ClientAuthDBISAR> _ensureClientAuth(String callingPackage) async {
-    // Get current pubkey from LocalStorage (since Account.currentPubkey is empty in Content Provider)
-    final currentPubkey = LocalStorage.get('pubkey');
-    if (currentPubkey == null || currentPubkey.isEmpty) {
-      throw Exception('No current user found - user must be logged in');
-    }
-    
-    // Generate a client pubkey based on package name for NIP-55
-    final clientPubkey = _generateClientPubkeyFromPackage(callingPackage);
-    
-    // Check if client already exists
-    ClientAuthDBISAR? existingClient = await ClientAuthDBISAR.searchFromDB(currentPubkey, clientPubkey);
-    
-    if (existingClient != null) {
-      return existingClient;
-    }
-    
-    // Create new client auth record
-    final newClient = ClientAuthDBISAR(
-      createTimestamp: DateTime.now().millisecondsSinceEpoch,
-      pubkey: currentPubkey,
-      clientPubkey: clientPubkey,
-      name: callingPackage,
-      connectionType: EConnectionType.nip55.toInt,
-    );
-    
-    // Save to database
-    await ClientAuthDBISAR.saveFromDB(newClient);
-    
-    // Add to AccountManager (if it's initialized)
-    try {
-      AccountManager.sharedInstance.addApplicationMap(newClient);
-    } catch (e) {
-      AegisLogger.warning('⚠️ AccountManager not available in Content Provider: $e');
-    }
-    
-    AegisLogger.info('✅ Created NIP-55 client auth for $callingPackage');
-    return newClient;
-  }
-
-  /// Generate a consistent client pubkey from package name
-  String _generateClientPubkeyFromPackage(String packageName) {
-    // Create a consistent pubkey-like string from package name
-    // In a real implementation, you might want to use a proper hash function
-    final hash = packageName.hashCode.abs().toString().padLeft(64, '0');
-    return hash.length > 64 ? hash.substring(0, 64) : hash.padRight(64, '0');
-  }
-
-  /// Clear private key cache (call when user switches or logs out)
-  void _clearPrivateKeyCache() {
-    _cachedPrivateKey = null;
-    _cachedPubkey = null;
-    _cacheTimestamp = 0;
-    AegisLogger.info('🗑️ Private key cache cleared');
-  }
-
-  /// Get current user's private key from database with caching
-  Future<String> _getCurrentUserPrivateKey() async {
-    // Get current pubkey from LocalStorage
-    final currentPubkey = LocalStorage.get('pubkey');
-    if (currentPubkey == null || currentPubkey.isEmpty) {
-      throw Exception('No current user found - user must be logged in');
-    }
-    
-    // Check if we have a valid cached private key for the same user
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (_cachedPrivateKey != null && 
-        _cachedPubkey == currentPubkey && 
-        (now - _cacheTimestamp) < CACHE_TIMEOUT_MS) {
-      AegisLogger.info('✅ Using cached private key for user: ${currentPubkey.substring(0, 16)}...');
-      return _cachedPrivateKey!;
-    }
-    
-    AegisLogger.info('🔄 Fetching private key from database for user: ${currentPubkey.substring(0, 16)}...');
-    
-    // Get user from database
-    final user = await UserDBISAR.searchFromDB(currentPubkey);
-    if (user == null) {
-      throw Exception('User not found in database');
-    }
-    
-    // Decrypt private key
-    final decryptedPrivkey = await _decryptPrivkey(user);
-    final privateKeyHex = bytesToHex(decryptedPrivkey);
-    
-    // Cache the private key
-    _cachedPrivateKey = privateKeyHex;
-    _cachedPubkey = currentPubkey;
-    _cacheTimestamp = now;
-    
-    AegisLogger.info('✅ Private key cached for user: ${currentPubkey.substring(0, 16)}...');
-    return privateKeyHex;
-  }
-
-  /// Decrypt private key for Content Provider
-  Future<Uint8List> _decryptPrivkey(UserDBISAR user) async {
-    final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
-
-    // Try to get password from Keychain first
-    String? password;
-
-    // For existing users, migrate from database to Keychain if needed
-    if (user.defaultPassword != null && user.defaultPassword!.isNotEmpty) {
-      // Store the old password before clearing it
-      final oldPassword = user.defaultPassword;
-
-      // Migrate old password to Keychain
-      try {
-        await DBKeyManager.migrateUserPrivkeyKey(user.pubkey, oldPassword);
-        // Clear the password from database after successful migration
-        user.defaultPassword = null;
-        await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
-        AegisLogger.info('[Migration] Cleared password from database for user: ${user.pubkey}');
-
-        // Get the migrated password from Keychain
-        password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
-      } catch (error) {
-        AegisLogger.warning('[Migration] Failed to migrate password for user: ${user.pubkey}, error: $error');
-        // Fallback to database password (keep the old password in database)
-        password = oldPassword;
-      }
-    } else {
-      // Try to get from Keychain
-      password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
-    }
-
-    if (password == null || password.isEmpty) {
-      throw Exception('No password found for user private key');
-    }
-
-    // Decrypt the private key
-    final decrypted = decryptPrivateKey(encryptedBytes, password);
-    return decrypted;
-  }
-
-  /// Record a signed event for NIP-55 operation
-  Future<void> _recordNIP55Event({
-    required String eventId,
-    required int eventKind,
-    required String eventContent,
-    required String callingPackage,
-    String? metadata,
-  }) async {
-    try {
-      final clientAuth = await _ensureClientAuth(callingPackage);
-      
-      // In Content Provider, we need to directly record to database since SignedEventManager
-      // checks Account.currentPubkey which is empty in Content Provider process
-      await _recordSignedEventDirectly(
-        eventId: eventId,
-        eventKind: eventKind,
-        eventContent: eventContent,
-        applicationName: callingPackage,
-        applicationPubkey: clientAuth.clientPubkey,
-        userPubkey: clientAuth.pubkey,
-        status: 1,
-        metadata: metadata,
-      );
-      
-      AegisLogger.info('✅ Recorded NIP-55 event: $eventContent');
-    } catch (e) {
-      AegisLogger.error('❌ Failed to record NIP-55 event: $e');
-    }
-  }
-
-  /// Directly record signed event to database (bypassing SignedEventManager's login check)
-  Future<void> _recordSignedEventDirectly({
-    required String eventId,
-    required int eventKind,
-    required String eventContent,
-    required String applicationName,
-    required String applicationPubkey,
-    required String userPubkey,
-    int status = 1,
-    String? metadata,
-  }) async {
-    try {
-      // Import the SignedEventDBISAR class and record directly
-      // This bypasses the login check in SignedEventManager
-      final signedEvent = SignedEventDBISAR(
-        eventId: eventId,
-        eventKind: eventKind,
-        eventContent: eventContent,
-        applicationName: applicationName,
-        applicationPubkey: applicationPubkey,
-        userPubkey: userPubkey,
-        status: status,
-        metadata: metadata,
-        signedTimestamp: DateTime.now().millisecondsSinceEpoch,
-      );
-      
-      await SignedEventDBISAR.saveFromDB(signedEvent);
-      AegisLogger.info('✅ Directly recorded signed event: $eventContent');
-    } catch (e) {
-      AegisLogger.error('❌ Failed to record signed event directly: $e');
-    }
-  }
 
   /// Handle GET_PUBLIC_KEY requests
   Future<CursorData> _handleGetPublicKey(String callingPackage, String authDetail, String uri) async {
     try {
-      // Get current user's private key from database
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        throw Exception('No current user private key available');
+      AegisLogger.info('📱 Processing GET_PUBLIC_KEY request from $callingPackage');
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleGetPublicKey();
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to get public key: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to get public key: ${result['error']}']);
+        return data;
       }
       
-      // Get public key from current user's private key
-      final publicKey = rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
-      
-      // Record the get_public_key event
-      await _recordNIP55Event(
-        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
-        eventKind: 24133, // NIP-55 get_public_key event kind
-        eventContent: 'get_public_key',
-        callingPackage: callingPackage,
-        metadata: '{"operation": "get_public_key", "pubkey": "$publicKey"}',
-      );
-      
+      final publicKey = result['result'] as String;
       AegisLogger.info('✅ Generated public key for $callingPackage: ${publicKey.substring(0, 16)}...');
       
-      AegisLogger.info('📱 Creating MatrixCursorData...');
       var data = MatrixCursorData(
         columnNames: ['result'],
         notificationUris: [uri],
       );
-      AegisLogger.info('📱 MatrixCursorData created successfully');
-      
-      AegisLogger.info('📱 Adding row to MatrixCursorData...');
       data.addRow([publicKey]);
-      AegisLogger.info('📱 Row added successfully');
       
       AegisLogger.info('📱 Content Provider returning data: result=${publicKey.substring(0, 16)}...');
-      AegisLogger.info('📱 Content Provider data columns: ${data.columnNames}');
-      AegisLogger.info('📱 Content Provider notification URIs: ${data.notificationUris}');
-      
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to get public key: $e');
@@ -429,32 +201,26 @@ class ContentProvider extends AndroidContentProvider {
         throw Exception('Event JSON is empty');
       }
 
-      // Get current user's private key from database
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        throw Exception('No current user private key available');
+      AegisLogger.info('📱 Processing SIGN_EVENT request from $callingPackage');
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleSignEvent(
+        eventJson: eventJson,
+        currentUser: currentUser,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to sign event: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to sign event: ${result['error']}']);
+        return data;
       }
       
-      final signedEventJson = rust_api.signEvent(
-        eventJson: eventJson,
-        privateKey: currentPrivkey,
-      );
-      
-      // Parse the signed event to extract signature and details
-      final signedEvent = json.decode(signedEventJson);
-      final signature = signedEvent['sig'] as String;
-      final eventId = signedEvent['id'] as String;
-      final eventKind = signedEvent['kind'] as int;
-      final content = signedEvent['content'] as String;
-      
-      // Record the sign_event operation
-      await _recordNIP55Event(
-        eventId: eventId,
-        eventKind: eventKind,
-        eventContent: content.length > 100 ? '${content.substring(0, 100)}...' : content,
-        callingPackage: callingPackage,
-        metadata: '{"operation": "sign_event", "signature": "$signature"}',
-      );
+      final signature = result['result'] as String;
+      final signedEventJson = result['event'] as String;
       
       AegisLogger.info('✅ Signed event for $callingPackage');
       
@@ -482,27 +248,26 @@ class ContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-04 encryption');
       }
 
-      // Get current user's private key from database
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        throw Exception('No current user private key available');
+      AegisLogger.info('📱 Processing NIP-04 encrypt request from $callingPackage');
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP04Encrypt(
+        plaintext: plaintext,
+        pubkey: pubkey,
+        currentUser: currentUser,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to encrypt with NIP-04: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to encrypt: ${result['error']}']);
+        return data;
       }
       
-      final encrypted = rust_api.nip04Encrypt(
-        plaintext: plaintext,
-        publicKey: pubkey,
-        privateKey: currentPrivkey,
-      );
-      
-      // Record the NIP-04 encryption event
-      await _recordNIP55Event(
-        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
-        eventKind: 4, // NIP-04 encrypted direct message kind
-        eventContent: 'NIP-04 encryption',
-        callingPackage: callingPackage,
-        metadata: '{"operation": "nip04_encrypt", "pubkey": "$pubkey"}',
-      );
-      
+      final encrypted = result['result'] as String;
       AegisLogger.info('✅ NIP-04 encrypted for $callingPackage');
       
       var data = MatrixCursorData(
@@ -529,27 +294,26 @@ class ContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-04 decryption');
       }
 
-      // Get current user's private key from database
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        throw Exception('No current user private key available');
+      AegisLogger.info('📱 Processing NIP-04 decrypt request from $callingPackage');
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP04Decrypt(
+        ciphertext: ciphertext,
+        pubkey: pubkey,
+        currentUser: currentUser,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to decrypt with NIP-04: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to decrypt: ${result['error']}']);
+        return data;
       }
       
-      final decrypted = rust_api.nip04Decrypt(
-        ciphertext: ciphertext,
-        publicKey: pubkey,
-        privateKey: currentPrivkey,
-      );
-      
-      // Record the NIP-04 decryption event
-      await _recordNIP55Event(
-        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
-        eventKind: 4, // NIP-04 encrypted direct message kind
-        eventContent: 'NIP-04 decryption',
-        callingPackage: callingPackage,
-        metadata: '{"operation": "nip04_decrypt", "pubkey": "$pubkey"}',
-      );
-      
+      final decrypted = result['result'] as String;
       AegisLogger.info('✅ NIP-04 decrypted for $callingPackage');
       
       var data = MatrixCursorData(
@@ -576,27 +340,26 @@ class ContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-44 encryption');
       }
 
-      // Get current user's private key from database
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        throw Exception('No current user private key available');
+      AegisLogger.info('📱 Processing NIP-44 encrypt request from $callingPackage');
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP44Encrypt(
+        plaintext: plaintext,
+        pubkey: pubkey,
+        currentUser: currentUser,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to encrypt with NIP-44: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to encrypt: ${result['error']}']);
+        return data;
       }
       
-      final encrypted = rust_api.nip44Encrypt(
-        plaintext: plaintext,
-        publicKey: pubkey,
-        privateKey: currentPrivkey,
-      );
-      
-      // Record the NIP-44 encryption event
-      await _recordNIP55Event(
-        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
-        eventKind: 44, // NIP-44 encrypted payloads kind
-        eventContent: 'NIP-44 encryption',
-        callingPackage: callingPackage,
-        metadata: '{"operation": "nip44_encrypt", "pubkey": "$pubkey"}',
-      );
-      
+      final encrypted = result['result'] as String;
       AegisLogger.info('✅ NIP-44 encrypted for $callingPackage');
       
       var data = MatrixCursorData(
@@ -623,27 +386,26 @@ class ContentProvider extends AndroidContentProvider {
         throw Exception('Invalid parameters for NIP-44 decryption');
       }
 
-      // Get current user's private key from database
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        throw Exception('No current user private key available');
+      AegisLogger.info('📱 Processing NIP-44 decrypt request from $callingPackage');
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP44Decrypt(
+        ciphertext: ciphertext,
+        pubkey: pubkey,
+        currentUser: currentUser,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to decrypt with NIP-44: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to decrypt: ${result['error']}']);
+        return data;
       }
       
-      final decrypted = rust_api.nip44Decrypt(
-        ciphertext: ciphertext,
-        publicKey: pubkey,
-        privateKey: currentPrivkey,
-      );
-      
-      // Record the NIP-44 decryption event
-      await _recordNIP55Event(
-        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
-        eventKind: 44, // NIP-44 encrypted payloads kind
-        eventContent: 'NIP-44 decryption',
-        callingPackage: callingPackage,
-        metadata: '{"operation": "nip44_decrypt", "pubkey": "$pubkey"}',
-      );
-      
+      final decrypted = result['result'] as String;
       AegisLogger.info('✅ NIP-44 decrypted for $callingPackage');
       
       var data = MatrixCursorData(
@@ -666,23 +428,32 @@ class ContentProvider extends AndroidContentProvider {
   /// Handle DECRYPT_ZAP_EVENT requests
   Future<CursorData> _handleDecryptZapEvent(String callingPackage, String eventJson, String? currentUser, String uri) async {
     try {
-      // For demo purposes, return a placeholder
-      AegisLogger.info('📱 Decrypt zap event request from $callingPackage');
+      AegisLogger.info('📱 Processing DECRYPT_ZAP_EVENT request from $callingPackage');
       
-      // Record the decrypt zap event operation
-      await _recordNIP55Event(
-        eventId: DateTime.now().millisecondsSinceEpoch.toString(),
-        eventKind: 9735, // NIP-57 zap event kind
-        eventContent: 'Decrypt zap event',
-        callingPackage: callingPackage,
-        metadata: '{"operation": "decrypt_zap_event"}',
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleDecryptZapEvent(
+        eventJson: eventJson,
+        currentUser: currentUser,
       );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to decrypt zap event: ${result['error']}');
+        var data = MatrixCursorData(
+          columnNames: ['error'],
+          notificationUris: [uri],
+        );
+        data.addRow(['Failed to decrypt zap event: ${result['error']}']);
+        return data;
+      }
+      
+      final decryptedZap = result['result'] as String;
+      AegisLogger.info('✅ Decrypt zap event completed for $callingPackage');
       
       var data = MatrixCursorData(
         columnNames: ['result'],
         notificationUris: [uri],
       );
-      data.addRow(['decrypted_zap_content']);
+      data.addRow([decryptedZap]);
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to decrypt zap event: $e');

@@ -1,39 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
-import 'package:aegis/utils/local_storage.dart';
-import 'package:aegis/db/userDB_isar.dart';
-import 'package:aegis/db/db_isar.dart';
-import 'package:aegis/db/signed_event_db_isar.dart';
-import 'package:aegis/utils/key_manager.dart';
-import 'package:aegis/nostr/utils.dart';
-import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
-import 'dart:convert';
+import 'nip55_handler.dart';
 
 /// Android Intent Handler for NIP-55 and URL Scheme support
 /// Handles communication between Android MainActivity and Flutter app
 /// 
-/// This class provides similar functionality to ContentProvider
-/// but for Intent-based requests instead of Content Provider queries
+/// This class delegates all business logic to NIP55Handler
 class IntentHandler {
   static const MethodChannel _channel = MethodChannel('com.aegis.app/intent');
   static StreamController<Map<String, dynamic>>? _intentController;
-  
-  // Cache for private key to avoid repeated database queries and decryption
-  static String? _cachedPrivateKey;
-  static String? _cachedPubkey;
-  static int _cacheTimestamp = 0;
-  static const int CACHE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes cache timeout
   
   /// Initialize intent handler
   static Future<void> initialize() async {
     try {
       _channel.setMethodCallHandler(_handleMethodCall);
       _intentController = StreamController<Map<String, dynamic>>.broadcast();
-      
-      // Note: RustLib and LocalStorage are already initialized in main.dart
-      // We don't need to re-initialize them here
       
       AegisLogger.info('✅ Intent handler initialized successfully');
     } catch (e) {
@@ -44,33 +28,89 @@ class IntentHandler {
   /// Handle method calls from Android MainActivity
   static Future<dynamic> _handleMethodCall(MethodCall call) async {
     try {
-      AegisLogger.info('📱 Intent handler received: ${call.method}');
-      AegisLogger.info('📱 Intent handler arguments: ${call.arguments}');
-      
-      switch (call.method) {
-        case 'onIntentReceived':
-          return await _handleIntentReceived(call.arguments);
-        case 'getPublicKeyForIntent':
-          return await _handleGetPublicKeyForIntent();
+    AegisLogger.info('📱 Intent handler received: ${call.method}');
+    AegisLogger.info('📱 Intent handler arguments: ${call.arguments}');
+    
+    switch (call.method) {
+      case 'onIntentReceived':
+        return await _handleIntentReceived(call.arguments);
+      case 'getPublicKeyForIntent':
+          // Delegate to NIP55Handler
+          final result = await NIP55Handler.handleGetPublicKey();
+          return result;
         case 'signEventForIntent':
-          return await _handleSignEventForIntent(call.arguments);
+          // Delegate to NIP55Handler
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final eventJson = args['eventJson'] as String? ?? '';
+          final result = await NIP55Handler.handleSignEvent(eventJson: eventJson);
+          return result;
         case 'signMessageForIntent':
-          return await _handleSignMessageForIntent(call.arguments);
+          // Placeholder - not implemented in NIP55Handler yet
+          AegisLogger.warning('⚠️ signMessageForIntent not implemented');
+          return {'error': 'signMessageForIntent not implemented'};
         case 'nip04EncryptForIntent':
-          return await _handleNIP04EncryptForIntent(call.arguments);
+          // Delegate to NIP55Handler
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final plaintext = args['message'] as String? ?? '';
+          final pubkey = args['recipientPubkey'] as String?;
+          if (pubkey == null) {
+            return {'error': 'Missing recipientPubkey'};
+          }
+          final result = await NIP55Handler.handleNIP04Encrypt(
+            plaintext: plaintext,
+            pubkey: pubkey,
+          );
+          return result;
         case 'nip04DecryptForIntent':
-          return await _handleNIP04DecryptForIntent(call.arguments);
+          // Delegate to NIP55Handler
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final ciphertext = args['encryptedMessage'] as String? ?? '';
+          final pubkey = args['senderPubkey'] as String?;
+          if (pubkey == null) {
+            return {'error': 'Missing senderPubkey'};
+          }
+          final result = await NIP55Handler.handleNIP04Decrypt(
+            ciphertext: ciphertext,
+            pubkey: pubkey,
+          );
+          return result;
         case 'nip44EncryptForIntent':
-          return await _handleNIP44EncryptForIntent(call.arguments);
+          // Delegate to NIP55Handler
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final plaintext = args['message'] as String? ?? '';
+          final pubkey = args['recipientPubkey'] as String?;
+          if (pubkey == null) {
+            return {'error': 'Missing recipientPubkey'};
+          }
+          final result = await NIP55Handler.handleNIP44Encrypt(
+            plaintext: plaintext,
+            pubkey: pubkey,
+          );
+          return result;
         case 'nip44DecryptForIntent':
-          return await _handleNIP44DecryptForIntent(call.arguments);
+          // Delegate to NIP55Handler
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final ciphertext = args['encryptedMessage'] as String? ?? '';
+          final pubkey = args['senderPubkey'] as String?;
+          if (pubkey == null) {
+            return {'error': 'Missing senderPubkey'};
+          }
+          final result = await NIP55Handler.handleNIP44Decrypt(
+            ciphertext: ciphertext,
+            pubkey: pubkey,
+          );
+          return result;
         case 'decryptZapEventForIntent':
-          return await _handleDecryptZapEventForIntent(call.arguments);
-        default:
-          AegisLogger.error('❌ Intent handler unknown method: ${call.method}');
-          throw PlatformException(
-            code: 'UNIMPLEMENTED',
-            message: 'Method ${call.method} not implemented',
+          // Delegate to NIP55Handler
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final eventJson = args['zapEventJson'] as String? ?? '';
+          final result = await NIP55Handler.handleDecryptZapEvent(eventJson: eventJson);
+          return result;
+      default:
+        AegisLogger.error('❌ Intent handler unknown method: ${call.method}');
+        throw PlatformException(
+          code: 'UNIMPLEMENTED',
+          message: 'Method ${call.method} not implemented',
           );
       }
     } catch (e) {
@@ -78,7 +118,7 @@ class IntentHandler {
       throw PlatformException(
         code: 'HANDLER_ERROR',
         message: 'Error handling method call: $e',
-      );
+        );
     }
   }
   
@@ -140,7 +180,7 @@ class IntentHandler {
           break;
         default:
           AegisLogger.warning('⚠️ Unknown request type: $requestType, treating as generic scheme');
-          await LaunchSchemeUtils.handleSchemeData(data);
+        await LaunchSchemeUtils.handleSchemeData(data);
       }
       
       // Add to stream for UI to listen
@@ -212,145 +252,7 @@ class IntentHandler {
     }
   }
   
-  /// Handle getting public key for intent-based requests
-  /// Similar to ContentProvider._handleGetPublicKey
-  static Future<Map<String, dynamic>?> _handleGetPublicKeyForIntent() async {
-    try {
-      AegisLogger.info('📱 Getting public key for intent request');
-      
-      // Get current user's private key from database (with caching)
-      final currentPrivkey = await _getCurrentUserPrivateKey();
-      if (currentPrivkey.isEmpty) {
-        AegisLogger.error('❌ No current user private key available');
-        return null;
-      }
-      
-      // Get public key from current user's private key
-      final publicKey = rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
-      
-      // Record the get_public_key event to database
-      await _recordSignedEventDirectly(
-        eventId: 'get_public_key_intent_${DateTime.now().millisecondsSinceEpoch}',
-        eventKind: 0, // Kind 0 for get_public_key
-        eventContent: 'get_public_key',
-        signature: 'intent_mode_${publicKey.substring(0, 16)}',
-        callingPackage: 'intent_mode',
-      );
-      
-      AegisLogger.info('📱 Generated public key for intent: ${publicKey.substring(0, 16)}...');
-      
-      // Return complete result data for MainActivity to use
-      return {
-        'result': publicKey,
-        'package': 'com.aegis.app',
-      };
-    } catch (e) {
-      AegisLogger.error('❌ Failed to get public key for intent: $e');
-      return null;
-    }
-  }
   
-  /// Get current user's private key from database with caching
-  /// Similar to ContentProvider._getCurrentUserPrivateKey
-  static Future<String> _getCurrentUserPrivateKey() async {
-    // Ensure LocalStorage is initialized before accessing it
-    try {
-      await LocalStorage.init();
-    } catch (e) {
-      // LocalStorage might already be initialized, ignore the error
-      AegisLogger.info('📱 LocalStorage init check: $e');
-    }
-    
-    // Get current pubkey from LocalStorage
-    final currentPubkey = LocalStorage.get('pubkey');
-    if (currentPubkey == null || currentPubkey.isEmpty) {
-      throw Exception('No current user found - user must be logged in');
-    }
-    
-    // Check if we have a valid cached private key for the same user
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (_cachedPrivateKey != null && 
-        _cachedPubkey == currentPubkey && 
-        (now - _cacheTimestamp) < CACHE_TIMEOUT_MS) {
-      AegisLogger.info('✅ Using cached private key for user: ${currentPubkey.substring(0, 16)}...');
-      return _cachedPrivateKey!;
-    }
-    
-    AegisLogger.info('🔄 Fetching private key from database for user: ${currentPubkey.substring(0, 16)}...');
-    
-    // Get user from database with error handling for already opened instances
-    UserDBISAR? user;
-    try {
-      user = await UserDBISAR.searchFromDB(currentPubkey);
-    } catch (e) {
-      if (e.toString().contains('already been opened')) {
-        AegisLogger.warning('📱 Database already opened, closing all and retrying...');
-        // Close all databases and try again
-        await DBISAR.sharedInstance.closeAllDatabases();
-        user = await UserDBISAR.searchFromDB(currentPubkey);
-      } else {
-        AegisLogger.error('❌ Failed to get user from database: $e');
-        rethrow;
-      }
-    }
-    if (user == null) {
-      throw Exception('User not found in database');
-    }
-    
-    // Decrypt private key
-    final decryptedPrivkey = await _decryptPrivkey(user);
-    final privateKeyHex = bytesToHex(decryptedPrivkey);
-    
-    // Cache the private key
-    _cachedPrivateKey = privateKeyHex;
-    _cachedPubkey = currentPubkey;
-    _cacheTimestamp = now;
-    
-    AegisLogger.info('✅ Private key cached for user: ${currentPubkey.substring(0, 16)}...');
-    return privateKeyHex;
-  }
-  
-  /// Decrypt private key for Intent Handler
-  /// Similar to ContentProvider._decryptPrivkey
-  static Future<Uint8List> _decryptPrivkey(UserDBISAR user) async {
-    final encryptedBytes = hexToBytes(user.encryptedPrivkey!);
-
-    // Try to get password from Keychain first
-    String? password;
-
-    // For existing users, migrate from database to Keychain if needed
-    if (user.defaultPassword != null && user.defaultPassword!.isNotEmpty) {
-      // Store the old password before clearing it
-      final oldPassword = user.defaultPassword;
-
-      // Migrate old password to Keychain
-      try {
-        await DBKeyManager.migrateUserPrivkeyKey(user.pubkey, oldPassword);
-        // Clear the password from database after successful migration
-        user.defaultPassword = null;
-        await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
-        AegisLogger.info('[Migration] Cleared password from database for user: ${user.pubkey}');
-
-        // Get the migrated password from Keychain
-        password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
-      } catch (error) {
-        AegisLogger.warning('[Migration] Failed to migrate password for user: ${user.pubkey}, error: $error');
-        // Fallback to database password (keep the old password in database)
-        password = oldPassword;
-      }
-    } else {
-      // Try to get from Keychain
-      password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
-    }
-
-    if (password == null || password.isEmpty) {
-      throw Exception('No password found for user private key');
-    }
-
-    // Decrypt the private key
-    final decrypted = decryptPrivateKey(encryptedBytes, password);
-    return decrypted;
-  }
   
   
   
@@ -432,47 +334,6 @@ class IntentHandler {
     }
   }
   
-  /// Record a signed event to database (similar to ContentProvider._recordSignedEventDirectly)
-  static Future<void> _recordSignedEventDirectly({
-    required String eventId,
-    required int eventKind,
-    required String eventContent,
-    required String signature,
-    required String callingPackage,
-  }) async {
-    try {
-      // Ensure LocalStorage is initialized
-      try {
-        await LocalStorage.init();
-      } catch (e) {
-        AegisLogger.warning('⚠️ LocalStorage init check in _recordSignedEventDirectly: $e');
-      }
-      
-      // Get current user pubkey
-      final currentPubkey = LocalStorage.get('pubkey');
-      if (currentPubkey == null || currentPubkey.isEmpty) {
-        AegisLogger.warning('⚠️ No current user found, skipping event recording');
-        return;
-      }
-      
-      // Create signed event record
-      final signedEvent = SignedEventDBISAR(
-        eventId: eventId,
-        eventKind: eventKind,
-        eventContent: eventContent,
-        applicationName: callingPackage,
-        userPubkey: currentPubkey,
-        signedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        status: 1, // 1: signed
-        metadata: json.encode({'signature': signature, 'connection_type': 'nip55_intent'}),
-      );
-      
-      await SignedEventDBISAR.saveFromDB(signedEvent);
-      AegisLogger.info('✅ Directly recorded signed event: $eventContent');
-    } catch (e) {
-      AegisLogger.error('❌ Failed to record signed event directly: $e');
-    }
-  }
   
   // ============================================================================
   // Request Type Handlers
@@ -483,19 +344,24 @@ class IntentHandler {
     try {
       AegisLogger.info('📱 Handling public key request');
       final requestId = extras?['id'] as String?;
-      final resultData = await _handleGetPublicKeyForIntent();
-      if (resultData != null) {
-        final publicKey = resultData['result'] as String?;
-        final packageName = resultData['package'] as String?;
-        if (publicKey != null) {
-          AegisLogger.info('✅ Public key request completed: ${publicKey.substring(0, 16)}...');
-          // Send result back to Android
-          await _sendPublicKeyResultToAndroid(publicKey, packageName, requestId);
-        } else {
-          AegisLogger.error('❌ Failed to get public key from result data');
-        }
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleGetPublicKey(requestId: requestId);
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to get public key: ${result['error']}');
+        return;
+      }
+      
+      final publicKey = result['result'] as String?;
+      final packageName = result['package'] as String?;
+      
+      if (publicKey != null) {
+        AegisLogger.info('✅ Public key request completed: ${publicKey.substring(0, 16)}...');
+        // Send result back to Android
+        await _sendPublicKeyResultToAndroid(publicKey, packageName, requestId);
       } else {
-        AegisLogger.error('❌ Failed to get public key');
+        AegisLogger.error('❌ Failed to get public key from result data');
       }
     } catch (e) {
       AegisLogger.error('❌ Error handling public key request: $e');
@@ -513,60 +379,28 @@ class IntentHandler {
         final jsonEnd = data.lastIndexOf('}');
         if (jsonStart != -1 && jsonEnd != -1) {
           final jsonStr = data.substring(jsonStart, jsonEnd + 1);
-          final eventData = jsonDecode(jsonStr);
           
-          AegisLogger.info('📱 Parsed event data: id=${eventData['id']}, kind=${eventData['kind']}');
+          AegisLogger.info('📱 Parsed event data, delegating to NIP55Handler');
           
-          // Get current user's private key (with timeout)
-          final privateKey = await _getCurrentUserPrivateKey().timeout(
-            const Duration(seconds: 5),
-            onTimeout: () {
-              AegisLogger.error('❌ Timeout getting private key');
-              return '';
-            },
+          // Delegate to NIP55Handler
+          final result = await NIP55Handler.handleSignEvent(
+            eventJson: jsonStr,
           );
           
-          if (privateKey.isEmpty) {
-            AegisLogger.error('❌ No private key available for signing');
+          if (result['error'] != null) {
+            AegisLogger.error('❌ Failed to sign event: ${result['error']}');
+            await _sendSignResultToAndroid('', '', '');
             return;
           }
           
-          AegisLogger.info('📱 Starting event signing...');
-          
-          // Sign the event using Rust API (with timeout)
-          final signedEvent = await Future(() => rust_api.signEvent(
-            privateKey: privateKey,
-            eventJson: jsonStr,
-          )).timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              AegisLogger.error('❌ Timeout signing event');
-              throw Exception('Signing timeout');
-            },
-          );
+          final signature = result['result'] as String;
+          final eventId = result['id'] as String?;
+          final signedEvent = result['event'] as String;
           
           AegisLogger.info('✅ Event signed successfully');
           
-          // Parse signed event to extract signature
-          final signedEventData = jsonDecode(signedEvent);
-          final signature = signedEventData['sig'] as String;
-          final eventId = signedEventData['id'] as String;
-          final eventKind = signedEventData['kind'] as int;
-          final content = signedEventData['content'] as String;
-          
-          AegisLogger.info('📱 Extracted signature: ${signature.substring(0, 16)}...');
-          
           // Send result back to Android immediately (following NIP-55 protocol)
-          await _sendSignResultToAndroid(signature, eventId, signedEvent);
-          
-          // Record the signed event (async, don't wait)
-          _recordSignedEventDirectly(
-            eventId: eventId,
-            eventKind: eventKind,
-            eventContent: content.length > 100 ? '${content.substring(0, 100)}...' : content,
-            signature: signature,
-            callingPackage: 'com.oxchat.lite', // OX Pro package name
-          );
+          await _sendSignResultToAndroid(signature, eventId ?? '', signedEvent);
           
           AegisLogger.info('✅ Sign event request completed successfully');
         } else {
@@ -603,17 +437,37 @@ class IntentHandler {
     try {
       AegisLogger.info('📱 Handling NIP-04 encrypt request');
       
-      // Parse the request data to extract id
+      // Parse the request data to extract parameters
       final requestData = jsonDecode(data);
+      final plaintext = requestData['plaintext'] as String? ?? '';
+      final pubkey = requestData['pubkey'] as String?;
       final requestId = requestData['id'] as String?;
       
-      // For now, return a placeholder result (this should be implemented properly)
-      await _sendGenericResultToAndroid('encrypted_data_placeholder', requestId);
+      if (plaintext.isEmpty || pubkey == null) {
+        AegisLogger.error('❌ Missing plaintext or pubkey for NIP-04 encryption');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP04Encrypt(
+        plaintext: plaintext,
+        pubkey: pubkey,
+        requestId: requestId,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to encrypt with NIP-04: ${result['error']}');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      final encrypted = result['result'] as String;
+      await _sendGenericResultToAndroid(encrypted, requestId);
       
       AegisLogger.info('✅ NIP-04 encrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-04 encrypt request: $e');
-      // Send error result
       try {
         final requestData = jsonDecode(data);
         final requestId = requestData['id'] as String?;
@@ -629,17 +483,37 @@ class IntentHandler {
     try {
       AegisLogger.info('📱 Handling NIP-04 decrypt request');
       
-      // Parse the request data to extract id
+      // Parse the request data to extract parameters
       final requestData = jsonDecode(data);
+      final ciphertext = requestData['ciphertext'] as String? ?? '';
+      final pubkey = requestData['pubkey'] as String?;
       final requestId = requestData['id'] as String?;
       
-      // For now, return a placeholder result (this should be implemented properly)
-      await _sendGenericResultToAndroid('decrypted_data_placeholder', requestId);
+      if (ciphertext.isEmpty || pubkey == null) {
+        AegisLogger.error('❌ Missing ciphertext or pubkey for NIP-04 decryption');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP04Decrypt(
+        ciphertext: ciphertext,
+        pubkey: pubkey,
+        requestId: requestId,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to decrypt with NIP-04: ${result['error']}');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      final decrypted = result['result'] as String;
+      await _sendGenericResultToAndroid(decrypted, requestId);
       
       AegisLogger.info('✅ NIP-04 decrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-04 decrypt request: $e');
-      // Send error result
       try {
         final requestData = jsonDecode(data);
         final requestId = requestData['id'] as String?;
@@ -655,17 +529,37 @@ class IntentHandler {
     try {
       AegisLogger.info('📱 Handling NIP-44 encrypt request');
       
-      // Parse the request data to extract id
+      // Parse the request data to extract parameters
       final requestData = jsonDecode(data);
+      final plaintext = requestData['plaintext'] as String? ?? '';
+      final pubkey = requestData['pubkey'] as String?;
       final requestId = requestData['id'] as String?;
       
-      // For now, return a placeholder result (this should be implemented properly)
-      await _sendGenericResultToAndroid('nip44_encrypted_data_placeholder', requestId);
+      if (plaintext.isEmpty || pubkey == null) {
+        AegisLogger.error('❌ Missing plaintext or pubkey for NIP-44 encryption');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP44Encrypt(
+        plaintext: plaintext,
+        pubkey: pubkey,
+        requestId: requestId,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to encrypt with NIP-44: ${result['error']}');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      final encrypted = result['result'] as String;
+      await _sendGenericResultToAndroid(encrypted, requestId);
       
       AegisLogger.info('✅ NIP-44 encrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-44 encrypt request: $e');
-      // Send error result
       try {
         final requestData = jsonDecode(data);
         final requestId = requestData['id'] as String?;
@@ -681,17 +575,37 @@ class IntentHandler {
     try {
       AegisLogger.info('📱 Handling NIP-44 decrypt request');
       
-      // Parse the request data to extract id
+      // Parse the request data to extract parameters
       final requestData = jsonDecode(data);
+      final ciphertext = requestData['ciphertext'] as String? ?? '';
+      final pubkey = requestData['pubkey'] as String?;
       final requestId = requestData['id'] as String?;
       
-      // For now, return a placeholder result (this should be implemented properly)
-      await _sendGenericResultToAndroid('nip44_decrypted_data_placeholder', requestId);
+      if (ciphertext.isEmpty || pubkey == null) {
+        AegisLogger.error('❌ Missing ciphertext or pubkey for NIP-44 decryption');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleNIP44Decrypt(
+        ciphertext: ciphertext,
+        pubkey: pubkey,
+        requestId: requestId,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to decrypt with NIP-44: ${result['error']}');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      final decrypted = result['result'] as String;
+      await _sendGenericResultToAndroid(decrypted, requestId);
       
       AegisLogger.info('✅ NIP-44 decrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-44 decrypt request: $e');
-      // Send error result
       try {
         final requestData = jsonDecode(data);
         final requestId = requestData['id'] as String?;
@@ -707,17 +621,35 @@ class IntentHandler {
     try {
       AegisLogger.info('📱 Handling decrypt zap event request');
       
-      // Parse the request data to extract id
+      // Parse the request data to extract parameters
       final requestData = jsonDecode(data);
+      final eventJson = requestData['eventJson'] as String? ?? '';
       final requestId = requestData['id'] as String?;
       
-      // For now, return a placeholder result (this should be implemented properly)
-      await _sendGenericResultToAndroid('decrypted_zap_event_placeholder', requestId);
+      if (eventJson.isEmpty) {
+        AegisLogger.error('❌ Missing eventJson for zap event decryption');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      // Delegate to NIP55Handler
+      final result = await NIP55Handler.handleDecryptZapEvent(
+        eventJson: eventJson,
+        requestId: requestId,
+      );
+      
+      if (result['error'] != null) {
+        AegisLogger.error('❌ Failed to decrypt zap event: ${result['error']}');
+        await _sendGenericResultToAndroid('', requestId);
+        return;
+      }
+      
+      final decryptedZap = result['result'] as String;
+      await _sendGenericResultToAndroid(decryptedZap, requestId);
       
       AegisLogger.info('✅ Decrypt zap event request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling decrypt zap event request: $e');
-      // Send error result
       try {
         final requestData = jsonDecode(data);
         final requestId = requestData['id'] as String?;
@@ -728,237 +660,5 @@ class IntentHandler {
     }
   }
   
-  // ============================================================================
-  // Direct Method Handlers (for specific method calls)
-  // ============================================================================
-  
-  /// Handle sign event for intent
-  static Future<String?> _handleSignEventForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final eventJson = args['eventJson'] as String?;
-      if (eventJson == null) {
-        AegisLogger.error('❌ No event JSON provided for signing');
-        return null;
-      }
-      
-      AegisLogger.info('📱 Signing event for intent');
-      
-      // Parse and sign the event
-      final privateKey = await _getCurrentUserPrivateKey();
-      
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for signing');
-        return null;
-      }
-      
-      // Sign the event using Rust API
-      final signedEvent = rust_api.signEvent(
-        privateKey: privateKey,
-        eventJson: eventJson,
-      );
-      
-      AegisLogger.info('✅ Event signed successfully');
-      return signedEvent;
-    } catch (e) {
-      AegisLogger.error('❌ Error signing event for intent: $e');
-      return null;
-    }
-  }
-  
-  /// Handle sign message for intent
-  static Future<String?> _handleSignMessageForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final message = args['message'] as String?;
-      if (message == null) {
-        AegisLogger.error('❌ No message provided for signing');
-        return null;
-      }
-      
-      AegisLogger.info('📱 Signing message for intent');
-      
-      final privateKey = await _getCurrentUserPrivateKey();
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for signing');
-        return null;
-      }
-      
-      // Sign the message using Rust API (if available)
-      // Note: signMessage might not be available in rust_api
-      // For now, we'll use a placeholder implementation
-      final signature = "signature_placeholder_for_$message";
-      
-      AegisLogger.info('✅ Message signed successfully');
-      return signature;
-    } catch (e) {
-      AegisLogger.error('❌ Error signing message for intent: $e');
-      return null;
-    }
-  }
-  
-  /// Handle NIP-04 encrypt for intent
-  static Future<String?> _handleNIP04EncryptForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final message = args['message'] as String?;
-      final recipientPubkey = args['recipientPubkey'] as String?;
-      
-      if (message == null || recipientPubkey == null) {
-        AegisLogger.error('❌ Missing message or recipient pubkey for NIP-04 encryption');
-        return null;
-      }
-      
-      AegisLogger.info('📱 NIP-04 encrypting for intent');
-      
-      final privateKey = await _getCurrentUserPrivateKey();
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for encryption');
-        return null;
-      }
-      
-      // Encrypt using Rust API
-      final encrypted = rust_api.nip04Encrypt(
-        plaintext: message,
-        publicKey: recipientPubkey,
-        privateKey: privateKey,
-      );
-      
-      AegisLogger.info('✅ NIP-04 encryption completed');
-      return encrypted;
-    } catch (e) {
-      AegisLogger.error('❌ Error NIP-04 encrypting for intent: $e');
-      return null;
-    }
-  }
-  
-  /// Handle NIP-04 decrypt for intent
-  static Future<String?> _handleNIP04DecryptForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final encryptedMessage = args['encryptedMessage'] as String?;
-      final senderPubkey = args['senderPubkey'] as String?;
-      
-      if (encryptedMessage == null || senderPubkey == null) {
-        AegisLogger.error('❌ Missing encrypted message or sender pubkey for NIP-04 decryption');
-        return null;
-      }
-      
-      AegisLogger.info('📱 NIP-04 decrypting for intent');
-      
-      final privateKey = await _getCurrentUserPrivateKey();
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for decryption');
-        return null;
-      }
-      
-      // Decrypt using Rust API
-      final decrypted = rust_api.nip04Decrypt(
-        ciphertext: encryptedMessage,
-        publicKey: senderPubkey,
-        privateKey: privateKey,
-      );
-      
-      AegisLogger.info('✅ NIP-04 decryption completed');
-      return decrypted;
-    } catch (e) {
-      AegisLogger.error('❌ Error NIP-04 decrypting for intent: $e');
-      return null;
-    }
-  }
-  
-  /// Handle NIP-44 encrypt for intent
-  static Future<String?> _handleNIP44EncryptForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final message = args['message'] as String?;
-      final recipientPubkey = args['recipientPubkey'] as String?;
-      
-      if (message == null || recipientPubkey == null) {
-        AegisLogger.error('❌ Missing message or recipient pubkey for NIP-44 encryption');
-        return null;
-      }
-      
-      AegisLogger.info('📱 NIP-44 encrypting for intent');
-      
-      final privateKey = await _getCurrentUserPrivateKey();
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for encryption');
-        return null;
-      }
-      
-      // Encrypt using Rust API
-      final encrypted = rust_api.nip44Encrypt(
-        plaintext: message,
-        publicKey: recipientPubkey,
-        privateKey: privateKey,
-      );
-      
-      AegisLogger.info('✅ NIP-44 encryption completed');
-      return encrypted;
-    } catch (e) {
-      AegisLogger.error('❌ Error NIP-44 encrypting for intent: $e');
-      return null;
-    }
-  }
-  
-  /// Handle NIP-44 decrypt for intent
-  static Future<String?> _handleNIP44DecryptForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final encryptedMessage = args['encryptedMessage'] as String?;
-      final senderPubkey = args['senderPubkey'] as String?;
-      
-      if (encryptedMessage == null || senderPubkey == null) {
-        AegisLogger.error('❌ Missing encrypted message or sender pubkey for NIP-44 decryption');
-        return null;
-      }
-      
-      AegisLogger.info('📱 NIP-44 decrypting for intent');
-      
-      final privateKey = await _getCurrentUserPrivateKey();
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for decryption');
-        return null;
-      }
-      
-      // Decrypt using Rust API
-      final decrypted = rust_api.nip44Decrypt(
-        ciphertext: encryptedMessage,
-        publicKey: senderPubkey,
-        privateKey: privateKey,
-      );
-      
-      AegisLogger.info('✅ NIP-44 decryption completed');
-      return decrypted;
-    } catch (e) {
-      AegisLogger.error('❌ Error NIP-44 decrypting for intent: $e');
-      return null;
-    }
-  }
-  
-  /// Handle decrypt zap event for intent
-  static Future<String?> _handleDecryptZapEventForIntent(Map<dynamic, dynamic> args) async {
-    try {
-      final zapEventJson = args['zapEventJson'] as String?;
-      
-      if (zapEventJson == null) {
-        AegisLogger.error('❌ No zap event JSON provided for decryption');
-        return null;
-      }
-      
-      AegisLogger.info('📱 Decrypting zap event for intent');
-      
-      final privateKey = await _getCurrentUserPrivateKey();
-      if (privateKey.isEmpty) {
-        AegisLogger.error('❌ No private key available for zap decryption');
-        return null;
-      }
-      
-      // Decrypt zap event using Rust API (placeholder implementation)
-      // Note: decryptZapEvent might not be available in rust_api
-      final decryptedZap = "decrypted_zap_placeholder_for_$zapEventJson";
-      
-      AegisLogger.info('✅ Zap event decryption completed');
-      return decryptedZap;
-    } catch (e) {
-      AegisLogger.error('❌ Error decrypting zap event for intent: $e');
-      return null;
-    }
-  }
 }
 
