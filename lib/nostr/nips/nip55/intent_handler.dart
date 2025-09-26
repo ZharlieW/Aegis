@@ -345,8 +345,11 @@ class IntentHandler {
       AegisLogger.info('📱 Handling public key request');
       final requestId = extras?['id'] as String?;
       
+      // Generate a default ID if none provided for get_public_key requests
+      final finalRequestId = requestId ?? 'get_public_key_${DateTime.now().millisecondsSinceEpoch}';
+      
       // Delegate to NIP55Handler
-      final result = await NIP55Handler.handleGetPublicKey(requestId: requestId);
+      final result = await NIP55Handler.handleGetPublicKey(requestId: finalRequestId);
       
       if (result['error'] != null) {
         AegisLogger.error('❌ Failed to get public key: ${result['error']}');
@@ -359,7 +362,7 @@ class IntentHandler {
       if (publicKey != null) {
         AegisLogger.info('✅ Public key request completed: ${publicKey.substring(0, 16)}...');
         // Send result back to Android
-        await _sendPublicKeyResultToAndroid(publicKey, packageName, requestId);
+        await _sendPublicKeyResultToAndroid(publicKey, packageName, finalRequestId);
       } else {
         AegisLogger.error('❌ Failed to get public key from result data');
       }

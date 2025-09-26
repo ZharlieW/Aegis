@@ -239,14 +239,16 @@ class MainActivity: FlutterActivity() {
             val result = resultData["result"] as? String
             val eventId = resultData["id"] as? String
             val signedEvent = resultData["event"] as? String
+            val packageName = resultData["package"] as? String
             
-            Log.d("Aegis", "Setting sign result: result=${result?.substring(0, 16)}..., id=$eventId")
+            Log.d("Aegis", "Setting sign result: result=${result?.substring(0, 16)}..., id=$eventId, package=$packageName")
             
             // Create result Intent following NIP-55 protocol
             val resultIntent = Intent().apply {
                 putExtra("result", result)
                 putExtra("id", eventId)
                 putExtra("event", signedEvent)
+                putExtra("package", packageName)
             }
             
             setResult(Activity.RESULT_OK, resultIntent)
