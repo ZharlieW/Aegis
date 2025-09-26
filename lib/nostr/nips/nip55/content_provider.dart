@@ -395,11 +395,21 @@ class ContentProvider extends AndroidContentProvider {
       
       AegisLogger.info('✅ Generated public key for $callingPackage: ${publicKey.substring(0, 16)}...');
       
+      AegisLogger.info('📱 Creating MatrixCursorData...');
       var data = MatrixCursorData(
         columnNames: ['result'],
         notificationUris: [uri],
       );
+      AegisLogger.info('📱 MatrixCursorData created successfully');
+      
+      AegisLogger.info('📱 Adding row to MatrixCursorData...');
       data.addRow([publicKey]);
+      AegisLogger.info('📱 Row added successfully');
+      
+      AegisLogger.info('📱 Content Provider returning data: result=${publicKey.substring(0, 16)}...');
+      AegisLogger.info('📱 Content Provider data columns: ${data.columnNames}');
+      AegisLogger.info('📱 Content Provider notification URIs: ${data.notificationUris}');
+      
       return data;
     } catch (e) {
       AegisLogger.error('❌ Failed to get public key: $e');

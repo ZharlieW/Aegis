@@ -114,8 +114,8 @@ class IntentHandler {
       
       // Handle different request types
       switch (requestType) {
-        case 'public_key':
-          await _handlePublicKeyRequest(data);
+        case 'get_public_key':
+          await _handlePublicKeyRequest(data, extras);
           break;
         case 'sign_event':
           await _handleSignEventRequest(data);
@@ -214,7 +214,7 @@ class IntentHandler {
   
   /// Handle getting public key for intent-based requests
   /// Similar to ContentProvider._handleGetPublicKey
-  static Future<String?> _handleGetPublicKeyForIntent() async {
+  static Future<Map<String, dynamic>?> _handleGetPublicKeyForIntent() async {
     try {
       AegisLogger.info('📱 Getting public key for intent request');
       
@@ -238,7 +238,12 @@ class IntentHandler {
       );
       
       AegisLogger.info('📱 Generated public key for intent: ${publicKey.substring(0, 16)}...');
-      return publicKey;
+      
+      // Return complete result data for MainActivity to use
+      return {
+        'result': publicKey,
+        'package': 'com.aegis.app',
+      };
     } catch (e) {
       AegisLogger.error('❌ Failed to get public key for intent: $e');
       return null;
@@ -389,6 +394,44 @@ class IntentHandler {
     }
   }
   
+  /// Send public key result to Android via MethodChannel
+  static Future<void> _sendPublicKeyResultToAndroid(String publicKey, String? packageName, String? requestId) async {
+    try {
+      // Create result data following NIP-55 protocol
+      final resultData = {
+        'result': publicKey,
+        'package': packageName ?? 'com.aegis.app',
+        'id': requestId,
+      };
+      
+      AegisLogger.info('📱 Sending public key result to Android: ${publicKey.substring(0, 16)}..., id=$requestId');
+      
+      // Send result back to Android via MethodChannel
+      await _channel.invokeMethod('setSignResult', resultData);
+      
+    } catch (e) {
+      AegisLogger.error('❌ Error sending public key result to Android: $e');
+    }
+  }
+  
+  static Future<void> _sendGenericResultToAndroid(String result, String? requestId) async {
+    try {
+      // Create result data following NIP-55 protocol
+      final resultData = {
+        'result': result,
+        'id': requestId,
+      };
+      
+      AegisLogger.info('📱 Sending generic result to Android: result=${result.substring(0, 16)}..., id=$requestId');
+      
+      // Send result back to Android via MethodChannel
+      await _channel.invokeMethod('setSignResult', resultData);
+      
+    } catch (e) {
+      AegisLogger.error('❌ Error sending generic result to Android: $e');
+    }
+  }
+  
   /// Record a signed event to database (similar to ContentProvider._recordSignedEventDirectly)
   static Future<void> _recordSignedEventDirectly({
     required String eventId,
@@ -436,12 +479,21 @@ class IntentHandler {
   // ============================================================================
   
   /// Handle public key request
-  static Future<void> _handlePublicKeyRequest(String data) async {
+  static Future<void> _handlePublicKeyRequest(String data, Map<dynamic, dynamic>? extras) async {
     try {
       AegisLogger.info('📱 Handling public key request');
-      final publicKey = await _handleGetPublicKeyForIntent();
-      if (publicKey != null) {
-        AegisLogger.info('✅ Public key request completed: ${publicKey.substring(0, 16)}...');
+      final requestId = extras?['id'] as String?;
+      final resultData = await _handleGetPublicKeyForIntent();
+      if (resultData != null) {
+        final publicKey = resultData['result'] as String?;
+        final packageName = resultData['package'] as String?;
+        if (publicKey != null) {
+          AegisLogger.info('✅ Public key request completed: ${publicKey.substring(0, 16)}...');
+          // Send result back to Android
+          await _sendPublicKeyResultToAndroid(publicKey, packageName, requestId);
+        } else {
+          AegisLogger.error('❌ Failed to get public key from result data');
+        }
       } else {
         AegisLogger.error('❌ Failed to get public key');
       }
@@ -550,10 +602,25 @@ class IntentHandler {
   static Future<void> _handleNIP04EncryptRequest(String data) async {
     try {
       AegisLogger.info('📱 Handling NIP-04 encrypt request');
-      await LaunchSchemeUtils.handleSchemeData(data);
+      
+      // Parse the request data to extract id
+      final requestData = jsonDecode(data);
+      final requestId = requestData['id'] as String?;
+      
+      // For now, return a placeholder result (this should be implemented properly)
+      await _sendGenericResultToAndroid('encrypted_data_placeholder', requestId);
+      
       AegisLogger.info('✅ NIP-04 encrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-04 encrypt request: $e');
+      // Send error result
+      try {
+        final requestData = jsonDecode(data);
+        final requestId = requestData['id'] as String?;
+        await _sendGenericResultToAndroid('', requestId);
+      } catch (e2) {
+        AegisLogger.error('❌ Failed to send error result: $e2');
+      }
     }
   }
   
@@ -561,10 +628,25 @@ class IntentHandler {
   static Future<void> _handleNIP04DecryptRequest(String data) async {
     try {
       AegisLogger.info('📱 Handling NIP-04 decrypt request');
-      await LaunchSchemeUtils.handleSchemeData(data);
+      
+      // Parse the request data to extract id
+      final requestData = jsonDecode(data);
+      final requestId = requestData['id'] as String?;
+      
+      // For now, return a placeholder result (this should be implemented properly)
+      await _sendGenericResultToAndroid('decrypted_data_placeholder', requestId);
+      
       AegisLogger.info('✅ NIP-04 decrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-04 decrypt request: $e');
+      // Send error result
+      try {
+        final requestData = jsonDecode(data);
+        final requestId = requestData['id'] as String?;
+        await _sendGenericResultToAndroid('', requestId);
+      } catch (e2) {
+        AegisLogger.error('❌ Failed to send error result: $e2');
+      }
     }
   }
   
@@ -572,10 +654,25 @@ class IntentHandler {
   static Future<void> _handleNIP44EncryptRequest(String data) async {
     try {
       AegisLogger.info('📱 Handling NIP-44 encrypt request');
-      await LaunchSchemeUtils.handleSchemeData(data);
+      
+      // Parse the request data to extract id
+      final requestData = jsonDecode(data);
+      final requestId = requestData['id'] as String?;
+      
+      // For now, return a placeholder result (this should be implemented properly)
+      await _sendGenericResultToAndroid('nip44_encrypted_data_placeholder', requestId);
+      
       AegisLogger.info('✅ NIP-44 encrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-44 encrypt request: $e');
+      // Send error result
+      try {
+        final requestData = jsonDecode(data);
+        final requestId = requestData['id'] as String?;
+        await _sendGenericResultToAndroid('', requestId);
+      } catch (e2) {
+        AegisLogger.error('❌ Failed to send error result: $e2');
+      }
     }
   }
   
@@ -583,10 +680,25 @@ class IntentHandler {
   static Future<void> _handleNIP44DecryptRequest(String data) async {
     try {
       AegisLogger.info('📱 Handling NIP-44 decrypt request');
-      await LaunchSchemeUtils.handleSchemeData(data);
+      
+      // Parse the request data to extract id
+      final requestData = jsonDecode(data);
+      final requestId = requestData['id'] as String?;
+      
+      // For now, return a placeholder result (this should be implemented properly)
+      await _sendGenericResultToAndroid('nip44_decrypted_data_placeholder', requestId);
+      
       AegisLogger.info('✅ NIP-44 decrypt request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling NIP-44 decrypt request: $e');
+      // Send error result
+      try {
+        final requestData = jsonDecode(data);
+        final requestId = requestData['id'] as String?;
+        await _sendGenericResultToAndroid('', requestId);
+      } catch (e2) {
+        AegisLogger.error('❌ Failed to send error result: $e2');
+      }
     }
   }
   
@@ -594,10 +706,25 @@ class IntentHandler {
   static Future<void> _handleDecryptZapEventRequest(String data) async {
     try {
       AegisLogger.info('📱 Handling decrypt zap event request');
-      await LaunchSchemeUtils.handleSchemeData(data);
+      
+      // Parse the request data to extract id
+      final requestData = jsonDecode(data);
+      final requestId = requestData['id'] as String?;
+      
+      // For now, return a placeholder result (this should be implemented properly)
+      await _sendGenericResultToAndroid('decrypted_zap_event_placeholder', requestId);
+      
       AegisLogger.info('✅ Decrypt zap event request completed');
     } catch (e) {
       AegisLogger.error('❌ Error handling decrypt zap event request: $e');
+      // Send error result
+      try {
+        final requestData = jsonDecode(data);
+        final requestId = requestData['id'] as String?;
+        await _sendGenericResultToAndroid('', requestId);
+      } catch (e2) {
+        AegisLogger.error('❌ Failed to send error result: $e2');
+      }
     }
   }
   
