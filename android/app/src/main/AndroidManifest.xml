@@ -17,7 +17,7 @@
 
     <application
         android:label="aegis"
-        android:name="${applicationName}"
+        android:name="com.aegis.app.AegisApplication"
         android:icon="@mipmap/ic_launcher">
         
         

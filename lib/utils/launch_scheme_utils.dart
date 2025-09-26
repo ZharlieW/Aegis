@@ -5,6 +5,10 @@ import 'account.dart';
 import 'nostr_wallet_connection_parser.dart';
 import 'url_scheme_handler.dart';
 import 'logger.dart';
+import '../db/userDB_isar.dart';
+import '../utils/key_manager.dart';
+import '../utils/local_storage.dart';
+import '../nostr/utils.dart';
 
 
 class LaunchSchemeUtils {
@@ -47,12 +51,31 @@ class LaunchSchemeUtils {
         return;
       }
       
+      // Initialize LocalStorage if not already initialized
+      try {
+        await LocalStorage.init();
+        AegisLogger.info('📱 LocalStorage initialized for Intent mode');
+      } catch (e) {
+        AegisLogger.error('❌ Failed to initialize LocalStorage: $e');
+        return;
+      }
+      
       // Check if user is logged in
       final account = Account.sharedInstance;
       if (account.currentPrivkey.isEmpty || account.currentPubkey.isEmpty) {
-        AegisLogger.warning('⚠️ User not logged in, cannot handle scheme');
-        // Don't show login dialog in Content Provider context
-        return;
+        AegisLogger.warning('⚠️ User not logged in, attempting auto-login for Intent mode');
+        
+        // Try to auto-login for Intent mode
+        final currentPubkey = LocalStorage.get('pubkey');
+        if (currentPubkey != null && currentPubkey.isNotEmpty) {
+          AegisLogger.info('📱 Found stored pubkey: ${currentPubkey.substring(0, 16)}...');
+          
+          // Set the current user using loginSuccess method
+          await account.loginSuccess(currentPubkey, null);
+        } else {
+          AegisLogger.error('❌ No stored pubkey found for auto-login');
+          return;
+        }
       }
       
       // Handle different schemes
@@ -129,6 +152,44 @@ class LaunchSchemeUtils {
       AegisLogger.error('❌ Failed to handle signing request: $e');
     }
   }
-
-
+  
+  /// Get current user private key for Intent mode auto-login
+  static Future<String?> _getCurrentUserPrivateKeyForIntent() async {
+    try {
+      // Initialize LocalStorage if not already initialized
+      try {
+        await LocalStorage.init();
+      } catch (e) {
+        AegisLogger.error('❌ Failed to initialize LocalStorage in _getCurrentUserPrivateKeyForIntent: $e');
+        return null;
+      }
+      
+      // Get current user pubkey
+      final currentPubkey = LocalStorage.get('pubkey');
+      if (currentPubkey == null || currentPubkey.isEmpty) {
+        AegisLogger.warning('⚠️ No current user found');
+        return null;
+      }
+      
+      // Get private key from database
+      final user = await UserDBISAR.searchFromDB(currentPubkey);
+      if (user == null) {
+        AegisLogger.warning('⚠️ User not found in database');
+        return null;
+      }
+      
+      // Decrypt private key
+      final decryptedPrivkey = await Account.sharedInstance.decryptPrivkey(user);
+      if (decryptedPrivkey.isEmpty) {
+        AegisLogger.warning('⚠️ Failed to decrypt private key');
+        return null;
+      }
+      
+      AegisLogger.info('📱 Successfully retrieved private key for Intent mode');
+      return bytesToHex(decryptedPrivkey);
+    } catch (e) {
+      AegisLogger.error('❌ Failed to get private key for Intent mode: $e');
+      return null;
+    }
+  }
 }
