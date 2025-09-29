@@ -16,7 +16,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
-        android:label="aegis"
+        android:label="Aegis"
         android:name="com.aegis.app.AegisApplication"
         android:icon="@mipmap/ic_launcher">
         
