@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
+import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'nip55_handler.dart';
 
 /// Android Intent Handler for NIP-55 and URL Scheme support
@@ -145,12 +148,34 @@ class IntentHandler {
       if (args['id'] != null) extras['id'] = args['id'];
       if (args['current_user'] != null) extras['current_user'] = args['current_user'];
       if (args['pubkey'] != null) extras['pubkey'] = args['pubkey'];
+      if (args['package_name'] != null) extras['package_name'] = args['package_name'];
+      if (args['app_name'] != null) extras['app_name'] = args['app_name'];
       
       AegisLogger.info('📱 Intent extras: $extras');
       
       // Parse the intent data to determine request type
       final requestType = _parseRequestType(data, extras);
       AegisLogger.info('📱 Detected request type: $requestType');
+      
+      // Check if this is the first time this app is calling us
+      final packageName = extras['package_name'] as String?;
+      final appName = extras['app_name'] as String?;
+      
+      if (packageName != null && !await _isApplicationAuthorized(packageName)) {
+        AegisLogger.info('📱 First time authorization required for package: $packageName');
+        
+        // Show authorization dialog using the same component as NIP46
+        final isAuthorized = await Account.authToClient();
+        if (!isAuthorized) {
+          AegisLogger.info('📱 User rejected authorization for package: $packageName');
+          await _sendAuthorizationRejectedResult(packageName, extras['id'] as String?);
+          return;
+        }
+        
+        // Add to authorized applications using AccountManager (same as NIP46)
+        await _addAuthorizedApplication(packageName, appName);
+        AegisLogger.info('📱 Authorization granted for package: $packageName');
+      }
       
       // Handle different request types
       switch (requestType) {
@@ -274,6 +299,70 @@ class IntentHandler {
   static void dispose() {
     _intentController?.close();
     _intentController = null;
+  }
+  
+  // ============================================================================
+  // Authorization Management Methods
+  // ============================================================================
+  
+  /// Check if an application is already authorized using AccountManager (same as NIP46)
+  static Future<bool> _isApplicationAuthorized(String packageName) async {
+    try {
+      // Use AccountManager.applicationMap to check authorization (same as NIP46)
+      final accountManager = AccountManager.sharedInstance;
+      return accountManager.applicationMap.containsKey(packageName);
+    } catch (e) {
+      AegisLogger.error('❌ Failed to check authorization status: $e');
+      return false;
+    }
+  }
+  
+  /// Add application to authorized list using AccountManager (same as NIP46)
+  static Future<void> _addAuthorizedApplication(String packageName, String? appName) async {
+    try {
+      // Create a ClientAuthDBISAR entry for the intent-based application
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final clientAuth = ClientAuthDBISAR(
+        clientPubkey: packageName, // Use package name as identifier
+        image: '', // No image for intent-based apps
+        name: appName ?? packageName,
+        relay: '', // No relay for intent-based apps
+        createTimestamp: timestamp,
+        server: 'intent', // Mark as intent-based
+        secret: '', // No secret for intent-based apps
+        pubkey: Account.sharedInstance.currentPubkey,
+        scheme: 'nostrsigner', // Use nostrsigner scheme
+        connectionType: EConnectionType.nip55.toInt, // Use NIP55 connection type for intents
+      );
+      
+      // Add to AccountManager (same as NIP46)
+      AccountManager.sharedInstance.addApplicationMap(clientAuth);
+      
+      // Save to database (same as NIP46)
+      await ClientAuthDBISAR.saveFromDB(clientAuth);
+      
+      AegisLogger.info('✅ Added $packageName to authorized applications via AccountManager');
+    } catch (e) {
+      AegisLogger.error('❌ Failed to add authorized application: $e');
+    }
+  }
+  
+  
+  /// Send authorization rejected result to Android
+  static Future<void> _sendAuthorizationRejectedResult(String packageName, String? requestId) async {
+    try {
+      final resultData = {
+        'error': 'User rejected authorization',
+        'package': packageName,
+        'id': requestId,
+      };
+      
+      AegisLogger.info('📱 Sending authorization rejected result to Android');
+      
+      await _channel.invokeMethod('setSignResult', resultData);
+    } catch (e) {
+      AegisLogger.error('❌ Error sending authorization rejected result: $e');
+    }
   }
   
   /// Send signing result back to Android (following NIP-55 protocol)

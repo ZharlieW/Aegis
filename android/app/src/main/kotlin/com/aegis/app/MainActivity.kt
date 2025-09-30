@@ -217,19 +217,41 @@ class MainActivity: FlutterActivity() {
 
     private fun sendIntentDataToFlutter(data: String?, extras: Map<String, Any?> = emptyMap()) {
         try {
-            if (methodChannel != null) {
-                val args = mutableMapOf<String, Any?>()
-                args["data"] = data
-                args.putAll(extras)
-                
-                methodChannel?.invokeMethod("onIntentReceived", args)
-                Log.d("Aegis", "Sent intent data to Flutter: ${data?.substring(0, minOf(100, data.length ?: 0))}...")
-                Log.d("Aegis", "Intent extras: $extras")
-            } else {
-                Log.e("Aegis", "MethodChannel is null, cannot send data to Flutter")
+            val callingPackage = callingPackage
+            val packageManager = packageManager
+            
+            // Get app name from package manager
+            var appName = callingPackage
+            if (callingPackage != null) {
+                try {
+                    val applicationInfo = packageManager.getApplicationInfo(callingPackage, 0)
+                    appName = packageManager.getApplicationLabel(applicationInfo).toString()
+                } catch (e: Exception) {
+                    Log.w("Aegis", "Failed to get app name for package: $callingPackage", e)
+                }
             }
+            
+            val enhancedExtras = extras.toMutableMap()
+            enhancedExtras["package_name"] = callingPackage
+            enhancedExtras["app_name"] = appName
+            
+            Log.d("Aegis", "Sending intent data to Flutter with package: $callingPackage, app: $appName")
+            
+            methodChannel?.invokeMethod("onIntentReceived", mapOf(
+                "data" to data,
+                "type" to enhancedExtras["type"],
+                "id" to enhancedExtras["id"],
+                "current_user" to enhancedExtras["current_user"],
+                "pubkey" to enhancedExtras["pubkey"],
+                "package_name" to callingPackage,
+                "app_name" to appName
+            ))
         } catch (e: Exception) {
             Log.e("Aegis", "Error sending intent data to Flutter", e)
+            // Fallback to original method
+            methodChannel?.invokeMethod("onIntentReceived", mapOf(
+                "data" to data
+            ) + extras)
         }
     }
     
