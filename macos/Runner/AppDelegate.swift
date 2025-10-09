@@ -11,13 +11,11 @@ class AppDelegate: FlutterAppDelegate {
     return true
   }
   
-  override func application(_ application: NSApplication, open urls: [URL]) -> Bool {
-    guard let url = urls.first else { return false }
+  override func application(_ application: NSApplication, open urls: [URL]) {
+    guard let url = urls.first else { return }
     
     let controller = mainFlutterWindow?.contentViewController as! FlutterViewController
     let channel = FlutterMethodChannel(name: "app.channel.shared.data", binaryMessenger: controller.engine.binaryMessenger)
     channel.invokeMethod("onSchemeCalled", arguments: url.absoluteString)
-    
-    return true
   }
 }
