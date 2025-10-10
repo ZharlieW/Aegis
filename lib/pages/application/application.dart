@@ -385,13 +385,15 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 bottom: 20.0,
               ),
             ),
-            Text(
-              'Congratulations!\n\nNow you can start using apps that support Aegis!',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w400,
-                  ),
-              textAlign: TextAlign.center,
+            Center(
+              child: Text(
+                'Congratulations!\n\nNow you can start using apps that support Aegis!',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w400,
+                    ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
@@ -400,46 +402,48 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   }
 
   Widget _showPortUnAvailableWidget() {
-    return Column(
-      children: [
-        Text(
-          'The local relay is set to use port 8081, but it appears another app is already using this port. Please close the conflicting app and try again.',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            'The local relay is set to use port 8081, but it appears another app is already using this port. Please close the conflicting app and try again.',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ).setPadding(
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0)),
+          const SizedBox(
+            height: 10,
+          ),
+          SizedBox(
+            width: 200,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await ServerNIP46Signer.instance.start('8081');
+                AegisWebSocketServer.instance.serverNotifier.addListener(() {
+                  bool isConnect = AegisWebSocketServer.instance.serverNotifier.value != null;
+                  if (mounted) {
+                    CommonTips.success(
+                      context,
+                      isConnect ? 'Connection successful!' : 'Failed to connect to the socket.',
+                    );
+                  }
+                });
+              },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.primary),
               ),
-        ).setPadding(
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0)),
-        const SizedBox(
-          height: 10,
-        ),
-        SizedBox(
-          width: 200,
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              await ServerNIP46Signer.instance.start('8081');
-              AegisWebSocketServer.instance.serverNotifier.addListener(() {
-                bool isConnect = AegisWebSocketServer.instance.serverNotifier.value != null;
-                if (mounted) {
-                  CommonTips.success(
-                    context,
-                    isConnect ? 'Connection successful!' : 'Failed to connect to the socket.',
-                  );
-                }
-              });
-            },
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(
-                  Theme.of(context).colorScheme.primary),
-            ),
-            label: Text(
-              "Retry",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                  ),
+              label: Text(
+                "Retry",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                    ),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

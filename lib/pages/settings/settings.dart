@@ -113,7 +113,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                   ),
                 ),
               ),
-            ).setPadding(const EdgeInsets.symmetric(horizontal: 20)),
+            ).setPadding(const EdgeInsets.fromLTRB(20, 0, 20, 20)),
 
           ],
         ),
