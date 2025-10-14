@@ -39,7 +39,7 @@ class UrlSchemeHandler {
 
     void openSuccess(String? cb) {
       if (cb == null) return;
-      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://127.0.0.1:8081');
+      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://0.0.0.0:8081');
     }
 
     String? encodedNc;

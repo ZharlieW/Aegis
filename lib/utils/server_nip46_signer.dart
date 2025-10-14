@@ -54,7 +54,7 @@ class ServerNIP46Signer {
 
   void generateKeyPair()  {
     // String getIpAddress = await ServerNIP46Signer.getIpAddress();
-    AegisLogger.info("✅ NIP-46  ws://127.0.0.1:$port");
+    AegisLogger.info("✅ NIP-46  ws://0.0.0.0:$port");
     String bunkerUrl =  getBunkerUrl();
     AegisLogger.info("🔗 Bunker URL: $bunkerUrl");
   }
@@ -407,7 +407,7 @@ class ServerNIP46Signer {
 
   String getBunkerUrl()  {
     // String ipAddress = AegisWebSocketServer.instance.ip;
-    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://127.0.0.1:$port";
+    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://0.0.0.0:$port";
   }
 
   static Future<String> getIpAddress() async {
