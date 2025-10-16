@@ -168,13 +168,16 @@ class Account {
   }
 
   static Future<bool> authToClient() async {
-    final status = await AegisNavigator.presentPage<bool>(
-      AegisNavigator.navigatorKey.currentContext,
-          (context) => const RequestPermission(),
-      fullscreenDialog: false,
-      screenDialogHeight: 0.75,
-    );
-    return status == true;
+    AegisLogger.info('🔓 Auto-authorizing client request (permission dialog disabled)');
+    return true;
+    
+    // final status = await AegisNavigator.presentPage<bool>(
+    //   AegisNavigator.navigatorKey.currentContext,
+    //       (context) => const RequestPermission(),
+    //   fullscreenDialog: false,
+    //   screenDialogHeight: 0.75,
+    // );
+    // return status == true;
   }
 
   Future<Uint8List> decryptPrivkey(UserDBISAR user) async {
