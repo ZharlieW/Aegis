@@ -54,7 +54,7 @@ class ServerNIP46Signer {
 
   void generateKeyPair()  {
     // String getIpAddress = await ServerNIP46Signer.getIpAddress();
-    AegisLogger.info("✅ NIP-46  ws://0.0.0.0:$port");
+    AegisLogger.info("✅ NIP-46  ws://127.0.0.1:$port");
     String bunkerUrl =  getBunkerUrl();
     AegisLogger.info("🔗 Bunker URL: $bunkerUrl");
   }
@@ -281,8 +281,37 @@ class ServerNIP46Signer {
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null && serverPrivate != null) {
           final privateKey = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+          
+          // Parse the incoming event JSON and ensure it has all required fields
+          Map<String, dynamic> eventData;
+          try {
+            eventData = jsonDecode(contentStr);
+          } catch (e) {
+            AegisLogger.error('Failed to parse event JSON: $contentStr', e);
+            responseJson = {
+              "id": remoteRequest.id,
+              "result": null,
+              "error": "Invalid JSON format",
+            };
+            break;
+          }
+          
+          // Ensure pubkey field exists, use current pubkey if missing
+          if (!eventData.containsKey('pubkey') || eventData['pubkey'] == null || eventData['pubkey'].toString().isEmpty) {
+            eventData['pubkey'] = LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? event.pubkey;
+            AegisLogger.info('Added missing pubkey field: ${eventData['pubkey']}');
+          }
+          
+          // Ensure created_at field exists
+          if (!eventData.containsKey('created_at') || eventData['created_at'] == null) {
+            eventData['created_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          }
+          
+          // Re-encode the event JSON with all required fields
+          final completeEventJson = jsonEncode(eventData);
+          
           final nativeRes = rust_api.signEvent(
-            eventJson: contentStr,
+            eventJson: completeEventJson,
             privateKey: privateKey!,
           );
           // Record the signed event
@@ -407,7 +436,7 @@ class ServerNIP46Signer {
 
   String getBunkerUrl()  {
     // String ipAddress = AegisWebSocketServer.instance.ip;
-    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://0.0.0.0:$port";
+    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://127.0.0.1:$port";
   }
 
   static Future<String> getIpAddress() async {

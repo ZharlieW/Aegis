@@ -39,7 +39,7 @@ class AegisWebSocketServer {
     if(!hasConnect) return;
 
     if (serverNotifier.value != null) {
-      AegisLogger.warning("⚠️ WebSocket server is already running on ws://0.0.0.0:$_port");
+      AegisLogger.warning("⚠️ WebSocket server is already running on ws://127.0.0.1:$_port");
       return;
     }
 
@@ -100,7 +100,7 @@ class AegisWebSocketServer {
       }
     });
 
-    AegisLogger.info("✅ WebSocket server started on ws://0.0.0.0:$_port");
+    AegisLogger.info("✅ WebSocket server started on ws://127.0.0.1:$_port");
   }
 
   /// Enqueue an outgoing message; messages are sent in order
