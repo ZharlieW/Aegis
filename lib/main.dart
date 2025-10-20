@@ -6,6 +6,7 @@ import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/utils/window_manager.dart';
 import 'package:aegis/nostr/nips/nip55/intent_handler.dart';
 import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/content_provider.dart';
@@ -43,6 +44,14 @@ void main() async {
   
   // Initialize intl library
   await initializeDateFormatting();
+  
+  // Initialize window manager for desktop platforms
+  try {
+    await OXWindowManager().initWindow();
+    AegisLogger.info('✅ Window manager initialized successfully');
+  } catch (e) {
+    AegisLogger.error('❌ Failed to initialize window manager: $e');
+  }
   
   runApp(MainApp());
 }

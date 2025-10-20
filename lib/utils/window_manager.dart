@@ -52,7 +52,14 @@ class OXWindowManager with WindowListener {
 
   /// Emitted when the window is going to be closed.
   void onWindowClose() {
-    windowManager.hide();
+    // On macOS, hide the window instead of closing it
+    // This allows the app to be reopened from the dock
+    if (PlatformUtils.isMacOS) {
+      windowManager.hide();
+    } else {
+      // On other platforms, close the window normally
+      windowManager.close();
+    }
   }
 
   /// Emitted when the window gains focus.
