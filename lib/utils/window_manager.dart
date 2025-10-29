@@ -1,5 +1,4 @@
 
-import 'dart:io' show exit;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
@@ -29,7 +28,10 @@ class OXWindowManager with WindowListener {
     } else {
       await windowManager.setPosition(Offset(windowPositionX ?? 0.0, windowPositionY ?? 0.0));
     }
-    if (!PlatformUtils.isLinux) {
+    
+    // Only prevent close on macOS to allow hiding to background
+    // Windows will exit directly when X is clicked
+    if (PlatformUtils.isMacOS) {
       await windowManager.setPreventClose(true);
     }
 
@@ -56,13 +58,13 @@ class OXWindowManager with WindowListener {
 
   /// Emitted when the window is going to be closed.
   void onWindowClose() {
-    if (PlatformUtils.isWindows) {
-      exit(0);
-    } else if (PlatformUtils.isLinux) {
-      SystemNavigator.pop();
-    } else {
-      // On macOS, hide the window (keep running in background)
+    if (PlatformUtils.isMacOS) {
+      // On macOS, hide the window to background (standard macOS behavior)
+      // User can quit with Cmd+Q or from menu
       windowManager.hide();
+    } else {
+      // On Windows and Linux, exit the application directly
+      SystemNavigator.pop();
     }
   }
 
