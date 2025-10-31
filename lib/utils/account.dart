@@ -5,6 +5,7 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/platform_utils.dart';
 
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
@@ -144,7 +145,8 @@ class Account {
     AccountManager.sharedInstance.accountMap[user.pubkey] = user;
 
     LocalNostrSigner.instance.init();
-    await ServerNIP46Signer.instance.start('8081');
+    final defaultPort = PlatformUtils.isDesktop ? '18081' : '8081';
+    await ServerNIP46Signer.instance.start(defaultPort);
 
     if(isInit){
       await AccountManager.sharedInstance.initAccountList();

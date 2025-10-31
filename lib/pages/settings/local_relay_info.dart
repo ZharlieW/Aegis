@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/platform_utils.dart';
 
 /// Local Relay Info Page
 /// Shows relay address, status, and database size with option to clear data
@@ -194,7 +195,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                       'Address',
                       GestureDetector(
                         onTap: () {
-                          final address = _relayUrl ?? 'ws://127.0.0.1:8081';
+                          final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
+                          final address = _relayUrl ?? 'ws://127.0.0.1:$defaultPort';
                           Clipboard.setData(ClipboardData(text: address));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -207,7 +209,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              _relayUrl ?? 'ws://127.0.0.1:8081',
+                              _relayUrl ?? 'ws://127.0.0.1:${PlatformUtils.isDesktop ? 18081 : 8081}',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
                                   ),

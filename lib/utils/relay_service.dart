@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'package:path_provider/path_provider.dart';
 import 'logger.dart';
+import 'platform_utils.dart';
 
 /// Nostr Relay Service using rust nostr-relay-builder
 /// This replaces the old AegisWebSocketServer
@@ -14,7 +15,8 @@ class RelayService {
 
   ValueNotifier<bool> serverNotifier = ValueNotifier(false);
   String _host = '127.0.0.1';
-  int _port = 8081;
+  // Default port: 18081 for desktop, 8081 for mobile
+  int _port = PlatformUtils.isDesktop ? 18081 : 8081;
   String? _relayUrl;
 
   /// Get the relay URL (for client connections)
@@ -29,14 +31,17 @@ class RelayService {
   /// Get the relay port
   String get port => _port.toString();
 
+  /// Get default port based on platform
+  static int get _defaultPort => PlatformUtils.isDesktop ? 18081 : 8081;
+
   /// Start the Nostr relay server
   Future<void> start({
     String host = '0.0.0.0',  // Bind to all interfaces (network accessible)
-    String port = '8081',
+    String? port,
   }) async {
     try {
       _host = host;
-      _port = int.tryParse(port) ?? 8081;
+      _port = port != null ? (int.tryParse(port) ?? _defaultPort) : _defaultPort;
 
       // Check if already running
       if (await rust_relay.isRelayRunning()) {

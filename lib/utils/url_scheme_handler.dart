@@ -9,6 +9,7 @@ import 'account_manager.dart';
 import 'launch_scheme_utils.dart';
 import 'nostr_wallet_connection_parser.dart';
 import 'logger.dart';
+import 'platform_utils.dart';
 import '../db/clientAuthDB_isar.dart';
 
 /// URL Scheme Handler for Aegis and NostrSigner schemes
@@ -39,7 +40,8 @@ class UrlSchemeHandler {
 
     void openSuccess(String? cb) {
       if (cb == null) return;
-      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://127.0.0.1:8081');
+      final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
+      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://127.0.0.1:$defaultPort');
     }
 
     String? encodedNc;

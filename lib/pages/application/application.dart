@@ -5,6 +5,7 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
+import 'package:aegis/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -424,7 +425,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       child: Column(
         children: [
           Text(
-            'The local relay is set to use port 8081, but it appears another app is already using this port. Please close the conflicting app and try again.',
+            'The local relay is set to use port ${PlatformUtils.isDesktop ? 18081 : 8081}, but it appears another app is already using this port. Please close the conflicting app and try again.',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -437,7 +438,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             width: 200,
             child: ElevatedButton.icon(
               onPressed: () async {
-                await ServerNIP46Signer.instance.start('8081');
+                final defaultPort = PlatformUtils.isDesktop ? '18081' : '8081';
+                await ServerNIP46Signer.instance.start(defaultPort);
                 RelayService.instance.serverNotifier.addListener(() {
                   bool isConnect = RelayService.instance.serverNotifier.value;
                   if (mounted) {
