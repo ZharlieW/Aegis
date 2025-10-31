@@ -41,7 +41,9 @@ dependencies:
   cryptography: ^2.0.5
   web_socket_channel: ^2.4.0
   convert: ^3.0.1
-  nostr_tools: ^1.0.0
+  nostr_core_dart:
+    git:
+      url: https://github.com/0xchat-app/nostr-dart.git
   hex: ^0.2.0
   pointycastle: ^3.3.0
   bech32: ^0.2.2

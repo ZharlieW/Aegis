@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import '../common/common_constant.dart';
-import '../nostr/event.dart';
+import '../nostr/event.dart' as local_event;
 import '../nostr/signer/local_nostr_signer.dart';
+import 'package:nostr_core_dart/nostr.dart' show Event;
 import 'account.dart';
-import 'aegis_websocket_server.dart';
+import 'connect.dart';
 import 'url_scheme_handler.dart';
+import 'logger.dart';
 
 class NostrWalletConnectionParserHandler {
   static ClientAuthDBISAR? parseUri(String? uri) {
@@ -68,22 +70,42 @@ class NostrWalletConnectionParserHandler {
       String clientPubkey,
       String subscriptionId,
       String content,
-      ) {
-    if (AegisWebSocketServer.instance.clients.isEmpty) return;
-    final socket = AegisWebSocketServer.instance.clients[0];
-    LocalNostrSigner instance = LocalNostrSigner.instance;
-    final signEvent = Event.from(
-      subscriptionId: subscriptionId,
-      kind: 24133,
-      tags: [
-        ['p', clientPubkey]
-      ],
-      content: content,
-      pubkey: instance.getPublicKey(clientPubkey) ?? '',
-      privkey: instance.getPrivateKey(clientPubkey) ?? '',
-    );
-    socket.add(signEvent.serialize());
-    print('Event sent: ===>${signEvent.serialize()}');
+      ) async {
+    try {
+      LocalNostrSigner instance = LocalNostrSigner.instance;
+      // Use local Event.from to create and sign the event
+      final localSignEvent = local_event.Event.from(
+        kind: 24133,
+        tags: [
+          ['p', clientPubkey]
+        ],
+        content: content,
+        pubkey: instance.getPublicKey(clientPubkey) ?? '',
+        privkey: instance.getPrivateKey(clientPubkey) ?? '',
+      );
+      
+      // Convert to nostr_core_dart Event using fromJson (async)
+      final signEvent = await Event.fromJson(localSignEvent.toJson());
+      
+      // Use Connect to send event
+      final connect = Connect();
+      // Find the relay URL for this client pubkey from account
+      final account = Account.sharedInstance;
+      final client = account.authToNostrConnectInfo[clientPubkey];
+      final relay = client?.relay;
+      if (relay != null && relay.isNotEmpty) {
+        // Connect to the relay if not already connected
+        await connect.connect(relay, relayKind: RelayKind.general);
+        // Send event using Connect
+        connect.sendEvent(
+          signEvent,
+          toRelays: [relay],
+          relayKinds: [RelayKind.general],
+        );
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to send event', e);
+    }
   }
 
   static void sendAuthUrl(

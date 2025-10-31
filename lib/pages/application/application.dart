@@ -2,7 +2,7 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
-import 'package:aegis/utils/aegis_websocket_server.dart';
+import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
@@ -183,10 +183,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
               Column(
                 children: [
                   ValueListenableBuilder(
-                    valueListenable: AegisWebSocketServer.instance.serverNotifier,
+                    valueListenable: RelayService.instance.serverNotifier,
                     builder: (context, value, child) {
                       return Expanded(
-                        child: value == null
+                        child: !value
                             ? _showPortUnAvailableWidget()
                             : _applicationList(clientList),
                       );
@@ -420,12 +420,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             child: ElevatedButton.icon(
               onPressed: () async {
                 await ServerNIP46Signer.instance.start('8081');
-                AegisWebSocketServer.instance.serverNotifier.addListener(() {
-                  bool isConnect = AegisWebSocketServer.instance.serverNotifier.value != null;
+                RelayService.instance.serverNotifier.addListener(() {
+                  bool isConnect = RelayService.instance.serverNotifier.value;
                   if (mounted) {
                     CommonTips.success(
                       context,
-                      isConnect ? 'Connection successful!' : 'Failed to connect to the socket.',
+                      isConnect ? 'NIP-46 Signer started!' : 'Failed to start.',
                     );
                   }
                 });

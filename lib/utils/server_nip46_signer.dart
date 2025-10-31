@@ -8,11 +8,12 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 
 import '../db/clientAuthDB_isar.dart';
-import '../nostr/event.dart';
+import 'package:nostr_core_dart/nostr.dart' show Event, Filter;
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
-import 'aegis_websocket_server.dart';
-import 'nostr_wallet_connection_parser.dart';
+import '../nostr/event.dart' as local_event;
+import 'relay_service.dart';
+import 'connect.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
 class ClientRequest {
@@ -32,11 +33,11 @@ class ServerNIP46Signer {
   factory ServerNIP46Signer() => instance;
   ServerNIP46Signer._internal();
 
-  // String subscriptionId = '';
-  final Map<int, String> _subscriptionIds = {};
+  String _subscriptionId = 'nip46-sub-${DateTime.now().millisecondsSinceEpoch}';
   String port = '8080';
 
-  AegisWebSocketServer? server;
+  RelayService? relayService;
+  Connect? _connect;
   final ThreadPoolManager _threadPool = ThreadPoolManager();
 
   Future<void> start(String getPort) async {
@@ -60,102 +61,128 @@ class ServerNIP46Signer {
   }
 
   Future<void> _startWebSocketServer() async {
-    AegisWebSocketServer.instance
-        .start(onMessageReceived: _handleMessage, port: port,onDoneFromSocket:_onDoneFromSocket);
+    // Start the Nostr relay using RelayService
+    relayService = RelayService.instance;
+    await relayService!.start(port: port);
+    AegisLogger.info('✅ Relay service started on ${relayService!.relayUrl}');
+    
+    // Initialize and connect client to the relay
+    await _initializeClient();
   }
 
-  void _handleMessage(String message, WebSocket socket) async {
-    final request = await _threadPool.runOtherTask(() async => jsonDecode(message));
+  /// Initialize Nostr client and connect to relay
+  Future<void> _initializeClient() async {
+    try {
+      // Get Connect instance
+      _connect = Connect();
+      
+      // Add and connect to local relay
+      final relayUrl = relayService!.relayUrl;
+      await _connect!.connect(relayUrl, relayKind: RelayKind.remoteSigner);
+      
+      // Subscribe to NIP-46 events
+      await _subscribeToNIP46Events();
+      
+    } catch (e) {
+      AegisLogger.error('Failed to initialize client', e);
+      rethrow;
+    }
+  }
 
-    final messageType = request[0];
-    AegisLogger.debug('===getClientRequest===>>>>>>🔔🔔🔔 $request');
-    if (messageType == 'REQ') {
-      List<dynamic> kindList = request?[2]?['kinds'];
-      if (!kindList.contains(24133)) return;
-      String? getPubKey = request?[2]?['#p']?[0]?.toLowerCase();
-      if (getPubKey != null) {
-        await _dealwithApplication(getPubKey,socket);
-        Account.sharedInstance.clientReqMap[getPubKey] = request;
+  /// Subscribe to NIP-46 events
+  Future<void> _subscribeToNIP46Events() async {
+    try {
+      // Get server public key to subscribe to events addressed to us
+      final serverPubkey = LocalNostrSigner.instance.publicKey;
+      
+      // Create subscription filter for kind 24133 events with p tag = our pubkey
+      final filter = Filter(
+        kinds: [24133],
+        p: [serverPubkey],
+      );
+      
+      // Subscribe using Connect
+      final relayUrl = relayService!.relayUrl;
+      _subscriptionId = _connect!.addSubscription(
+        [filter],
+        relays: [relayUrl],
+        relayKinds: [RelayKind.remoteSigner],
+        eventCallBack: (Event event, String relay) {
+          _handleEvent(event);
+        },
+        closeSubscription: false, // Keep subscription open
+      );
+    } catch (e) {
+      AegisLogger.error('Failed to subscribe to events', e);
+      rethrow;
+    }
+  }
 
-        ClientAuthDBISAR? connectInfo = Account.sharedInstance.authToNostrConnectInfo[getPubKey];
-        if (connectInfo != null) {
-          NostrWalletConnectionParserHandler.sendAuthUrl(request[1], connectInfo);
+  /// Handle event from relay (called via Connect callback)
+  Future<void> _handleEvent(Event event) async {
+    try {
+      if (!_threadPool.isInitialized) {
+        AegisLogger.warning('The thread pool is not initialized. Attempt to reinitialize...');
+        try {
+          await _threadPool.initialize();
+          AegisLogger.info('The reinitialization of the thread pool was successful');
+        } catch (e) {
+          AegisLogger.error('Thread pool reinitialization failed', e);
+          return;
         }
       }
-      _handleRequest(socket, request[1]);
-    } else if (messageType == 'EVENT') {
-      String clientPubkey = request[1]['pubkey'];
-      await _dealwithApplication(clientPubkey,socket);
-      _handleEvent(socket, request[1]);
-    }
-  }
 
-  void _onDoneFromSocket(WebSocket socket) async {
-    AccountManager instance = AccountManager.sharedInstance;
-    final list = instance.applicationMap.values.toList();
-    for(var client in list){
-      if(client.value.socketHashCode == socket.hashCode){
-        client.value.socketHashCode = null;
-        instance.updateApplicationMap(client.value);
-      }
-    }
-  }
+      // Update application connection status
+      await _dealwithApplication(event.pubkey);
 
-  void _handleRequest(WebSocket socket, String subscriptionId) async {
-    _subscriptionIds[socket.hashCode] = subscriptionId;
+      String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+      if(serverPrivate == null) return;
 
-    final jsonResponseEOSE = jsonEncode(['EOSE', subscriptionId]);
-    socket.send(jsonResponseEOSE);
-  }
+      NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
+          event.content, event.pubkey, LocalNostrSigner.instance,serverPrivate);
 
-  void _handleEvent(WebSocket socket, Map<String, dynamic> eventData) async {
-    AegisLogger.debug('eventData===$eventData');
-    
-    if (!_threadPool.isInitialized) {
-      AegisLogger.warning('The thread pool is not initialized. Attempt to reinitialize...');
-      try {
-        await _threadPool.initialize();
-        AegisLogger.info('The reinitialization of the thread pool was successful');
-      } catch (e) {
-        AegisLogger.error('Thread pool reinitialization failed', e);
-        socket.send(jsonEncode(['CLOSED', '', 'The server thread pool is not initialized. Please try again later']));
+      if (remoteRequest == null) {
+        AegisLogger.warning('Failed to decrypt NIP-46 request from ${event.pubkey}');
         return;
       }
+
+      // Process the remote request
+      String? responseJson = await _processRemoteRequest(remoteRequest, event);
+      if (responseJson == null) return;
+      
+      // Encrypt response
+      String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
+
+      // Create response event using local Event to sign, then convert to nostr_core_dart Event
+      final serverPubkey = LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '';
+      final serverPrivkey = LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '';
+      
+      // Use local Event.from to create and sign the event
+      final localSignEvent = local_event.Event.from(
+        kind: event.kind,
+        tags: [["p", event.pubkey]],
+        content: responseJsonEncrypt ?? '',
+        pubkey: serverPubkey,
+        privkey: serverPrivkey,
+      );
+      
+      // Convert to nostr_core_dart Event using fromJson (async)
+      final signEvent = await Event.fromJson(localSignEvent.toJson());
+      
+      // Send response event to relay using Connect
+      try {
+        final relayUrl = relayService!.relayUrl;
+        _connect!.sendEvent(
+          signEvent,
+          toRelays: [relayUrl],
+          relayKinds: [RelayKind.remoteSigner],
+        );
+      } catch (e) {
+        AegisLogger.error('❌ Failed to send response event', e);
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to handle event notification', e);
     }
-    
-    final event = await _threadPool.runOtherTask(() async => Event.fromJson(eventData));
-    if (event == null) return;
-
-    String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
-    if(serverPrivate == null) return;
-
-    NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
-        event.content, event.pubkey, LocalNostrSigner.instance,serverPrivate);
-
-    if (remoteRequest == null) {
-      final jsonResponseClosed = jsonEncode(['CLOSED', event.id, 'The remote signing server has disconnected. You can no longer use the remote signing service until you re-establish the connection. Please reconnect and add the client again. ']);
-      socket.send(jsonResponseClosed);
-      return;
-    }
-
-    final jsonResponseOk = jsonEncode(['OK', event.id, true, '']);
-    socket.send(jsonResponseOk);
-
-    String? responseJson = await _processRemoteRequest(remoteRequest, event, socket);
-    if (responseJson == null) return;
-    String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
-
-    final signEvent = Event.from(
-      subscriptionId: _subscriptionIds[socket.hashCode],
-      kind: event.kind,
-      tags: [["p", event.pubkey]],
-      content: responseJsonEncrypt ?? '',
-      pubkey: LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '',
-      privkey: LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '',
-    );
-    
-    final encodeJson = signEvent.serialize();
-    socket.send(encodeJson);
   }
 
   String _formatApplicationName(String? appName, String pubkey) {
@@ -196,7 +223,7 @@ class ServerNIP46Signer {
   }
 
   Future<String?> _processRemoteRequest(
-      NostrRemoteRequest remoteRequest, Event event,WebSocket socket) async {
+      NostrRemoteRequest remoteRequest, Event event) async {
 
     Map responseJson = {};
     String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
@@ -455,7 +482,7 @@ class ServerNIP46Signer {
     }
   }
 
-  Future<void> _dealwithApplication(String clientPubkey, WebSocket socket) async {
+  Future<void> _dealwithApplication(String clientPubkey) async {
     final account = Account.sharedInstance;
     final manager = AccountManager.sharedInstance;
 
@@ -463,19 +490,41 @@ class ServerNIP46Signer {
     if (app == null) return;
 
     if (!manager.applicationMap.containsKey(clientPubkey)) {
-      app.socketHashCode = socket.hashCode;
       manager.addApplicationMap(app);
       return;
     }
-
-    final notifier = manager.applicationMap[clientPubkey]!;
-    if (notifier.value.socketHashCode == null) {
-      notifier.value.socketHashCode = socket.hashCode;
-      manager.updateApplicationMap(notifier.value);
-    }
   }
 
-  void dispose() {
+  Future<void> dispose() async {
+    // Close subscription
+    if (_subscriptionId.isNotEmpty && _connect != null) {
+      try {
+        final relayUrl = relayService?.relayUrl;
+        if (relayUrl != null) {
+          await _connect!.closeRequests(_subscriptionId, relay: relayUrl);
+        }
+      } catch (e) {
+        AegisLogger.error('Failed to close subscription', e);
+      }
+    }
+    
+    // Close relay connection
+    if (_connect != null && relayService != null) {
+      try {
+        await _connect!.closeConnects([relayService!.relayUrl], RelayKind.remoteSigner);
+      } catch (e) {
+        AegisLogger.error('Failed to close relay connection', e);
+      }
+    }
+    
+    // Stop relay
+    if (relayService != null) {
+      await relayService!.stop();
+    }
+    
+    // Dispose thread pool
     _threadPool.dispose();
+    
+    AegisLogger.info('✅ ServerNIP46Signer disposed');
   }
 }

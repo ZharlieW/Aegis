@@ -1,6 +1,5 @@
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
-import 'package:aegis/utils/aegis_websocket_server.dart';
 import 'package:aegis/utils/background_audio_manager.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/local_storage.dart';
@@ -156,10 +155,9 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
         _isFirstLaunch = false;
         AegisLogger.info("🚀 First launch, skip scheme data handling.");
       }
-      AegisLogger.info("📱 The application goes back to the foreground and checks WebSocket...");
+      AegisLogger.info("📱 The application goes back to the foreground");
     } else if (state == AppLifecycleState.paused) {
       AegisLogger.info("📱 Application enter background");
-      if (AegisWebSocketServer.instance.clients.isNotEmpty) {}
     }
   }
   

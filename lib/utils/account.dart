@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:aegis/utils/account_manager.dart';
-import 'package:aegis/utils/aegis_websocket_server.dart';
+import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/logger.dart';
 
@@ -72,10 +72,6 @@ class Account {
     final clientList = await ClientAuthDBISAR.getAllFromDB(_currentPubkey);
     for(final client in clientList){
       AccountManager.sharedInstance.removeApplicationMap(client.clientPubkey);
-
-      if(client.socketHashCode != null){
-        AegisWebSocketServer.instance.closeClientByHashCode(client.socketHashCode!);
-      }
     }
 
 
@@ -88,7 +84,7 @@ class Account {
       await LocalStorage.set('pubkey', nextUser.pubkey);
       await loginSuccess(nextUser.pubkey, null);
     } else {
-      AegisWebSocketServer.instance.stop();
+      await RelayService.instance.stop();
       await LocalStorage.remove('pubkey');
       AegisNavigator.pushPage(
         AegisNavigator.navigatorKey.currentContext,
