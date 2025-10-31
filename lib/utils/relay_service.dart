@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'package:path_provider/path_provider.dart';
@@ -51,9 +52,9 @@ class RelayService {
         return;
       }
 
-      // Get database path (for future persistent storage)
+      // Get database path (nostrdb uses a directory, not a single file)
       final appDir = await getApplicationSupportDirectory();
-      final dbPath = '${appDir.path}/nostr_relay.db';
+      final dbPath = '${appDir.path}/nostr_relay';
       AegisLogger.info("📁 Using database path: $dbPath");
 
       // Start the relay (using async version)
@@ -100,6 +101,86 @@ class RelayService {
     } catch (e) {
       AegisLogger.error("🚨 Failed to get relay URL", e);
       return null;
+    }
+  }
+
+  /// Get database file path
+  Future<String> getDatabasePath() async {
+    final appDir = await getApplicationSupportDirectory();
+    return '${appDir.path}/nostr_relay';
+  }
+
+  /// Get database size in bytes
+  /// Note: nostrdb uses a directory with multiple files (data.mdb, lock.mdb, etc.)
+  Future<int> getDatabaseSize() async {
+    try {
+      final dbPath = await getDatabasePath();
+      final directory = Directory(dbPath);
+      
+      if (await directory.exists()) {
+        return await _getDirectorySize(directory);
+      }
+      
+      AegisLogger.warning("⚠️ Database directory not found: $dbPath");
+      return 0;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to get database size", e);
+      return 0;
+    }
+  }
+
+  /// Recursively calculate directory size
+  Future<int> _getDirectorySize(Directory directory) async {
+    try {
+      int totalSize = 0;
+      await for (var entity in directory.list(recursive: true)) {
+        if (entity is File) {
+          try {
+            totalSize += await entity.length();
+          } catch (e) {
+            // Skip files that can't be read (might be locked)
+            AegisLogger.warning("⚠️ Failed to read file size: ${entity.path}");
+          }
+        }
+      }
+      return totalSize;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to calculate directory size: ${directory.path}", e);
+      return 0;
+    }
+  }
+
+  /// Clear database (delete database directory and restart relay if running)
+  /// Note: nostrdb uses a directory with multiple files (data.mdb, lock.mdb, etc.)
+  Future<bool> clearDatabase() async {
+    try {
+      final isRunning = await this.isRunning();
+      
+      // Stop relay if running
+      if (isRunning) {
+        await stop();
+      }
+
+      // Delete database directory recursively
+      final dbPath = await getDatabasePath();
+      final directory = Directory(dbPath);
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+        AegisLogger.info("✅ Database directory deleted: $dbPath");
+      } else {
+        AegisLogger.warning("⚠️ Database directory not found: $dbPath");
+      }
+
+      // Restart relay if it was running
+      if (isRunning) {
+        await start();
+        AegisLogger.info("✅ Relay restarted after clearing database");
+      }
+
+      return true;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to clear database", e);
+      return false;
     }
   }
 }

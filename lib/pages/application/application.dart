@@ -15,6 +15,7 @@ import '../../utils/launch_scheme_utils.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../login/login.dart';
 import '../settings/settings.dart';
+import '../settings/local_relay_info.dart';
 import 'add_application.dart';
 import 'application_info.dart';
 
@@ -147,6 +148,23 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             //     AegisNavigator.pushPage(context, (context) => const Activities());
             //   },
             // ),
+            ListTile(
+              title: Text(
+                'Local Relay',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              trailing: CommonImage(
+                iconName: 'relays_icon.png',
+                size: 22,
+              ),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                AegisNavigator.pushPage(
+                  context,
+                  (context) => const LocalRelayInfo(),
+                );
+              },
+            ),
             ListTile(
               title: Text(
                 'Github',
