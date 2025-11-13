@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:aegis/utils/relay_service.dart';
@@ -19,6 +21,10 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   int _databaseSize = 0;
   bool _isLoading = true;
   bool _isClearing = false;
+  Map<String, dynamic>? _stats;
+  DateTime? _sessionStartTime;
+  Duration _currentSessionUptime = Duration.zero;
+  Timer? _uptimeTimer;
 
   @override
   void initState() {
@@ -31,11 +37,29 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   @override
   void dispose() {
     RelayService.instance.serverNotifier.removeListener(_onRelayStatusChanged);
+    _stopUptimeTimer();
     super.dispose();
   }
 
   void _onRelayStatusChanged() {
     _loadRelayInfo();
+  }
+
+  void _startUptimeTimer() {
+    _uptimeTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || _sessionStartTime == null) return;
+      final duration = DateTime.now().difference(_sessionStartTime!);
+      if (duration.inSeconds != _currentSessionUptime.inSeconds) {
+        setState(() {
+          _currentSessionUptime = duration;
+        });
+      }
+    });
+  }
+
+  void _stopUptimeTimer() {
+    _uptimeTimer?.cancel();
+    _uptimeTimer = null;
   }
 
   Future<void> _loadRelayInfo() async {
@@ -44,15 +68,52 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     });
 
     try {
-      _isRelayRunning = await RelayService.instance.isRunning();
-      _relayUrl = await RelayService.instance.getUrl();
-      _databaseSize = await RelayService.instance.getDatabaseSize();
+      final isRunning = await RelayService.instance.isRunning();
+      final relayUrl = await RelayService.instance.getUrl();
+      final databaseSize = await RelayService.instance.getDatabaseSize();
+      final stats = await RelayService.instance.getStats();
+
+      DateTime? sessionStart;
+      if (isRunning) {
+        RelayService.instance.recordSessionStartIfUnset();
+        sessionStart = RelayService.instance.sessionStartTime;
+      } else {
+        RelayService.instance.clearSessionStart();
+        sessionStart = null;
+      }
+
+      if (mounted) {
+        setState(() {
+          _isRelayRunning = isRunning;
+          _relayUrl = relayUrl;
+          _databaseSize = databaseSize;
+          _stats = stats;
+          _sessionStartTime = sessionStart;
+          _currentSessionUptime = sessionStart != null
+              ? DateTime.now().difference(sessionStart)
+              : Duration.zero;
+          _isLoading = false;
+        });
+      }
+
+      if (sessionStart != null) {
+        _startUptimeTimer();
+      } else {
+        _stopUptimeTimer();
+      }
     } catch (e) {
       AegisLogger.error("Failed to load relay info", e);
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isRelayRunning = false;
+          _sessionStartTime = null;
+          _currentSessionUptime = Duration.zero;
+          _stats = null;
+        });
+      }
+      RelayService.instance.clearSessionStart();
+      _stopUptimeTimer();
     }
   }
 
@@ -66,6 +127,38 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     } else {
       return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
     }
+  }
+
+  String _formatNumber(int number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(1)}M';
+    } else if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}K';
+    }
+    return number.toString();
+  }
+
+  String _formatDuration(int seconds) {
+    if (seconds <= 0) {
+      return '0s';
+    }
+    final duration = Duration(seconds: seconds);
+    if (duration.inDays > 0) {
+      final days = duration.inDays;
+      final hours = duration.inHours % 24;
+      return hours > 0 ? '${days}d ${hours}h' : '${days}d';
+    }
+    if (duration.inHours > 0) {
+      final hours = duration.inHours;
+      final minutes = duration.inMinutes % 60;
+      return minutes > 0 ? '${hours}h ${minutes}m' : '${hours}h';
+    }
+    if (duration.inMinutes > 0) {
+      final minutes = duration.inMinutes;
+      final secs = duration.inSeconds % 60;
+      return secs > 0 ? '${minutes}m ${secs}s' : '${minutes}m';
+    }
+    return '${duration.inSeconds}s';
   }
 
   Future<void> _handleClearDatabase() async {
@@ -131,6 +224,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     }
   }
 
+
   Widget _buildInfoItem(String label, Widget value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -180,6 +274,13 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                 fontWeight: FontWeight.w400,
               ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
+            onPressed: _isLoading ? null : () => _loadRelayInfo(),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -237,7 +338,28 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             ),
                       ),
                     ),
+                    if (_stats != null)
+                      _buildInfoItem(
+                        'Total Events',
+                        Text(
+                          _formatNumber(_stats!['totalEvents'] as int? ?? 0),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                    if (_sessionStartTime != null)
+                      _buildInfoItem(
+                        'Service Uptime',
+                        Text(
+                          _formatDuration(_currentSessionUptime.inSeconds),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
                     const Divider(height: 32),
+                    // Clear Database Button
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SizedBox(

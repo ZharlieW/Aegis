@@ -56,6 +56,10 @@ app.*.map.json
 /android/local.properties
 /android/*.iml
 
+# Android signing files (sensitive)
+/android/app/*.keystore
+/android/key.properties
+
 # Fix for Android Studio APK filename bug
 build/app/outputs/flutter-apk/app--debug.apk
 
@@ -68,3 +72,11 @@ build/app/outputs/flutter-apk/app--debug.apk
 /packages/audio_service/android/.gradle
 /packages/audio_service/example/android/.gradle
 /target
+/nowser-master
+build_android.sh
+/Amber-master
+/amethyst-main
+/flotilla-master
+/nostr-signer-capacitor-plugin-main
+/nostr-rust
+/zapstore

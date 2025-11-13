@@ -18,6 +18,7 @@ class RelayService {
   // Default port: 18081 for desktop, 8081 for mobile
   int _port = PlatformUtils.isDesktop ? 18081 : 8081;
   String? _relayUrl;
+  DateTime? _sessionStartTime;
 
   /// Get the relay URL (for client connections)
   String get relayUrl {
@@ -30,6 +31,19 @@ class RelayService {
 
   /// Get the relay port
   String get port => _port.toString();
+
+  /// Get the current session start time (if known)
+  DateTime? get sessionStartTime => _sessionStartTime;
+
+  /// Ensure we have a session start timestamp when relay is confirmed running
+  void recordSessionStartIfUnset() {
+    _sessionStartTime ??= DateTime.now();
+  }
+
+  /// Clear the cached session start timestamp
+  void clearSessionStart() {
+    _sessionStartTime = null;
+  }
 
   /// Get default port based on platform
   static int get _defaultPort => PlatformUtils.isDesktop ? 18081 : 8081;
@@ -54,6 +68,7 @@ class RelayService {
           AegisLogger.warning("⚠️ Relay is already running (URL retrieval failed, using default: $_relayUrl)");
         }
         serverNotifier.value = true;
+        recordSessionStartIfUnset();
         return;
       }
 
@@ -65,6 +80,7 @@ class RelayService {
       // Start the relay (using async version)
       _relayUrl = await rust_relay.startRelay(host: _host, port: _port, dbPath: dbPath);
       serverNotifier.value = true;
+      _sessionStartTime = DateTime.now();
       AegisLogger.info("✅ Nostr relay started on $_relayUrl");
     } catch (e) {
       AegisLogger.error("🚨 Failed to start relay", e);
@@ -84,6 +100,7 @@ class RelayService {
       await rust_relay.stopRelay();
       serverNotifier.value = false;
       _relayUrl = null;
+      _sessionStartTime = null;
       AegisLogger.info("✅ Relay stopped");
     } catch (e) {
       AegisLogger.error("🚨 Failed to stop relay", e);
@@ -186,6 +203,23 @@ class RelayService {
     } catch (e) {
       AegisLogger.error("🚨 Failed to clear database", e);
       return false;
+    }
+  }
+
+  /// Get relay statistics (event-focused)
+  /// Note: This requires regenerating flutter_rust_bridge code after adding the Rust API
+  Future<Map<String, dynamic>?> getStats() async {
+    try {
+      final dbPath = await getDatabasePath();
+      final stats = await rust_relay.getRelayStats(dbPath: dbPath);
+      final totalEvents = int.parse(stats.totalEvents.toString());
+
+      return {
+        'totalEvents': totalEvents,
+      };
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to get relay stats", e);
+      return null;
     }
   }
 }
