@@ -8,10 +8,9 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 
 import '../db/clientAuthDB_isar.dart';
-import 'package:nostr_core_dart/nostr.dart' show Event, Filter;
+import 'package:aegis/nostr/nostr.dart' show Event, Filter;
 import '../nostr/nips/nip46/nostr_remote_request.dart';
 import '../nostr/signer/local_nostr_signer.dart';
-import '../nostr/event.dart' as local_event;
 import 'relay_service.dart';
 import 'connect.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
@@ -153,21 +152,17 @@ class ServerNIP46Signer {
       // Encrypt response
       String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
 
-      // Create response event using local Event to sign, then convert to nostr_core_dart Event
+      // Create response event using local Event utilities
       final serverPubkey = LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '';
       final serverPrivkey = LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '';
       
-      // Use local Event.from to create and sign the event
-      final localSignEvent = local_event.Event.from(
+      final signEvent = Event.from(
         kind: event.kind,
         tags: [["p", event.pubkey]],
         content: responseJsonEncrypt ?? '',
         pubkey: serverPubkey,
         privkey: serverPrivkey,
       );
-      
-      // Convert to nostr_core_dart Event using fromJson (async)
-      final signEvent = await Event.fromJson(localSignEvent.toJson());
       
       // Send response event to relay using Connect
       try {

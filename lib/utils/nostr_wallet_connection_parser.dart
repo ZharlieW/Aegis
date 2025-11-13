@@ -2,9 +2,8 @@ import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import '../common/common_constant.dart';
-import '../nostr/event.dart' as local_event;
+import 'package:aegis/nostr/nostr.dart' show Event;
 import '../nostr/signer/local_nostr_signer.dart';
-import 'package:nostr_core_dart/nostr.dart' show Event;
 import 'account.dart';
 import 'connect.dart';
 import 'url_scheme_handler.dart';
@@ -73,8 +72,7 @@ class NostrWalletConnectionParserHandler {
       ) async {
     try {
       LocalNostrSigner instance = LocalNostrSigner.instance;
-      // Use local Event.from to create and sign the event
-      final localSignEvent = local_event.Event.from(
+      final signEvent = Event.from(
         kind: 24133,
         tags: [
           ['p', clientPubkey]
@@ -83,9 +81,6 @@ class NostrWalletConnectionParserHandler {
         pubkey: instance.getPublicKey(clientPubkey) ?? '',
         privkey: instance.getPrivateKey(clientPubkey) ?? '',
       );
-      
-      // Convert to nostr_core_dart Event using fromJson (async)
-      final signEvent = await Event.fromJson(localSignEvent.toJson());
       
       // Use Connect to send event
       final connect = Connect();

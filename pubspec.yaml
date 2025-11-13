@@ -41,10 +41,8 @@ dependencies:
   cryptography: ^2.0.5
   web_socket_channel: ^2.4.0
   convert: ^3.0.1
-  nostr_core_dart:
-    git:
-      url: https://github.com/ZharlieW/nostr-dart
   hex: ^0.2.0
+  bip340: ^0.3.0
   pointycastle: ^3.3.0
   bech32: ^0.2.2
   string_validator: ^1.1.0

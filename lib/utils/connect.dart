@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
-import 'package:nostr_core_dart/nostr.dart';
+import 'package:aegis/nostr/nostr.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:aegis/utils/account.dart';
