@@ -53,7 +53,7 @@ class SettingsState extends State<Settings> with AccountObservers {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Settings',
+          'Accounts',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -99,7 +99,10 @@ class SettingsState extends State<Settings> with AccountObservers {
               margin: const EdgeInsets.only(top: 20),
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  AegisNavigator.pop(context);
+                  // Only pop if we can pop (not in split layout)
+                  if (Navigator.canPop(context)) {
+                    AegisNavigator.pop(context);
+                  }
                   AegisNavigator.pushPage(context, (context) => const Login());
                 },
                 style: ButtonStyle(

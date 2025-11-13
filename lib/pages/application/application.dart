@@ -29,11 +29,16 @@ class Application extends StatefulWidget {
 
 class ApplicationState extends State<Application> with AccountManagerObservers {
 
+  static const double _splitLayoutBreakpoint = 900;
+
   bool isPortAvailable = true;
 
   // App version info
   String _appVersion = '';
   String _buildNumber = '';
+
+  // Current selected page in split layout (home, localRelay, accounts)
+  String _currentPage = 'home';
 
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = AccountManager.sharedInstance.applicationMap.values.toList();
@@ -77,6 +82,27 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool useSplitLayout =
+        PlatformUtils.isDesktop || screenWidth >= _splitLayoutBreakpoint;
+
+    // Wide layout with split screen
+    if (useSplitLayout) {
+      return Scaffold(
+        body: Row(
+          children: [
+            // Left sidebar menu
+            _buildSideMenu(context, useSplitLayout: true),
+            // Right main content area
+            Expanded(
+              child: _buildRightPanelContent(context),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Mobile layout with drawer
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 250,
@@ -110,150 +136,305 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+      drawer: _buildMobileDrawer(context),
+      body: _buildMainContent(context),
+    );
+  }
+
+  // Build wide layout sidebar menu
+  Widget _buildSideMenu(BuildContext context, {bool useSplitLayout = false}) {
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title
             Container(
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Aegis for Nostr',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ),
-                  ],
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'Aegis - Nostr Signer',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 24,
                 ),
               ),
             ),
-            // ListTile(
-            //   title: Text(
-            //     'Activities',
-            //     style: Theme.of(context).textTheme.titleMedium,
-            //   ),
-            //   trailing: Icon(
-            //     Icons.history,
-            //     size: 22,
-            //   ),
-            //   onTap: () {
-            //     Navigator.pop(context); // Close drawer
-            //     AegisNavigator.pushPage(context, (context) => const Activities());
-            //   },
-            // ),
-            ListTile(
-              title: Text(
-                'Local Relay',
-                style: Theme.of(context).textTheme.titleMedium,
+            const Divider(height: 1),
+            // Menu items
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  ListTile(
+                    selected: useSplitLayout && _currentPage == 'home',
+                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+                    title: Text(
+                      'Home',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    trailing: Icon(
+                      Icons.home,
+                      size: 22,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    onTap: () {
+                      if (useSplitLayout) {
+                        setState(() {
+                          _currentPage = 'home';
+                        });
+                      }
+                    },
+                  ),
+                  ListTile(
+                    selected: useSplitLayout && _currentPage == 'localRelay',
+                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+                    title: Text(
+                      'Local Relay',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    trailing: CommonImage(
+                      iconName: 'relays_icon.png',
+                      size: 22,
+                    ),
+                    onTap: () {
+                      if (useSplitLayout) {
+                        setState(() {
+                          _currentPage = 'localRelay';
+                        });
+                      } else {
+                        AegisNavigator.pushPage(
+                          context,
+                          (context) => const LocalRelayInfo(),
+                        );
+                      }
+                    },
+                  ),
+                  ListTile(
+                    selected: useSplitLayout && _currentPage == 'accounts',
+                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+                    title: Text(
+                      'Accounts',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    trailing: CommonImage(
+                      iconName: 'user_icon.png',
+                      size: 22,
+                    ),
+                    onTap: () {
+                      if (useSplitLayout) {
+                        setState(() {
+                          _currentPage = 'accounts';
+                        });
+                      } else {
+                        AegisNavigator.pushPage(context, (context) => const Settings());
+                      }
+                    },
+                  ),
+                ],
               ),
-              trailing: CommonImage(
-                iconName: 'relays_icon.png',
-                size: 22,
-              ),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                AegisNavigator.pushPage(
-                  context,
-                  (context) => const LocalRelayInfo(),
-                );
-              },
             ),
-            ListTile(
-              title: Text(
-                'Github',
-                style: Theme.of(context).textTheme.titleMedium,
+            // Bottom row: Github (left) and Version (right)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Github on left
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Github',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      leading: CommonImage(
+                        iconName: 'github_icon.png',
+                        size: 22,
+                      ),
+                      onTap: () async {
+                        final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
+                        await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
+                      },
+                    ),
+                  ),
+                  // Version on right
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        _appVersion.isNotEmpty && _buildNumber.isNotEmpty
+                            ? 'v$_appVersion($_buildNumber)'
+                            : _appVersion.isNotEmpty
+                                ? 'v$_appVersion'
+                                : '--',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              trailing: CommonImage(
-                iconName: 'github_icon.png',
-                size: 22,
-              ),
-              onTap: () async {
-                final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
-                await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
-              },
-            ),
-            ListTile(
-              title: Text(
-                'Version: ${_appVersion.isNotEmpty ? _appVersion : '--'}${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              trailing: CommonImage(
-                iconName: 'version_icon.png',
-                size: 22,
-              ),
-              onTap: () {},
             ),
           ],
         ),
       ),
-      body: SafeArea(
-        child: SizedBox(
-          height: double.infinity,
-          child: Stack(
-            children: [
-              Column(
+    );
+  }
+
+  // Build mobile drawer menu
+  Widget _buildMobileDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          Container(
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ValueListenableBuilder(
-                    valueListenable: RelayService.instance.serverNotifier,
-                    builder: (context, value, child) {
-                      return Expanded(
-                        child: !value
-                            ? _showPortUnAvailableWidget()
-                            : _applicationList(clientList),
-                      );
-                    },
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Aegis - Nostr Signer',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 24,
+                      ),
+                    ),
                   ),
                 ],
-              ).setPaddingOnly(top: 12.0),
-              Positioned(
-                bottom: 16,
-                right: 16,
-                child: GestureDetector(
-                  onTap: () {
-                    Account account = Account.sharedInstance;
-                    bool isEmpty = account.currentPubkey.isEmpty ||
-                        account.currentPrivkey.isEmpty;
-                    AegisNavigator.pushPage(
-                      context,
-                      (context) =>
-                          isEmpty ? const Login() : const AddApplication(),
+              ),
+            ),
+          ),
+          ListTile(
+            title: Text(
+              'Local Relay',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: CommonImage(
+              iconName: 'relays_icon.png',
+              size: 22,
+            ),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              AegisNavigator.pushPage(
+                context,
+                (context) => const LocalRelayInfo(),
+              );
+            },
+          ),
+          ListTile(
+            title: Text(
+              'Github',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: CommonImage(
+              iconName: 'github_icon.png',
+              size: 22,
+            ),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+              final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
+              await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
+            },
+          ),
+          ListTile(
+            title: Text(
+              'Version: ${_appVersion.isNotEmpty ? _appVersion : '--'}${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: CommonImage(
+              iconName: 'version_icon.png',
+              size: 22,
+            ),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build right panel content based on current page
+  Widget _buildRightPanelContent(BuildContext context) {
+    switch (_currentPage) {
+      case 'localRelay':
+        return const LocalRelayInfo();
+      case 'accounts':
+        return const Settings();
+      case 'home':
+      default:
+        return _buildMainContent(context);
+    }
+  }
+
+  // Build main content area
+  Widget _buildMainContent(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: double.infinity,
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                ValueListenableBuilder(
+                  valueListenable: RelayService.instance.serverNotifier,
+                  builder: (context, value, child) {
+                    return Expanded(
+                      child: !value
+                          ? _showPortUnAvailableWidget()
+                          : _applicationList(clientList),
                     );
                   },
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color:  Theme.of(context).colorScheme.secondaryContainer,
-                      borderRadius: BorderRadius.circular(56),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha((0.14 * 255).round()),
-                          offset: const Offset(0, 4),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: CommonImage(
-                        iconName: 'add_icon.png',
-                        size: 36,
-                        color: Colors.black,
+                ),
+              ],
+            ).setPaddingOnly(top: 12.0),
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: GestureDetector(
+                onTap: () {
+                  Account account = Account.sharedInstance;
+                  bool isEmpty = account.currentPubkey.isEmpty ||
+                      account.currentPrivkey.isEmpty;
+                  AegisNavigator.pushPage(
+                    context,
+                    (context) =>
+                        isEmpty ? const Login() : const AddApplication(),
+                  );
+                },
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color:  Theme.of(context).colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(56),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha((0.14 * 255).round()),
+                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                        spreadRadius: 1,
                       ),
+                    ],
+                  ),
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'add_icon.png',
+                      size: 36,
+                      color: Colors.black,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
