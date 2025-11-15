@@ -21,6 +21,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   int _databaseSize = 0;
   bool _isLoading = true;
   bool _isClearing = false;
+  bool _isRestarting = false;
   Map<String, dynamic>? _stats;
   DateTime? _sessionStartTime;
   Duration _currentSessionUptime = Duration.zero;
@@ -161,6 +162,57 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     return '${duration.inSeconds}s';
   }
 
+  Future<void> _handleRestartRelay() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Restart Relay'),
+        content: const Text(
+          'Are you sure you want to restart the relay? The relay will be temporarily stopped and then restarted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Restart'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isRestarting = true;
+    });
+
+    try {
+      await RelayService.instance.restart();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Relay restarted successfully')),
+        );
+        await _loadRelayInfo();
+      }
+    } catch (e) {
+      AegisLogger.error("Failed to restart relay", e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to restart relay: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRestarting = false;
+        });
+      }
+    }
+  }
+
   Future<void> _handleClearDatabase() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -243,6 +295,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
 
   Widget _buildStatusWidget() {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 12,
@@ -276,9 +329,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: _isLoading ? null : () => _loadRelayInfo(),
+            icon: _isRestarting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.restart_alt),
+            tooltip: 'Restart Relay',
+            onPressed: _isRestarting ? null : _handleRestartRelay,
           ),
         ],
       ),
@@ -348,16 +407,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               ),
                         ),
                       ),
-                    if (_sessionStartTime != null)
-                      _buildInfoItem(
-                        'Service Uptime',
-                        Text(
-                          _formatDuration(_currentSessionUptime.inSeconds),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
+                    _buildInfoItem(
+                      'Service Uptime',
+                      Text(
+                        _formatDuration(_currentSessionUptime.inSeconds),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
+                    ),
                     const Divider(height: 32),
                     // Clear Database Button
                     Padding(

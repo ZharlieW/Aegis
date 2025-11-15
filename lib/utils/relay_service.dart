@@ -108,6 +108,36 @@ class RelayService {
     }
   }
 
+  /// Restart the relay server
+  Future<void> restart() async {
+    try {
+      final wasRunning = await rust_relay.isRelayRunning();
+      
+      if (wasRunning) {
+        // Save current host and port before stopping
+        final currentHost = _host;
+        final currentPort = _port.toString();
+        
+        // Stop the relay
+        await stop();
+        
+        // Wait a bit to ensure clean shutdown
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Restart with saved configuration
+        await start(host: currentHost, port: currentPort);
+        AegisLogger.info("✅ Relay restarted");
+      } else {
+        // If not running, just start it
+        await start();
+        AegisLogger.info("✅ Relay started");
+      }
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to restart relay", e);
+      rethrow;
+    }
+  }
+
   /// Check if relay is running
   Future<bool> isRunning() async {
     return await rust_relay.isRelayRunning();
