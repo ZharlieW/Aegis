@@ -24,13 +24,14 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.aegis.app"
     compileSdk 36
+    ndkVersion "27.0.12077973"
 
     defaultConfig {
         applicationId "com.aegis.app"
         minSdk 26
         targetSdk 36
-        versionCode 3
-        versionName "0.3"
+        versionCode 4
+        versionName "0.3.1"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
