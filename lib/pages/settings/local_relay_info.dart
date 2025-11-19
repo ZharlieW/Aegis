@@ -94,8 +94,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           final position = _logScrollController.position;
           final maxScroll = position.maxScrollExtent;
           final currentScroll = position.pixels;
-          // Auto scroll only if user is within 100 pixels of bottom
-          shouldAutoScroll = (maxScroll - currentScroll) < 100;
+          // Auto scroll only if user is within 50 pixels of bottom
+          shouldAutoScroll = (maxScroll - currentScroll) < 50;
         } else if (!shouldAutoScroll) {
           // If no scroll controller yet, auto scroll on first load
           shouldAutoScroll = true;
@@ -499,6 +499,195 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             ),
                       ),
                     ),
+                    // Relay Logs as a list item
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ExpansionTile(
+                            tilePadding: EdgeInsets.zero,
+                            shape: const Border(),
+                            collapsedShape: const Border(),
+                            childrenPadding: EdgeInsets.zero,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Relay Logs',
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                Text(
+                                  _showLogs ? 'Tap to hide logs' : 'Tap to view logs',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            initiallyExpanded: false,
+                            onExpansionChanged: (expanded) {
+                              if (expanded != _showLogs) {
+                                _toggleLogs();
+                              }
+                            },
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                constraints: const BoxConstraints(
+                                  minHeight: 200,
+                                  maxHeight: 200,
+                                ),
+                                margin: const EdgeInsets.only(bottom: 8, top: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.grey.shade700,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: _logContent.isEmpty
+                                    ? const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(24),
+                                          child: Text(
+                                            'No logs available',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Scrollbar(
+                                          controller: _logScrollController,
+                                          thumbVisibility: true,
+                                          radius: const Radius.circular(4),
+                                          child: SingleChildScrollView(
+                                            controller: _logScrollController,
+                                            padding: const EdgeInsets.all(16),
+                                            child: SelectableText(
+                                              _logContent,
+                                              style: const TextStyle(
+                                                fontFamily: 'monospace',
+                                                fontSize: 11,
+                                                color: Colors.greenAccent,
+                                                height: 1.6,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                              // Action buttons inside ExpansionTile, closer to log content
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () async {
+                                          final confirmed = await showDialog<bool>(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: const Text('Clear Log'),
+                                              content: const Text(
+                                                'This will clear all log content. New logs will continue to be recorded.',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.of(context).pop(false),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () => Navigator.of(context).pop(true),
+                                                  style: TextButton.styleFrom(
+                                                    foregroundColor: Colors.red,
+                                                  ),
+                                                  child: const Text('Clear'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                          
+                                          if (confirmed == true) {
+                                            final success = await RelayService.instance.clearLogFile();
+                                            if (mounted) {
+                                              if (success) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Log file cleared'),
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                                // Reload logs to show empty content
+                                                _loadLogs(forceScrollToBottom: true);
+                                              } else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Failed to clear log file'),
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          }
+                                        },
+                                        icon: const Icon(Icons.clear, size: 18),
+                                        label: const Text('Clear Log'),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          side: BorderSide(
+                                            color: Colors.red.shade300,
+                                          ),
+                                          foregroundColor: Colors.red.shade300,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          if (_logContent.isNotEmpty) {
+                                            Clipboard.setData(ClipboardData(text: _logContent));
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Log content copied to clipboard'),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        icon: const Icon(Icons.copy, size: 18),
+                                        label: const Text('Copy Log'),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          backgroundColor: Theme.of(context).colorScheme.primary,
+                                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                     const Divider(height: 32),
                     // Clear Database Button
                     Padding(
@@ -532,129 +721,6 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Colors.grey,
                             ),
-                      ),
-                    ),
-                    const Divider(height: 32),
-                    // Logs Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ExpansionTile(
-                        title: const Text('Relay Logs'),
-                        subtitle: Text(_showLogs ? 'Tap to hide logs' : 'Tap to view logs'),
-                        leading: Icon(_showLogs ? Icons.visibility : Icons.visibility_off),
-                        initiallyExpanded: false,
-                        onExpansionChanged: (expanded) {
-                          if (expanded != _showLogs) {
-                            _toggleLogs();
-                          }
-                        },
-                        children: [
-                          Container(
-                            height: 300,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.black87,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.shade700),
-                            ),
-                            child: _logContent.isEmpty
-                                ? const Center(
-                                    child: Text(
-                                      'No logs available',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  )
-                                : Scrollbar(
-                                    controller: _logScrollController,
-                                    child: SingleChildScrollView(
-                                      controller: _logScrollController,
-                                      padding: const EdgeInsets.all(12),
-                                      child: SelectableText(
-                                        _logContent,
-                                        style: const TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontSize: 12,
-                                          color: Colors.greenAccent,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () async {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Clear Log'),
-                                      content: const Text(
-                                        'This will clear all log content. New logs will continue to be recorded.',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(context).pop(false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.of(context).pop(true),
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: Colors.red,
-                                          ),
-                                          child: const Text('Clear'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  
-                                  if (confirmed == true) {
-                                    final success = await RelayService.instance.clearLogFile();
-                                    if (mounted) {
-                                      if (success) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Log file cleared'),
-                                            duration: Duration(seconds: 2),
-                                          ),
-                                        );
-                                        // Reload logs to show empty content
-                                        _loadLogs(forceScrollToBottom: true);
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Failed to clear log file'),
-                                            duration: Duration(seconds: 2),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  }
-                                },
-                                icon: const Icon(Icons.clear, size: 18),
-                                label: const Text('Clear Log'),
-                              ),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  if (_logContent.isNotEmpty) {
-                                    Clipboard.setData(ClipboardData(text: _logContent));
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Log content copied to clipboard'),
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                icon: const Icon(Icons.copy, size: 18),
-                                label: const Text('Copy Log'),
-                              ),
-                            ],
-                          ),
-                        ],
                       ),
                     ),
                   ],
