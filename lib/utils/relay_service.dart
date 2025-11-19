@@ -252,5 +252,57 @@ class RelayService {
       return null;
     }
   }
+
+  /// Get log file path
+  Future<String?> getLogFilePath() async {
+    try {
+      final dbPath = await getDatabasePath();
+      final dbPathBuf = Directory(dbPath);
+      if (await dbPathBuf.exists()) {
+        final logFile = File('${dbPathBuf.parent.path}/relay.log');
+        return logFile.path;
+      }
+      return null;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to get log file path", e);
+      return null;
+    }
+  }
+
+  /// Read log file content (last N lines)
+  /// Uses Rust FFI to read and automatically truncate to 200 lines
+  Future<String> readLogFile({int? maxLines}) async {
+    try {
+      final content = await rust_relay.relayReadLogFile(maxLines: maxLines);
+      return content;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to read log file", e);
+      return "Failed to read log file: $e";
+    }
+  }
+
+  /// Clear log file content
+  Future<bool> clearLogFile() async {
+    try {
+      final logPath = await getLogFilePath();
+      if (logPath == null) {
+        AegisLogger.error("🚨 Log file path not available");
+        return false;
+      }
+      
+      final logFile = File(logPath);
+      if (await logFile.exists()) {
+        await logFile.writeAsString('');
+        AegisLogger.info("✅ Log file cleared");
+        return true;
+      } else {
+        AegisLogger.warning("⚠️ Log file does not exist");
+        return true; // Consider it successful if file doesn't exist
+      }
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to clear log file", e);
+      return false;
+    }
+  }
 }
 

@@ -26,6 +26,10 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   DateTime? _sessionStartTime;
   Duration _currentSessionUptime = Duration.zero;
   Timer? _uptimeTimer;
+  bool _showLogs = false;
+  String _logContent = '';
+  Timer? _logRefreshTimer;
+  final ScrollController _logScrollController = ScrollController();
 
   @override
   void initState() {
@@ -39,6 +43,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   void dispose() {
     RelayService.instance.serverNotifier.removeListener(_onRelayStatusChanged);
     _stopUptimeTimer();
+    _stopLogRefreshTimer();
+    _logScrollController.dispose();
     super.dispose();
   }
 
@@ -61,6 +67,83 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   void _stopUptimeTimer() {
     _uptimeTimer?.cancel();
     _uptimeTimer = null;
+  }
+
+  void _startLogRefreshTimer() {
+    _stopLogRefreshTimer();
+    if (_showLogs) {
+      _loadLogs();
+      _logRefreshTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+        _loadLogs();
+      });
+    }
+  }
+
+  void _stopLogRefreshTimer() {
+    _logRefreshTimer?.cancel();
+    _logRefreshTimer = null;
+  }
+
+  Future<void> _loadLogs({bool forceScrollToBottom = false}) async {
+    try {
+      final content = await RelayService.instance.readLogFile(maxLines: 200);
+      if (mounted) {
+        // Check if user is near bottom before updating
+        bool shouldAutoScroll = forceScrollToBottom;
+        if (!shouldAutoScroll && _logScrollController.hasClients) {
+          final position = _logScrollController.position;
+          final maxScroll = position.maxScrollExtent;
+          final currentScroll = position.pixels;
+          // Auto scroll only if user is within 100 pixels of bottom
+          shouldAutoScroll = (maxScroll - currentScroll) < 100;
+        } else if (!shouldAutoScroll) {
+          // If no scroll controller yet, auto scroll on first load
+          shouldAutoScroll = true;
+        }
+        
+        setState(() {
+          _logContent = content;
+        });
+        
+        // Auto scroll to bottom only if user was already near bottom or forced
+        if (shouldAutoScroll) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _logScrollController.hasClients) {
+              _logScrollController.animateTo(
+                _logScrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          });
+        }
+      }
+    } catch (e) {
+      AegisLogger.error("Failed to load logs", e);
+    }
+  }
+
+  void _toggleLogs() {
+    setState(() {
+      _showLogs = !_showLogs;
+    });
+    if (_showLogs) {
+      // Force scroll to bottom when logs are first shown
+      _loadLogs(forceScrollToBottom: true);
+      _startLogRefreshTimer();
+      // Additional scroll after ExpansionTile animation completes
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted && _showLogs && _logScrollController.hasClients) {
+          _logScrollController.animateTo(
+            _logScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    } else {
+      _stopLogRefreshTimer();
+    }
   }
 
   Future<void> _loadRelayInfo() async {
@@ -451,6 +534,129 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             ),
                       ),
                     ),
+                    const Divider(height: 32),
+                    // Logs Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ExpansionTile(
+                        title: const Text('Relay Logs'),
+                        subtitle: Text(_showLogs ? 'Tap to hide logs' : 'Tap to view logs'),
+                        leading: Icon(_showLogs ? Icons.visibility : Icons.visibility_off),
+                        initiallyExpanded: false,
+                        onExpansionChanged: (expanded) {
+                          if (expanded != _showLogs) {
+                            _toggleLogs();
+                          }
+                        },
+                        children: [
+                          Container(
+                            height: 300,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade700),
+                            ),
+                            child: _logContent.isEmpty
+                                ? const Center(
+                                    child: Text(
+                                      'No logs available',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  )
+                                : Scrollbar(
+                                    controller: _logScrollController,
+                                    child: SingleChildScrollView(
+                                      controller: _logScrollController,
+                                      padding: const EdgeInsets.all(12),
+                                      child: SelectableText(
+                                        _logContent,
+                                        style: const TextStyle(
+                                          fontFamily: 'monospace',
+                                          fontSize: 12,
+                                          color: Colors.greenAccent,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Clear Log'),
+                                      content: const Text(
+                                        'This will clear all log content. New logs will continue to be recorded.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(true),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.red,
+                                          ),
+                                          child: const Text('Clear'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  
+                                  if (confirmed == true) {
+                                    final success = await RelayService.instance.clearLogFile();
+                                    if (mounted) {
+                                      if (success) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Log file cleared'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                        // Reload logs to show empty content
+                                        _loadLogs(forceScrollToBottom: true);
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Failed to clear log file'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.clear, size: 18),
+                                label: const Text('Clear Log'),
+                              ),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  if (_logContent.isNotEmpty) {
+                                    Clipboard.setData(ClipboardData(text: _logContent));
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Log content copied to clipboard'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.copy, size: 18),
+                                label: const Text('Copy Log'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -458,4 +664,5 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     );
   }
 }
+
 
