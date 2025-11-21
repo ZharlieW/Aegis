@@ -72,15 +72,17 @@ class ServerNIP46Signer {
   /// Initialize Nostr client and connect to relay
   Future<void> _initializeClient() async {
     try {
-      // Get Connect instance
-      _connect = Connect();
-      
       // Add and connect to local relay
       final relayUrl = relayService!.relayUrl;
+
+      Connect.sharedInstance.addConnectStatusListener((relay, status, relayKinds) async {
+        if (status == 1 && relay == relayUrl) {
+          await _subscribeToNIP46Events();
+        }
+      });
+      // Get Connect instance
+      _connect = Connect();
       await _connect!.connect(relayUrl, relayKind: RelayKind.remoteSigner);
-      
-      // Subscribe to NIP-46 events
-      await _subscribeToNIP46Events();
       
     } catch (e) {
       AegisLogger.error('Failed to initialize client', e);
@@ -91,6 +93,10 @@ class ServerNIP46Signer {
   /// Subscribe to NIP-46 events
   Future<void> _subscribeToNIP46Events() async {
     try {
+      final relayUrl = relayService!.relayUrl;
+      if (_subscriptionId.isNotEmpty) {
+        Connect.sharedInstance.closeRequests(_subscriptionId, relay: relayUrl);
+      }
       // Get server public key to subscribe to events addressed to us
       final serverPubkey = LocalNostrSigner.instance.publicKey;
       
@@ -101,7 +107,6 @@ class ServerNIP46Signer {
       );
       
       // Subscribe using Connect
-      final relayUrl = relayService!.relayUrl;
       _subscriptionId = _connect!.addSubscription(
         [filter],
         relays: [relayUrl],
