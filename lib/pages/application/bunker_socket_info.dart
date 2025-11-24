@@ -3,10 +3,10 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../common/common_image.dart';
 import '../../utils/server_nip46_signer.dart';
+import '../../utils/local_tls_proxy_manager_rust.dart';
 import '../../utils/took_kit.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
-
   const BunkerSocketInfo({super.key});
 
   @override
@@ -15,6 +15,7 @@ class BunkerSocketInfo extends StatefulWidget {
 
 class BunkerSocketInfoState extends State<BunkerSocketInfo> {
   String _bunkerUrl = '';
+  bool _showSecureUrl = false;
 
   @override
   void initState() {
@@ -23,9 +24,15 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
     _init();
   }
 
-  void _init() async{
-    _bunkerUrl = ServerNIP46Signer.instance.getBunkerUrl();
-    setState(() {});
+  void _init() async {
+    _updateBunkerUrl();
+  }
+
+  void _updateBunkerUrl() {
+    final url = ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureUrl);
+    setState(() {
+      _bunkerUrl = url;
+    });
   }
 
   @override
@@ -49,6 +56,8 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
             const SizedBox(
               height: 40,
             ),
+            _buildBunkerModeSelector(),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -87,6 +96,42 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
         data: _bunkerUrl,
         errorCorrectLevel: QrErrorCorrectLevel.M,
       ),
+    );
+  }
+
+  Widget _buildBunkerModeSelector() {
+    final secureAvailable = LocalTlsProxyManagerRust.instance.isRunning;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ChoiceChip(
+          label: const Text('ws://'),
+          selected: !_showSecureUrl,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() {
+                _showSecureUrl = false;
+              });
+              _updateBunkerUrl();
+            }
+          },
+        ),
+        const SizedBox(width: 12),
+        ChoiceChip(
+          label: const Text('wss://'),
+          selected: _showSecureUrl,
+          onSelected: secureAvailable
+              ? (selected) {
+                  if (selected) {
+                    setState(() {
+                      _showSecureUrl = true;
+                    });
+                    _updateBunkerUrl();
+                  }
+                }
+              : null,
+        ),
+      ],
     );
   }
 }

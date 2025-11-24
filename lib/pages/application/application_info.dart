@@ -9,6 +9,7 @@ import '../../common/common_tips.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/account.dart';
 import '../../utils/server_nip46_signer.dart';
+import '../../utils/local_tls_proxy_manager_rust.dart';
 import '../../utils/took_kit.dart';
 import '../activities/activities.dart';
 import 'edit_bunker_socket_info.dart';
@@ -23,6 +24,7 @@ class ApplicationInfo extends StatefulWidget {
 
 class ApplicationInfoState extends State<ApplicationInfo> {
   String _bunkerUrl = '';
+  bool _showSecureBunkerUrl = false;
 
   @override
   @override
@@ -33,8 +35,15 @@ class ApplicationInfoState extends State<ApplicationInfo> {
   }
 
   void _init() {
-    _bunkerUrl = ServerNIP46Signer.instance.getBunkerUrl();
-    setState(() {});
+    _updateBunkerUrl();
+  }
+
+  void _updateBunkerUrl() {
+    final url =
+        ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureBunkerUrl);
+    setState(() {
+      _bunkerUrl = url;
+    });
   }
 
   @override
@@ -81,7 +90,10 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  AegisNavigator.pushPage(context, (context) => Activities(clientAuthDBISAR: widget.clientAuthDBISAR));
+                  AegisNavigator.pushPage(
+                      context,
+                      (context) => Activities(
+                          clientAuthDBISAR: widget.clientAuthDBISAR));
                 },
                 child: _itemWidget(
                   'Activities',
@@ -91,7 +103,6 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                   ),
                 ),
               ),
-
               _itemWidget('Client app logo',
                   rightWidget: client.image != null && client.image!.isNotEmpty
                       ? Image.network(
@@ -127,6 +138,11 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 iconName: 'copy_icon.png',
                 onTap: () => TookKit.copyKey(context, _bunkerUrl),
               ),
+              if (isBunnker)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _buildBunkerModeSelector(),
+                ),
               const SizedBox(
                 height: 40,
               ),
@@ -137,7 +153,10 @@ class ApplicationInfoState extends State<ApplicationInfo> {
       bottomNavigationBar: Container(
         height: 100,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        color: Theme.of(context).colorScheme.secondaryContainer.withAlpha((0.3 * 255).round()),
+        color: Theme.of(context)
+            .colorScheme
+            .secondaryContainer
+            .withAlpha((0.3 * 255).round()),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -179,9 +198,12 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                         ),
                         ElevatedButton.icon(
                           onPressed: () async {
-                            String currentPubkey = Account.sharedInstance.currentPubkey;
-                            String clientPubkey = widget.clientAuthDBISAR.clientPubkey;
-                            AccountManager.sharedInstance.removeApplicationMap(clientPubkey);
+                            String currentPubkey =
+                                Account.sharedInstance.currentPubkey;
+                            String clientPubkey =
+                                widget.clientAuthDBISAR.clientPubkey;
+                            AccountManager.sharedInstance
+                                .removeApplicationMap(clientPubkey);
                             await ClientAuthDBISAR.deleteFromDB(
                                 currentPubkey, clientPubkey);
                             CommonTips.success(context, 'Remove success');
@@ -315,6 +337,41 @@ class ApplicationInfoState extends State<ApplicationInfo> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBunkerModeSelector() {
+    final secureAvailable = LocalTlsProxyManagerRust.instance.isRunning;
+    return Wrap(
+      spacing: 8,
+      children: [
+        ChoiceChip(
+          label: const Text('ws://'),
+          selected: !_showSecureBunkerUrl,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() {
+                _showSecureBunkerUrl = false;
+              });
+              _updateBunkerUrl();
+            }
+          },
+        ),
+        ChoiceChip(
+          label: const Text('wss://'),
+          selected: _showSecureBunkerUrl,
+          onSelected: secureAvailable
+              ? (selected) {
+                  if (selected) {
+                    setState(() {
+                      _showSecureBunkerUrl = true;
+                    });
+                    _updateBunkerUrl();
+                  }
+                }
+              : null,
+        ),
+      ],
     );
   }
 }

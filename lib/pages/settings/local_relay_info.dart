@@ -31,6 +31,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   String _logContent = '';
   Timer? _logRefreshTimer;
   final ScrollController _logScrollController = ScrollController();
+  bool _showSecureRelayAddress = false;
 
   @override
   void initState() {
@@ -72,20 +73,63 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
 
   String _resolvedRelayAddress() {
     final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
-    // Rust implementation works on all platforms
-    // if (!PlatformUtils.isIOS && !PlatformUtils.isMacOS) {
-    //   return _relayUrl ?? 'ws://127.0.0.1:$defaultPort';
-    // }
+    final fallbackUrl = _relayUrl ?? 'ws://127.0.0.1:$defaultPort';
 
-    if (_relayUrl != null && _relayUrl!.startsWith('wss://')) {
-      return _relayUrl!;
+    if (!_showSecureRelayAddress) {
+      return fallbackUrl;
     }
 
-    final uri = _relayUrl != null ? Uri.tryParse(_relayUrl!) : null;
+    final uri = Uri.tryParse(fallbackUrl);
     final port = uri?.port ?? defaultPort;
     final proxyManager = LocalTlsProxyManagerRust.instance;
-    AegisLogger.info('🔍 _resolvedRelayAddress: platform=${PlatformUtils.platformName}, port=$port, proxyRunning=${proxyManager.isRunning}');
+    if (!proxyManager.isRunning) {
+      return fallbackUrl;
+    }
     return proxyManager.relayUrlFor(port.toString());
+  }
+
+  Widget _buildAddressModeSelector() {
+    final secureAvailable = LocalTlsProxyManagerRust.instance.isRunning;
+    return Wrap(
+      spacing: 8,
+      children: [
+        ChoiceChip(
+          label: const Text('ws://'),
+          selected: !_showSecureRelayAddress,
+          onSelected: (selected) {
+            if (selected && mounted) {
+              setState(() {
+                _showSecureRelayAddress = false;
+              });
+            }
+          },
+        ),
+        ChoiceChip(
+          label: const Text('wss://'),
+          selected: _showSecureRelayAddress,
+          onSelected: secureAvailable
+              ? (selected) {
+                  if (selected && mounted) {
+                    setState(() {
+                      _showSecureRelayAddress = true;
+                    });
+                  }
+                }
+              : null,
+        ),
+        if (!secureAvailable)
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              'TLS proxy not running',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.outline),
+            ),
+          ),
+      ],
+    );
   }
 
   void _startLogRefreshTimer() {
@@ -119,11 +163,11 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           // If no scroll controller yet, auto scroll on first load
           shouldAutoScroll = true;
         }
-        
+
         setState(() {
           _logContent = content;
         });
-        
+
         // Auto scroll to bottom only if user was already near bottom or forced
         if (shouldAutoScroll) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -378,12 +422,12 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     }
   }
 
-
   Widget _buildInfoItem(String label, Widget value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
@@ -455,34 +499,47 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                     const SizedBox(height: 16),
                     _buildInfoItem(
                       'Address',
-                      GestureDetector(
-                        onTap: () {
-                          final address = _resolvedRelayAddress();
-                          Clipboard.setData(ClipboardData(text: address));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Address copied to clipboard'),
-                              duration: Duration(seconds: 2),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              final address = _resolvedRelayAddress();
+                              Clipboard.setData(ClipboardData(text: address));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Address copied to clipboard'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _resolvedRelayAddress(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.copy,
+                                  size: 18,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _resolvedRelayAddress(),
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.copy,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildAddressModeSelector(),
+                        ],
                       ),
                     ),
                     _buildInfoItem(
@@ -493,9 +550,10 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                       'Database Size',
                       Text(
                         _formatBytes(_databaseSize),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
                       ),
                     ),
                     if (_stats != null)
@@ -503,23 +561,26 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                         'Total Events',
                         Text(
                           _formatNumber(_stats!['totalEvents'] as int? ?? 0),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                       ),
                     _buildInfoItem(
                       'Service Uptime',
                       Text(
                         _formatDuration(_currentSessionUptime.inSeconds),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
                       ),
                     ),
                     // Relay Logs as a list item
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -533,13 +594,18 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               children: [
                                 Text(
                                   'Relay Logs',
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                                 Text(
-                                  _showLogs ? 'Tap to hide logs' : 'Tap to view logs',
+                                  _showLogs
+                                      ? 'Tap to hide logs'
+                                      : 'Tap to view logs',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -557,7 +623,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                   minHeight: 200,
                                   maxHeight: 200,
                                 ),
-                                margin: const EdgeInsets.only(bottom: 8, top: 8),
+                                margin:
+                                    const EdgeInsets.only(bottom: 8, top: 8),
                                 decoration: BoxDecoration(
                                   color: Colors.black87,
                                   borderRadius: BorderRadius.circular(12),
@@ -616,7 +683,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                     Expanded(
                                       child: OutlinedButton.icon(
                                         onPressed: () async {
-                                          final confirmed = await showDialog<bool>(
+                                          final confirmed =
+                                              await showDialog<bool>(
                                             context: context,
                                             builder: (context) => AlertDialog(
                                               title: const Text('Clear Log'),
@@ -625,11 +693,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                               ),
                                               actions: [
                                                 TextButton(
-                                                  onPressed: () => Navigator.of(context).pop(false),
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .pop(false),
                                                   child: const Text('Cancel'),
                                                 ),
                                                 TextButton(
-                                                  onPressed: () => Navigator.of(context).pop(true),
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .pop(true),
                                                   style: TextButton.styleFrom(
                                                     foregroundColor: Colors.red,
                                                   ),
@@ -638,24 +710,33 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                               ],
                                             ),
                                           );
-                                          
+
                                           if (confirmed == true) {
-                                            final success = await RelayService.instance.clearLogFile();
+                                            final success = await RelayService
+                                                .instance
+                                                .clearLogFile();
                                             if (mounted) {
                                               if (success) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   const SnackBar(
-                                                    content: Text('Log file cleared'),
-                                                    duration: Duration(seconds: 2),
+                                                    content: Text(
+                                                        'Log file cleared'),
+                                                    duration:
+                                                        Duration(seconds: 2),
                                                   ),
                                                 );
                                                 // Reload logs to show empty content
-                                                _loadLogs(forceScrollToBottom: true);
+                                                _loadLogs(
+                                                    forceScrollToBottom: true);
                                               } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   const SnackBar(
-                                                    content: Text('Failed to clear log file'),
-                                                    duration: Duration(seconds: 2),
+                                                    content: Text(
+                                                        'Failed to clear log file'),
+                                                    duration:
+                                                        Duration(seconds: 2),
                                                   ),
                                                 );
                                               }
@@ -665,7 +746,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                         icon: const Icon(Icons.clear, size: 18),
                                         label: const Text('Clear Log'),
                                         style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12),
                                           side: BorderSide(
                                             color: Colors.red.shade300,
                                           ),
@@ -678,12 +760,16 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                       child: ElevatedButton.icon(
                                         onPressed: () async {
                                           if (_logContent.isNotEmpty) {
-                                            Clipboard.setData(ClipboardData(text: _logContent));
+                                            Clipboard.setData(ClipboardData(
+                                                text: _logContent));
                                             if (mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('Log content copied to clipboard'),
-                                                  duration: Duration(seconds: 2),
+                                                  content: Text(
+                                                      'Log content copied to clipboard'),
+                                                  duration:
+                                                      Duration(seconds: 2),
                                                 ),
                                               );
                                             }
@@ -692,9 +778,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                         icon: const Icon(Icons.copy, size: 18),
                                         label: const Text('Copy Log'),
                                         style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          backgroundColor: Theme.of(context).colorScheme.primary,
-                                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12),
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          foregroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary,
                                         ),
                                       ),
                                     ),
@@ -718,10 +809,12 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.delete_outline),
-                          label: Text(_isClearing ? 'Clearing...' : 'Clear Database'),
+                          label: Text(
+                              _isClearing ? 'Clearing...' : 'Clear Database'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
@@ -748,5 +841,3 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     );
   }
 }
-
-

@@ -44,22 +44,23 @@ class ServerNIP46Signer {
 
   Future<void> start(String getPort) async {
     port = getPort;
-    
+
     try {
       await _threadPool.initialize();
-      AegisLogger.info('The thread pool has been initialized successfully and can start processing requests');
+      AegisLogger.info(
+          'The thread pool has been initialized successfully and can start processing requests');
     } catch (e) {
       AegisLogger.error('Thread pool initialization failed', e);
     }
-    
+
     await _startWebSocketServer();
   }
 
-  void generateKeyPair()  {
+  void generateKeyPair() {
     // String getIpAddress = await ServerNIP46Signer.getIpAddress();
-    final relayUrl = LocalTlsProxyManagerRust.instance.relayUrlFor(port);
+    final relayUrl = getRelayUrlForDisplay(secure: true);
     AegisLogger.info("✅ NIP-46  $relayUrl");
-    String bunkerUrl =  getBunkerUrl();
+    String bunkerUrl = getBunkerUrl();
     AegisLogger.info("🔗 Bunker URL: $bunkerUrl");
   }
 
@@ -72,7 +73,8 @@ class ServerNIP46Signer {
     final fallbackPort = PlatformUtils.isDesktop ? 18081 : 8081;
     final wsPort =
         int.tryParse(relayService!.port) ?? int.tryParse(port) ?? fallbackPort;
-    AegisLogger.info('🔧 Attempting to start TLS proxy: platform=${PlatformUtils.platformName}, wsPort=$wsPort');
+    AegisLogger.info(
+        '🔧 Attempting to start TLS proxy: platform=${PlatformUtils.platformName}, wsPort=$wsPort');
     try {
       await LocalTlsProxyManagerRust.instance.ensureStarted(wsPort: wsPort);
       AegisLogger.info('✅ TLS proxy start completed');
@@ -80,7 +82,7 @@ class ServerNIP46Signer {
       AegisLogger.error('❌ Failed to start local TLS proxy', e);
       AegisLogger.error('Stack trace', stackTrace);
     }
-    
+
     // Initialize and connect client to the relay
     await _initializeClient();
   }
@@ -91,7 +93,8 @@ class ServerNIP46Signer {
       // Add and connect to local relay
       final relayUrl = relayService!.relayUrl;
 
-      Connect.sharedInstance.addConnectStatusListener((relay, status, relayKinds) async {
+      Connect.sharedInstance
+          .addConnectStatusListener((relay, status, relayKinds) async {
         if (status == 1 && relay == relayUrl) {
           await _subscribeToNIP46Events();
         }
@@ -99,7 +102,6 @@ class ServerNIP46Signer {
       // Get Connect instance
       _connect = Connect();
       await _connect!.connect(relayUrl, relayKind: RelayKind.remoteSigner);
-      
     } catch (e) {
       AegisLogger.error('Failed to initialize client', e);
       rethrow;
@@ -116,16 +118,17 @@ class ServerNIP46Signer {
       // Collect every account pubkey so each account remains reachable
       final serverPubkeys = await _getAllServerPubkeys();
       if (serverPubkeys.isEmpty) {
-        AegisLogger.warning('No server pubkeys available for NIP-46 subscription');
+        AegisLogger.warning(
+            'No server pubkeys available for NIP-46 subscription');
         return;
       }
-      
+
       // Create subscription filter for kind 24133 events with p tags = all pubkeys
       final filter = Filter(
         kinds: [24133],
         p: serverPubkeys,
       );
-      
+
       // Subscribe using Connect
       _subscriptionId = _connect!.addSubscription(
         [filter],
@@ -158,13 +161,13 @@ class ServerNIP46Signer {
     final currentPubkey = Account.sharedInstance.currentPubkey;
     final storedAccounts = await AccountManager.getAllAccount();
     final pubkeys = <String>{};
-    
+
     if (currentPubkey.isNotEmpty) {
       pubkeys.add(currentPubkey);
     }
     pubkeys.addAll(manager.accountMap.keys.where((key) => key.isNotEmpty));
     pubkeys.addAll(storedAccounts.keys.where((key) => key.isNotEmpty));
-    
+
     return pubkeys.toList();
   }
 
@@ -172,10 +175,12 @@ class ServerNIP46Signer {
   Future<void> _handleEvent(Event event) async {
     try {
       if (!_threadPool.isInitialized) {
-        AegisLogger.warning('The thread pool is not initialized. Attempt to reinitialize...');
+        AegisLogger.warning(
+            'The thread pool is not initialized. Attempt to reinitialize...');
         try {
           await _threadPool.initialize();
-          AegisLogger.info('The reinitialization of the thread pool was successful');
+          AegisLogger.info(
+              'The reinitialization of the thread pool was successful');
         } catch (e) {
           AegisLogger.error('Thread pool reinitialization failed', e);
           return;
@@ -184,38 +189,49 @@ class ServerNIP46Signer {
 
       // Update application connection status
       await _dealwithApplication(event.pubkey);
-      
-      final targetServerPubkey = _extractServerPubkey(event) ?? Account.sharedInstance.currentPubkey;
-      final serverPrivate = targetServerPubkey.isNotEmpty ? await _getServerPrivateKey(targetServerPubkey) : null;
+
+      final targetServerPubkey =
+          _extractServerPubkey(event) ?? Account.sharedInstance.currentPubkey;
+      final serverPrivate = targetServerPubkey.isNotEmpty
+          ? await _getServerPrivateKey(targetServerPubkey)
+          : null;
       if (targetServerPubkey.isEmpty || serverPrivate == null) {
-        AegisLogger.error('Failed to locate server keypair for event ${event.id}');
+        AegisLogger.error(
+            'Failed to locate server keypair for event ${event.id}');
         return;
       }
 
       NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
-          event.content, event.pubkey, LocalNostrSigner.instance, serverPrivate);
+          event.content,
+          event.pubkey,
+          LocalNostrSigner.instance,
+          serverPrivate);
 
       if (remoteRequest == null) {
-        AegisLogger.warning('Failed to decrypt NIP-46 request from ${event.pubkey}');
+        AegisLogger.warning(
+            'Failed to decrypt NIP-46 request from ${event.pubkey}');
         return;
       }
 
       // Process the remote request
       String? responseJson = await _processRemoteRequest(remoteRequest, event);
       if (responseJson == null) return;
-      
+
       // Encrypt response
-      String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
+      String? responseJsonEncrypt = await LocalNostrSigner.instance
+          .nip44Encrypt(serverPrivate, responseJson, event.pubkey);
 
       // Create response event using local Event utilities
       final signEvent = Event.from(
         kind: event.kind,
-        tags: [["p", event.pubkey]],
+        tags: [
+          ["p", event.pubkey]
+        ],
         content: responseJsonEncrypt ?? '',
         pubkey: targetServerPubkey,
         privkey: serverPrivate,
       );
-      
+
       // Send response event to relay using Connect
       try {
         final relayUrl = relayService!.relayUrl;
@@ -274,17 +290,18 @@ class ServerNIP46Signer {
     try {
       final account = Account.sharedInstance;
       final manager = AccountManager.sharedInstance;
-      final app = account.authToNostrConnectInfo[pubkey] ?? 
-                 manager.applicationMap[pubkey]?.value;
-      
+      final app = account.authToNostrConnectInfo[pubkey] ??
+          manager.applicationMap[pubkey]?.value;
+
       await SignedEventManager.sharedInstance.recordSignedEvent(
         eventId: eventId,
         eventKind: eventKind,
         eventContent: eventContent,
-        applicationName: _formatApplicationName(customAppName ?? app?.name, pubkey),
+        applicationName:
+            _formatApplicationName(customAppName ?? app?.name, pubkey),
         applicationPubkey: pubkey,
         status: 1,
-        metadata:metadata,
+        metadata: metadata,
       );
     } catch (e) {
       AegisLogger.error('Failed to record signed event: $eventContent', e);
@@ -293,13 +310,13 @@ class ServerNIP46Signer {
 
   Future<String?> _processRemoteRequest(
       NostrRemoteRequest remoteRequest, Event event) async {
-
     Map responseJson = {};
-    String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+    String? serverPrivate =
+        LocalNostrSigner.instance.getPrivateKey(event.pubkey);
     switch (remoteRequest.method) {
       case "connect":
         responseJson = {"id": remoteRequest.id, "result": "ack", "error": ''};
-        
+
         // Record connection event
         await _recordSignedEvent(
           eventId: remoteRequest.id,
@@ -311,7 +328,7 @@ class ServerNIP46Signer {
 
       case "ping":
         responseJson = {"id": remoteRequest.id, "result": "pong", "error": ''};
-        
+
         // Record ping event
         await _recordSignedEvent(
           eventId: remoteRequest.id,
@@ -329,19 +346,23 @@ class ServerNIP46Signer {
           "error": "",
         };
 
-        ClientAuthDBISAR? client = instance.authToNostrConnectInfo[event.pubkey];
-        client ??= AccountManager.sharedInstance.applicationMap[event.pubkey]?.value;
+        ClientAuthDBISAR? client =
+            instance.authToNostrConnectInfo[event.pubkey];
+        client ??=
+            AccountManager.sharedInstance.applicationMap[event.pubkey]?.value;
 
-        if (client != null)  break;
+        if (client != null) break;
 
         final isSuccess = await Account.authToClient();
         if (isSuccess) {
           // Get all bunker applications to calculate index
-          final bunkerApplications = AccountManager.sharedInstance.applicationMap.values
-              .where((app) => app.value.connectionType == EConnectionType.bunker.toInt)
+          final bunkerApplications = AccountManager
+              .sharedInstance.applicationMap.values
+              .where((app) =>
+                  app.value.connectionType == EConnectionType.bunker.toInt)
               .toList();
           final index = bunkerApplications.length + 1;
-          
+
           ClientAuthDBISAR newClient = ClientAuthDBISAR(
             createTimestamp: DateTime.now().millisecondsSinceEpoch,
             pubkey: instance.currentPubkey,
@@ -352,7 +373,7 @@ class ServerNIP46Signer {
           AccountManager.sharedInstance.addApplicationMap(newClient);
           try {
             await ClientAuthDBISAR.saveFromDB(newClient);
-            
+
             // Record connection event
             await _recordSignedEvent(
               eventId: remoteRequest.id,
@@ -376,8 +397,9 @@ class ServerNIP46Signer {
       case "sign_event":
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null && serverPrivate != null) {
-          final privateKey = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
-          
+          final privateKey =
+              LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+
           // Parse the incoming event JSON and ensure it has all required fields
           Map<String, dynamic> eventData;
           try {
@@ -391,45 +413,53 @@ class ServerNIP46Signer {
             };
             break;
           }
-          
+
           // Ensure pubkey field exists, use current pubkey if missing
-          if (!eventData.containsKey('pubkey') || eventData['pubkey'] == null || eventData['pubkey'].toString().isEmpty) {
-            eventData['pubkey'] = LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? event.pubkey;
-            AegisLogger.info('Added missing pubkey field: ${eventData['pubkey']}');
+          if (!eventData.containsKey('pubkey') ||
+              eventData['pubkey'] == null ||
+              eventData['pubkey'].toString().isEmpty) {
+            eventData['pubkey'] =
+                LocalNostrSigner.instance.getPublicKey(event.pubkey) ??
+                    event.pubkey;
+            AegisLogger.info(
+                'Added missing pubkey field: ${eventData['pubkey']}');
           }
-          
+
           // Ensure created_at field exists
-          if (!eventData.containsKey('created_at') || eventData['created_at'] == null) {
-            eventData['created_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          if (!eventData.containsKey('created_at') ||
+              eventData['created_at'] == null) {
+            eventData['created_at'] =
+                DateTime.now().millisecondsSinceEpoch ~/ 1000;
           }
-          
+
           // Re-encode the event JSON with all required fields
           final completeEventJson = jsonEncode(eventData);
-          
+
           final nativeRes = rust_api.signEvent(
             eventJson: completeEventJson,
             privateKey: privateKey!,
           );
           // Record the signed event
-            try {
-              // Parse the signed event to get event details
-              final signedEvent = jsonDecode(nativeRes);
-              final eventId = signedEvent['id'] as String? ?? '';
-              final eventKind = signedEvent['kind'] as int? ?? -1;
-              final eventContent = signedEvent['content'] as String? ?? '';
-              
-              // Get application info
-              await _recordSignedEvent(
-                eventId: eventId,
-                eventKind: eventKind,
-                eventContent: eventContent.isNotEmpty && eventContent.length < 20 ? eventContent : 'Signed Event (Kind $eventKind)',
-                pubkey: event.pubkey,
-                metadata: contentStr,
+          try {
+            // Parse the signed event to get event details
+            final signedEvent = jsonDecode(nativeRes);
+            final eventId = signedEvent['id'] as String? ?? '';
+            final eventKind = signedEvent['kind'] as int? ?? -1;
+            final eventContent = signedEvent['content'] as String? ?? '';
 
-              );
-            } catch (e) {
-              AegisLogger.error('Failed to record signed event', e);
-            }
+            // Get application info
+            await _recordSignedEvent(
+              eventId: eventId,
+              eventKind: eventKind,
+              eventContent: eventContent.isNotEmpty && eventContent.length < 20
+                  ? eventContent
+                  : 'Signed Event (Kind $eventKind)',
+              pubkey: event.pubkey,
+              metadata: contentStr,
+            );
+          } catch (e) {
+            AegisLogger.error('Failed to record signed event', e);
+          }
 
           responseJson = {
             "id": remoteRequest.id,
@@ -442,7 +472,7 @@ class ServerNIP46Signer {
       case "nip04_encrypt":
         String? result = await LocalNostrSigner.instance
             .encrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        
+
         // Record NIP-04 encryption event
         if (result != null) {
           await _recordSignedEvent(
@@ -452,14 +482,18 @@ class ServerNIP46Signer {
             pubkey: event.pubkey,
           );
         }
-        
-        responseJson = {"id": remoteRequest.id, "result": result ?? '', "error": ''};
+
+        responseJson = {
+          "id": remoteRequest.id,
+          "result": result ?? '',
+          "error": ''
+        };
         break;
 
       case "nip04_decrypt":
         String? result = await LocalNostrSigner.instance
             .decrypt(remoteRequest.params[0], remoteRequest.params[1]);
-        
+
         // Record NIP-04 decryption event
         if (result != null) {
           await _recordSignedEvent(
@@ -469,15 +503,21 @@ class ServerNIP46Signer {
             pubkey: event.pubkey,
           );
         }
-        
-        responseJson ={"id": remoteRequest.id, "result": result ?? '', "error": ''};
+
+        responseJson = {
+          "id": remoteRequest.id,
+          "result": result ?? '',
+          "error": ''
+        };
         break;
 
       case "nip44_decrypt":
-        if(serverPrivate == null ||  remoteRequest.params[1] is! String || remoteRequest.params[0] is! String ) break;
-        String? result = await LocalNostrSigner.instance
-            .nip44Decrypt(serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);
-        
+        if (serverPrivate == null ||
+            remoteRequest.params[1] is! String ||
+            remoteRequest.params[0] is! String) break;
+        String? result = await LocalNostrSigner.instance.nip44Decrypt(
+            serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);
+
         // Record NIP-44 decryption event
         if (result != null) {
           await _recordSignedEvent(
@@ -487,16 +527,22 @@ class ServerNIP46Signer {
             pubkey: event.pubkey,
           );
         }
-        
-        responseJson = {"id": remoteRequest.id, "result": result ?? '', "error": ''};
+
+        responseJson = {
+          "id": remoteRequest.id,
+          "result": result ?? '',
+          "error": ''
+        };
         break;
 
       case "nip44_encrypt":
-        if(serverPrivate == null ||  remoteRequest.params[1] is! String || remoteRequest.params[0] is! String ) break;
+        if (serverPrivate == null ||
+            remoteRequest.params[1] is! String ||
+            remoteRequest.params[0] is! String) break;
 
-        String? result = await LocalNostrSigner.instance
-            .nip44Encrypt(serverPrivate, remoteRequest.params[1]!,remoteRequest.params[0]! );
-        
+        String? result = await LocalNostrSigner.instance.nip44Encrypt(
+            serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);
+
         // Record NIP-44 encryption event
         if (result != null) {
           await _recordSignedEvent(
@@ -506,8 +552,12 @@ class ServerNIP46Signer {
             pubkey: event.pubkey,
           );
         }
-        
-        responseJson = {"id": remoteRequest.id, "result": result ?? '', "error": ''};
+
+        responseJson = {
+          "id": remoteRequest.id,
+          "result": result ?? '',
+          "error": ''
+        };
         break;
 
       default:
@@ -517,22 +567,36 @@ class ServerNIP46Signer {
           "error": ''
         };
     }
-    
+
     String? encodeResponseJson;
     try {
-      encodeResponseJson = await _threadPool.runOtherTask(() async => jsonEncode(responseJson));
+      encodeResponseJson =
+          await _threadPool.runOtherTask(() async => jsonEncode(responseJson));
     } catch (e) {
       AegisLogger.error('JSON encoding failed', e);
       encodeResponseJson = null;
     }
 
-
     return encodeResponseJson;
   }
 
-  String getBunkerUrl()  {
-    // String ipAddress = AegisWebSocketServer.instance.ip;
-    final relayUrl = LocalTlsProxyManagerRust.instance.relayUrlFor(port);
+  String getRelayUrlForDisplay({bool secure = false}) {
+    final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
+    final rawUrl = relayService?.relayUrl ?? 'ws://127.0.0.1:$defaultPort';
+    if (!secure) {
+      return rawUrl;
+    }
+    final uri = Uri.tryParse(rawUrl);
+    final portNumber = uri?.port ?? defaultPort;
+    final proxyManager = LocalTlsProxyManagerRust.instance;
+    if (!proxyManager.isRunning) {
+      return rawUrl;
+    }
+    return proxyManager.relayUrlFor(portNumber.toString());
+  }
+
+  String getBunkerUrl({bool secure = true}) {
+    final relayUrl = getRelayUrlForDisplay(secure: secure);
     return "bunker://${LocalNostrSigner.instance.publicKey}?relay=$relayUrl";
   }
 
@@ -556,7 +620,8 @@ class ServerNIP46Signer {
     final account = Account.sharedInstance;
     final manager = AccountManager.sharedInstance;
 
-    ClientAuthDBISAR? app = account.authToNostrConnectInfo[clientPubkey] ?? manager.applicationMap[clientPubkey]?.value;
+    ClientAuthDBISAR? app = account.authToNostrConnectInfo[clientPubkey] ??
+        manager.applicationMap[clientPubkey]?.value;
     if (app == null) return;
 
     if (!manager.applicationMap.containsKey(clientPubkey)) {
@@ -577,16 +642,17 @@ class ServerNIP46Signer {
         AegisLogger.error('Failed to close subscription', e);
       }
     }
-    
+
     // Close relay connection
     if (_connect != null && relayService != null) {
       try {
-        await _connect!.closeConnects([relayService!.relayUrl], RelayKind.remoteSigner);
+        await _connect!
+            .closeConnects([relayService!.relayUrl], RelayKind.remoteSigner);
       } catch (e) {
         AegisLogger.error('Failed to close relay connection', e);
       }
     }
-    
+
     // Stop relay
     if (relayService != null) {
       await relayService!.stop();
@@ -597,10 +663,10 @@ class ServerNIP46Signer {
     } catch (e) {
       AegisLogger.error('Failed to stop local TLS proxy', e);
     }
-    
+
     // Dispose thread pool
     _threadPool.dispose();
-    
+
     AegisLogger.info('✅ ServerNIP46Signer disposed');
   }
 }
