@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../common/common_constant.dart';
 import '../navigator/navigator.dart';
 import '../pages/login/login.dart';
 import 'account.dart';
@@ -11,6 +8,7 @@ import 'nostr_wallet_connection_parser.dart';
 import 'logger.dart';
 import 'platform_utils.dart';
 import '../db/clientAuthDB_isar.dart';
+import 'local_tls_proxy_manager_rust.dart';
 
 /// URL Scheme Handler for Aegis and NostrSigner schemes
 class UrlSchemeHandler {
@@ -22,7 +20,6 @@ class UrlSchemeHandler {
   static const int _errInvalid = 2001;
   static const int _errCancel = 1001;
   static const int _errParse = 2002;
-  static const int _errMethod = 2003;
 
   /// Handle URL scheme calls
   static Future<void> handleScheme(String? url) async {
@@ -41,7 +38,9 @@ class UrlSchemeHandler {
     void openSuccess(String? cb) {
       if (cb == null) return;
       final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
-      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=ws://127.0.0.1:$defaultPort');
+      final relayUrl =
+          LocalTlsProxyManagerRust.instance.relayUrlFor(defaultPort.toString());
+      LaunchSchemeUtils.open('$cb?x-source=$sourceApp&relay=$relayUrl');
     }
 
     String? encodedNc;

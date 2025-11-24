@@ -14,6 +14,8 @@ import '../nostr/signer/local_nostr_signer.dart';
 import 'relay_service.dart';
 import 'connect.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
+import 'local_tls_proxy_manager_rust.dart';
+import 'platform_utils.dart';
 
 class ClientRequest {
   final String method;
@@ -54,7 +56,8 @@ class ServerNIP46Signer {
 
   void generateKeyPair()  {
     // String getIpAddress = await ServerNIP46Signer.getIpAddress();
-    AegisLogger.info("✅ NIP-46  ws://127.0.0.1:$port");
+    final relayUrl = LocalTlsProxyManagerRust.instance.relayUrlFor(port);
+    AegisLogger.info("✅ NIP-46  $relayUrl");
     String bunkerUrl =  getBunkerUrl();
     AegisLogger.info("🔗 Bunker URL: $bunkerUrl");
   }
@@ -64,6 +67,18 @@ class ServerNIP46Signer {
     relayService = RelayService.instance;
     await relayService!.start(port: port);
     AegisLogger.info('✅ Relay service started on ${relayService!.relayUrl}');
+
+    final fallbackPort = PlatformUtils.isDesktop ? 18081 : 8081;
+    final wsPort =
+        int.tryParse(relayService!.port) ?? int.tryParse(port) ?? fallbackPort;
+    AegisLogger.info('🔧 Attempting to start TLS proxy: platform=${PlatformUtils.platformName}, wsPort=$wsPort');
+    try {
+      await LocalTlsProxyManagerRust.instance.ensureStarted(wsPort: wsPort);
+      AegisLogger.info('✅ TLS proxy start completed');
+    } catch (e, stackTrace) {
+      AegisLogger.error('❌ Failed to start local TLS proxy', e);
+      AegisLogger.error('Stack trace', stackTrace);
+    }
     
     // Initialize and connect client to the relay
     await _initializeClient();
@@ -463,7 +478,8 @@ class ServerNIP46Signer {
 
   String getBunkerUrl()  {
     // String ipAddress = AegisWebSocketServer.instance.ip;
-    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=ws://127.0.0.1:$port";
+    final relayUrl = LocalTlsProxyManagerRust.instance.relayUrlFor(port);
+    return "bunker://${LocalNostrSigner.instance.publicKey}?relay=$relayUrl";
   }
 
   static Future<String> getIpAddress() async {
@@ -520,6 +536,12 @@ class ServerNIP46Signer {
     // Stop relay
     if (relayService != null) {
       await relayService!.stop();
+    }
+
+    try {
+      await LocalTlsProxyManagerRust.instance.stop();
+    } catch (e) {
+      AegisLogger.error('Failed to stop local TLS proxy', e);
     }
     
     // Dispose thread pool

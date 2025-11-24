@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/platform_utils.dart';
+import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
 
 /// Local Relay Info Page
 /// Shows relay address, status, and database size with option to clear data
@@ -67,6 +68,24 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   void _stopUptimeTimer() {
     _uptimeTimer?.cancel();
     _uptimeTimer = null;
+  }
+
+  String _resolvedRelayAddress() {
+    final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
+    // Rust implementation works on all platforms
+    // if (!PlatformUtils.isIOS && !PlatformUtils.isMacOS) {
+    //   return _relayUrl ?? 'ws://127.0.0.1:$defaultPort';
+    // }
+
+    if (_relayUrl != null && _relayUrl!.startsWith('wss://')) {
+      return _relayUrl!;
+    }
+
+    final uri = _relayUrl != null ? Uri.tryParse(_relayUrl!) : null;
+    final port = uri?.port ?? defaultPort;
+    final proxyManager = LocalTlsProxyManagerRust.instance;
+    AegisLogger.info('🔍 _resolvedRelayAddress: platform=${PlatformUtils.platformName}, port=$port, proxyRunning=${proxyManager.isRunning}');
+    return proxyManager.relayUrlFor(port.toString());
   }
 
   void _startLogRefreshTimer() {
@@ -438,8 +457,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                       'Address',
                       GestureDetector(
                         onTap: () {
-                          final defaultPort = PlatformUtils.isDesktop ? 18081 : 8081;
-                          final address = _relayUrl ?? 'ws://127.0.0.1:$defaultPort';
+                          final address = _resolvedRelayAddress();
                           Clipboard.setData(ClipboardData(text: address));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -452,7 +470,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              _relayUrl ?? 'ws://127.0.0.1:${PlatformUtils.isDesktop ? 18081 : 8081}',
+                              _resolvedRelayAddress(),
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
                                   ),

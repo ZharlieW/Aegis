@@ -62,11 +62,11 @@ nostrsigner://x-callback-url/auth/nip46?
 ##### 2.1.1 Success (`x-success`)
 ```text
 sourceApp://x-callback-url/authSuccess?
-    x-source=aegis&relay=ws://127.0.0.1:8081
+    x-source=aegis&relay=wss://127.0.0.1:28443 (iOS) or ws://127.0.0.1:8081
 
 # Or when using nostrsigner:// scheme:
 sourceApp://x-callback-url/authSuccess?
-    x-source=nostrsigner&relay=ws://127.0.0.1:8081
+    x-source=nostrsigner&relay=wss://127.0.0.1:28443 (iOS) or ws://127.0.0.1:8081
 ```
 | Parameter | Description |
 |-----------|-------------|
@@ -204,7 +204,7 @@ void example() async {
 
 -	iOS URL Scheme Support – Enable Nostr apps on iOS to connect and authorize via custom URL schemes. ✅
 	
--	Local Relay Support – Connect with local relay servers like ws://127.0.0.1:8081 for secure and private communication. ✅
+-	Local Relay Support – Connect with local relay servers (wss://127.0.0.1:28443 on iOS, ws://127.0.0.1:8081 elsewhere) for secure and private communication. ✅
 
 -	Android Platform Support – Full support for Android platforms, ensuring compatibility across mobile devices. ✅
 	
