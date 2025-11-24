@@ -56,29 +56,30 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
             const SizedBox(
               height: 40,
             ),
-            _buildBunkerModeSelector(),
-            const SizedBox(height: 16),
-            Row(
+            Column(
               children: [
-                Expanded(
-                  child: Text(
-                    _bunkerUrl,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
                 GestureDetector(
                   onTap: () => TookKit.copyKey(context, _bunkerUrl),
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Center(
-                      child: CommonImage(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _bunkerUrl,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      CommonImage(
                         iconName: 'copy_icon.png',
                         size: 24,
                       ),
-                    ),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 8),
+                _buildBunkerModeSelector(),
               ],
             ),
           ],
@@ -104,33 +105,47 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ChoiceChip(
-          label: const Text('ws://'),
-          selected: !_showSecureUrl,
-          onSelected: (selected) {
-            if (selected) {
-              setState(() {
-                _showSecureUrl = false;
-              });
-              _updateBunkerUrl();
-            }
-          },
-        ),
-        const SizedBox(width: 12),
-        ChoiceChip(
-          label: const Text('wss://'),
-          selected: _showSecureUrl,
-          onSelected: secureAvailable
-              ? (selected) {
-                  if (selected) {
-                    setState(() {
-                      _showSecureUrl = true;
-                    });
-                    _updateBunkerUrl();
-                  }
+        Wrap(
+          spacing: 12,
+          children: [
+            ChoiceChip(
+              label: const Text('ws://'),
+              selected: !_showSecureUrl,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _showSecureUrl = false;
+                  });
+                  _updateBunkerUrl();
                 }
-              : null,
+              },
+            ),
+            ChoiceChip(
+              label: const Text('wss://'),
+              selected: _showSecureUrl,
+              onSelected: secureAvailable
+                  ? (selected) {
+                      if (selected) {
+                        setState(() {
+                          _showSecureUrl = true;
+                        });
+                        _updateBunkerUrl();
+                      }
+                    }
+                  : null,
+            ),
+          ],
         ),
+        if (!secureAvailable)
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              'TLS proxy not running',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+            ),
+          ),
       ],
     );
   }

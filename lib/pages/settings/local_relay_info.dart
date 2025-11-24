@@ -90,36 +90,41 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
 
   Widget _buildAddressModeSelector() {
     final secureAvailable = LocalTlsProxyManagerRust.instance.isRunning;
-    return Wrap(
-      spacing: 8,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ChoiceChip(
-          label: const Text('ws://'),
-          selected: !_showSecureRelayAddress,
-          onSelected: (selected) {
-            if (selected && mounted) {
-              setState(() {
-                _showSecureRelayAddress = false;
-              });
-            }
-          },
-        ),
-        ChoiceChip(
-          label: const Text('wss://'),
-          selected: _showSecureRelayAddress,
-          onSelected: secureAvailable
-              ? (selected) {
-                  if (selected && mounted) {
-                    setState(() {
-                      _showSecureRelayAddress = true;
-                    });
-                  }
+        Wrap(
+          spacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('ws://'),
+              selected: !_showSecureRelayAddress,
+              onSelected: (selected) {
+                if (selected && mounted) {
+                  setState(() {
+                    _showSecureRelayAddress = false;
+                  });
                 }
-              : null,
+              },
+            ),
+            ChoiceChip(
+              label: const Text('wss://'),
+              selected: _showSecureRelayAddress,
+              onSelected: secureAvailable
+                  ? (selected) {
+                      if (selected && mounted) {
+                        setState(() {
+                          _showSecureRelayAddress = true;
+                        });
+                      }
+                    }
+                  : null,
+            ),
+          ],
         ),
         if (!secureAvailable)
           Padding(
-            padding: const EdgeInsets.only(left: 4),
+            padding: const EdgeInsets.only(left: 8),
             child: Text(
               'TLS proxy not running',
               style: Theme.of(context)

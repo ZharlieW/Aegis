@@ -69,6 +69,35 @@ class ApplicationInfoState extends State<ApplicationInfo> {
             children: [
               _qrCodeWidget(),
               const SizedBox(height: 20),
+              if (isBunnker) ...[
+                Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () => TookKit.copyKey(context, _bunkerUrl),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _bunkerUrl,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          CommonImage(
+                            iconName: 'copy_icon.png',
+                            size: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildBunkerModeSelector(),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
               _optionItemWidget(
                 title: 'Application name',
                 content: client.name ?? '--',
@@ -97,9 +126,10 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 },
                 child: _itemWidget(
                   'Activities',
-                  rightWidget: CommonImage(
-                    iconName: 'log_icon.png',
-                    size: 24,
+                  rightWidget: Icon(
+                    Icons.chevron_right,
+                    size: 28,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -131,18 +161,6 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 iconName: 'copy_icon.png',
                 onTap: () => TookKit.copyKey(context, client.clientPubkey),
               ),
-              _optionItemWidget(
-                isShowWidget: isBunnker,
-                title: 'Bunker info',
-                content: isBunnker ? _bunkerUrl : client.scheme ?? '--',
-                iconName: 'copy_icon.png',
-                onTap: () => TookKit.copyKey(context, _bunkerUrl),
-              ),
-              if (isBunnker)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _buildBunkerModeSelector(),
-                ),
               const SizedBox(
                 height: 40,
               ),
