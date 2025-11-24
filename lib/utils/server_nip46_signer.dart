@@ -40,6 +40,7 @@ class ServerNIP46Signer {
   RelayService? relayService;
   Connect? _connect;
   final ThreadPoolManager _threadPool = ThreadPoolManager();
+  bool _accountsInitialized = false;
 
   Future<void> start(String getPort) async {
     port = getPort;
@@ -112,13 +113,17 @@ class ServerNIP46Signer {
       if (_subscriptionId.isNotEmpty) {
         Connect.sharedInstance.closeRequests(_subscriptionId, relay: relayUrl);
       }
-      // Get server public key to subscribe to events addressed to us
-      final serverPubkey = LocalNostrSigner.instance.publicKey;
+      // Collect every account pubkey so each account remains reachable
+      final serverPubkeys = await _getAllServerPubkeys();
+      if (serverPubkeys.isEmpty) {
+        AegisLogger.warning('No server pubkeys available for NIP-46 subscription');
+        return;
+      }
       
-      // Create subscription filter for kind 24133 events with p tag = our pubkey
+      // Create subscription filter for kind 24133 events with p tags = all pubkeys
       final filter = Filter(
         kinds: [24133],
-        p: [serverPubkey],
+        p: serverPubkeys,
       );
       
       // Subscribe using Connect
@@ -137,6 +142,32 @@ class ServerNIP46Signer {
     }
   }
 
+  Future<void> _ensureAccountsInitialized() async {
+    if (_accountsInitialized) return;
+    try {
+      await AccountManager.sharedInstance.initAccountList();
+      _accountsInitialized = true;
+    } catch (e) {
+      AegisLogger.error('Failed to initialize account cache', e);
+    }
+  }
+
+  Future<List<String>> _getAllServerPubkeys() async {
+    await _ensureAccountsInitialized();
+    final manager = AccountManager.sharedInstance;
+    final currentPubkey = Account.sharedInstance.currentPubkey;
+    final storedAccounts = await AccountManager.getAllAccount();
+    final pubkeys = <String>{};
+    
+    if (currentPubkey.isNotEmpty) {
+      pubkeys.add(currentPubkey);
+    }
+    pubkeys.addAll(manager.accountMap.keys.where((key) => key.isNotEmpty));
+    pubkeys.addAll(storedAccounts.keys.where((key) => key.isNotEmpty));
+    
+    return pubkeys.toList();
+  }
+
   /// Handle event from relay (called via Connect callback)
   Future<void> _handleEvent(Event event) async {
     try {
@@ -153,12 +184,16 @@ class ServerNIP46Signer {
 
       // Update application connection status
       await _dealwithApplication(event.pubkey);
-
-      String? serverPrivate = LocalNostrSigner.instance.getPrivateKey(event.pubkey);
-      if(serverPrivate == null) return;
+      
+      final targetServerPubkey = _extractServerPubkey(event) ?? Account.sharedInstance.currentPubkey;
+      final serverPrivate = targetServerPubkey.isNotEmpty ? await _getServerPrivateKey(targetServerPubkey) : null;
+      if (targetServerPubkey.isEmpty || serverPrivate == null) {
+        AegisLogger.error('Failed to locate server keypair for event ${event.id}');
+        return;
+      }
 
       NostrRemoteRequest? remoteRequest = await NostrRemoteRequest.decrypt(
-          event.content, event.pubkey, LocalNostrSigner.instance,serverPrivate);
+          event.content, event.pubkey, LocalNostrSigner.instance, serverPrivate);
 
       if (remoteRequest == null) {
         AegisLogger.warning('Failed to decrypt NIP-46 request from ${event.pubkey}');
@@ -173,15 +208,12 @@ class ServerNIP46Signer {
       String? responseJsonEncrypt = await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, responseJson, event.pubkey);
 
       // Create response event using local Event utilities
-      final serverPubkey = LocalNostrSigner.instance.getPublicKey(event.pubkey) ?? '';
-      final serverPrivkey = LocalNostrSigner.instance.getPrivateKey(event.pubkey) ?? '';
-      
       final signEvent = Event.from(
         kind: event.kind,
         tags: [["p", event.pubkey]],
         content: responseJsonEncrypt ?? '',
-        pubkey: serverPubkey,
-        privkey: serverPrivkey,
+        pubkey: targetServerPubkey,
+        privkey: serverPrivate,
       );
       
       // Send response event to relay using Connect
@@ -198,6 +230,28 @@ class ServerNIP46Signer {
     } catch (e) {
       AegisLogger.error('Failed to handle event notification', e);
     }
+  }
+
+  String? _extractServerPubkey(Event event) {
+    for (final tag in event.tags) {
+      if (tag.isNotEmpty && tag[0] == 'p' && tag.length > 1) {
+        return tag[1];
+      }
+    }
+    return null;
+  }
+
+  Future<String?> _getServerPrivateKey(String serverPubkey) async {
+    await _ensureAccountsInitialized();
+    final manager = AccountManager.sharedInstance;
+    final storedUser = manager.accountMap[serverPubkey];
+    if (storedUser?.privkey != null && storedUser!.privkey!.isNotEmpty) {
+      return storedUser.privkey;
+    }
+    if (serverPubkey == Account.sharedInstance.currentPubkey) {
+      return Account.sharedInstance.currentPrivkey;
+    }
+    return null;
   }
 
   String _formatApplicationName(String? appName, String pubkey) {
