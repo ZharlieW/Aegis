@@ -124,11 +124,6 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                   );
                 },
               ),
-              _itemWidget(
-                'Connect type',
-                subTitle:
-                    ConnectionTypeEx.fromToEnum(client.connectionType).toStr,
-              ),
               _itemWidget('Client app logo',
                   rightWidget: client.image != null && client.image!.isNotEmpty
                       ? Image.network(
