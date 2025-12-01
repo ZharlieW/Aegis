@@ -59,6 +59,20 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 fontWeight: FontWeight.w400,
               ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              AegisNavigator.pushPage(
+                context,
+                (context) => Activities(
+                  clientAuthDBISAR: widget.clientAuthDBISAR,
+                ),
+              );
+            },
+            tooltip: 'Activities',
+          ),
+        ],
       ),
       body: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -115,23 +129,6 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 'Connect type',
                 subTitle:
                     ConnectionTypeEx.fromToEnum(client.connectionType).toStr,
-              ),
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  AegisNavigator.pushPage(
-                      context,
-                      (context) => Activities(
-                          clientAuthDBISAR: widget.clientAuthDBISAR));
-                },
-                child: _itemWidget(
-                  'Activities',
-                  rightWidget: Icon(
-                    Icons.chevron_right,
-                    size: 28,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
               ),
               _itemWidget('Client app logo',
                   rightWidget: client.image != null && client.image!.isNotEmpty
