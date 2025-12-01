@@ -24,10 +24,12 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
     _init();
   }
 
+  /// Initialize the widget and update the bunker URL
   void _init() async {
     _updateBunkerUrl();
   }
 
+  /// Update the bunker URL based on the current secure mode selection
   void _updateBunkerUrl() {
     final url = ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureUrl);
     setState(() {
@@ -80,6 +82,8 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
                 ),
                 const SizedBox(height: 8),
                 _buildBunkerModeSelector(),
+                const SizedBox(height: 16),
+                _buildProtocolExplanation(),
               ],
             ),
           ],
@@ -88,6 +92,7 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
     );
   }
 
+  /// Builds the QR code widget displaying the bunker URL
   Widget _qrCodeWidget() {
     return Container(
       margin: const EdgeInsets.only(top: 50),
@@ -147,6 +152,49 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Builds a protocol explanation widget that describes the difference
+  /// between ws:// and wss:// protocols, and emphasizes that wss://
+  /// is required for mobile PWA or browser usage.
+  Widget _buildProtocolExplanation() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Text(
+          //   '• ws://: Unencrypted WebSocket connection, suitable for local network environments',
+          //   style: Theme.of(context).textTheme.bodyMedium,
+          // ),
+          // const SizedBox(height: 4),
+          // Text(
+          //   '• wss://: Encrypted WebSocket connection (TLS/SSL), provides secure communication',
+          //   style: Theme.of(context).textTheme.bodyMedium,
+          // ),
+          // const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Important: If you need to use this in mobile PWA or browser, you must use wss:// link. Browser security policies require WebSocket connections to use encrypted protocols.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
