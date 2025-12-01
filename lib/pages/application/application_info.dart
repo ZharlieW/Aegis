@@ -1,6 +1,5 @@
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/utils/account_manager.dart';
-import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
@@ -113,7 +112,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 const SizedBox(height: 20),
               ],
               _optionItemWidget(
-                title: 'Application name',
+                title: 'Name',
                 content: client.name ?? '--',
                 iconName: 'edit_icon.png',
                 onTap: () {
@@ -152,10 +151,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 subTitle: TookKit.formatTimestamp(client.createTimestamp ??
                     DateTime.now().millisecondsSinceEpoch),
               ),
-              _optionItemWidget(
+              _copyableItemWidget(
                 title: 'Client pubkey',
                 content: client.clientPubkey,
-                iconName: 'copy_icon.png',
                 onTap: () => TookKit.copyKey(context, client.clientPubkey),
               ),
               const SizedBox(
@@ -319,6 +317,46 @@ class ApplicationInfoState extends State<ApplicationInfo> {
     GestureTapCallback? onTap,
   }) {
     if (!isShowWidget) return const SizedBox();
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => onTap?.call(),
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 20,
+                  ),
+            ),
+            Row(
+              children: [
+                Text(
+                  content,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  size: 28,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a copyable item widget with title on top and content below
+  Widget _copyableItemWidget({
+    required String title,
+    required String content,
+    GestureTapCallback? onTap,
+  }) {
     return Container(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -329,7 +367,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 20,
                 ),
-          ).setPaddingOnly(bottom: 8.0),
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -343,11 +382,11 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               GestureDetector(
                 onTap: () => onTap?.call(),
                 child: CommonImage(
-                  iconName: iconName,
+                  iconName: 'copy_icon.png',
                   size: 24,
                   color: Colors.black,
                 ),
-              ).setPaddingOnly(left: 8.0),
+              ),
             ],
           ),
         ],
