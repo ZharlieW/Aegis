@@ -895,6 +895,14 @@ class ServerNIP46Signer {
       );
       AccountManager.sharedInstance.addApplicationMap(tempApp);
 
+      // Update subscription to include the new remote signer pubkey
+      try {
+        await _subscribeToNIP46Events();
+        AegisLogger.info('Updated NIP-46 subscription with new remote signer pubkey');
+      } catch (e) {
+        AegisLogger.warning('Failed to update subscription after creating application', e);
+      }
+
       AegisLogger.info('Created new bunker application with remote signer pubkey: ${remoteSignerPubkey.substring(0, 16)}...');
       return newClient;
     } catch (e) {
