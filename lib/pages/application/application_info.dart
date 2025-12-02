@@ -142,8 +142,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 subTitle: client.scheme ?? '--',
               ),
               _itemWidget(
-                'Create time',
-                subTitle: TookKit.formatTimestamp(client.createTimestamp ??
+                'Last activity',
+                subTitle: TookKit.formatTimestamp(client.updateTimestamp ?? client.createTimestamp ??
                     DateTime.now().millisecondsSinceEpoch),
               ),
               _copyableItemWidget(

@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import '../../signer/local_nostr_signer.dart';
 import '../../string_util.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';

@@ -276,7 +276,7 @@ class NIP55Handler {
       }
       
       // Get public key from current user's private key
-      final publicKey = rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
+      final publicKey = await rust_api.getPublicKeyFromPrivate(privateKey: currentPrivkey);
       
       // Convert hex public key to npub format for compatibility with nostr-signer-capacitor-plugin
       final npub = Nip19.encodePubkey(publicKey);
@@ -321,7 +321,7 @@ class NIP55Handler {
       }
       
       // Sign the event using Rust
-      final signedEventJson = rust_api.signEvent(
+      final signedEventJson = await rust_api.signEvent(
         eventJson: eventJson,
         privateKey: currentPrivkey,
       );
@@ -372,7 +372,7 @@ class NIP55Handler {
         throw Exception('No current user private key available');
       }
       
-      final encrypted = rust_api.nip04Encrypt(
+      final encrypted = await rust_api.nip04Encrypt(
         plaintext: plaintext,
         publicKey: pubkey,
         privateKey: currentPrivkey,
@@ -416,7 +416,7 @@ class NIP55Handler {
         throw Exception('No current user private key available');
       }
       
-      final decrypted = rust_api.nip04Decrypt(
+      final decrypted = await rust_api.nip04Decrypt(
         ciphertext: ciphertext,
         publicKey: pubkey,
         privateKey: currentPrivkey,
@@ -460,7 +460,7 @@ class NIP55Handler {
         throw Exception('No current user private key available');
       }
       
-      final encrypted = rust_api.nip44Encrypt(
+      final encrypted = await rust_api.nip44Encrypt(
         plaintext: plaintext,
         publicKey: pubkey,
         privateKey: currentPrivkey,
@@ -504,7 +504,7 @@ class NIP55Handler {
         throw Exception('No current user private key available');
       }
       
-      final decrypted = rust_api.nip44Decrypt(
+      final decrypted = await rust_api.nip44Decrypt(
         ciphertext: ciphertext,
         publicKey: pubkey,
         privateKey: currentPrivkey,

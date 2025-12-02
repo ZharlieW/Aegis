@@ -5,6 +5,7 @@ import 'package:aegis/utils/logger.dart';
 import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/db/db_isar.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'nip55_handler.dart';
 
 /// Aegis Signer Content Provider for NIP-55
@@ -94,6 +95,9 @@ class ContentProvider extends AndroidContentProvider {
 
     AegisLogger.info('📱 Processing $operationType request from $callingPackage');
 
+    // Update activity timestamp for this application
+    _updateApplicationActivity(callingPackage);
+
     try {
       switch (operationType) {
         case 'GET_PUBLIC_KEY':
@@ -124,6 +128,19 @@ class ContentProvider extends AndroidContentProvider {
   Future<int> update(String uri, ContentValues? values, String? selection,
       List<String>? selectionArgs) async {
     return 0;
+  }
+
+  /// Update application activity timestamp
+  Future<void> _updateApplicationActivity(String callingPackage) async {
+    try {
+      final currentPubkey = LocalStorage.get('pubkey');
+      if (currentPubkey == null || currentPubkey.isEmpty) {
+        return;
+      }
+      await ClientAuthDBISAR.updateActivityTimestamp(currentPubkey, callingPackage);
+    } catch (e) {
+      AegisLogger.warning('Failed to update application activity timestamp', e);
+    }
   }
 
   /// Initialize the content provider

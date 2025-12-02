@@ -118,7 +118,16 @@ class Account {
       _currentPrivkey = privkey;
       
       // Use Keychain for password management
-      final password = await DBKeyManager.generateUserPrivkeyKey(pubkey);
+      // Check if password already exists in Keychain, if not generate new one
+      String password;
+      final existingPassword = await DBKeyManager.getUserPrivkeyKey(pubkey);
+      if (existingPassword != null && existingPassword.isNotEmpty) {
+        // Use existing password from Keychain
+        password = existingPassword;
+      } else {
+        // Generate new password if not exists
+        password = await DBKeyManager.generateUserPrivkeyKey(pubkey);
+      }
       final encrypted = encryptPrivateKey(hexToBytes(privkey), password);
       
       user = UserDBISAR(

@@ -262,11 +262,14 @@ class ServerNIP46Signer {
     final manager = AccountManager.sharedInstance;
     final storedUser = manager.accountMap[serverPubkey];
     if (storedUser?.privkey != null && storedUser!.privkey!.isNotEmpty) {
-      return storedUser.privkey;
+      final privkey = storedUser.privkey!;
+      return privkey;
     }
     if (serverPubkey == Account.sharedInstance.currentPubkey) {
-      return Account.sharedInstance.currentPrivkey;
+      final privkey = Account.sharedInstance.currentPrivkey;
+      return privkey;
     }
+    AegisLogger.warning('🔐 [NIP-46] No private key found for serverPubkey: ${serverPubkey.substring(0, 16)}...');
     return null;
   }
 
@@ -292,6 +295,15 @@ class ServerNIP46Signer {
       final manager = AccountManager.sharedInstance;
       final app = account.authToNostrConnectInfo[pubkey] ??
           manager.applicationMap[pubkey]?.value;
+
+      // Update application activity timestamp
+      if (app != null) {
+        try {
+          await ClientAuthDBISAR.updateActivityTimestamp(app.pubkey, pubkey);
+        } catch (e) {
+          AegisLogger.warning('Failed to update activity timestamp', e);
+        }
+      }
 
       await SignedEventManager.sharedInstance.recordSignedEvent(
         eventId: eventId,
@@ -435,7 +447,7 @@ class ServerNIP46Signer {
           // Re-encode the event JSON with all required fields
           final completeEventJson = jsonEncode(eventData);
 
-          final nativeRes = rust_api.signEvent(
+          final nativeRes = await rust_api.signEvent(
             eventJson: completeEventJson,
             privateKey: privateKey!,
           );

@@ -63,6 +63,7 @@ class ClientAuthDBISAR {
   // client scheme
   late String? scheme;
   late int? createTimestamp;
+  late int? updateTimestamp;
 
   //  0 : bunker://
   //  1 : nostrconnect://
@@ -80,6 +81,7 @@ class ClientAuthDBISAR {
     this.server,
     this.socketHashCode,
     this.createTimestamp,
+    this.updateTimestamp,
     required this.pubkey,
     required this.clientPubkey,
     required this.connectionType,
@@ -108,8 +110,27 @@ class ClientAuthDBISAR {
       final isar = await DBISAR.sharedInstance.open(client.pubkey);
 
       await isar.writeTxn(() async {
+        // If creating new client, set both createTimestamp and updateTimestamp
+        if (existingClient == null) {
+          final now = DateTime.now().millisecondsSinceEpoch;
+          client.createTimestamp ??= now;
+          client.updateTimestamp ??= now;
+        } else {
+          // If updating, preserve createTimestamp and update updateTimestamp
+          client.createTimestamp ??= existingClient.createTimestamp;
+          client.updateTimestamp = DateTime.now().millisecondsSinceEpoch;
+        }
         await isar.clientAuthDBISARs.put(client);
       });
+    }
+  }
+
+  /// Update the updateTimestamp for an application when there's activity
+  static Future<void> updateActivityTimestamp(String pubkey, String clientPubkey) async {
+    final existingClient = await searchFromDB(pubkey, clientPubkey);
+    if (existingClient != null) {
+      existingClient.updateTimestamp = DateTime.now().millisecondsSinceEpoch;
+      await saveFromDB(existingClient, isUpdate: true);
     }
   }
 

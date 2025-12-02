@@ -66,6 +66,11 @@ const ClientAuthDBISARSchema = CollectionSchema(
       id: 9,
       name: r'server',
       type: IsarType.string,
+    ),
+    r'updateTimestamp': PropertySchema(
+      id: 10,
+      name: r'updateTimestamp',
+      type: IsarType.long,
     )
   },
   estimateSize: _clientAuthDBISAREstimateSize,
@@ -145,6 +150,7 @@ void _clientAuthDBISARSerialize(
   writer.writeString(offsets[7], object.scheme);
   writer.writeString(offsets[8], object.secret);
   writer.writeString(offsets[9], object.server);
+  writer.writeLong(offsets[10], object.updateTimestamp);
 }
 
 ClientAuthDBISAR _clientAuthDBISARDeserialize(
@@ -164,6 +170,7 @@ ClientAuthDBISAR _clientAuthDBISARDeserialize(
     scheme: reader.readStringOrNull(offsets[7]),
     secret: reader.readStringOrNull(offsets[8]),
     server: reader.readStringOrNull(offsets[9]),
+    updateTimestamp: reader.readLongOrNull(offsets[10]),
   );
   object.id = id;
   return object;
@@ -196,6 +203,8 @@ P _clientAuthDBISARDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 9:
       return (reader.readStringOrNull(offset)) as P;
+    case 10:
+      return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1676,6 +1685,80 @@ extension ClientAuthDBISARQueryFilter
       ));
     });
   }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      updateTimestampIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'updateTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      updateTimestampIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'updateTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      updateTimestampEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updateTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      updateTimestampGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updateTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      updateTimestampLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updateTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      updateTimestampBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updateTimestamp',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension ClientAuthDBISARQueryObject
@@ -1820,6 +1903,20 @@ extension ClientAuthDBISARQuerySortBy
       sortByServerDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'server', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByUpdateTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateTimestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByUpdateTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateTimestamp', Sort.desc);
     });
   }
 }
@@ -1975,6 +2072,20 @@ extension ClientAuthDBISARQuerySortThenBy
       return query.addSortBy(r'server', Sort.desc);
     });
   }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByUpdateTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateTimestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByUpdateTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateTimestamp', Sort.desc);
+    });
+  }
 }
 
 extension ClientAuthDBISARQueryWhereDistinct
@@ -2048,6 +2159,13 @@ extension ClientAuthDBISARQueryWhereDistinct
       return query.addDistinctBy(r'server', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct>
+      distinctByUpdateTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'updateTimestamp');
+    });
+  }
 }
 
 extension ClientAuthDBISARQueryProperty
@@ -2118,6 +2236,13 @@ extension ClientAuthDBISARQueryProperty
   QueryBuilder<ClientAuthDBISAR, String?, QQueryOperations> serverProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'server');
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, int?, QQueryOperations>
+      updateTimestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updateTimestamp');
     });
   }
 }

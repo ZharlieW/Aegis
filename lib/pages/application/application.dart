@@ -453,7 +453,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           return ValueListenableBuilder(
               valueListenable: dbNotifier,
               builder: (context, value, child) {
-                int timestamp = value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
+                // Use updateTimestamp if available, otherwise fall back to createTimestamp
+                int timestamp = value.updateTimestamp ?? value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
                 bool isBunker = value.connectionType == EConnectionType.bunker.toInt;
                 String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
                 bool isConnect = value.socketHashCode != null;
