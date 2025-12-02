@@ -93,4 +93,36 @@ class DBISAR {
       await closeDatabaseFor(key);
     }
   }
+
+  /// Delete database files from disk for a specific user
+  Future<void> deleteDatabaseFor(String pubkey) async {
+    // Close the database first if it's open
+    await closeDatabaseFor(pubkey);
+    
+    // Delete database files from disk
+    final isOS = Platform.isIOS || Platform.isMacOS;
+    final dir = isOS
+        ? await getLibraryDirectory()
+        : await getApplicationDocumentsDirectory();
+    
+    try {
+      // Isar creates files with pattern: {name}.isar and {name}.lock
+      final dbFile = File('${dir.path}/$pubkey.isar');
+      final lockFile = File('${dir.path}/$pubkey.lock');
+      
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+        AegisLogger.info('DBISAR deleted database file: ${dbFile.path}');
+      }
+      
+      if (await lockFile.exists()) {
+        await lockFile.delete();
+        AegisLogger.info('DBISAR deleted lock file: ${lockFile.path}');
+      }
+      
+      AegisLogger.info('DBISAR deleted database files for pubkey: $pubkey');
+    } catch (e) {
+      AegisLogger.error('DBISAR failed to delete database files for pubkey: $pubkey', e);
+    }
+  }
 }

@@ -149,4 +149,18 @@ class ClientAuthDBISAR {
       });
     }
   }
+
+  /// Delete all applications for a user
+  static Future<void> deleteAllFromDB(String pubkey) async {
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+    final allClients = await isar.clientAuthDBISARs.where().findAll();
+    
+    if (allClients.isNotEmpty) {
+      await isar.writeTxn(() async {
+        for (final client in allClients) {
+          await isar.clientAuthDBISARs.delete(client.id);
+        }
+      });
+    }
+  }
 }

@@ -61,6 +61,18 @@ class UserDBISAR {
         .findFirst();
   }
 
+  /// Delete user from database
+  static Future<void> deleteFromDB(String pubkey) async {
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+    final user = await searchFromDB(pubkey);
+    
+    if (user != null) {
+      await isar.writeTxn(() async {
+        await isar.userDBISARs.delete(user.id);
+      });
+    }
+  }
+
   Map<String, dynamic> toJson() => {
     'pubkey': pubkey,
     'privkey': privkey,

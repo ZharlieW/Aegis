@@ -94,7 +94,7 @@ class LocalNostrSigner implements NostrSigner {
       await _ensureThreadPoolInitialized();
 
       try {
-        final nativeResult = rust_api.nip44Encrypt(
+        final nativeResult = await rust_api.nip44Encrypt(
           plaintext: plaintext,
           publicKey: clientPubkey,
           privateKey: serverPrivate,

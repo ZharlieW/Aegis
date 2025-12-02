@@ -170,5 +170,28 @@ class SignedEventDBISAR {
     }
   }
 
+  /// Delete all signed events for a user
+  static Future<void> deleteAllFromDB(String userPubkey) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    
+    List<SignedEventDBISAR> eventsToDelete;
+    if (_isDefaultUser(userPubkey)) {
+      eventsToDelete = await isar.signedEventDBISARs.where().findAll();
+    } else {
+      eventsToDelete = await isar.signedEventDBISARs
+          .filter()
+          .userPubkeyEqualTo(userPubkey)
+          .findAll();
+    }
+    
+    if (eventsToDelete.isNotEmpty) {
+      await isar.writeTxn(() async {
+        for (final event in eventsToDelete) {
+          await isar.signedEventDBISARs.delete(event.id);
+        }
+      });
+    }
+  }
+
 
 } 

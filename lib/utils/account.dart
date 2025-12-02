@@ -10,6 +10,7 @@ import 'package:aegis/utils/platform_utils.dart';
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
 import '../db/db_isar.dart';
+import '../db/signed_event_db_isar.dart';
 import '../db/userDB_isar.dart';
 import '../navigator/navigator.dart';
 import '../nostr/keychain.dart';
@@ -17,7 +18,6 @@ import '../nostr/nips/nip19/nip19.dart';
 import '../nostr/signer/local_nostr_signer.dart';
 import '../nostr/utils.dart';
 import '../pages/login/login.dart';
-import '../pages/request/request_permission.dart';
 import 'local_storage.dart';
 import 'package:aegis/utils/key_manager.dart';
 
@@ -69,14 +69,36 @@ class Account {
   }
 
   Future<void> logout() async {
-
-    final clientList = await ClientAuthDBISAR.getAllFromDB(_currentPubkey);
+    final pubkeyToDelete = _currentPubkey;
+    
+    // Remove all applications from memory
+    final clientList = await ClientAuthDBISAR.getAllFromDB(pubkeyToDelete);
     for(final client in clientList){
       AccountManager.sharedInstance.removeApplicationMap(client.clientPubkey);
     }
 
+    // Delete all data from database
+    try {
+      // Delete all applications
+      await ClientAuthDBISAR.deleteAllFromDB(pubkeyToDelete);
+      
+      // Delete all signed events
+      await SignedEventDBISAR.deleteAllFromDB(pubkeyToDelete);
+      
+      // Delete user data
+      await UserDBISAR.deleteFromDB(pubkeyToDelete);
+      
+      // Delete Keychain password
+      await DBKeyManager.clearUserPrivkeyKey(pubkeyToDelete);
+      
+      // Delete database files from disk
+      await DBISAR.sharedInstance.deleteDatabaseFor(pubkeyToDelete);
+    } catch (e) {
+      AegisLogger.error('Failed to clean up database for user: $pubkeyToDelete', e);
+    }
 
-    await AccountManager.deleteAccount(_currentPubkey);
+    // Delete account from account manager
+    await AccountManager.deleteAccount(pubkeyToDelete);
     clear();
 
     final allAccount = await AccountManager.getAllAccount();
