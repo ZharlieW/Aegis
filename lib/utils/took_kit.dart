@@ -52,7 +52,7 @@ class TookKit{
 
   static String formatTimestamp(int timestamp) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    DateFormat formatter = DateFormat('MM Feb HH:mm');
+    DateFormat formatter = DateFormat('dd MMM HH:mm');
     return formatter.format(date);
   }
 }
