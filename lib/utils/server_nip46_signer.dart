@@ -146,6 +146,16 @@ class ServerNIP46Signer {
     }
   }
 
+  /// Update subscription to reflect current applications (public method)
+  /// Call this after creating or deleting an application
+  Future<void> updateSubscription() async {
+    if (relayService == null || _connect == null) {
+      AegisLogger.warning('Relay service or connect not initialized, skipping subscription update');
+      return;
+    }
+    await _subscribeToNIP46Events();
+  }
+
   Future<void> _ensureAccountsInitialized() async {
     if (_accountsInitialized) return;
     try {

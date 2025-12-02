@@ -281,6 +281,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                                   currentPubkey, applicationPubkey);
                             }
                             
+                            // Update subscription to remove deleted application's remoteSignerPubkey
+                            await ServerNIP46Signer.instance.updateSubscription();
+                            
                             CommonTips.success(context, 'Remove success');
                             AegisNavigator.popToRoot(context);
                           },
