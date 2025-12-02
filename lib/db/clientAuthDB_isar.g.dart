@@ -52,23 +52,33 @@ const ClientAuthDBISARSchema = CollectionSchema(
       name: r'relay',
       type: IsarType.string,
     ),
-    r'scheme': PropertySchema(
+    r'remoteSignerPrivateKey': PropertySchema(
       id: 7,
+      name: r'remoteSignerPrivateKey',
+      type: IsarType.string,
+    ),
+    r'remoteSignerPubkey': PropertySchema(
+      id: 8,
+      name: r'remoteSignerPubkey',
+      type: IsarType.string,
+    ),
+    r'scheme': PropertySchema(
+      id: 9,
       name: r'scheme',
       type: IsarType.string,
     ),
     r'secret': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'secret',
       type: IsarType.string,
     ),
     r'server': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'server',
       type: IsarType.string,
     ),
     r'updateTimestamp': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'updateTimestamp',
       type: IsarType.long,
     )
@@ -114,6 +124,18 @@ int _clientAuthDBISAREstimateSize(
     }
   }
   {
+    final value = object.remoteSignerPrivateKey;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.remoteSignerPubkey;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.scheme;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -147,10 +169,12 @@ void _clientAuthDBISARSerialize(
   writer.writeString(offsets[4], object.name);
   writer.writeString(offsets[5], object.pubkey);
   writer.writeString(offsets[6], object.relay);
-  writer.writeString(offsets[7], object.scheme);
-  writer.writeString(offsets[8], object.secret);
-  writer.writeString(offsets[9], object.server);
-  writer.writeLong(offsets[10], object.updateTimestamp);
+  writer.writeString(offsets[7], object.remoteSignerPrivateKey);
+  writer.writeString(offsets[8], object.remoteSignerPubkey);
+  writer.writeString(offsets[9], object.scheme);
+  writer.writeString(offsets[10], object.secret);
+  writer.writeString(offsets[11], object.server);
+  writer.writeLong(offsets[12], object.updateTimestamp);
 }
 
 ClientAuthDBISAR _clientAuthDBISARDeserialize(
@@ -167,10 +191,12 @@ ClientAuthDBISAR _clientAuthDBISARDeserialize(
     name: reader.readStringOrNull(offsets[4]),
     pubkey: reader.readString(offsets[5]),
     relay: reader.readStringOrNull(offsets[6]),
-    scheme: reader.readStringOrNull(offsets[7]),
-    secret: reader.readStringOrNull(offsets[8]),
-    server: reader.readStringOrNull(offsets[9]),
-    updateTimestamp: reader.readLongOrNull(offsets[10]),
+    remoteSignerPrivateKey: reader.readStringOrNull(offsets[7]),
+    remoteSignerPubkey: reader.readStringOrNull(offsets[8]),
+    scheme: reader.readStringOrNull(offsets[9]),
+    secret: reader.readStringOrNull(offsets[10]),
+    server: reader.readStringOrNull(offsets[11]),
+    updateTimestamp: reader.readLongOrNull(offsets[12]),
   );
   object.id = id;
   return object;
@@ -204,6 +230,10 @@ P _clientAuthDBISARDeserializeProp<P>(
     case 9:
       return (reader.readStringOrNull(offset)) as P;
     case 10:
+      return (reader.readStringOrNull(offset)) as P;
+    case 11:
+      return (reader.readStringOrNull(offset)) as P;
+    case 12:
       return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1225,6 +1255,316 @@ extension ClientAuthDBISARQueryFilter
   }
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteSignerPrivateKey',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteSignerPrivateKey',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteSignerPrivateKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remoteSignerPrivateKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remoteSignerPrivateKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remoteSignerPrivateKey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'remoteSignerPrivateKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'remoteSignerPrivateKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyContains(String value,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'remoteSignerPrivateKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'remoteSignerPrivateKey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteSignerPrivateKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPrivateKeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'remoteSignerPrivateKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteSignerPubkey',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteSignerPubkey',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteSignerPubkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remoteSignerPubkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remoteSignerPubkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remoteSignerPubkey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'remoteSignerPubkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'remoteSignerPubkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'remoteSignerPubkey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'remoteSignerPubkey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteSignerPubkey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      remoteSignerPubkeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'remoteSignerPubkey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
       schemeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1865,6 +2205,34 @@ extension ClientAuthDBISARQuerySortBy
   }
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByRemoteSignerPrivateKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPrivateKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByRemoteSignerPrivateKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPrivateKey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByRemoteSignerPubkey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPubkey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByRemoteSignerPubkeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPubkey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
       sortByScheme() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'scheme', Sort.asc);
@@ -2032,6 +2400,34 @@ extension ClientAuthDBISARQuerySortThenBy
   }
 
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByRemoteSignerPrivateKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPrivateKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByRemoteSignerPrivateKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPrivateKey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByRemoteSignerPubkey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPubkey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByRemoteSignerPubkeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteSignerPubkey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
       thenByScheme() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'scheme', Sort.asc);
@@ -2139,6 +2535,22 @@ extension ClientAuthDBISARQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct>
+      distinctByRemoteSignerPrivateKey({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remoteSignerPrivateKey',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct>
+      distinctByRemoteSignerPubkey({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remoteSignerPubkey',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct> distinctByScheme(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2218,6 +2630,20 @@ extension ClientAuthDBISARQueryProperty
   QueryBuilder<ClientAuthDBISAR, String?, QQueryOperations> relayProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'relay');
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, String?, QQueryOperations>
+      remoteSignerPrivateKeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remoteSignerPrivateKey');
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, String?, QQueryOperations>
+      remoteSignerPubkeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remoteSignerPubkey');
     });
   }
 

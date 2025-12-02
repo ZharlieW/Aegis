@@ -47,8 +47,10 @@ extension ConnectionTypeEx on EConnectionType {
 class ClientAuthDBISAR {
   Id id = Isar.autoIncrement;
   // remote signer pubkey
-  late String pubkey;
-  late String clientPubkey;
+  late String pubkey; // user pubkey
+  late String? remoteSignerPubkey; // remote signer pubkey (nullable for backward compatibility)
+  late String? remoteSignerPrivateKey; // remote signer private key (nullable for backward compatibility)
+  late String clientPubkey; // client pubkey
 
   // client image
   late String? image;
@@ -85,6 +87,8 @@ class ClientAuthDBISAR {
     required this.pubkey,
     required this.clientPubkey,
     required this.connectionType,
+    this.remoteSignerPubkey,
+    this.remoteSignerPrivateKey,
   });
 
   static Future<ClientAuthDBISAR?> searchFromDB(String pubkey, String clientPubkey) async {
@@ -143,6 +147,35 @@ class ClientAuthDBISAR {
         .clientPubkeyEqualTo(clientPubkey)
         .findFirst();
 
+    if (target != null) {
+      await isar.writeTxn(() async {
+        await isar.clientAuthDBISARs.delete(target.id);
+      });
+    }
+  }
+
+  /// Delete application by ID (useful when clientPubkey is empty)
+  static Future<void> deleteFromDBById(String pubkey, Id id) async {
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+    
+    final target = await isar.clientAuthDBISARs.get(id);
+    if (target != null) {
+      await isar.writeTxn(() async {
+        await isar.clientAuthDBISARs.delete(id);
+      });
+    }
+  }
+
+  /// Delete application by remote signer pubkey (useful when clientPubkey is empty)
+  static Future<void> deleteFromDBByRemoteSignerPubkey(String pubkey, String remoteSignerPubkey) async {
+    final isar = await DBISAR.sharedInstance.open(pubkey);
+    
+    final target = await isar.clientAuthDBISARs
+        .filter()
+        .pubkeyEqualTo(pubkey)
+        .remoteSignerPubkeyEqualTo(remoteSignerPubkey)
+        .findFirst();
+    
     if (target != null) {
       await isar.writeTxn(() async {
         await isar.clientAuthDBISARs.delete(target.id);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/utils/account.dart';
@@ -43,21 +44,38 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = AccountManager.sharedInstance.applicationMap.values.toList();
     list.sort((a, b) {
-      if (a.value.socketHashCode == null && b.value.socketHashCode != null) {
+      // Sort by connection status first (connected apps first)
+      bool aConnected = _isConnected(a.value);
+      bool bConnected = _isConnected(b.value);
+      if (!aConnected && bConnected) {
         return 1; // a > b
       }
-      if (a.value.socketHashCode != null && b.value.socketHashCode == null) {
+      if (aConnected && !bConnected) {
         return -1; // a < b
       }
-      return (b.value.socketHashCode ?? 0)
-          .compareTo(a.value.socketHashCode ?? 0);
+      // If both have same connection status, sort by updateTimestamp (most recent first)
+      int aTimestamp = a.value.updateTimestamp ?? a.value.createTimestamp ?? 0;
+      int bTimestamp = b.value.updateTimestamp ?? b.value.createTimestamp ?? 0;
+      return bTimestamp.compareTo(aTimestamp);
     });
     return list;
   }
 
+  /// Check if application has activity within the last minute
+  bool _isConnected(ClientAuthDBISAR client) {
+    final timestamp = client.updateTimestamp ?? client.createTimestamp;
+    if (timestamp == null) return false;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final oneMinuteAgo = now - (60 * 1000); // 1 minute in milliseconds
+    
+    return timestamp >= oneMinuteAgo;
+  }
+
+  Timer? _statusUpdateTimer;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     LaunchSchemeUtils.getSchemeData();
     AccountManager.sharedInstance.addObserver(this);
@@ -71,10 +89,18 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         });
       }
     });
+
+    // Update connection status every 5 seconds
+    _statusUpdateTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   void dispose() {
+    _statusUpdateTimer?.cancel();
     AccountManager.sharedInstance.removeObserver(this);
     super.dispose();
   }
@@ -457,7 +483,9 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 int timestamp = value.updateTimestamp ?? value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
                 bool isBunker = value.connectionType == EConnectionType.bunker.toInt;
                 String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
-                bool isConnect = value.socketHashCode != null;
+                
+                // Check if application has activity within the last minute
+                bool isConnect = _isConnected(value);
 
                 Widget iconWidget() {
                   if (isBunker) {

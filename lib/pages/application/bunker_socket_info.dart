@@ -16,25 +16,60 @@ class BunkerSocketInfo extends StatefulWidget {
 class BunkerSocketInfoState extends State<BunkerSocketInfo> {
   String _bunkerUrl = '';
   bool _showSecureUrl = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _init();
   }
 
   /// Initialize the widget and update the bunker URL
   void _init() async {
+    // Create or get bunker application when page loads
+    await _ensureBunkerApplication();
     _updateBunkerUrl();
   }
 
+  /// Ensure a bunker application exists (create one if needed)
+  Future<void> _ensureBunkerApplication() async {
+    try {
+      // Try to find an unused application first
+      final unusedApp = await ServerNIP46Signer.instance.findUnusedBunkerApplication();
+      if (unusedApp == null) {
+        // Create a new application if none exists
+        await ServerNIP46Signer.instance.createBunkerApplication();
+      }
+    } catch (e) {
+      // Log error but continue to show URL (will use fallback)
+      print('Failed to ensure bunker application: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   /// Update the bunker URL based on the current secure mode selection
-  void _updateBunkerUrl() {
-    final url = ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureUrl);
-    setState(() {
-      _bunkerUrl = url;
-    });
+  void _updateBunkerUrl() async {
+    try {
+      final url = await ServerNIP46Signer.instance.getBunkerUrlWithRemoteSigner(secure: _showSecureUrl);
+      if (mounted) {
+        setState(() {
+          _bunkerUrl = url;
+        });
+      }
+    } catch (e) {
+      // Fallback to old method if new method fails
+      final url = ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureUrl);
+      if (mounted) {
+        setState(() {
+          _bunkerUrl = url;
+        });
+      }
+    }
   }
 
   @override
@@ -48,47 +83,49 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
               ),
         ),
       ),
-      body: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _qrCodeWidget(),
-            const SizedBox(
-              height: 40,
-            ),
-            Column(
-              children: [
-                GestureDetector(
-                  onTap: () => TookKit.copyKey(context, _bunkerUrl),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _qrCodeWidget(),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  Column(
                     children: [
-                      Flexible(
-                        child: Text(
-                          _bunkerUrl,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium,
+                      GestureDetector(
+                        onTap: () => TookKit.copyKey(context, _bunkerUrl),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _bunkerUrl,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            CommonImage(
+                              iconName: 'copy_icon.png',
+                              size: 24,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      CommonImage(
-                        iconName: 'copy_icon.png',
-                        size: 24,
-                      ),
+                      const SizedBox(height: 8),
+                      _buildBunkerModeSelector(),
+                      const SizedBox(height: 16),
+                      _buildProtocolExplanation(),
                     ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                _buildBunkerModeSelector(),
-                const SizedBox(height: 16),
-                _buildProtocolExplanation(),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

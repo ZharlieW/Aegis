@@ -193,5 +193,32 @@ class SignedEventDBISAR {
     }
   }
 
+  /// Delete all signed events for a specific application
+  static Future<void> deleteAllEventsForApplication(String userPubkey, String applicationPubkey) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    
+    List<SignedEventDBISAR> eventsToDelete;
+    if (_isDefaultUser(userPubkey)) {
+      eventsToDelete = await isar.signedEventDBISARs
+          .filter()
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .findAll();
+    } else {
+      eventsToDelete = await isar.signedEventDBISARs
+          .filter()
+          .userPubkeyEqualTo(userPubkey)
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .findAll();
+    }
+    
+    if (eventsToDelete.isNotEmpty) {
+      await isar.writeTxn(() async {
+        for (final event in eventsToDelete) {
+          await isar.signedEventDBISARs.delete(event.id);
+        }
+      });
+    }
+  }
+
 
 } 

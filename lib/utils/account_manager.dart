@@ -45,7 +45,12 @@ class AccountManager {
   }
 
   void updateApplicationMap(ClientAuthDBISAR client) {
-    final key = client.clientPubkey;
+    // Determine the key to use
+    String key = client.clientPubkey;
+    if (key.isEmpty && client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
+      key = client.remoteSignerPubkey!;
+    }
+    
     final notifier = applicationMap[key];
     if(notifier == null) return;
     notifier.value = client;

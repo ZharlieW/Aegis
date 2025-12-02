@@ -166,8 +166,45 @@ class Account {
     await _processBunkerApplicationsWithDBUpdate(clientList);
     
     // Add all applications to AccountManager
+    // Use a set to track added keys to avoid duplicates
+    final addedKeys = <String>{};
     for (final item in clientList) {
-      AccountManager.sharedInstance.addApplicationMap(item);
+      // Determine the key to use for the application map
+      String mapKey;
+      if (item.clientPubkey.isNotEmpty) {
+        mapKey = item.clientPubkey;
+      } else if (item.remoteSignerPubkey != null && item.remoteSignerPubkey!.isNotEmpty) {
+        mapKey = item.remoteSignerPubkey!;
+      } else {
+        // Skip applications without valid key
+        continue;
+      }
+      
+      // Only add if not already added
+      if (!addedKeys.contains(mapKey)) {
+        // If using remoteSignerPubkey as key, temporarily set it as clientPubkey for the map
+        if (item.clientPubkey.isEmpty && item.remoteSignerPubkey != null && item.remoteSignerPubkey!.isNotEmpty) {
+          final tempApp = ClientAuthDBISAR(
+            pubkey: item.pubkey,
+            clientPubkey: mapKey, // Temporary key
+            connectionType: item.connectionType,
+            remoteSignerPubkey: item.remoteSignerPubkey,
+            remoteSignerPrivateKey: item.remoteSignerPrivateKey,
+            name: item.name,
+            image: item.image,
+            relay: item.relay,
+            server: item.server,
+            secret: item.secret,
+            scheme: item.scheme,
+            createTimestamp: item.createTimestamp,
+            updateTimestamp: item.updateTimestamp,
+          );
+          AccountManager.sharedInstance.addApplicationMap(tempApp);
+        } else {
+          AccountManager.sharedInstance.addApplicationMap(item);
+        }
+        addedKeys.add(mapKey);
+      }
     }
 
     user.privkey = _currentPrivkey;

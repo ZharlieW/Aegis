@@ -1,4 +1,5 @@
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/signed_event_db_isar.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
@@ -24,30 +25,70 @@ class ApplicationInfo extends StatefulWidget {
 class ApplicationInfoState extends State<ApplicationInfo> {
   String _bunkerUrl = '';
   bool _showSecureBunkerUrl = false;
+  ValueNotifier<ClientAuthDBISAR>? _appNotifier;
 
   @override
-  @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _init();
   }
 
-  void _init() {
-    _updateBunkerUrl();
+  @override
+  void dispose() {
+    super.dispose();
   }
 
-  void _updateBunkerUrl() {
-    final url =
-        ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureBunkerUrl);
-    setState(() {
-      _bunkerUrl = url;
-    });
+  void _init() async {
+    // Get the notifier from AccountManager to listen for updates
+    final client = widget.clientAuthDBISAR;
+    final key = client.clientPubkey.isNotEmpty 
+        ? client.clientPubkey 
+        : (client.remoteSignerPubkey ?? '');
+    _appNotifier = AccountManager.sharedInstance.applicationMap[key];
+    await _updateBunkerUrl();
+  }
+
+  ClientAuthDBISAR get _currentClient {
+    return _appNotifier?.value ?? widget.clientAuthDBISAR;
+  }
+
+  Future<void> _updateBunkerUrl() async {
+    final client = widget.clientAuthDBISAR;
+    String url;
+    
+    // Use remote signer pubkey if available, otherwise fallback to user pubkey
+    if (client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
+      final relayUrl = ServerNIP46Signer.instance.getRelayUrlForDisplay(secure: _showSecureBunkerUrl);
+      url = "bunker://${client.remoteSignerPubkey}?relay=$relayUrl";
+    } else {
+      // Fallback to old method for backward compatibility
+      url = ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureBunkerUrl);
+    }
+    
+    if (mounted) {
+      setState(() {
+        _bunkerUrl = url;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    ClientAuthDBISAR client = widget.clientAuthDBISAR;
+    // Use ValueListenableBuilder to listen for updates
+    final notifier = _appNotifier;
+    if (notifier != null) {
+      return ValueListenableBuilder<ClientAuthDBISAR>(
+        valueListenable: notifier,
+        builder: (context, client, child) {
+          return _buildContent(context, client);
+        },
+      );
+    } else {
+      return _buildContent(context, widget.clientAuthDBISAR);
+    }
+  }
+
+  Widget _buildContent(BuildContext context, ClientAuthDBISAR client) {
     bool isBunnker = client.connectionType == EConnectionType.bunker.toInt;
     bool isNostrconnect = client.connectionType == 1;
     return Scaffold(
@@ -62,6 +103,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
+              // Don't update timestamp when just viewing activities
+              // Only update timestamp when there's actual activity (signing, etc.)
               AegisNavigator.pushPage(
                 context,
                 (context) => Activities(
@@ -141,11 +184,6 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 isShowWidget: isNostrconnect,
                 subTitle: client.scheme ?? '--',
               ),
-              _itemWidget(
-                'Last activity',
-                subTitle: TookKit.formatTimestamp(client.updateTimestamp ?? client.createTimestamp ??
-                    DateTime.now().millisecondsSinceEpoch),
-              ),
               _copyableItemWidget(
                 title: 'Client pubkey',
                 content: client.clientPubkey,
@@ -208,12 +246,41 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                           onPressed: () async {
                             String currentPubkey =
                                 Account.sharedInstance.currentPubkey;
-                            String clientPubkey =
-                                widget.clientAuthDBISAR.clientPubkey;
-                            AccountManager.sharedInstance
-                                .removeApplicationMap(clientPubkey);
-                            await ClientAuthDBISAR.deleteFromDB(
-                                currentPubkey, clientPubkey);
+                            final client = _currentClient;
+                            String clientPubkey = client.clientPubkey;
+                            
+                            // Remove from memory
+                            // Handle case where clientPubkey might be empty (use remoteSignerPubkey as key)
+                            if (clientPubkey.isEmpty && client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
+                              AccountManager.sharedInstance.removeApplicationMap(client.remoteSignerPubkey!);
+                            } else {
+                              AccountManager.sharedInstance.removeApplicationMap(clientPubkey);
+                            }
+                            
+                            // Delete from database
+                            if (clientPubkey.isEmpty) {
+                              // If clientPubkey is empty, try to delete by remoteSignerPubkey or by ID
+                              if (client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
+                                await ClientAuthDBISAR.deleteFromDBByRemoteSignerPubkey(
+                                    currentPubkey, client.remoteSignerPubkey!);
+                              } else {
+                                // Fallback to delete by ID
+                                await ClientAuthDBISAR.deleteFromDBById(currentPubkey, client.id);
+                              }
+                            } else {
+                              await ClientAuthDBISAR.deleteFromDB(currentPubkey, clientPubkey);
+                            }
+                            
+                            // Delete all signed events for this application
+                            // Use clientPubkey if available, otherwise use remoteSignerPubkey
+                            final applicationPubkey = clientPubkey.isNotEmpty 
+                                ? clientPubkey 
+                                : (client.remoteSignerPubkey ?? '');
+                            if (applicationPubkey.isNotEmpty) {
+                              await SignedEventDBISAR.deleteAllEventsForApplication(
+                                  currentPubkey, applicationPubkey);
+                            }
+                            
                             CommonTips.success(context, 'Remove success');
                             AegisNavigator.popToRoot(context);
                           },
@@ -397,12 +464,12 @@ class ApplicationInfoState extends State<ApplicationInfo> {
         ChoiceChip(
           label: const Text('ws://'),
           selected: !_showSecureBunkerUrl,
-          onSelected: (selected) {
+          onSelected: (selected) async {
             if (selected) {
               setState(() {
                 _showSecureBunkerUrl = false;
               });
-              _updateBunkerUrl();
+              await _updateBunkerUrl();
             }
           },
         ),
@@ -410,12 +477,12 @@ class ApplicationInfoState extends State<ApplicationInfo> {
           label: const Text('wss://'),
           selected: _showSecureBunkerUrl,
           onSelected: secureAvailable
-              ? (selected) {
+              ? (selected) async {
                   if (selected) {
                     setState(() {
                       _showSecureBunkerUrl = true;
                     });
-                    _updateBunkerUrl();
+                    await _updateBunkerUrl();
                   }
                 }
               : null,

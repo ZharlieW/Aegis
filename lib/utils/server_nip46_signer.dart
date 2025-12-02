@@ -6,6 +6,7 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/utils/nostr_rust_utils.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import 'package:aegis/nostr/nostr.dart' show Event, Filter;
@@ -162,11 +163,43 @@ class ServerNIP46Signer {
     final storedAccounts = await AccountManager.getAllAccount();
     final pubkeys = <String>{};
 
-    if (currentPubkey.isNotEmpty) {
-      pubkeys.add(currentPubkey);
+    // Get all remote signer pubkeys from applications
+    for (final appNotifier in manager.applicationMap.values) {
+      final app = appNotifier.value;
+      // Use remote signer pubkey if exists, otherwise fallback to user pubkey (backward compatibility)
+      final remoteSignerPubkey = (app.remoteSignerPubkey != null && app.remoteSignerPubkey!.isNotEmpty)
+          ? app.remoteSignerPubkey!
+          : app.pubkey;
+      if (remoteSignerPubkey.isNotEmpty) {
+        pubkeys.add(remoteSignerPubkey);
+      }
     }
-    pubkeys.addAll(manager.accountMap.keys.where((key) => key.isNotEmpty));
-    pubkeys.addAll(storedAccounts.keys.where((key) => key.isNotEmpty));
+
+    // Also add current account's applications if not already included
+    if (currentPubkey.isNotEmpty) {
+      try {
+        final currentApps = await ClientAuthDBISAR.getAllFromDB(currentPubkey);
+        for (final app in currentApps) {
+          final remoteSignerPubkey = (app.remoteSignerPubkey != null && app.remoteSignerPubkey!.isNotEmpty)
+              ? app.remoteSignerPubkey!
+              : app.pubkey;
+          if (remoteSignerPubkey.isNotEmpty) {
+            pubkeys.add(remoteSignerPubkey);
+          }
+        }
+      } catch (e) {
+        AegisLogger.warning('Failed to get applications for current account', e);
+      }
+    }
+
+    // Add user pubkeys as fallback for backward compatibility (if no applications found)
+    if (pubkeys.isEmpty) {
+      if (currentPubkey.isNotEmpty) {
+        pubkeys.add(currentPubkey);
+      }
+      pubkeys.addAll(manager.accountMap.keys.where((key) => key.isNotEmpty));
+      pubkeys.addAll(storedAccounts.keys.where((key) => key.isNotEmpty));
+    }
 
     return pubkeys.toList();
   }
@@ -187,11 +220,21 @@ class ServerNIP46Signer {
         }
       }
 
-      // Update application connection status
-      await _dealwithApplication(event.pubkey);
+      // Extract remote signer pubkey from event p tag
+      final remoteSignerPubkey = _extractServerPubkey(event);
+      if (remoteSignerPubkey == null || remoteSignerPubkey.isEmpty) {
+        AegisLogger.warning(
+            'No remote signer pubkey found in event ${event.id} p tag, using backward compatibility');
+        // Backward compatibility: use current pubkey
+        await _dealwithApplication(event.pubkey);
+      } else {
+        // Handle application by remote signer pubkey
+        await _dealwithApplicationByRemoteSignerPubkey(remoteSignerPubkey);
+      }
 
-      final targetServerPubkey =
-          _extractServerPubkey(event) ?? Account.sharedInstance.currentPubkey;
+      // Get server private key using remote signer pubkey or fallback to user pubkey
+      final targetServerPubkey = remoteSignerPubkey ??
+          Account.sharedInstance.currentPubkey;
       final serverPrivate = targetServerPubkey.isNotEmpty
           ? await _getServerPrivateKey(targetServerPubkey)
           : null;
@@ -214,7 +257,10 @@ class ServerNIP46Signer {
       }
 
       // Process the remote request
-      String? responseJson = await _processRemoteRequest(remoteRequest, event);
+      // Pass serverPrivate (remote signer private key) and find user pubkey for signing operations
+      final appInfo = await _findApplicationByRemoteSignerPubkey(targetServerPubkey);
+      final userPubkey = appInfo?['userPubkey'] as String? ?? targetServerPubkey;
+      String? responseJson = await _processRemoteRequest(remoteRequest, event, serverPrivate, userPubkey);
       if (responseJson == null) return;
 
       // Encrypt response
@@ -257,19 +303,128 @@ class ServerNIP46Signer {
     return null;
   }
 
+  /// Find application and user pubkey by remote signer pubkey
+  /// Returns a map with 'app' (ClientAuthDBISAR) and 'userPubkey' (String)
+  Future<Map<String, dynamic>?> _findApplicationByRemoteSignerPubkey(
+      String remoteSignerPubkey) async {
+    await _ensureAccountsInitialized();
+    final manager = AccountManager.sharedInstance;
+    final account = Account.sharedInstance;
+
+    // Search in applicationMap
+    for (final appNotifier in manager.applicationMap.values) {
+      final app = appNotifier.value;
+      // Check if this is the remote signer pubkey
+      final appRemoteSignerPubkey = (app.remoteSignerPubkey != null && app.remoteSignerPubkey!.isNotEmpty)
+          ? app.remoteSignerPubkey!
+          : app.pubkey; // Backward compatibility: if remoteSignerPubkey is empty, use user pubkey
+      if (appRemoteSignerPubkey == remoteSignerPubkey) {
+        return {'app': app, 'userPubkey': app.pubkey};
+      }
+    }
+
+    // Search in current account's applications
+    final currentPubkey = account.currentPubkey;
+    if (currentPubkey.isNotEmpty) {
+      try {
+        final currentApps = await ClientAuthDBISAR.getAllFromDB(currentPubkey);
+        for (final app in currentApps) {
+          final appRemoteSignerPubkey = (app.remoteSignerPubkey != null && app.remoteSignerPubkey!.isNotEmpty)
+              ? app.remoteSignerPubkey!
+              : app.pubkey; // Backward compatibility
+          if (appRemoteSignerPubkey == remoteSignerPubkey) {
+            return {'app': app, 'userPubkey': app.pubkey};
+          }
+        }
+      } catch (e) {
+        AegisLogger.warning(
+            'Failed to search applications for remote signer pubkey', e);
+      }
+    }
+
+    // Search in all stored accounts
+    final storedAccounts = await AccountManager.getAllAccount();
+    for (final userPubkey in storedAccounts.keys) {
+      try {
+        final apps = await ClientAuthDBISAR.getAllFromDB(userPubkey);
+        for (final app in apps) {
+          final appRemoteSignerPubkey = (app.remoteSignerPubkey != null && app.remoteSignerPubkey!.isNotEmpty)
+              ? app.remoteSignerPubkey!
+              : app.pubkey; // Backward compatibility
+          if (appRemoteSignerPubkey == remoteSignerPubkey) {
+            return {'app': app, 'userPubkey': app.pubkey};
+          }
+        }
+      } catch (e) {
+        // Continue searching other accounts
+      }
+    }
+
+    // Backward compatibility: if remoteSignerPubkey equals user pubkey
+    if (remoteSignerPubkey == currentPubkey && currentPubkey.isNotEmpty) {
+      return {'app': null, 'userPubkey': currentPubkey};
+    }
+    if (manager.accountMap.containsKey(remoteSignerPubkey)) {
+      return {'app': null, 'userPubkey': remoteSignerPubkey};
+    }
+    if (storedAccounts.containsKey(remoteSignerPubkey)) {
+      return {'app': null, 'userPubkey': remoteSignerPubkey};
+    }
+
+    return null;
+  }
+
+  /// Get user's private key by user pubkey
+  Future<String?> _getUserPrivateKey(String userPubkey) async {
+    await _ensureAccountsInitialized();
+    final manager = AccountManager.sharedInstance;
+    final storedUser = manager.accountMap[userPubkey];
+    if (storedUser?.privkey != null && storedUser!.privkey!.isNotEmpty) {
+      return storedUser.privkey!;
+    }
+    if (userPubkey == Account.sharedInstance.currentPubkey) {
+      return Account.sharedInstance.currentPrivkey;
+    }
+    AegisLogger.warning('🔐 [NIP-46] No private key found for userPubkey: ${userPubkey.length > 16 ? userPubkey.substring(0, 16) : userPubkey}...');
+    return null;
+  }
+
   Future<String?> _getServerPrivateKey(String serverPubkey) async {
     await _ensureAccountsInitialized();
+    
+    // First, try to find application by remote signer pubkey
+    final appInfo = await _findApplicationByRemoteSignerPubkey(serverPubkey);
+    if (appInfo != null) {
+      final app = appInfo['app'] as ClientAuthDBISAR?;
+      final userPubkey = appInfo['userPubkey'] as String;
+      
+      // If we found an application with remote signer keypair, use it
+      if (app != null && app.remoteSignerPrivateKey != null && app.remoteSignerPrivateKey!.isNotEmpty) {
+        return app.remoteSignerPrivateKey!;
+      }
+      
+      // Otherwise, get user's private key
+      final manager = AccountManager.sharedInstance;
+      final storedUser = manager.accountMap[userPubkey];
+      if (storedUser?.privkey != null && storedUser!.privkey!.isNotEmpty) {
+        return storedUser.privkey!;
+      }
+      if (userPubkey == Account.sharedInstance.currentPubkey) {
+        return Account.sharedInstance.currentPrivkey;
+      }
+    }
+    
+    // Backward compatibility: try direct lookup by serverPubkey as user pubkey
     final manager = AccountManager.sharedInstance;
     final storedUser = manager.accountMap[serverPubkey];
     if (storedUser?.privkey != null && storedUser!.privkey!.isNotEmpty) {
-      final privkey = storedUser.privkey!;
-      return privkey;
+      return storedUser.privkey!;
     }
     if (serverPubkey == Account.sharedInstance.currentPubkey) {
-      final privkey = Account.sharedInstance.currentPrivkey;
-      return privkey;
+      return Account.sharedInstance.currentPrivkey;
     }
-    AegisLogger.warning('🔐 [NIP-46] No private key found for serverPubkey: ${serverPubkey.substring(0, 16)}...');
+    
+    AegisLogger.warning('🔐 [NIP-46] No private key found for serverPubkey: ${serverPubkey.length > 16 ? serverPubkey.substring(0, 16) : serverPubkey}...');
     return null;
   }
 
@@ -299,7 +454,14 @@ class ServerNIP46Signer {
       // Update application activity timestamp
       if (app != null) {
         try {
-          await ClientAuthDBISAR.updateActivityTimestamp(app.pubkey, pubkey);
+          final clientPubkey = app.clientPubkey.isNotEmpty ? app.clientPubkey : pubkey;
+          await ClientAuthDBISAR.updateActivityTimestamp(app.pubkey, clientPubkey);
+          
+          // Update the application in AccountManager to trigger UI refresh
+          final updated = await ClientAuthDBISAR.searchFromDB(app.pubkey, clientPubkey);
+          if (updated != null) {
+            AccountManager.sharedInstance.updateApplicationMap(updated);
+          }
         } catch (e) {
           AegisLogger.warning('Failed to update activity timestamp', e);
         }
@@ -321,10 +483,10 @@ class ServerNIP46Signer {
   }
 
   Future<String?> _processRemoteRequest(
-      NostrRemoteRequest remoteRequest, Event event) async {
+      NostrRemoteRequest remoteRequest, Event event, String serverPrivate, String userPubkey) async {
     Map responseJson = {};
-    String? serverPrivate =
-        LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+    // serverPrivate is the remote signer private key (for encryption/decryption)
+    // userPubkey is the user pubkey (for signing events)
     switch (remoteRequest.method) {
       case "connect":
         responseJson = {"id": remoteRequest.id, "result": "ack", "error": ''};
@@ -352,39 +514,71 @@ class ServerNIP46Signer {
 
       case "get_public_key":
         final instance = Account.sharedInstance;
-        responseJson = {
-          "id": remoteRequest.id,
-          "result": LocalNostrSigner.instance.getPublicKey(event.pubkey),
-          "error": "",
-        };
-
+        
+        // First check if application already exists by clientPubkey
         ClientAuthDBISAR? client =
             instance.authToNostrConnectInfo[event.pubkey];
         client ??=
             AccountManager.sharedInstance.applicationMap[event.pubkey]?.value;
 
-        if (client != null) break;
+        if (client != null) {
+          // Application already exists, return user pubkey
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": userPubkey,
+            "error": "",
+          };
+          break;
+        }
 
+        // Check authorization
         final isSuccess = await Account.authToClient();
-        if (isSuccess) {
-          // Get all bunker applications to calculate index
-          final bunkerApplications = AccountManager
-              .sharedInstance.applicationMap.values
-              .where((app) =>
-                  app.value.connectionType == EConnectionType.bunker.toInt)
-              .toList();
-          final index = bunkerApplications.length + 1;
+        if (!isSuccess) {
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": null,
+            "error": "unauthorized",
+          };
+          break;
+        }
 
-          ClientAuthDBISAR newClient = ClientAuthDBISAR(
-            createTimestamp: DateTime.now().millisecondsSinceEpoch,
-            pubkey: instance.currentPubkey,
-            clientPubkey: event.pubkey,
-            name: 'application #$index',
-            connectionType: EConnectionType.bunker.toInt,
-          );
-          AccountManager.sharedInstance.addApplicationMap(newClient);
+        // Find unused application by remote signer pubkey (from event p tag)
+        // The remote signer pubkey should be in the event's p tag
+        final remoteSignerPubkeyFromEvent = _extractServerPubkey(event);
+        ClientAuthDBISAR? unusedApp;
+
+        if (remoteSignerPubkeyFromEvent != null && remoteSignerPubkeyFromEvent.isNotEmpty) {
+          // Try to find application by remote signer pubkey
+          final appInfo = await _findApplicationByRemoteSignerPubkey(remoteSignerPubkeyFromEvent);
+          if (appInfo != null) {
+            final app = appInfo['app'] as ClientAuthDBISAR?;
+            if (app != null && 
+                app.connectionType == EConnectionType.bunker.toInt &&
+                (app.clientPubkey.isEmpty || app.clientPubkey == '')) {
+              unusedApp = app;
+            }
+          }
+        }
+
+        // If not found by remote signer pubkey, try to find any unused bunker application
+        if (unusedApp == null) {
+          unusedApp = await findUnusedBunkerApplication();
+        }
+
+        if (unusedApp != null) {
+          // Update the application with clientPubkey
+          // If the app was stored with a temporary key (remoteSignerPubkey), remove it first
+          final oldKey = unusedApp.clientPubkey.isEmpty 
+              ? (unusedApp.remoteSignerPubkey ?? '')
+              : unusedApp.clientPubkey;
+          if (oldKey.isNotEmpty && AccountManager.sharedInstance.applicationMap.containsKey(oldKey)) {
+            AccountManager.sharedInstance.removeApplicationMap(oldKey);
+          }
+          
+          unusedApp.clientPubkey = event.pubkey;
+          AccountManager.sharedInstance.addApplicationMap(unusedApp);
           try {
-            await ClientAuthDBISAR.saveFromDB(newClient);
+            await ClientAuthDBISAR.saveFromDB(unusedApp, isUpdate: true);
 
             // Record connection event
             await _recordSignedEvent(
@@ -392,25 +586,47 @@ class ServerNIP46Signer {
               eventKind: 24133,
               eventContent: 'get_public_key',
               pubkey: event.pubkey,
-              customAppName: event.pubkey,
+              customAppName: unusedApp.name,
             );
+
+            responseJson = {
+              "id": remoteRequest.id,
+              "result": userPubkey,
+              "error": "",
+            };
           } catch (e) {
             AegisLogger.error('Database saving failed', e);
+            responseJson = {
+              "id": remoteRequest.id,
+              "result": null,
+              "error": "Failed to update application",
+            };
           }
         } else {
+          // No unused application found, return error
+          // User should create application first
+          AegisLogger.warning('No unused bunker application found for client ${event.pubkey}');
           responseJson = {
             "id": remoteRequest.id,
             "result": null,
-            "error": "unauthorized",
+            "error": "No application available. Please create one first.",
           };
         }
         break;
 
       case "sign_event":
         String? contentStr = remoteRequest.params[0];
-        if (contentStr != null && serverPrivate != null) {
-          final privateKey =
-              LocalNostrSigner.instance.getPrivateKey(event.pubkey);
+        if (contentStr != null && serverPrivate.isNotEmpty) {
+          // For signing, we need user's private key, not remote signer private key
+          final privateKey = await _getUserPrivateKey(userPubkey);
+          if (privateKey == null) {
+            responseJson = {
+              "id": remoteRequest.id,
+              "result": null,
+              "error": "No private key found for signing",
+            };
+            break;
+          }
 
           // Parse the incoming event JSON and ensure it has all required fields
           Map<String, dynamic> eventData;
@@ -426,13 +642,11 @@ class ServerNIP46Signer {
             break;
           }
 
-          // Ensure pubkey field exists, use current pubkey if missing
+          // Ensure pubkey field exists, use user pubkey if missing
           if (!eventData.containsKey('pubkey') ||
               eventData['pubkey'] == null ||
               eventData['pubkey'].toString().isEmpty) {
-            eventData['pubkey'] =
-                LocalNostrSigner.instance.getPublicKey(event.pubkey) ??
-                    event.pubkey;
+            eventData['pubkey'] = userPubkey;
             AegisLogger.info(
                 'Added missing pubkey field: ${eventData['pubkey']}');
           }
@@ -449,7 +663,7 @@ class ServerNIP46Signer {
 
           final nativeRes = await rust_api.signEvent(
             eventJson: completeEventJson,
-            privateKey: privateKey!,
+            privateKey: privateKey,
           );
           // Record the signed event
           try {
@@ -524,7 +738,7 @@ class ServerNIP46Signer {
         break;
 
       case "nip44_decrypt":
-        if (serverPrivate == null ||
+        if (serverPrivate.isEmpty ||
             remoteRequest.params[1] is! String ||
             remoteRequest.params[0] is! String) break;
         String? result = await LocalNostrSigner.instance.nip44Decrypt(
@@ -548,7 +762,7 @@ class ServerNIP46Signer {
         break;
 
       case "nip44_encrypt":
-        if (serverPrivate == null ||
+        if (serverPrivate.isEmpty ||
             remoteRequest.params[1] is! String ||
             remoteRequest.params[0] is! String) break;
 
@@ -607,9 +821,170 @@ class ServerNIP46Signer {
     return proxyManager.relayUrlFor(portNumber.toString());
   }
 
+  /// Create a new bunker application with remote signer keypair
+  /// Returns the created ClientAuthDBISAR or null if failed
+  Future<ClientAuthDBISAR?> createBunkerApplication() async {
+    try {
+      final instance = Account.sharedInstance;
+      if (instance.currentPubkey.isEmpty) {
+        AegisLogger.warning('Cannot create bunker application: user not logged in');
+        return null;
+      }
+
+      // Get all bunker applications to calculate index
+      final bunkerApplications = AccountManager
+          .sharedInstance.applicationMap.values
+          .where((app) =>
+              app.value.connectionType == EConnectionType.bunker.toInt)
+          .toList();
+      final index = bunkerApplications.length + 1;
+
+      // Generate new remote signer keypair for this application
+      String remoteSignerPubkey;
+      String remoteSignerPrivateKey;
+      try {
+        final keyPair = await NostrRustUtils.generateKeys();
+        remoteSignerPubkey = keyPair.publicKey;
+        remoteSignerPrivateKey = keyPair.privateKey;
+        AegisLogger.info(
+            'Generated new remote signer keypair for application #$index');
+      } catch (e) {
+        AegisLogger.error('Failed to generate remote signer keypair', e);
+        return null;
+      }
+
+      // Create new application with empty clientPubkey (will be set when client connects)
+      ClientAuthDBISAR newClient = ClientAuthDBISAR(
+        createTimestamp: DateTime.now().millisecondsSinceEpoch,
+        pubkey: instance.currentPubkey,
+        clientPubkey: '', // Empty clientPubkey, will be set when client connects
+        remoteSignerPubkey: remoteSignerPubkey,
+        remoteSignerPrivateKey: remoteSignerPrivateKey,
+        name: 'application #$index',
+        connectionType: EConnectionType.bunker.toInt,
+      );
+
+      // Save to database first
+      await ClientAuthDBISAR.saveFromDB(newClient);
+      
+      // Add to applicationMap using remoteSignerPubkey as key (since clientPubkey is empty)
+      final tempApp = ClientAuthDBISAR(
+        pubkey: newClient.pubkey,
+        clientPubkey: remoteSignerPubkey, // Use remoteSignerPubkey as temporary key
+        connectionType: newClient.connectionType,
+        remoteSignerPubkey: newClient.remoteSignerPubkey,
+        remoteSignerPrivateKey: newClient.remoteSignerPrivateKey,
+        name: newClient.name,
+        image: newClient.image,
+        relay: newClient.relay,
+        server: newClient.server,
+        secret: newClient.secret,
+        scheme: newClient.scheme,
+        createTimestamp: newClient.createTimestamp,
+        updateTimestamp: newClient.updateTimestamp,
+      );
+      AccountManager.sharedInstance.addApplicationMap(tempApp);
+
+      AegisLogger.info('Created new bunker application with remote signer pubkey: ${remoteSignerPubkey.substring(0, 16)}...');
+      return newClient;
+    } catch (e) {
+      AegisLogger.error('Failed to create bunker application', e);
+      return null;
+    }
+  }
+
+  /// Find an unused bunker application (clientPubkey is empty)
+  /// Returns the first unused application or null if not found
+  Future<ClientAuthDBISAR?> findUnusedBunkerApplication() async {
+    try {
+      final instance = Account.sharedInstance;
+      if (instance.currentPubkey.isEmpty) {
+        return null;
+      }
+
+      // Search in applicationMap
+      for (final appNotifier in AccountManager.sharedInstance.applicationMap.values) {
+        final app = appNotifier.value;
+        if (app.connectionType == EConnectionType.bunker.toInt &&
+            app.pubkey == instance.currentPubkey &&
+            app.clientPubkey.isEmpty) {
+          return app;
+        }
+      }
+
+      // Search in database
+      final allApps = await ClientAuthDBISAR.getAllFromDB(instance.currentPubkey);
+      for (final app in allApps) {
+        if (app.connectionType == EConnectionType.bunker.toInt &&
+            app.clientPubkey.isEmpty) {
+          // Add to applicationMap if not already there
+          // Use remoteSignerPubkey as key when clientPubkey is empty
+          final mapKey = (app.remoteSignerPubkey != null && app.remoteSignerPubkey!.isNotEmpty)
+              ? app.remoteSignerPubkey!
+              : 'unused_${app.id}';
+          if (!AccountManager.sharedInstance.applicationMap.containsKey(mapKey)) {
+            // Create a temporary app with mapKey as clientPubkey for storage in applicationMap
+            // The actual app in database still has empty clientPubkey
+            final tempApp = ClientAuthDBISAR(
+              pubkey: app.pubkey,
+              clientPubkey: mapKey, // Temporary key for applicationMap
+              connectionType: app.connectionType,
+              remoteSignerPubkey: app.remoteSignerPubkey,
+              remoteSignerPrivateKey: app.remoteSignerPrivateKey,
+              name: app.name,
+              image: app.image,
+              relay: app.relay,
+              server: app.server,
+              secret: app.secret,
+              scheme: app.scheme,
+              createTimestamp: app.createTimestamp,
+              updateTimestamp: app.updateTimestamp,
+            );
+            AccountManager.sharedInstance.addApplicationMap(tempApp);
+          }
+          return app;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      AegisLogger.error('Failed to find unused bunker application', e);
+      return null;
+    }
+  }
+
+  /// Get or create a bunker application for displaying bunker URL
+  /// Returns the remote signer pubkey to use in bunker URL
+  Future<String> getOrCreateBunkerApplicationPubkey() async {
+    // First try to find an unused application
+    final unusedApp = await findUnusedBunkerApplication();
+    if (unusedApp != null && unusedApp.remoteSignerPubkey != null && unusedApp.remoteSignerPubkey!.isNotEmpty) {
+      return unusedApp.remoteSignerPubkey!;
+    }
+
+    // If no unused application, create a new one
+    final newApp = await createBunkerApplication();
+    if (newApp != null && newApp.remoteSignerPubkey != null && newApp.remoteSignerPubkey!.isNotEmpty) {
+      return newApp.remoteSignerPubkey!;
+    }
+
+    // Fallback to user pubkey for backward compatibility
+    AegisLogger.warning('Failed to get or create bunker application, using user pubkey');
+    return Account.sharedInstance.currentPubkey;
+  }
+
   String getBunkerUrl({bool secure = true}) {
     final relayUrl = getRelayUrlForDisplay(secure: secure);
+    // This method is synchronous, so we use user pubkey as fallback
+    // The actual remote signer pubkey should be obtained via getOrCreateBunkerApplicationPubkey()
     return "bunker://${LocalNostrSigner.instance.publicKey}?relay=$relayUrl";
+  }
+
+  /// Get bunker URL with remote signer pubkey
+  Future<String> getBunkerUrlWithRemoteSigner({bool secure = true}) async {
+    final relayUrl = getRelayUrlForDisplay(secure: secure);
+    final remoteSignerPubkey = await getOrCreateBunkerApplicationPubkey();
+    return "bunker://$remoteSignerPubkey?relay=$relayUrl";
   }
 
   static Future<String> getIpAddress() async {
@@ -639,6 +1014,21 @@ class ServerNIP46Signer {
     if (!manager.applicationMap.containsKey(clientPubkey)) {
       manager.addApplicationMap(app);
       return;
+    }
+  }
+
+  /// Handle application by remote signer pubkey (extracted from event p tag)
+  Future<void> _dealwithApplicationByRemoteSignerPubkey(
+      String remoteSignerPubkey) async {
+    final appInfo = await _findApplicationByRemoteSignerPubkey(remoteSignerPubkey);
+    if (appInfo == null) return;
+
+    final app = appInfo['app'] as ClientAuthDBISAR?;
+    if (app != null) {
+      final manager = AccountManager.sharedInstance;
+      if (!manager.applicationMap.containsKey(app.clientPubkey)) {
+        manager.addApplicationMap(app);
+      }
     }
   }
 
