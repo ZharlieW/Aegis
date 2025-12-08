@@ -1,0 +1,12 @@
+name: Aegis
+summary: Aegis is a simple and cross-platform Nostr signer that supports multiple connection methods.
+repository: https://github.com/ZharlieW/Aegis
+images:
+  - assets/Screenshot1.png
+  - assets/Screenshot2.png
+  - assets/Screenshot3.png
+  - assets/Screenshot4.png
+  - assets/Screenshot5.png
+icon: assets/icon.png
+assets:
+  - .*.apk

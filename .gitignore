@@ -79,7 +79,7 @@ build_android.sh
 /flotilla-master
 /nostr-signer-capacitor-plugin-main
 /nostr-rust
-/zapstore
 /localrelay.link
 assets/certs/fullchain.pem
 assets/certs/privatekey.pem
+zapstore/.env
