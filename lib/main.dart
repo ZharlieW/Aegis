@@ -6,6 +6,7 @@ import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:aegis/utils/window_manager.dart';
+import 'package:aegis/utils/android_service_manager.dart';
 import 'package:aegis/nostr/nips/nip55/intent_handler.dart';
 import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/content_provider.dart';
@@ -39,6 +40,14 @@ void main() async {
     AegisLogger.info('✅ Intent handler initialized successfully');
   } catch (e) {
     AegisLogger.error('❌ Failed to initialize Intent handler: $e');
+  }
+  
+  // Initialize Android service manager for foreground service
+  try {
+    AndroidServiceManager.initialize();
+    AegisLogger.info('✅ Android service manager initialized successfully');
+  } catch (e) {
+    AegisLogger.error('❌ Failed to initialize Android service manager: $e');
   }
   
   // Initialize intl library

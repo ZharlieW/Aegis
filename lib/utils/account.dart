@@ -6,6 +6,7 @@ import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/platform_utils.dart';
+import 'package:aegis/utils/android_service_manager.dart';
 
 import '../common/common_constant.dart';
 import '../db/clientAuthDB_isar.dart';
@@ -107,7 +108,12 @@ class Account {
       await LocalStorage.set('pubkey', nextUser.pubkey);
       await loginSuccess(nextUser.pubkey, null);
     } else {
-      await RelayService.instance.stop();
+      // Stop relay and service on Android
+      if (PlatformUtils.isAndroid) {
+        await AndroidServiceManager.stopService();
+      } else {
+        await RelayService.instance.stop();
+      }
       await LocalStorage.remove('pubkey');
       AegisNavigator.pushPage(
         AegisNavigator.navigatorKey.currentContext,
@@ -214,7 +220,13 @@ class Account {
 
     LocalNostrSigner.instance.init();
     final defaultPort = PlatformUtils.isDesktop ? '18081' : '8081';
-    await ServerNIP46Signer.instance.start(defaultPort);
+    
+    // On Android, start foreground service to keep relay and signer running
+    if (PlatformUtils.isAndroid) {
+      await AndroidServiceManager.startService(port: defaultPort);
+    } else {
+      await ServerNIP46Signer.instance.start(defaultPort);
+    }
 
     if(isInit){
       await AccountManager.sharedInstance.initAccountList();

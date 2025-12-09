@@ -13,7 +13,9 @@ import org.json.JSONObject
 class MainActivity: FlutterActivity() {
     
     private val CHANNEL = "com.aegis.app/intent"
+    private val SERVICE_CHANNEL = "com.aegis.app/foreground_service"
     private var methodChannel: MethodChannel? = null
+    private var serviceMethodChannel: MethodChannel? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +67,34 @@ class MainActivity: FlutterActivity() {
                         setSignResult(resultData)
                     }
                     result.success(null)
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+        
+        // Set up method channel for foreground service control
+        serviceMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SERVICE_CHANNEL)
+        serviceMethodChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startService" -> {
+                    try {
+                        ForegroundService.startService(this)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e("Aegis", "Failed to start foreground service", e)
+                        result.error("SERVICE_ERROR", "Failed to start service", e.message)
+                    }
+                }
+                "stopService" -> {
+                    try {
+                        ForegroundService.stopService(this)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e("Aegis", "Failed to stop foreground service", e)
+                        result.error("SERVICE_ERROR", "Failed to stop service", e.message)
+                    }
                 }
                 else -> {
                     result.notImplemented()
