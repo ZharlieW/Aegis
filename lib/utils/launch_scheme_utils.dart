@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -6,9 +7,9 @@ import 'nostr_wallet_connection_parser.dart';
 import 'url_scheme_handler.dart';
 import 'logger.dart';
 import '../db/userDB_isar.dart';
-import '../utils/key_manager.dart';
 import '../utils/local_storage.dart';
 import '../nostr/utils.dart';
+import '../nostr/nips/nip55/nip55_handler.dart';
 
 
 class LaunchSchemeUtils {
@@ -103,21 +104,140 @@ class LaunchSchemeUtils {
   }
   
   /// Handle nostrsigner:// scheme (NIP-55)
+  /// Supports web applications calling Aegis via nostrsigner: URL scheme
+  /// Format: nostrsigner:{data}?type={type}&callbackUrl={url}&returnType={type}&compressionType={type}
   static Future<void> _handleNostrSignerScheme(Uri uri) async {
-    AegisLogger.info('📱 Handling nostrsigner:// scheme: $uri');
+    AegisLogger.info('🌐 Handling nostrsigner:// scheme from web: $uri');
     
-    // Parse NIP-55 intent parameters
+    // Legacy path-based handling (keep old behavior)
     final path = uri.path;
-    final queryParams = uri.queryParameters;
-    
     if (path.startsWith('/auth/nip46')) {
-      // Handle NIP-46 authentication
-      await _handleNIP46Auth(queryParams);
+      await _handleNIP46Auth(uri.queryParameters);
+      return;
     } else if (path.startsWith('/sign')) {
-      // Handle signing request
-      await _handleSigningRequest(queryParams);
-    } else {
-      AegisLogger.warning('⚠️ Unknown nostrsigner path: $path');
+      await _handleSigningRequest(uri.queryParameters);
+      return;
+    }
+    
+    // Extract query parameters (outside try-catch so available for error handling)
+    final queryParams = uri.queryParameters;
+    final callbackUrl = queryParams['callbackUrl'];
+    final returnType = queryParams['returnType'] ?? 'signature';
+    final compressionType = queryParams['compressionType'] ?? 'none';
+    
+    try {
+      final type = queryParams['type'] ?? 'get_public_key';
+      
+      AegisLogger.info('🌐 Request type: $type, returnType: $returnType, compressionType: $compressionType');
+      
+      // Extract data from URI path or scheme-specific part
+      // Format: nostrsigner:{data}?params...
+      final uriString = uri.toString();
+      final schemeIndex = uriString.indexOf('nostrsigner:');
+      if (schemeIndex == -1) {
+        AegisLogger.error('❌ Invalid nostrsigner URL format');
+        await _sendWebCallback(callbackUrl, null, 'Invalid URL format', returnType, compressionType);
+        return;
+      }
+      
+      final afterScheme = uriString.substring(schemeIndex + 'nostrsigner:'.length);
+      final questionIndex = afterScheme.indexOf('?');
+      final dataPart = questionIndex != -1 
+          ? afterScheme.substring(0, questionIndex)
+          : afterScheme;
+      
+      // Decode the data part
+      String decodedData;
+      try {
+        decodedData = Uri.decodeComponent(dataPart);
+      } catch (e) {
+        decodedData = dataPart; // Use as-is if decoding fails
+      }
+      
+      // Process the request based on type
+      Map<String, dynamic> result;
+      
+      switch (type) {
+        case 'get_public_key':
+          result = await NIP55Handler.handleGetPublicKey();
+          break;
+          
+        case 'sign_event':
+          if (decodedData.isEmpty) {
+            await _sendWebCallback(callbackUrl, null, 'Missing event JSON', returnType, compressionType);
+            return;
+          }
+          result = await NIP55Handler.handleSignEvent(eventJson: decodedData);
+          break;
+          
+        case 'nip04_encrypt':
+          final pubkey = queryParams['pubkey'];
+          if (decodedData.isEmpty || pubkey == null) {
+            await _sendWebCallback(callbackUrl, null, 'Missing plaintext or pubkey', returnType, compressionType);
+            return;
+          }
+          result = await NIP55Handler.handleNIP04Encrypt(
+            plaintext: decodedData,
+            pubkey: pubkey,
+          );
+          break;
+          
+        case 'nip44_encrypt':
+          final pubkey = queryParams['pubkey'];
+          if (decodedData.isEmpty || pubkey == null) {
+            await _sendWebCallback(callbackUrl, null, 'Missing plaintext or pubkey', returnType, compressionType);
+            return;
+          }
+          result = await NIP55Handler.handleNIP44Encrypt(
+            plaintext: decodedData,
+            pubkey: pubkey,
+          );
+          break;
+          
+        case 'nip04_decrypt':
+          final pubkey = queryParams['pubkey'];
+          if (decodedData.isEmpty || pubkey == null) {
+            await _sendWebCallback(callbackUrl, null, 'Missing encrypted text or pubkey', returnType, compressionType);
+            return;
+          }
+          result = await NIP55Handler.handleNIP04Decrypt(
+            ciphertext: decodedData,
+            pubkey: pubkey,
+          );
+          break;
+          
+        case 'nip44_decrypt':
+          final pubkey = queryParams['pubkey'];
+          if (decodedData.isEmpty || pubkey == null) {
+            await _sendWebCallback(callbackUrl, null, 'Missing encrypted text or pubkey', returnType, compressionType);
+            return;
+          }
+          result = await NIP55Handler.handleNIP44Decrypt(
+            ciphertext: decodedData,
+            pubkey: pubkey,
+          );
+          break;
+          
+        case 'decrypt_zap_event':
+          if (decodedData.isEmpty) {
+            await _sendWebCallback(callbackUrl, null, 'Missing event JSON', returnType, compressionType);
+            return;
+          }
+          result = await NIP55Handler.handleDecryptZapEvent(eventJson: decodedData);
+          break;
+          
+        default:
+          AegisLogger.error('❌ Unknown request type: $type');
+          await _sendWebCallback(callbackUrl, null, 'Unknown request type: $type', returnType, compressionType);
+          return;
+      }
+      
+      // Send result back via callback URL or clipboard
+      await _sendWebCallback(callbackUrl, result, null, returnType, compressionType);
+      
+    } catch (e) {
+      AegisLogger.error('❌ Error handling nostrsigner scheme: $e');
+      await _sendWebCallback(callbackUrl, null, e.toString(), returnType, compressionType);
     }
   }
   
@@ -135,25 +255,128 @@ class LaunchSchemeUtils {
       AegisLogger.error('❌ Failed to handle NIP-46 auth: $e');
     }
   }
-  
-  /// Handle signing request via nostrsigner://
+
+  /// Legacy signing request handler (nostrsigner://sign?event=xxx&callback=yyy)
   static Future<void> _handleSigningRequest(Map<String, String> params) async {
     try {
       final eventJson = params['event'];
-      final callbackUrl = params['callback'];
-      
-      AegisLogger.info('📱 Signing request: callback=$callbackUrl');
-      
-      if (eventJson != null) {
-        // Handle signing through existing mechanism
-        NostrWalletConnectionParserHandler.handleScheme('nostrsigner://sign?event=$eventJson&callback=$callbackUrl');
+      final callbackUrl = params['callback'] ?? params['callbackUrl'];
+      final returnType = params['returnType'] ?? 'signature';
+      final compressionType = params['compressionType'] ?? 'none';
+
+      AegisLogger.info('📱 Legacy signing request: callback=$callbackUrl');
+
+      if (eventJson == null || eventJson.isEmpty) {
+        await _sendWebCallback(callbackUrl, null, 'Missing event JSON', returnType, compressionType);
+        return;
       }
+
+      // Delegate to existing parser for backward compatibility
+      NostrWalletConnectionParserHandler.handleScheme('nostrsigner://sign?event=$eventJson&callback=$callbackUrl');
     } catch (e) {
-      AegisLogger.error('❌ Failed to handle signing request: $e');
+      AegisLogger.error('❌ Failed to handle legacy signing request: $e');
     }
   }
   
-  /// Get current user private key for Intent mode auto-login
+  /// Send result back to web application via callback URL or clipboard
+  static Future<void> _sendWebCallback(
+    String? callbackUrl,
+    Map<String, dynamic>? result,
+    String? error,
+    String returnType,
+    String compressionType,
+  ) async {
+    try {
+      String resultData;
+      
+      if (error != null) {
+        // Send error
+        if (callbackUrl != null && callbackUrl.isNotEmpty) {
+          final errorUri = Uri.tryParse(callbackUrl);
+          if (errorUri != null) {
+            final errorCallback = errorUri.replace(
+              queryParameters: {
+                ...errorUri.queryParameters,
+                'error': error,
+              },
+            );
+            await launchUrl(errorCallback);
+            AegisLogger.info('🌐 Sent error to callback URL: $error');
+          }
+        } else {
+          AegisLogger.warning('⚠️ Error occurred but no callback URL provided: $error');
+        }
+        return;
+      }
+      
+      if (result == null || result['error'] != null) {
+        final errorMsg = result?['error'] as String? ?? 'Unknown error';
+        if (callbackUrl != null && callbackUrl.isNotEmpty) {
+          final errorUri = Uri.tryParse(callbackUrl);
+          if (errorUri != null) {
+            final errorCallback = errorUri.replace(
+              queryParameters: {
+                ...errorUri.queryParameters,
+                'error': errorMsg,
+              },
+            );
+            await launchUrl(errorCallback);
+            AegisLogger.info('🌐 Sent error to callback URL: $errorMsg');
+          }
+        }
+        return;
+      }
+      
+      // Format result based on returnType
+      if (returnType == 'event') {
+        final event = result['event'] as String?;
+        if (event == null) {
+          _sendWebCallback(callbackUrl, null, 'No event in result', returnType, compressionType);
+          return;
+        }
+        
+        if (compressionType == 'gzip') {
+          // For gzip compression, return "Signer1" + Base64 encoded event
+          // Note: Actual gzip compression would require additional libraries
+          // For now, use Base64 encoding as placeholder
+          resultData = 'Signer1${base64Encode(utf8.encode(event))}';
+        } else {
+          resultData = event;
+        }
+      } else {
+        // Return signature or other result
+        resultData = result['result'] as String? ?? '';
+      }
+      
+      if (callbackUrl != null && callbackUrl.isNotEmpty) {
+        // Send result to callback URL
+        final callbackUri = Uri.tryParse(callbackUrl);
+        if (callbackUri != null) {
+          final resultUri = callbackUri.replace(
+            queryParameters: {
+              ...callbackUri.queryParameters,
+              'event': resultData,
+            },
+          );
+          await launchUrl(resultUri);
+          AegisLogger.info('🌐 Sent result to callback URL: ${resultUri.toString().substring(0, resultUri.toString().length > 200 ? 200 : resultUri.toString().length)}...');
+        }
+      } else {
+        // Copy to clipboard (desktop platforms)
+        try {
+          await Clipboard.setData(ClipboardData(text: resultData));
+          AegisLogger.info('🌐 Result copied to clipboard');
+        } catch (e) {
+          AegisLogger.error('❌ Failed to copy to clipboard: $e');
+        }
+      }
+    } catch (e) {
+      AegisLogger.error('❌ Error sending web callback: $e');
+    }
+  }
+  
+  /// Get current user private key for Intent mode auto-login (legacy)
+  // ignore: unused_element
   static Future<String?> _getCurrentUserPrivateKeyForIntent() async {
     try {
       // Initialize LocalStorage if not already initialized
