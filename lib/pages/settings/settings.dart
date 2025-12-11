@@ -11,6 +11,110 @@ import '../../utils/took_kit.dart';
 import '../login/login.dart';
 import 'account_backup.dart';
 
+/// Dialog widget for logout confirmation
+class _LogoutDialog extends StatefulWidget {
+  const _LogoutDialog();
+
+  @override
+  State<_LogoutDialog> createState() => _LogoutDialogState();
+}
+
+class _LogoutDialogState extends State<_LogoutDialog> {
+  late final TextEditingController _confirmController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confirmController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isConfirmValid = _confirmController.text.toLowerCase() == 'confirm';
+    return AlertDialog(
+      title: const Text("Logout"),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Are you sure you want to log out?"),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _confirmController,
+              decoration: const InputDecoration(
+                labelText: 'Type "confirm" to proceed',
+                hintText: 'confirm',
+              ),
+              autofocus: true,
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      actions: [
+        ElevatedButton.icon(
+          onPressed: () => AegisNavigator.pop(context),
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.surfaceBright),
+          ),
+          label: Text(
+            "Cancel",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(
+                  color: Colors.black,
+                ),
+          ),
+        ),
+        ElevatedButton.icon(
+          onPressed: isConfirmValid
+              ? () {
+                  Account instance = Account.sharedInstance;
+                  if (instance.currentPrivkey.isEmpty ||
+                      instance.currentPubkey.isEmpty) {
+                    CommonTips.error(context, 'Not logged in');
+                    return;
+                  }
+                  Account.sharedInstance.logout();
+                  AegisNavigator.pop(context);
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(
+              isConfirmValid
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.surfaceVariant,
+            ),
+          ),
+          label: Text(
+            "Confirm",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(
+                  color: isConfirmValid ? Colors.white : Colors.grey,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class Settings extends StatefulWidget {
   const Settings({super.key});
 
@@ -220,60 +324,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                   onTap: () {
                     showDialog(
                       context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Logout"),
-                          content:
-                              const Text("Are you sure you want to log out?"),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0), //
-                          ),
-                          actions: [
-                            ElevatedButton.icon(
-                              onPressed: () => AegisNavigator.pop(context),
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(
-                                    Theme.of(context).colorScheme.surfaceBright),
-                              ),
-                              label: Text(
-                                "Cancel",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      color: Colors.black,
-                                    ),
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Account instance = Account.sharedInstance;
-                                if (instance.currentPrivkey.isEmpty ||
-                                    instance.currentPubkey.isEmpty) {
-                                  CommonTips.error(context, 'Not logged in');
-                                  return;
-                                }
-                                Account.sharedInstance.logout();
-                                AegisNavigator.pop(context);
-                              },
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(
-                                  Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              label: Text(
-                                "Confirm",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                      builder: (BuildContext context) => _LogoutDialog(),
                     );
                   },
                   child: SizedBox(

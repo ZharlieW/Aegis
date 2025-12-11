@@ -7,6 +7,77 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
 
+/// Dialog widget for clearing database confirmation
+class _ClearDatabaseDialog extends StatefulWidget {
+  const _ClearDatabaseDialog();
+
+  @override
+  State<_ClearDatabaseDialog> createState() => _ClearDatabaseDialogState();
+}
+
+class _ClearDatabaseDialogState extends State<_ClearDatabaseDialog> {
+  late final TextEditingController _confirmController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confirmController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isConfirmValid = _confirmController.text.toLowerCase() == 'confirm';
+    return AlertDialog(
+      title: const Text('Clear Database'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This will delete all relay data and restart the relay if it is running. '
+              'This action cannot be undone.',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _confirmController,
+              decoration: const InputDecoration(
+                labelText: 'Type "confirm" to proceed',
+                hintText: 'confirm',
+              ),
+              autofocus: true,
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: isConfirmValid
+              ? () => Navigator.of(context).pop(true)
+              : null,
+          style: TextButton.styleFrom(
+            foregroundColor: isConfirmValid ? Colors.red : Colors.grey,
+          ),
+          child: const Text('Clear'),
+        ),
+      ],
+    );
+  }
+}
+
 /// Local Relay Info Page
 /// Shows relay address, status, and database size with option to clear data
 class LocalRelayInfo extends StatefulWidget {
@@ -367,26 +438,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   Future<void> _handleClearDatabase() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Database'),
-        content: const Text(
-          'This will delete all relay data and restart the relay if it is running. '
-          'This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
+      builder: (context) => _ClearDatabaseDialog(),
     );
 
     if (confirmed != true) return;
