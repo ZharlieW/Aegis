@@ -886,7 +886,7 @@ class ServerNIP46Signer {
 
   /// Create a new bunker application with remote signer keypair
   /// Returns the created ClientAuthDBISAR or null if failed
-  Future<ClientAuthDBISAR?> createBunkerApplication() async {
+  Future<ClientAuthDBISAR?> createBunkerApplication({String? name}) async {
     try {
       final instance = Account.sharedInstance;
       if (instance.currentPubkey.isEmpty) {
@@ -912,6 +912,11 @@ class ServerNIP46Signer {
       AegisLogger.info(
           'Using user keypair as remote signer keypair for application #$index');
 
+      // Use provided name or default to 'application #$index'
+      final applicationName = name != null && name.isNotEmpty 
+          ? name 
+          : 'application #$index';
+
       // Create new application with empty clientPubkey (will be set when client connects)
       ClientAuthDBISAR newClient = ClientAuthDBISAR(
         createTimestamp: DateTime.now().millisecondsSinceEpoch,
@@ -919,7 +924,7 @@ class ServerNIP46Signer {
         clientPubkey: '', // Empty clientPubkey, will be set when client connects
         remoteSignerPubkey: remoteSignerPubkey,
         remoteSignerPrivateKey: remoteSignerPrivateKey,
-        name: 'application #$index',
+        name: applicationName,
         connectionType: EConnectionType.bunker.toInt,
       );
 

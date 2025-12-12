@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'bunker_socket_info.dart';
+import 'bunker_application_name_page.dart';
 import 'package:aegis/navigator/navigator.dart';
 
 import 'package:aegis/common/common_image.dart';
@@ -48,7 +48,7 @@ class AddApplicationState extends State<AddApplication> {
                         onTap: () => {
                           AegisNavigator.pushPage(
                             context,
-                            (context) => const BunkerSocketInfo(),
+                            (context) => const BunkerApplicationNamePage(),
                           )
                         },
                         iconName: 'nsecbunker_icon.png',

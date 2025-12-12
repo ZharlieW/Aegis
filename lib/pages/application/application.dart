@@ -72,6 +72,51 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     return timestamp >= oneMinuteAgo;
   }
 
+  /// Get first letter of name
+  String _getFirstLetter(String name) {
+    if (name.isEmpty) return '?';
+    // Handle special case for names starting with 0x
+    if (name.startsWith('0x')) {
+      return '0';
+    }
+    return name[0].toUpperCase();
+  }
+
+  /// Build initial letter icon
+  Widget _buildInitialIcon(String name, double size) {
+    final letter = _getFirstLetter(name);
+    final colors = [
+      Theme.of(context).colorScheme.primary,
+      Theme.of(context).colorScheme.secondary,
+      Theme.of(context).colorScheme.tertiary,
+    ];
+    // Use hash of name to get consistent color
+    final colorIndex = name.hashCode.abs() % colors.length;
+    
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: colors[colorIndex].withOpacity(0.2),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: colors[colorIndex],
+          width: 1,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          letter,
+          style: TextStyle(
+            color: colors[colorIndex],
+            fontSize: size * 0.5,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   Timer? _statusUpdateTimer;
 
   @override
@@ -488,23 +533,24 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 bool isConnect = _isConnected(value);
 
                 Widget iconWidget() {
-                  if (isBunker) {
-                    return CommonImage(
-                      iconName: 'default_app_icon.png',
-                      size: 40,
+                  // If image exists and is not empty, try to load it
+                  if (value.image != null && value.image!.isNotEmpty) {
+                    return Image.network(
+                      value.image!,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // If image fails to load, show initial letter
+                        return _buildInitialIcon(value.name ?? '?', 40)
+                            .setPaddingOnly(right: 8.0);
+                      },
                     ).setPaddingOnly(right: 8.0);
                   }
-                  return value.image != null && value.image!.isNotEmpty
-                      ? Image.network(
-                          value.image!,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ).setPaddingOnly(right: 8.0)
-                      : CommonImage(
-                          iconName: 'default_app_icon.png',
-                          size: 40,
-                        ).setPaddingOnly(right: 8.0);
+                  
+                  // No image or image is empty, show initial letter
+                  return _buildInitialIcon(value.name ?? '?', 40)
+                      .setPaddingOnly(right: 8.0);
                 }
 
                 return GestureDetector(

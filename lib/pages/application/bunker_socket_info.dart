@@ -5,9 +5,13 @@ import '../../common/common_image.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../../utils/local_tls_proxy_manager_rust.dart';
 import '../../utils/took_kit.dart';
+import '../../db/clientAuthDB_isar.dart';
+import '../../utils/account_manager.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
-  const BunkerSocketInfo({super.key});
+  final String? applicationName;
+  
+  const BunkerSocketInfo({super.key, this.applicationName});
 
   @override
   BunkerSocketInfoState createState() => BunkerSocketInfoState();
@@ -37,8 +41,22 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
       // Try to find an unused application first
       final unusedApp = await ServerNIP46Signer.instance.findUnusedBunkerApplication();
       if (unusedApp == null) {
-        // Create a new application if none exists
-        await ServerNIP46Signer.instance.createBunkerApplication();
+        // Create a new application if none exists, with optional name
+        await ServerNIP46Signer.instance.createBunkerApplication(
+          name: widget.applicationName,
+        );
+      } else if (widget.applicationName != null && widget.applicationName!.isNotEmpty) {
+        // If we found an unused app but have a name, update it
+        unusedApp.name = widget.applicationName!;
+        await ClientAuthDBISAR.saveFromDB(unusedApp, isUpdate: true);
+        // Update the notifier if it exists
+        final key = unusedApp.clientPubkey.isNotEmpty 
+            ? unusedApp.clientPubkey 
+            : (unusedApp.remoteSignerPubkey ?? '');
+        final notifier = AccountManager.sharedInstance.applicationMap[key];
+        if (notifier != null) {
+          notifier.value.name = widget.applicationName!;
+        }
       }
     } catch (e) {
       // Log error but continue to show URL (will use fallback)
