@@ -52,6 +52,7 @@ class RelayService {
   Future<void> start({
     String host = '0.0.0.0',  // Bind to all interfaces (network accessible)
     String? port,
+    int maxRetries = 3,
   }) async {
     try {
       _host = host;
@@ -77,11 +78,41 @@ class RelayService {
       final dbPath = '${appDir.path}/nostr_relay';
       AegisLogger.info("📁 Using database path: $dbPath");
 
-      // Start the relay (using async version)
-      _relayUrl = await rust_relay.startRelay(host: _host, port: _port, dbPath: dbPath);
-      serverNotifier.value = true;
-      _sessionStartTime = DateTime.now();
-      AegisLogger.info("✅ Nostr relay started on $_relayUrl");
+      // Start the relay with retry logic for IO errors
+      int attempts = 0;
+      Exception? lastError;
+      
+      while (attempts < maxRetries) {
+        try {
+          _relayUrl = await rust_relay.startRelay(host: _host, port: _port, dbPath: dbPath);
+          serverNotifier.value = true;
+          _sessionStartTime = DateTime.now();
+          AegisLogger.info("✅ Nostr relay started on $_relayUrl");
+          return;
+        } catch (e) {
+          attempts++;
+          lastError = e as Exception;
+          
+          // Check if it's an IO error related to database locks
+          final errorMsg = e.toString().toLowerCase();
+          final isIOError = errorMsg.contains('io error') || 
+                           errorMsg.contains('lock') || 
+                           errorMsg.contains('resource temporarily unavailable');
+          
+          if (isIOError && attempts < maxRetries) {
+            AegisLogger.warning("⚠️ IO error on attempt $attempts/$maxRetries, retrying...");
+            // Wait progressively longer: 1s, 2s, 3s...
+            await Future.delayed(Duration(seconds: attempts));
+          } else {
+            break;
+          }
+        }
+      }
+      
+      // If we get here, all retries failed
+      AegisLogger.error("🚨 Failed to start relay after $attempts attempts", lastError);
+      serverNotifier.value = false;
+      throw lastError ?? Exception("Failed to start relay");
     } catch (e) {
       AegisLogger.error("🚨 Failed to start relay", e);
       serverNotifier.value = false;
@@ -121,8 +152,10 @@ class RelayService {
         // Stop the relay
         await stop();
         
-        // Wait a bit to ensure clean shutdown
-        await Future.delayed(const Duration(milliseconds: 500));
+        // Wait longer to ensure complete resource cleanup (database locks, file handles, etc.)
+        // This is especially important for NDB/LMDB database file locks
+        AegisLogger.info("⏳ Waiting for resources to be fully released...");
+        await Future.delayed(const Duration(milliseconds: 2000));
         
         // Restart with saved configuration
         await start(host: currentHost, port: currentPort);
