@@ -337,5 +337,153 @@ class RelayService {
       return false;
     }
   }
+
+  /// Export database directory to a target location
+  /// Returns the path to the exported database directory, or null on failure
+  /// Note: This will stop the relay temporarily to ensure safe copying
+  Future<String?> exportDatabase(String targetPath) async {
+    try {
+      final isRunning = await this.isRunning();
+      
+      // Stop relay if running to release database locks
+      if (isRunning) {
+        AegisLogger.info("⏸️ Stopping relay for database export...");
+        await stop();
+        // Wait for file locks to be released
+        await Future.delayed(const Duration(milliseconds: 2000));
+      }
+
+      final dbPath = await getDatabasePath();
+      final sourceDir = Directory(dbPath);
+      
+      if (!await sourceDir.exists()) {
+        AegisLogger.warning("⚠️ Database directory not found: $dbPath");
+        // Restart relay if it was running
+        if (isRunning) {
+          await start();
+        }
+        return null;
+      }
+
+      // Create target directory
+      final targetDir = Directory(targetPath);
+      if (await targetDir.exists()) {
+        // Delete existing target directory
+        await targetDir.delete(recursive: true);
+      }
+      await targetDir.create(recursive: true);
+
+      // Copy all files from source to target
+      AegisLogger.info("📦 Copying database from $dbPath to $targetPath...");
+      await _copyDirectory(sourceDir, targetDir);
+      AegisLogger.info("✅ Database exported successfully to $targetPath");
+
+      // Restart relay if it was running
+      if (isRunning) {
+        await start();
+        AegisLogger.info("✅ Relay restarted after export");
+      }
+
+      return targetPath;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to export database", e);
+      // Try to restart relay if it was running
+      try {
+        if (await this.isRunning() == false) {
+          await start();
+        }
+      } catch (restartError) {
+        AegisLogger.error("🚨 Failed to restart relay after export error", restartError);
+      }
+      return null;
+    }
+  }
+
+  /// Import database directory from a source location
+  /// Note: This will stop the relay temporarily and replace the existing database
+  Future<bool> importDatabase(String sourcePath) async {
+    try {
+      final isRunning = await this.isRunning();
+      
+      // Stop relay if running to release database locks
+      if (isRunning) {
+        AegisLogger.info("⏸️ Stopping relay for database import...");
+        await stop();
+        // Wait for file locks to be released
+        await Future.delayed(const Duration(milliseconds: 2000));
+      }
+
+      final sourceDir = Directory(sourcePath);
+      if (!await sourceDir.exists()) {
+        AegisLogger.error("🚨 Source database directory not found: $sourcePath");
+        // Restart relay if it was running
+        if (isRunning) {
+          await start();
+        }
+        return false;
+      }
+
+      final dbPath = await getDatabasePath();
+      final targetDir = Directory(dbPath);
+
+      // Backup existing database if it exists
+      if (await targetDir.exists()) {
+        final backupPath = '$dbPath.backup.${DateTime.now().millisecondsSinceEpoch}';
+        AegisLogger.info("💾 Backing up existing database to $backupPath...");
+        try {
+          await _copyDirectory(targetDir, Directory(backupPath));
+          AegisLogger.info("✅ Backup created successfully");
+        } catch (e) {
+          AegisLogger.warning("⚠️ Failed to create backup: $e");
+        }
+        
+        // Delete existing database
+        await targetDir.delete(recursive: true);
+      }
+
+      // Create target directory
+      await targetDir.create(recursive: true);
+
+      // Copy all files from source to target
+      AegisLogger.info("📦 Importing database from $sourcePath to $dbPath...");
+      await _copyDirectory(sourceDir, targetDir);
+      AegisLogger.info("✅ Database imported successfully");
+
+      // Restart relay if it was running
+      if (isRunning) {
+        await start();
+        AegisLogger.info("✅ Relay restarted after import");
+      }
+
+      return true;
+    } catch (e) {
+      AegisLogger.error("🚨 Failed to import database", e);
+      // Try to restart relay if it was running
+      try {
+        if (await this.isRunning() == false) {
+          await start();
+        }
+      } catch (restartError) {
+        AegisLogger.error("🚨 Failed to restart relay after import error", restartError);
+      }
+      return false;
+    }
+  }
+
+  /// Recursively copy directory contents
+  Future<void> _copyDirectory(Directory source, Directory target) async {
+    await target.create(recursive: true);
+    
+    await for (final entity in source.list(recursive: false)) {
+      final entityName = entity.path.split(Platform.pathSeparator).last;
+      if (entity is File) {
+        final targetFile = File('${target.path}${Platform.pathSeparator}$entityName');
+        await entity.copy(targetFile.path);
+      } else if (entity is Directory) {
+        final targetSubDir = Directory('${target.path}${Platform.pathSeparator}$entityName');
+        await _copyDirectory(entity, targetSubDir);
+      }
+    }
+  }
 }
 

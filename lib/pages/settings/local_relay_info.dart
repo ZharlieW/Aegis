@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,9 @@ import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
 
 /// Dialog widget for clearing database confirmation
 class _ClearDatabaseDialog extends StatefulWidget {
@@ -78,6 +82,75 @@ class _ClearDatabaseDialogState extends State<_ClearDatabaseDialog> {
   }
 }
 
+/// Dialog widget for importing database
+class _ImportDatabaseDialog extends StatefulWidget {
+  const _ImportDatabaseDialog();
+
+  @override
+  State<_ImportDatabaseDialog> createState() => _ImportDatabaseDialogState();
+}
+
+class _ImportDatabaseDialogState extends State<_ImportDatabaseDialog> {
+  late final TextEditingController _pathController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pathController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _pathController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPathValid = _pathController.text.trim().isNotEmpty;
+    return AlertDialog(
+      title: const Text('Import Database'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter the path to the database directory to import. '
+              'The existing database will be backed up before import.',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _pathController,
+              decoration: const InputDecoration(
+                labelText: 'Database directory path',
+                hintText: '/path/to/nostr_relay_backup_...',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(null),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: isPathValid
+              ? () => Navigator.of(context).pop(_pathController.text.trim())
+              : null,
+          child: const Text('Import'),
+        ),
+      ],
+    );
+  }
+}
+
 /// Local Relay Info Page
 /// Shows relay address, status, and database size with option to clear data
 class LocalRelayInfo extends StatefulWidget {
@@ -94,6 +167,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   bool _isLoading = true;
   bool _isClearing = false;
   bool _isRestarting = false;
+  bool _isExporting = false;
+  bool _isImporting = false;
   Map<String, dynamic>? _stats;
   DateTime? _sessionStartTime;
   Duration _currentSessionUptime = Duration.zero;
@@ -479,6 +554,292 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     }
   }
 
+  Future<void> _handleExportDatabase() async {
+    setState(() {
+      _isExporting = true;
+    });
+
+    try {
+      Directory exportDir;
+      String exportPath;
+      
+      if (PlatformUtils.isDesktop) {
+        // For desktop, use Downloads directory
+        final homeDir = Platform.environment['HOME'] ?? 
+                       Platform.environment['USERPROFILE'] ?? 
+                       '';
+        if (homeDir.isEmpty) {
+          throw Exception('Cannot determine home directory');
+        }
+        exportDir = Directory('$homeDir${Platform.pathSeparator}Downloads');
+        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+        exportPath = '${exportDir.path}${Platform.pathSeparator}nostr_relay_backup_$timestamp';
+      } else if (PlatformUtils.isAndroid) {
+        // For Android, use app documents directory (will share via share_plus)
+        exportDir = await getApplicationDocumentsDirectory();
+        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+        exportPath = '${exportDir.path}${Platform.pathSeparator}nostr_relay_backup_$timestamp';
+      } else {
+        // For iOS, use temporary directory (will be shared via share_plus)
+        final tempDir = await getTemporaryDirectory();
+        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+        exportPath = '${tempDir.path}${Platform.pathSeparator}nostr_relay_backup_$timestamp';
+      }
+
+      final exportedPath = await RelayService.instance.exportDatabase(exportPath);
+      
+      if (exportedPath != null) {
+        if (mounted) {
+          if (PlatformUtils.isIOS) {
+            // For iOS, use share_plus to save to Files app
+            try {
+              final directory = Directory(exportedPath);
+              if (await directory.exists()) {
+                // Get all files in the directory
+                final files = <XFile>[];
+                await for (final entity in directory.list(recursive: true)) {
+                  if (entity is File) {
+                    files.add(XFile(entity.path));
+                  }
+                }
+                
+                if (files.isNotEmpty) {
+                  // Share all files - iOS will allow user to save to Files app
+                  await Share.shareXFiles(
+                    files,
+                    subject: 'Nostr Relay Database Backup',
+                    text: 'Nostr Relay Database Backup\n\nTap "Save to Files" to save to Files app.',
+                  );
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Database exported. Use "Save to Files" in the share sheet to save.'),
+                      duration: Duration(seconds: 5),
+                    ),
+                  );
+                } else {
+                  throw Exception('No files to share');
+                }
+              }
+            } catch (e) {
+              AegisLogger.error("Failed to share database on iOS", e);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Database exported to: $exportedPath\n\nYou can access it via Files app > On My iPhone > Aegis'),
+                  duration: const Duration(seconds: 7),
+                ),
+              );
+            }
+          } else if (PlatformUtils.isAndroid) {
+            // For Android, use share_plus to let user choose save location
+            try {
+              final directory = Directory(exportedPath);
+              if (await directory.exists()) {
+                // Get all files in the directory
+                final files = <XFile>[];
+                await for (final entity in directory.list(recursive: true)) {
+                  if (entity is File) {
+                    files.add(XFile(entity.path));
+                  }
+                }
+                
+                if (files.isNotEmpty) {
+                  // Share all files - Android will allow user to save to Downloads or other location
+                  await Share.shareXFiles(
+                    files,
+                    subject: 'Nostr Relay Database Backup',
+                    text: 'Nostr Relay Database Backup\n\nChoose where to save the files.',
+                  );
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Database exported. Choose where to save in the share sheet.'),
+                      duration: Duration(seconds: 5),
+                    ),
+                  );
+                } else {
+                  throw Exception('No files to share');
+                }
+              }
+            } catch (e) {
+              AegisLogger.error("Failed to share database on Android", e);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Database exported to: $exportedPath'),
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          } else {
+            // For Desktop, show path
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Database exported to: $exportedPath'),
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to export database')),
+          );
+        }
+      }
+    } catch (e) {
+      AegisLogger.error("Failed to export database", e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExporting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleImportDatabase() async {
+    setState(() {
+      _isImporting = true;
+    });
+
+    try {
+      String? importPath;
+
+      if (PlatformUtils.isDesktop) {
+        // For desktop, use file_picker to select directory
+        final result = await FilePicker.platform.getDirectoryPath(
+          dialogTitle: 'Select database backup directory',
+        );
+        importPath = result;
+      } else {
+        // For mobile, use file_picker to select directory
+        // Note: On mobile, directory picker may not be available on all platforms
+        // Fallback to file picker or manual path entry
+        try {
+          final result = await FilePicker.platform.getDirectoryPath(
+            dialogTitle: 'Select database backup directory',
+          );
+          importPath = result;
+        } catch (e) {
+          AegisLogger.warning("Directory picker not available, using dialog", e);
+          // Fallback to dialog for manual path entry
+          final pathFromDialog = await showDialog<String>(
+            context: context,
+            builder: (context) => _ImportDatabaseDialog(),
+          );
+          importPath = pathFromDialog;
+        }
+      }
+
+      if (importPath == null || importPath.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isImporting = false;
+          });
+        }
+        return;
+      }
+
+      // Verify the directory exists and contains database files
+      final directory = Directory(importPath);
+      if (!await directory.exists()) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selected directory does not exist')),
+          );
+        }
+        return;
+      }
+
+      // Check if directory contains database files (data.mdb or similar)
+      bool hasDatabaseFiles = false;
+      try {
+        await for (final entity in directory.list()) {
+          if (entity is File) {
+            final fileName = entity.path.split(Platform.pathSeparator).last.toLowerCase();
+            if (fileName.contains('.mdb') || fileName.contains('data') || fileName.contains('lock')) {
+              hasDatabaseFiles = true;
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        AegisLogger.warning("Could not check directory contents", e);
+        // Continue anyway, let the import function handle validation
+        hasDatabaseFiles = true;
+      }
+
+      if (!hasDatabaseFiles) {
+        // Ask for confirmation if no obvious database files found
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Confirm Import'),
+            content: const Text(
+              'The selected directory does not appear to contain database files. '
+              'Do you want to continue anyway?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) {
+          if (mounted) {
+            setState(() {
+              _isImporting = false;
+            });
+          }
+          return;
+        }
+      }
+
+      final success = await RelayService.instance.importDatabase(importPath);
+      
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Database imported successfully')),
+          );
+          await _loadRelayInfo();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to import database')),
+          );
+        }
+      }
+    } catch (e) {
+      AegisLogger.error("Failed to import database", e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isImporting = false;
+        });
+      }
+    }
+  }
+
   Widget _buildInfoItem(String label, Widget value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -855,6 +1216,48 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                       ),
                     ),
                     const Divider(height: 32),
+                    // Export/Import Database Buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _isExporting ? null : _handleExportDatabase,
+                              icon: _isExporting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.upload),
+                              label: Text(_isExporting ? 'Exporting...' : 'Export'),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _isImporting ? null : _handleImportDatabase,
+                              icon: _isImporting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.download),
+                              label: Text(_isImporting ? 'Importing...' : 'Import'),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     // Clear Database Button
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -883,12 +1286,33 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                     // const SizedBox(height: 32),
                     Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Note: Clearing the database will delete all stored events. '
-                        'If the relay is running, it will be restarted automatically.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
-                            ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Export: Creates a backup of the database directory. '
+                            'On desktop, saves to Downloads folder. On mobile, use share sheet to save to Files app or Downloads.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Import: Replaces the current database with a backup. '
+                            'Select the backup folder from file system. The existing database will be backed up automatically.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Clear: Deletes all stored events. '
+                            'If the relay is running, it will be restarted automatically.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
