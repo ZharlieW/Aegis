@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'package:path_provider/path_provider.dart';
+import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'logger.dart';
 import 'platform_utils.dart';
 
@@ -338,16 +340,16 @@ class RelayService {
     }
   }
 
-  /// Export database directory to a target location
-  /// Returns the path to the exported database directory, or null on failure
+  /// Export database directory to a zip file
+  /// Returns the path to the exported zip file, or null on failure
   /// Note: This will stop the relay temporarily to ensure safe copying
-  Future<String?> exportDatabase(String targetPath) async {
+  /// File naming format: nostr_relay_backup_YYYYMMDD_HHMMSS.zip
+  Future<String?> exportDatabase(String targetZipPath) async {
     try {
       final isRunning = await this.isRunning();
       
       // Stop relay if running to release database locks
       if (isRunning) {
-        AegisLogger.info("⏸️ Stopping relay for database export...");
         await stop();
         // Wait for file locks to be released
         await Future.delayed(const Duration(milliseconds: 2000));
@@ -365,26 +367,72 @@ class RelayService {
         return null;
       }
 
-      // Create target directory
-      final targetDir = Directory(targetPath);
-      if (await targetDir.exists()) {
-        // Delete existing target directory
-        await targetDir.delete(recursive: true);
+      // Create zip archive
+      final archive = Archive();
+      
+      int fileCount = 0;
+      
+      // Normalize database path for path comparison
+      final normalizedDbPath = dbPath.replaceAll('\\', '/');
+      
+      // Add all files from database directory to archive
+      await for (final entity in sourceDir.list(recursive: true)) {
+        if (entity is File) {
+          try {
+            final fileSize = await entity.length();
+            if (fileSize == 0) {
+              continue;
+            }
+            
+            final fileData = await entity.readAsBytes();
+            
+            // Get relative path from source directory
+            // Normalize path separators for cross-platform compatibility
+            var relativePath = entity.path.replaceAll('\\', '/');
+            if (relativePath.startsWith(normalizedDbPath)) {
+              relativePath = relativePath.substring(normalizedDbPath.length + 1);
+            } else {
+              // Fallback: use filename if path doesn't match
+              relativePath = entity.path.split(Platform.pathSeparator).last;
+            }
+            
+            // Ensure forward slashes in zip (zip standard)
+            relativePath = relativePath.replaceAll('\\', '/');
+            
+            archive.addFile(ArchiveFile(relativePath, fileData.length, fileData));
+            fileCount++;
+          } catch (e) {
+            AegisLogger.warning("⚠️ Failed to read file ${entity.path}: $e");
+          }
+        }
       }
-      await targetDir.create(recursive: true);
+      
+      if (fileCount == 0) {
+        AegisLogger.warning("⚠️ No files found in database directory. Database may be empty.");
+      }
 
-      // Copy all files from source to target
-      AegisLogger.info("📦 Copying database from $dbPath to $targetPath...");
-      await _copyDirectory(sourceDir, targetDir);
-      AegisLogger.info("✅ Database exported successfully to $targetPath");
+      // Write zip file
+      final zipFile = File(targetZipPath);
+      if (await zipFile.exists()) {
+        await zipFile.delete();
+      }
+      
+      final zipEncoder = ZipEncoder();
+      final zipData = zipEncoder.encode(archive);
+      if (zipData == null) {
+        throw Exception('Failed to encode zip archive');
+      }
+      
+      await zipFile.writeAsBytes(zipData);
+      
+      AegisLogger.info("✅ Database exported successfully to $targetZipPath");
 
       // Restart relay if it was running
       if (isRunning) {
         await start();
-        AegisLogger.info("✅ Relay restarted after export");
       }
 
-      return targetPath;
+      return targetZipPath;
     } catch (e) {
       AegisLogger.error("🚨 Failed to export database", e);
       // Try to restart relay if it was running
@@ -399,7 +447,7 @@ class RelayService {
     }
   }
 
-  /// Import database directory from a source location
+  /// Import database from a zip file or directory
   /// Note: This will stop the relay temporarily and replace the existing database
   Future<bool> importDatabase(String sourcePath) async {
     try {
@@ -407,32 +455,22 @@ class RelayService {
       
       // Stop relay if running to release database locks
       if (isRunning) {
-        AegisLogger.info("⏸️ Stopping relay for database import...");
         await stop();
         // Wait for file locks to be released
         await Future.delayed(const Duration(milliseconds: 2000));
       }
 
+      final sourceFile = File(sourcePath);
       final sourceDir = Directory(sourcePath);
-      if (!await sourceDir.exists()) {
-        AegisLogger.error("🚨 Source database directory not found: $sourcePath");
-        // Restart relay if it was running
-        if (isRunning) {
-          await start();
-        }
-        return false;
-      }
-
+      
       final dbPath = await getDatabasePath();
       final targetDir = Directory(dbPath);
 
       // Backup existing database if it exists
       if (await targetDir.exists()) {
         final backupPath = '$dbPath.backup.${DateTime.now().millisecondsSinceEpoch}';
-        AegisLogger.info("💾 Backing up existing database to $backupPath...");
         try {
           await _copyDirectory(targetDir, Directory(backupPath));
-          AegisLogger.info("✅ Backup created successfully");
         } catch (e) {
           AegisLogger.warning("⚠️ Failed to create backup: $e");
         }
@@ -444,15 +482,39 @@ class RelayService {
       // Create target directory
       await targetDir.create(recursive: true);
 
-      // Copy all files from source to target
-      AegisLogger.info("📦 Importing database from $sourcePath to $dbPath...");
-      await _copyDirectory(sourceDir, targetDir);
-      AegisLogger.info("✅ Database imported successfully");
+      // Check if source is a zip file or directory
+      if (await sourceFile.exists() && sourcePath.toLowerCase().endsWith('.zip')) {
+        // Import from zip file
+        final zipData = await sourceFile.readAsBytes();
+        final zipDecoder = ZipDecoder();
+        final archive = zipDecoder.decodeBytes(zipData);
+        
+        for (final file in archive) {
+          if (file.isFile) {
+            final filePath = '${targetDir.path}${Platform.pathSeparator}${file.name}';
+            final outputFile = File(filePath);
+            // Create parent directory if needed
+            await outputFile.parent.create(recursive: true);
+            await outputFile.writeAsBytes(file.content as List<int>);
+          }
+        }
+        AegisLogger.info("✅ Database imported successfully");
+      } else if (await sourceDir.exists()) {
+        // Import from directory (backward compatibility)
+        await _copyDirectory(sourceDir, targetDir);
+        AegisLogger.info("✅ Database imported successfully");
+      } else {
+        AegisLogger.error("🚨 Source not found: $sourcePath");
+        // Restart relay if it was running
+        if (isRunning) {
+          await start();
+        }
+        return false;
+      }
 
       // Restart relay if it was running
       if (isRunning) {
         await start();
-        AegisLogger.info("✅ Relay restarted after import");
       }
 
       return true;

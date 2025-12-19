@@ -563,6 +563,16 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       Directory exportDir;
       String exportPath;
       
+      // Generate standardized filename: nostr_relay_backup_YYYYMMDD_HHMMSS.zip
+      final now = DateTime.now();
+      final timestamp = '${now.year.toString().padLeft(4, '0')}'
+          '${now.month.toString().padLeft(2, '0')}'
+          '${now.day.toString().padLeft(2, '0')}_'
+          '${now.hour.toString().padLeft(2, '0')}'
+          '${now.minute.toString().padLeft(2, '0')}'
+          '${now.second.toString().padLeft(2, '0')}';
+      final zipFileName = 'nostr_relay_backup_$timestamp.zip';
+      
       if (PlatformUtils.isDesktop) {
         // For desktop, use Downloads directory
         final homeDir = Platform.environment['HOME'] ?? 
@@ -572,18 +582,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           throw Exception('Cannot determine home directory');
         }
         exportDir = Directory('$homeDir${Platform.pathSeparator}Downloads');
-        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
-        exportPath = '${exportDir.path}${Platform.pathSeparator}nostr_relay_backup_$timestamp';
+        exportPath = '${exportDir.path}${Platform.pathSeparator}$zipFileName';
       } else if (PlatformUtils.isAndroid) {
         // For Android, use app documents directory (will share via share_plus)
         exportDir = await getApplicationDocumentsDirectory();
-        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
-        exportPath = '${exportDir.path}${Platform.pathSeparator}nostr_relay_backup_$timestamp';
+        exportPath = '${exportDir.path}${Platform.pathSeparator}$zipFileName';
       } else {
         // For iOS, use temporary directory (will be shared via share_plus)
         final tempDir = await getTemporaryDirectory();
-        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
-        exportPath = '${tempDir.path}${Platform.pathSeparator}nostr_relay_backup_$timestamp';
+        exportPath = '${tempDir.path}${Platform.pathSeparator}$zipFileName';
       }
 
       final exportedPath = await RelayService.instance.exportDatabase(exportPath);
@@ -593,33 +600,22 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           if (PlatformUtils.isIOS) {
             // For iOS, use share_plus to save to Files app
             try {
-              final directory = Directory(exportedPath);
-              if (await directory.exists()) {
-                // Get all files in the directory
-                final files = <XFile>[];
-                await for (final entity in directory.list(recursive: true)) {
-                  if (entity is File) {
-                    files.add(XFile(entity.path));
-                  }
-                }
+              final zipFile = File(exportedPath);
+              if (await zipFile.exists()) {
+                await Share.shareXFiles(
+                  [XFile(exportedPath)],
+                  subject: 'Nostr Relay Database Backup',
+                  text: 'Nostr Relay Database Backup\n\nTap "Save to Files" to save to Files app.',
+                );
                 
-                if (files.isNotEmpty) {
-                  // Share all files - iOS will allow user to save to Files app
-                  await Share.shareXFiles(
-                    files,
-                    subject: 'Nostr Relay Database Backup',
-                    text: 'Nostr Relay Database Backup\n\nTap "Save to Files" to save to Files app.',
-                  );
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Database exported. Use "Save to Files" in the share sheet to save.'),
-                      duration: Duration(seconds: 5),
-                    ),
-                  );
-                } else {
-                  throw Exception('No files to share');
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Database exported as ZIP file. Use "Save to Files" in the share sheet to save.'),
+                    duration: Duration(seconds: 5),
+                  ),
+                );
+              } else {
+                throw Exception('ZIP file not found');
               }
             } catch (e) {
               AegisLogger.error("Failed to share database on iOS", e);
@@ -633,33 +629,22 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           } else if (PlatformUtils.isAndroid) {
             // For Android, use share_plus to let user choose save location
             try {
-              final directory = Directory(exportedPath);
-              if (await directory.exists()) {
-                // Get all files in the directory
-                final files = <XFile>[];
-                await for (final entity in directory.list(recursive: true)) {
-                  if (entity is File) {
-                    files.add(XFile(entity.path));
-                  }
-                }
+              final zipFile = File(exportedPath);
+              if (await zipFile.exists()) {
+                await Share.shareXFiles(
+                  [XFile(exportedPath)],
+                  subject: 'Nostr Relay Database Backup',
+                  text: 'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.',
+                );
                 
-                if (files.isNotEmpty) {
-                  // Share all files - Android will allow user to save to Downloads or other location
-                  await Share.shareXFiles(
-                    files,
-                    subject: 'Nostr Relay Database Backup',
-                    text: 'Nostr Relay Database Backup\n\nChoose where to save the files.',
-                  );
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Database exported. Choose where to save in the share sheet.'),
-                      duration: Duration(seconds: 5),
-                    ),
-                  );
-                } else {
-                  throw Exception('No files to share');
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Database exported as ZIP file. Choose where to save in the share sheet.'),
+                    duration: Duration(seconds: 5),
+                  ),
+                );
+              } else {
+                throw Exception('ZIP file not found');
               }
             } catch (e) {
               AegisLogger.error("Failed to share database on Android", e);
@@ -674,7 +659,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
             // For Desktop, show path
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Database exported to: $exportedPath'),
+                content: Text('Database exported as ZIP file: $exportedPath'),
                 duration: const Duration(seconds: 5),
               ),
             );
@@ -711,30 +696,36 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     try {
       String? importPath;
 
-      if (PlatformUtils.isDesktop) {
-        // For desktop, use file_picker to select directory
-        final result = await FilePicker.platform.getDirectoryPath(
-          dialogTitle: 'Select database backup directory',
+      // Use file picker to select zip file or directory
+      FilePickerResult? result;
+      try {
+        result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['zip'],
+          dialogTitle: 'Select database backup file (ZIP) or directory',
         );
-        importPath = result;
-      } else {
-        // For mobile, use file_picker to select directory
-        // Note: On mobile, directory picker may not be available on all platforms
-        // Fallback to file picker or manual path entry
+      } catch (e) {
+        AegisLogger.warning("File picker with zip filter failed, trying directory picker", e);
+        // Fallback to directory picker
         try {
-          final result = await FilePicker.platform.getDirectoryPath(
+          final dirResult = await FilePicker.platform.getDirectoryPath(
             dialogTitle: 'Select database backup directory',
           );
-          importPath = result;
-        } catch (e) {
-          AegisLogger.warning("Directory picker not available, using dialog", e);
-          // Fallback to dialog for manual path entry
+          importPath = dirResult;
+        } catch (e2) {
+          AegisLogger.warning("Directory picker also failed, using dialog", e2);
+          // Final fallback to dialog for manual path entry
           final pathFromDialog = await showDialog<String>(
             context: context,
             builder: (context) => _ImportDatabaseDialog(),
           );
           importPath = pathFromDialog;
         }
+      }
+
+      // If file picker returned a result, use it
+      if (result != null && result.files.single.path != null) {
+        importPath = result.files.single.path;
       }
 
       if (importPath == null || importPath.isEmpty) {
@@ -746,66 +737,23 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         return;
       }
 
-      // Verify the directory exists and contains database files
+      // Verify the file or directory exists
+      final file = File(importPath);
       final directory = Directory(importPath);
-      if (!await directory.exists()) {
+      
+      if (await file.exists() && importPath.toLowerCase().endsWith('.zip')) {
+        // Valid zip file, proceed
+        AegisLogger.info("Selected ZIP file: $importPath");
+      } else if (await directory.exists()) {
+        // Valid directory, proceed (backward compatibility)
+        AegisLogger.info("Selected directory: $importPath");
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Selected directory does not exist')),
+            const SnackBar(content: Text('Selected file or directory does not exist')),
           );
         }
         return;
-      }
-
-      // Check if directory contains database files (data.mdb or similar)
-      bool hasDatabaseFiles = false;
-      try {
-        await for (final entity in directory.list()) {
-          if (entity is File) {
-            final fileName = entity.path.split(Platform.pathSeparator).last.toLowerCase();
-            if (fileName.contains('.mdb') || fileName.contains('data') || fileName.contains('lock')) {
-              hasDatabaseFiles = true;
-              break;
-            }
-          }
-        }
-      } catch (e) {
-        AegisLogger.warning("Could not check directory contents", e);
-        // Continue anyway, let the import function handle validation
-        hasDatabaseFiles = true;
-      }
-
-      if (!hasDatabaseFiles) {
-        // Ask for confirmation if no obvious database files found
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Confirm Import'),
-            content: const Text(
-              'The selected directory does not appear to contain database files. '
-              'Do you want to continue anyway?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Continue'),
-              ),
-            ],
-          ),
-        );
-
-        if (confirmed != true) {
-          if (mounted) {
-            setState(() {
-              _isImporting = false;
-            });
-          }
-          return;
-        }
       }
 
       final success = await RelayService.instance.importDatabase(importPath);
@@ -1289,22 +1237,6 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Export: Creates a backup of the database directory. '
-                            'On desktop, saves to Downloads folder. On mobile, use share sheet to save to Files app or Downloads.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Import: Replaces the current database with a backup. '
-                            'Select the backup folder from file system. The existing database will be backed up automatically.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
                           Text(
                             'Clear: Deletes all stored events. '
                             'If the relay is running, it will be restarted automatically.',
