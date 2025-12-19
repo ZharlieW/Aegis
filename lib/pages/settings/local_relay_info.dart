@@ -69,9 +69,8 @@ class _ClearDatabaseDialogState extends State<_ClearDatabaseDialog> {
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: isConfirmValid
-              ? () => Navigator.of(context).pop(true)
-              : null,
+          onPressed:
+              isConfirmValid ? () => Navigator.of(context).pop(true) : null,
           style: TextButton.styleFrom(
             foregroundColor: isConfirmValid ? Colors.red : Colors.grey,
           ),
@@ -239,34 +238,27 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Wrap(
-          spacing: 8,
-          children: [
-            ChoiceChip(
-              label: const Text('ws://'),
-              selected: !_showSecureRelayAddress,
-              onSelected: (selected) {
-                if (selected && mounted) {
-                  setState(() {
-                    _showSecureRelayAddress = false;
-                  });
-                }
-              },
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(
+              value: 'ws',
+              label: Text('ws://'),
             ),
-            ChoiceChip(
-              label: const Text('wss://'),
-              selected: _showSecureRelayAddress,
-              onSelected: secureAvailable
-                  ? (selected) {
-                      if (selected && mounted) {
-                        setState(() {
-                          _showSecureRelayAddress = true;
-                        });
-                      }
-                    }
-                  : null,
+            ButtonSegment(
+              value: 'wss',
+              label: Text('wss://'),
             ),
           ],
+          selected: {_showSecureRelayAddress ? 'wss' : 'ws'},
+          onSelectionChanged: secureAvailable
+              ? (Set<String> newSelection) {
+                  if (mounted) {
+                    setState(() {
+                      _showSecureRelayAddress = newSelection.contains('wss');
+                    });
+                  }
+                }
+              : null,
         ),
         if (!secureAvailable)
           Padding(
@@ -562,7 +554,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     try {
       Directory exportDir;
       String exportPath;
-      
+
       // Generate standardized filename: nostr_relay_backup_YYYYMMDD_HHMMSS.zip
       final now = DateTime.now();
       final timestamp = '${now.year.toString().padLeft(4, '0')}'
@@ -572,12 +564,12 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           '${now.minute.toString().padLeft(2, '0')}'
           '${now.second.toString().padLeft(2, '0')}';
       final zipFileName = 'nostr_relay_backup_$timestamp.zip';
-      
+
       if (PlatformUtils.isDesktop) {
         // For desktop, use Downloads directory
-        final homeDir = Platform.environment['HOME'] ?? 
-                       Platform.environment['USERPROFILE'] ?? 
-                       '';
+        final homeDir = Platform.environment['HOME'] ??
+            Platform.environment['USERPROFILE'] ??
+            '';
         if (homeDir.isEmpty) {
           throw Exception('Cannot determine home directory');
         }
@@ -593,8 +585,9 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         exportPath = '${tempDir.path}${Platform.pathSeparator}$zipFileName';
       }
 
-      final exportedPath = await RelayService.instance.exportDatabase(exportPath);
-      
+      final exportedPath =
+          await RelayService.instance.exportDatabase(exportPath);
+
       if (exportedPath != null) {
         if (mounted) {
           if (PlatformUtils.isIOS) {
@@ -605,12 +598,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                 await Share.shareXFiles(
                   [XFile(exportedPath)],
                   subject: 'Nostr Relay Database Backup',
-                  text: 'Nostr Relay Database Backup\n\nTap "Save to Files" to save to Files app.',
+                  text:
+                      'Nostr Relay Database Backup\n\nTap "Save to Files" to save to Files app.',
                 );
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Database exported as ZIP file. Use "Save to Files" in the share sheet to save.'),
+                    content: Text(
+                        'Database exported as ZIP file. Use "Save to Files" in the share sheet to save.'),
                     duration: Duration(seconds: 5),
                   ),
                 );
@@ -621,7 +616,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
               AegisLogger.error("Failed to share database on iOS", e);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Database exported to: $exportedPath\n\nYou can access it via Files app > On My iPhone > Aegis'),
+                  content: Text(
+                      'Database exported to: $exportedPath\n\nYou can access it via Files app > On My iPhone > Aegis'),
                   duration: const Duration(seconds: 7),
                 ),
               );
@@ -634,12 +630,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                 await Share.shareXFiles(
                   [XFile(exportedPath)],
                   subject: 'Nostr Relay Database Backup',
-                  text: 'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.',
+                  text:
+                      'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.',
                 );
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Database exported as ZIP file. Choose where to save in the share sheet.'),
+                    content: Text(
+                        'Database exported as ZIP file. Choose where to save in the share sheet.'),
                     duration: Duration(seconds: 5),
                   ),
                 );
@@ -705,7 +703,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           dialogTitle: 'Select database backup file (ZIP) or directory',
         );
       } catch (e) {
-        AegisLogger.warning("File picker with zip filter failed, trying directory picker", e);
+        AegisLogger.warning(
+            "File picker with zip filter failed, trying directory picker", e);
         // Fallback to directory picker
         try {
           final dirResult = await FilePicker.platform.getDirectoryPath(
@@ -740,7 +739,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       // Verify the file or directory exists
       final file = File(importPath);
       final directory = Directory(importPath);
-      
+
       if (await file.exists() && importPath.toLowerCase().endsWith('.zip')) {
         // Valid zip file, proceed
         AegisLogger.info("Selected ZIP file: $importPath");
@@ -750,14 +749,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Selected file or directory does not exist')),
+            const SnackBar(
+                content: Text('Selected file or directory does not exist')),
           );
         }
         return;
       }
 
       final success = await RelayService.instance.importDatabase(importPath);
-      
+
       if (success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -786,47 +786,6 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         });
       }
     }
-  }
-
-  Widget _buildInfoItem(String label, Widget value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          value,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusWidget() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _isRelayRunning ? Colors.green : Colors.red,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          _isRelayRunning ? 'Running' : 'Stopped',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: _isRelayRunning ? Colors.green : Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -863,342 +822,310 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    _buildInfoItem(
-                      'Address',
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              final address = _resolvedRelayAddress();
-                              Clipboard.setData(ClipboardData(text: address));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Address copied to clipboard'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                    // Status & Address Card
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.2),
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border(
+                              top: BorderSide(
+                                color:
+                                    _isRelayRunning ? Colors.green : Colors.red,
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _resolvedRelayAddress(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w500,
+                                // Status Section
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _isRelayRunning
+                                            ? Colors.green
+                                            : Colors.red,
                                       ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Status',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: _isRelayRunning
+                                            ? Colors.green.withOpacity(0.1)
+                                            : Colors.red.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: _isRelayRunning
+                                              ? Colors.green
+                                              : Colors.red,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _isRelayRunning ? 'Running' : 'Stopped',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: _isRelayRunning
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.copy,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                                const SizedBox(height: 16),
+                                // Address Section
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Address',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: () {
+                                        final address = _resolvedRelayAddress();
+                                        Clipboard.setData(
+                                            ClipboardData(text: address));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Address copied to clipboard'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            _resolvedRelayAddress(),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  fontFamily: 'monospace',
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Icon(
+                                            Icons.copy,
+                                            size: 20,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                const SizedBox(height: 12),
+                                _buildAddressModeSelector(),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          _buildAddressModeSelector(),
-                        ],
-                      ),
-                    ),
-                    _buildInfoItem(
-                      'Status',
-                      _buildStatusWidget(),
-                    ),
-                    _buildInfoItem(
-                      'Database Size',
-                      Text(
-                        _formatBytes(_databaseSize),
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                      ),
-                    ),
-                    if (_stats != null)
-                      _buildInfoItem(
-                        'Total Events',
-                        Text(
-                          _formatNumber(_stats!['totalEvents'] as int? ?? 0),
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
                         ),
                       ),
-                    _buildInfoItem(
-                      'Service Uptime',
-                      Text(
-                        _formatDuration(_currentSessionUptime.inSeconds),
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                      ),
                     ),
-                    // Relay Logs as a list item
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ExpansionTile(
-                            tilePadding: EdgeInsets.zero,
-                            shape: const Border(),
-                            collapsedShape: const Border(),
-                            childrenPadding: EdgeInsets.zero,
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Relay Logs',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                ),
-                                Text(
-                                  _showLogs
-                                      ? 'Tap to hide logs'
-                                      : 'Tap to view logs',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            initiallyExpanded: false,
-                            onExpansionChanged: (expanded) {
-                              if (expanded != _showLogs) {
-                                _toggleLogs();
-                              }
-                            },
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                constraints: const BoxConstraints(
-                                  minHeight: 200,
-                                  maxHeight: 200,
-                                ),
-                                margin:
-                                    const EdgeInsets.only(bottom: 8, top: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.black87,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.grey.shade700,
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: _logContent.isEmpty
-                                    ? const Center(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(24),
-                                          child: Text(
-                                            'No logs available',
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Scrollbar(
-                                          controller: _logScrollController,
-                                          thumbVisibility: true,
-                                          radius: const Radius.circular(4),
-                                          child: SingleChildScrollView(
-                                            controller: _logScrollController,
-                                            padding: const EdgeInsets.all(16),
-                                            child: SelectableText(
-                                              _logContent,
-                                              style: const TextStyle(
-                                                fontFamily: 'monospace',
-                                                fontSize: 11,
-                                                color: Colors.greenAccent,
-                                                height: 1.6,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                              // Action buttons inside ExpansionTile, closer to log content
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton.icon(
-                                        onPressed: () async {
-                                          final confirmed =
-                                              await showDialog<bool>(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              title: const Text('Clear Log'),
-                                              content: const Text(
-                                                'This will clear all log content. New logs will continue to be recorded.',
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(false),
-                                                  child: const Text('Cancel'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(true),
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor: Colors.red,
-                                                  ),
-                                                  child: const Text('Clear'),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-
-                                          if (confirmed == true) {
-                                            final success = await RelayService
-                                                .instance
-                                                .clearLogFile();
-                                            if (mounted) {
-                                              if (success) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text(
-                                                        'Log file cleared'),
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                  ),
-                                                );
-                                                // Reload logs to show empty content
-                                                _loadLogs(
-                                                    forceScrollToBottom: true);
-                                              } else {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text(
-                                                        'Failed to clear log file'),
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          }
-                                        },
-                                        icon: const Icon(Icons.clear, size: 18),
-                                        label: const Text('Clear Log'),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12),
-                                          side: BorderSide(
-                                            color: Colors.red.shade300,
-                                          ),
-                                          foregroundColor: Colors.red.shade300,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        onPressed: () async {
-                                          if (_logContent.isNotEmpty) {
-                                            Clipboard.setData(ClipboardData(
-                                                text: _logContent));
-                                            if (mounted) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                      'Log content copied to clipboard'),
-                                                  duration:
-                                                      Duration(seconds: 2),
-                                                ),
-                                              );
-                                            }
-                                          }
-                                        },
-                                        icon: const Icon(Icons.copy, size: 18),
-                                        label: const Text('Copy Log'),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12),
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          foregroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 32),
-                    // Export/Import Database Buttons
+                    const SizedBox(height: 12),
+                    // Statistics Cards (Size, Events, Uptime)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _isExporting ? null : _handleExportDatabase,
-                              icon: _isExporting
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : const Icon(Icons.upload),
-                              label: Text(_isExporting ? 'Exporting...' : 'Export'),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withOpacity(0.2),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.storage,
+                                      size: 24,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Size',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _formatBytes(_databaseSize),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
+                          if (_stats != null) ...[
+                            Expanded(
+                              child: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.2),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(
+                                        Icons.show_chart,
+                                        size: 24,
+                                        color: Colors.purple,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Events',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatNumber(
+                                            _stats!['totalEvents'] as int? ??
+                                                0),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _isImporting ? null : _handleImportDatabase,
-                              icon: _isImporting
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : const Icon(Icons.download),
-                              label: Text(_isImporting ? 'Importing...' : 'Import'),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withOpacity(0.2),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 24,
+                                      color: Colors.orange,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Uptime',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _formatDuration(
+                                          _currentSessionUptime.inSeconds),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -1206,45 +1133,348 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Clear Database Button
+                    // Relay Logs Card
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _isClearing ? null : _handleClearDatabase,
-                          icon: _isClearing
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.delete_outline),
-                          label: Text(
-                              _isClearing ? 'Clearing...' : 'Clear Database'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.2),
                           ),
+                        ),
+                        child: ExpansionTile(
+                          tilePadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 4),
+                          shape: const Border(),
+                          collapsedShape: const Border(),
+                          childrenPadding: EdgeInsets.zero,
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '>_',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Relay Logs',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'View system activity',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          trailing: Icon(
+                            _showLogs ? Icons.expand_less : Icons.expand_more,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          initiallyExpanded: false,
+                          onExpansionChanged: (expanded) {
+                            if (expanded != _showLogs) {
+                              _toggleLogs();
+                            }
+                          },
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              constraints: const BoxConstraints(
+                                minHeight: 200,
+                                maxHeight: 200,
+                              ),
+                              margin: const EdgeInsets.only(bottom: 8, top: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.black87,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.grey.shade700,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: _logContent.isEmpty
+                                  ? const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(24),
+                                        child: Text(
+                                          'No logs available',
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Scrollbar(
+                                        controller: _logScrollController,
+                                        thumbVisibility: true,
+                                        radius: const Radius.circular(4),
+                                        child: SingleChildScrollView(
+                                          controller: _logScrollController,
+                                          padding: const EdgeInsets.all(16),
+                                          child: SelectableText(
+                                            _logContent,
+                                            style: const TextStyle(
+                                              fontFamily: 'monospace',
+                                              fontSize: 11,
+                                              color: Colors.greenAccent,
+                                              height: 1.6,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    // const SizedBox(height: 32),
+                    const SizedBox(height: 16),
+                    // DATA MANAGEMENT Section
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Clear: Deletes all stored events. '
-                            'If the relay is running, it will be restarted automatically.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey,
+                            'DATA MANAGEMENT',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
                                 ),
                           ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Card(
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outline
+                                          .withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: _isExporting
+                                        ? null
+                                        : _handleExportDatabase,
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16, horizontal: 4),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _isExporting
+                                              ? const SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2),
+                                                )
+                                              : Icon(
+                                                  Icons.upload_rounded,
+                                                  size: 28,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface,
+                                                ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            _isExporting
+                                                ? 'Exporting...'
+                                                : 'Export Data',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Card(
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outline
+                                          .withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: _isImporting
+                                        ? null
+                                        : _handleImportDatabase,
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16, horizontal: 4),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _isImporting
+                                              ? const SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2),
+                                                )
+                                              : Icon(
+                                                  Icons.download_rounded,
+                                                  size: 28,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface,
+                                                ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            _isImporting
+                                                ? 'Importing...'
+                                                : 'Import Data',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Reset Database Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Colors.red.withOpacity(0.5),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.warning_rounded,
+                                color: Colors.red,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Deletes all events. The relay will restart automatically.',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              TextButton(
+                                onPressed:
+                                    _isClearing ? null : _handleClearDatabase,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                ),
+                                child: _isClearing
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.red,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Clear',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
