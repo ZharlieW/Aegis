@@ -1042,7 +1042,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                       Icon(
                                         Icons.show_chart,
                                         size: 24,
-                                        color: Colors.purple,
+                                        color: Theme.of(context).colorScheme.secondary,
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
@@ -1097,7 +1097,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                     Icon(
                                       Icons.access_time,
                                       size: 24,
-                                      color: Colors.orange,
+                                        color: Theme.of(context).colorScheme.secondary,
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
@@ -1157,7 +1157,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
+                              color: Theme.of(context).colorScheme.surfaceVariant,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Center(
@@ -1166,7 +1166,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey.shade700,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -1220,7 +1220,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 color: Colors.black87,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.grey.shade700,
+                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
@@ -1232,13 +1232,13 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 ],
                               ),
                               child: _logContent.isEmpty
-                                  ? const Center(
+                                  ? Center(
                                       child: Padding(
-                                        padding: EdgeInsets.all(24),
+                                        padding: const EdgeInsets.all(24),
                                         child: Text(
                                           'No logs available',
                                           style: TextStyle(
-                                            color: Colors.grey,
+                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -1253,15 +1253,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                         child: SingleChildScrollView(
                                           controller: _logScrollController,
                                           padding: const EdgeInsets.all(16),
-                                          child: SelectableText(
-                                            _logContent,
-                                            style: const TextStyle(
-                                              fontFamily: 'monospace',
-                                              fontSize: 11,
-                                              color: Colors.greenAccent,
-                                              height: 1.6,
+                                            child: SelectableText(
+                                              _logContent,
+                                              style: const TextStyle(
+                                                fontFamily: 'monospace',
+                                                fontSize: 11,
+                                                color: Colors.greenAccent,
+                                                height: 1.6,
+                                              ),
                                             ),
-                                          ),
                                         ),
                                       ),
                                     ),
@@ -1327,9 +1327,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                               : Icon(
                                                   Icons.upload_rounded,
                                                   size: 28,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface,
+                                                                                        color: Theme.of(context).colorScheme.secondary,
+
                                                 ),
                                           const SizedBox(height: 8),
                                           Text(
@@ -1384,9 +1383,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                               : Icon(
                                                   Icons.download_rounded,
                                                   size: 28,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface,
+                                                                                          color: Theme.of(context).colorScheme.secondary,
+
                                                 ),
                                           const SizedBox(height: 8),
                                           Text(
