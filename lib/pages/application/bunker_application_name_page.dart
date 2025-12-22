@@ -1,7 +1,58 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'bunker_socket_info.dart';
+
+// Widget to handle SVG network images with error fallback
+class _SvgNetworkImage extends StatefulWidget {
+  final String url;
+  final double size;
+  final Widget fallback;
+
+  const _SvgNetworkImage({
+    required this.url,
+    required this.size,
+    required this.fallback,
+  });
+
+  @override
+  State<_SvgNetworkImage> createState() => _SvgNetworkImageState();
+}
+
+class _SvgNetworkImageState extends State<_SvgNetworkImage> {
+  bool _hasError = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return widget.fallback;
+    }
+
+    return SvgPicture.network(
+      widget.url,
+      width: widget.size,
+      height: widget.size,
+      fit: BoxFit.cover,
+      placeholderBuilder: (context) => SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Center(
+          child: SizedBox(
+            width: widget.size * 0.5,
+            height: widget.size * 0.5,
+            child: const CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+      headers: const {
+        'User-Agent': 'Mozilla/5.0',
+      },
+    );
+  }
+}
 
 class BunkerApplicationNamePage extends StatefulWidget {
   const BunkerApplicationNamePage({super.key});
@@ -12,20 +63,155 @@ class BunkerApplicationNamePage extends StatefulWidget {
 
 class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _dialogSearchController = TextEditingController();
   String? _selectedPresetName;
   String _currentDisplayName = '';
+  String _dialogSearchQuery = '';
   
-  // Preset application names with their corresponding images
-  final Map<String, String> _presetApps = {
-    'Amethyst': 'amethyst_icon.png',
-    'Jumble': 'jumble_icon.png',
-    '0xchat': '0xchat_icon.png',
-    'Nostur': 'nostur_icon.png',
-  };
+  // Preset application names with their corresponding image URLs
+  Map<String, String> _presetApps = {};
   
-  List<String> get _presetNames => _presetApps.keys.toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadPresetApps();
+  }
   
-  // Get image for a preset name, returns null if not found
+  // Load preset apps from JSON file
+  Future<void> _loadPresetApps() async {
+    try {
+      final String jsonString = await rootBundle.loadString('lib/assets/preset_apps.json');
+      final List<dynamic> jsonData = json.decode(jsonString);
+      
+      setState(() {
+        _presetApps = {
+          for (var app in jsonData)
+            app['name'] as String: app['thumb'] as String
+        };
+      });
+    } catch (e) {
+      // Fallback to empty map if loading fails
+      setState(() {
+        _presetApps = {};
+      });
+    }
+  }
+  
+  List<String> get _presetNames {
+    final names = _presetApps.keys.toList();
+    names.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return names;
+  }
+  
+  // Get filtered preset names based on search query
+  List<String> _getFilteredPresetNames(String query) {
+    if (query.isEmpty) {
+      return _presetNames;
+    }
+    final lowerQuery = query.toLowerCase();
+    return _presetNames.where((name) => 
+      name.toLowerCase().contains(lowerQuery)
+    ).toList();
+  }
+  
+  // Show dialog with searchable preset list
+  Future<void> _showPresetDialog() async {
+    _dialogSearchController.clear();
+    _dialogSearchQuery = '';
+    
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final filteredNames = _getFilteredPresetNames(_dialogSearchQuery);
+          
+          return AlertDialog(
+            title: Text(
+              'Select an application',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Search box
+                  TextField(
+                    controller: _dialogSearchController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _dialogSearchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _dialogSearchController.clear();
+                                setDialogState(() {
+                                  _dialogSearchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        _dialogSearchQuery = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Filtered list
+                  Flexible(
+                    child: SizedBox(
+                      height: 300,
+                      child: filteredNames.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No results found',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: filteredNames.length,
+                              itemBuilder: (context, index) {
+                                final name = filteredNames[index];
+                                return ListTile(
+                                  leading: _buildAppIcon(name, size: 24),
+                                  title: Text(name),
+                                  onTap: () {
+                                    Navigator.of(context).pop(name);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    
+    if (selected != null) {
+      _onPresetNameSelected(selected);
+    }
+  }
+  
+  // Get image URL for a preset name, returns null if not found
   String? _getImageForName(String name) {
     return _presetApps[name];
   }
@@ -42,17 +228,53 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
   
   // Build icon widget - shows image if available, otherwise shows first letter
   Widget _buildAppIcon(String name, {double size = 24}) {
-    final imageName = _getImageForName(name);
+    final imageUrl = _getImageForName(name);
     
-    if (imageName != null) {
-      // Try to load image, fallback to first letter if it fails
-      return Image.asset(
-        'assets/images/$imageName',
-        width: size,
-        height: size,
-        errorBuilder: (context, error, stackTrace) {
-          return _buildInitialIcon(name, size);
-        },
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      // Check if URL is SVG
+      final isSvg = imageUrl.toLowerCase().endsWith('.svg');
+      
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(size / 2),
+        child: isSvg
+            ? _SvgNetworkImage(
+                url: imageUrl,
+                size: size,
+                fallback: _buildInitialIcon(name, size),
+              )
+            : Image.network(
+                imageUrl,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to initial letter icon on error
+                  return _buildInitialIcon(name, size);
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return SizedBox(
+                    width: size,
+                    height: size,
+                    child: Center(
+                      child: SizedBox(
+                        width: size * 0.5,
+                        height: size * 0.5,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                // Add headers to handle potential CORS or authentication issues
+                headers: const {
+                  'User-Agent': 'Mozilla/5.0',
+                },
+              ),
       );
     } else {
       // No image defined, show first letter
@@ -98,6 +320,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _dialogSearchController.dispose();
     super.dispose();
   }
 
@@ -143,7 +366,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Application Name',
+          'Application',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -156,33 +379,43 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
           children: [
             const SizedBox(height: 24),
             Text(
-              'Please enter a name for this application',
+              'Please select an application',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
             ),
             const SizedBox(height: 24),
-            // Dropdown for preset names
-            DropdownButtonFormField<String>(
-              value: _selectedPresetName,
-              decoration: InputDecoration(
-                labelText: 'Select a preset name',
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              items: _presetNames.map((String name) {
-                return DropdownMenuItem<String>(
-                  value: name,
-                  child: Row(
-                    children: [
-                      _buildAppIcon(name, size: 24),
-                      const SizedBox(width: 12),
-                      Text(name),
-                    ],
+            // Button to open preset selection dialog
+            SizedBox(
+              height: 56,
+              child: OutlinedButton(
+                onPressed: _showPresetDialog,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  alignment: Alignment.centerLeft,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                );
-              }).toList(),
-              onChanged: _onPresetNameSelected,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedPresetName ?? 'Select an application',
+                        style: TextStyle(
+                          color: _selectedPresetName != null
+                              ? Theme.of(context).colorScheme.onSurface
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             // Text field for custom name
@@ -190,8 +423,8 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
               controller: _nameController,
               textAlignVertical: TextAlignVertical.center,
               decoration: InputDecoration(
-                hintText: 'Or enter a custom name',
-                labelText: 'Application name',
+                hintText: 'Enter a custom name',
+                labelText: 'Or enter a custom name',
                 border: const OutlineInputBorder(),
                 isDense: false,
                 contentPadding: const EdgeInsets.all(16),

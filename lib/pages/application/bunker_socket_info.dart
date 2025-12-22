@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../common/common_image.dart';
+import '../../navigator/navigator.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../../utils/local_tls_proxy_manager_rust.dart';
 import '../../utils/took_kit.dart';
@@ -100,6 +101,19 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
                 fontWeight: FontWeight.w400,
               ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              AegisNavigator.popToRoot(context);
+            },
+            child: Text(
+              'Done',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
