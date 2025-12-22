@@ -886,7 +886,7 @@ class ServerNIP46Signer {
 
   /// Create a new bunker application with remote signer keypair
   /// Returns the created ClientAuthDBISAR or null if failed
-  Future<ClientAuthDBISAR?> createBunkerApplication({String? name}) async {
+  Future<ClientAuthDBISAR?> createBunkerApplication({String? name, String? image}) async {
     try {
       final instance = Account.sharedInstance;
       if (instance.currentPubkey.isEmpty) {
@@ -925,6 +925,7 @@ class ServerNIP46Signer {
         remoteSignerPubkey: remoteSignerPubkey,
         remoteSignerPrivateKey: remoteSignerPrivateKey,
         name: applicationName,
+        image: image,
         connectionType: EConnectionType.bunker.toInt,
       );
 

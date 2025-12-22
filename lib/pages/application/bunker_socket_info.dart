@@ -11,8 +11,13 @@ import '../../utils/account_manager.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
   final String? applicationName;
+  final String? applicationImage;
   
-  const BunkerSocketInfo({super.key, this.applicationName});
+  const BunkerSocketInfo({
+    super.key,
+    this.applicationName,
+    this.applicationImage,
+  });
 
   @override
   BunkerSocketInfoState createState() => BunkerSocketInfoState();
@@ -42,21 +47,37 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
       // Try to find an unused application first
       final unusedApp = await ServerNIP46Signer.instance.findUnusedBunkerApplication();
       if (unusedApp == null) {
-        // Create a new application if none exists, with optional name
+        // Create a new application if none exists, with optional name and image
         await ServerNIP46Signer.instance.createBunkerApplication(
           name: widget.applicationName,
+          image: widget.applicationImage,
         );
-      } else if (widget.applicationName != null && widget.applicationName!.isNotEmpty) {
-        // If we found an unused app but have a name, update it
-        unusedApp.name = widget.applicationName!;
-        await ClientAuthDBISAR.saveFromDB(unusedApp, isUpdate: true);
-        // Update the notifier if it exists
-        final key = unusedApp.clientPubkey.isNotEmpty 
-            ? unusedApp.clientPubkey 
-            : (unusedApp.remoteSignerPubkey ?? '');
-        final notifier = AccountManager.sharedInstance.applicationMap[key];
-        if (notifier != null) {
-          notifier.value.name = widget.applicationName!;
+      } else {
+        // If we found an unused app, update it with name and image
+        bool needsUpdate = false;
+        if (widget.applicationName != null && widget.applicationName!.isNotEmpty) {
+          unusedApp.name = widget.applicationName!;
+          needsUpdate = true;
+        }
+        if (widget.applicationImage != null && widget.applicationImage!.isNotEmpty) {
+          unusedApp.image = widget.applicationImage!;
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
+          await ClientAuthDBISAR.saveFromDB(unusedApp, isUpdate: true);
+          // Update the notifier if it exists
+          final key = unusedApp.clientPubkey.isNotEmpty 
+              ? unusedApp.clientPubkey 
+              : (unusedApp.remoteSignerPubkey ?? '');
+          final notifier = AccountManager.sharedInstance.applicationMap[key];
+          if (notifier != null) {
+            if (widget.applicationName != null && widget.applicationName!.isNotEmpty) {
+              notifier.value.name = widget.applicationName!;
+            }
+            if (widget.applicationImage != null && widget.applicationImage!.isNotEmpty) {
+              notifier.value.image = widget.applicationImage!;
+            }
+          }
         }
       }
     } catch (e) {

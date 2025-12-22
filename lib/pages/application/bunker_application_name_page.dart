@@ -354,10 +354,16 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
       return;
     }
 
-    // Navigate to BunkerSocketInfo with the application name
+    // Get image URL if it's a preset application
+    String? imageUrl = _getImageForName(name);
+
+    // Navigate to BunkerSocketInfo with the application name and image URL
     AegisNavigator.pushPage(
       context,
-      (context) => BunkerSocketInfo(applicationName: name),
+      (context) => BunkerSocketInfo(
+        applicationName: name,
+        applicationImage: imageUrl,
+      ),
     );
   }
 

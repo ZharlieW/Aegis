@@ -8,6 +8,7 @@ import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -85,22 +86,14 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   /// Build initial letter icon
   Widget _buildInitialIcon(String name, double size) {
     final letter = _getFirstLetter(name);
-    final colors = [
-      Theme.of(context).colorScheme.primary,
-      Theme.of(context).colorScheme.secondary,
-      Theme.of(context).colorScheme.tertiary,
-    ];
-    // Use hash of name to get consistent color
-    final colorIndex = name.hashCode.abs() % colors.length;
     
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: colors[colorIndex].withOpacity(0.2),
         shape: BoxShape.circle,
         border: Border.all(
-          color: colors[colorIndex],
+          color: Theme.of(context).colorScheme.outline,
           width: 1,
         ),
       ),
@@ -108,7 +101,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         child: Text(
           letter,
           style: TextStyle(
-            color: colors[colorIndex],
+            color: Theme.of(context).colorScheme.outline,
             fontSize: size * 0.5,
             fontWeight: FontWeight.bold,
           ),
@@ -535,16 +528,45 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 Widget iconWidget() {
                   // If image exists and is not empty, try to load it
                   if (value.image != null && value.image!.isNotEmpty) {
-                    return Image.network(
-                      value.image!,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        // If image fails to load, show initial letter
-                        return _buildInitialIcon(value.name ?? '?', 40)
-                            .setPaddingOnly(right: 8.0);
-                      },
+                    final imageUrl = value.image!;
+                    final isSvg = imageUrl.toLowerCase().endsWith('.svg');
+                    
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: isSvg
+                          ? SvgPicture.network(
+                              imageUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              placeholderBuilder: (context) => SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: const CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                ),
+                              ),
+                              headers: const {
+                                'User-Agent': 'Mozilla/5.0',
+                              },
+                            )
+                          : Image.network(
+                              imageUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                // If image fails to load, show initial letter
+                                return _buildInitialIcon(value.name ?? '?', 40);
+                              },
+                              headers: const {
+                                'User-Agent': 'Mozilla/5.0',
+                              },
+                            ),
                     ).setPaddingOnly(right: 8.0);
                   }
                   
