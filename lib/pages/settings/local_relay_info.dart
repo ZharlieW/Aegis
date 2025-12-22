@@ -235,43 +235,33 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
 
   Widget _buildAddressModeSelector() {
     final secureAvailable = LocalTlsProxyManagerRust.instance.isRunning;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SegmentedButton<String>(
-          segments: const [
-            ButtonSegment(
-              value: 'ws',
-              label: Text('ws://'),
-            ),
-            ButtonSegment(
-              value: 'wss',
-              label: Text('wss://'),
-            ),
-          ],
-          selected: {_showSecureRelayAddress ? 'wss' : 'ws'},
-          onSelectionChanged: secureAvailable
-              ? (Set<String> newSelection) {
-                  if (mounted) {
-                    setState(() {
-                      _showSecureRelayAddress = newSelection.contains('wss');
-                    });
-                  }
-                }
-              : null,
-        ),
-        if (!secureAvailable)
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Text(
-              'TLS proxy not running',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: Theme.of(context).colorScheme.outline),
-            ),
+    return SegmentedButton<String>(
+      segments: [
+        ButtonSegment(
+          value: 'ws',
+          label: Text(
+            'WS',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
+        ),
+        ButtonSegment(
+          value: 'wss',
+          label: Text(
+            'WSS',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
       ],
+      selected: {_showSecureRelayAddress ? 'wss' : 'ws'},
+      onSelectionChanged: secureAvailable
+          ? (Set<String> newSelection) {
+              if (mounted) {
+                setState(() {
+                  _showSecureRelayAddress = newSelection.contains('wss');
+                });
+              }
+            }
+          : null,
     );
   }
 
@@ -547,6 +537,29 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   }
 
   Future<void> _handleExportDatabase() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Database'),
+        content: const Text(
+          'This will export the relay database as a ZIP file. The export may take a few moments.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Export'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     setState(() {
       _isExporting = true;
     });
@@ -687,6 +700,29 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   }
 
   Future<void> _handleImportDatabase() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import Database'),
+        content: const Text(
+          'This will replace the current database with the imported backup. The existing database will be backed up before import. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Import'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     setState(() {
       _isImporting = true;
     });
@@ -822,7 +858,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    // Status & Address Card
+                    // Connection Details Card
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Card(
@@ -836,304 +872,273 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 .withOpacity(0.2),
                           ),
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border(
-                              top: BorderSide(
-                                color:
-                                    _isRelayRunning ? Colors.green : Colors.red,
-                                width: 3,
-                              ),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Status Section
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 12,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              // Status Section
+                              Row(
+                                children: [
+                                  Text(
+                                    'Status',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: _isRelayRunning
+                                          ? Colors.green.withOpacity(0.1)
+                                          : Colors.red.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
                                         color: _isRelayRunning
                                             ? Colors.green
                                             : Colors.red,
+                                        width: 1,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Status',
+                                    child: Text(
+                                      _isRelayRunning ? 'Running' : 'Stopped',
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleMedium,
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: _isRelayRunning
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
-                                    const Spacer(),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: _isRelayRunning
-                                            ? Colors.green.withOpacity(0.1)
-                                            : Colors.red.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: _isRelayRunning
-                                              ? Colors.green
-                                              : Colors.red,
-                                          width: 1,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Address Section
+                              Row(
+                                children: [
+                                  Text(
+                                    'Address',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                  const Spacer(),
+                                  GestureDetector(
+                                    onTap: () {
+                                      final address = _resolvedRelayAddress();
+                                      Clipboard.setData(
+                                          ClipboardData(text: address));
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Address copied to clipboard'),
+                                          duration: Duration(seconds: 2),
                                         ),
-                                      ),
-                                      child: Text(
-                                        _isRelayRunning ? 'Running' : 'Stopped',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: _isRelayRunning
-                                                  ? Colors.green
-                                                  : Colors.red,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          _resolvedRelayAddress(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                fontFamily: 'monospace',
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.copy,
+                                          size: 18,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                // Address Section
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Address',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium,
-                                    ),
-                                    const Spacer(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        final address = _resolvedRelayAddress();
-                                        Clipboard.setData(
-                                            ClipboardData(text: address));
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Address copied to clipboard'),
-                                            duration: Duration(seconds: 2),
-                                          ),
-                                        );
-                                      },
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            _resolvedRelayAddress(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontFamily: 'monospace',
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Icon(
-                                            Icons.copy,
-                                            size: 20,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                _buildAddressModeSelector(),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Protocol Section
+                              Row(
+                                children: [
+                                  Text(
+                                    'Protocol',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                  const Spacer(),
+                                  _buildAddressModeSelector(),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Statistics Cards (Size, Events, Uptime)
+                    // Statistics Card (Size, Events, Uptime)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outline
-                                      .withOpacity(0.2),
-                                ),
-                              ),
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // SIZE Section
+                            Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.storage,
-                                      size: 24,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                    const SizedBox(height: 8),
                                     Text(
-                                      'Size',
+                                      'SIZE',
                                       style: Theme.of(context)
                                           .textTheme
-                                          .labelSmall
+                                          .bodyMedium
                                           ?.copyWith(
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurfaceVariant,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 8),
                                     Text(
                                       _formatBytes(_databaseSize),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleMedium
+                                          .bodyMedium
                                           ?.copyWith(
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (_stats != null) ...[
-                            Expanded(
-                              child: Card(
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outline
-                                        .withOpacity(0.2),
-                                  ),
-                                ),
+                            // Vertical Divider
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .outline
+                                  .withOpacity(0.2),
+                            ),
+                            // EVENTS Section
+                            if (_stats != null) ...[
+                              Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(
-                                        Icons.show_chart,
-                                        size: 24,
-                                        color: Theme.of(context).colorScheme.secondary,
-                                      ),
-                                      const SizedBox(height: 8),
                                       Text(
-                                        'Events',
+                                        'EVENTS',
                                         style: Theme.of(context)
                                             .textTheme
-                                            .labelSmall
+                                            .bodyMedium
                                             ?.copyWith(
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .onSurfaceVariant,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const SizedBox(height: 8),
                                       Text(
                                         _formatNumber(
-                                            _stats!['totalEvents'] as int? ??
-                                                0),
+                                            _stats!['totalEvents'] as int? ?? 0),
                                         style: Theme.of(context)
                                             .textTheme
-                                            .titleMedium
+                                            .bodyMedium
                                             ?.copyWith(
-                                              fontWeight: FontWeight.w600,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Expanded(
-                            child: Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outline
-                                      .withOpacity(0.2),
-                                ),
+                              // Vertical Divider
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outline
+                                    .withOpacity(0.2),
                               ),
+                            ],
+                            // UPTIME Section
+                            Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.access_time,
-                                      size: 24,
-                                        color: Theme.of(context).colorScheme.secondary,
-                                    ),
-                                    const SizedBox(height: 8),
                                     Text(
-                                      'Uptime',
+                                      'UPTIME',
                                       style: Theme.of(context)
                                           .textTheme
-                                          .labelSmall
+                                          .bodyMedium
                                           ?.copyWith(
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurfaceVariant,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 8),
                                     Text(
                                       _formatDuration(
                                           _currentSessionUptime.inSeconds),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleMedium
+                                          .bodyMedium
                                           ?.copyWith(
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Relay Logs Card
+                    // Actions Card (System Logs, Export Data, Import Data)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Card(
@@ -1147,112 +1152,92 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 .withOpacity(0.2),
                           ),
                         ),
-                        child: ExpansionTile(
-                          tilePadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
-                          shape: const Border(),
-                          collapsedShape: const Border(),
-                          childrenPadding: EdgeInsets.zero,
-                          leading: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceVariant,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '>_',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Relay Logs',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'View system activity',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          trailing: Icon(
-                            _showLogs ? Icons.expand_less : Icons.expand_more,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                          initiallyExpanded: false,
-                          onExpansionChanged: (expanded) {
-                            if (expanded != _showLogs) {
-                              _toggleLogs();
-                            }
-                          },
+                        child: Column(
                           children: [
-                            Container(
-                              width: double.infinity,
-                              constraints: const BoxConstraints(
-                                minHeight: 200,
-                                maxHeight: 200,
+                            // Export Data List Item
+                            ListTile(
+                              title: Text(
+                                'Export Data',
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
-                              margin: const EdgeInsets.only(bottom: 8, top: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.black87,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                                  width: 1.5,
+                              trailing: Icon(
+                                Icons.chevron_right,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              onTap: _isExporting ? null : _handleExportDatabase,
+                            ),
+                            // Import Data List Item
+                            ListTile(
+                              title: Text(
+                                'Import Data',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              trailing: Icon(
+                                Icons.chevron_right,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              onTap: _isImporting ? null : _handleImportDatabase,
+                            ),
+                            // System Logs List Item
+                            ListTile(
+                              title: Text(
+                                'System Logs',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              trailing: Icon(
+                                _showLogs ? Icons.expand_less : Icons.expand_more,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              onTap: _toggleLogs,
+                            ),
+                            // Logs content (expandable)
+                            if (_showLogs)
+                              Container(
+                                width: double.infinity,
+                                constraints: const BoxConstraints(
+                                  minHeight: 200,
+                                  maxHeight: 200,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                                margin: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                    width: 1.5,
                                   ),
-                                ],
-                              ),
-                              child: _logContent.isEmpty
-                                  ? Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(24),
-                                        child: Text(
-                                          'No logs available',
-                                          style: TextStyle(
-                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                            fontSize: 14,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: _logContent.isEmpty
+                                    ? Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(24),
+                                          child: Text(
+                                            'No logs available',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                ),
                                           ),
                                         ),
-                                      ),
-                                    )
-                                  : ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Scrollbar(
-                                        controller: _logScrollController,
-                                        thumbVisibility: true,
-                                        radius: const Radius.circular(4),
-                                        child: SingleChildScrollView(
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Scrollbar(
                                           controller: _logScrollController,
-                                          padding: const EdgeInsets.all(16),
+                                          thumbVisibility: true,
+                                          radius: const Radius.circular(4),
+                                          child: SingleChildScrollView(
+                                            controller: _logScrollController,
+                                            padding: const EdgeInsets.all(16),
                                             child: SelectableText(
                                               _logContent,
                                               style: const TextStyle(
@@ -1262,217 +1247,38 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                                 height: 1.6,
                                               ),
                                             ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                            ),
+                              ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // DATA MANAGEMENT Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'DATA MANAGEMENT',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: BorderSide(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .outline
-                                          .withOpacity(0.2),
-                                    ),
-                                  ),
-                                  child: InkWell(
-                                    onTap: _isExporting
-                                        ? null
-                                        : _handleExportDatabase,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 16, horizontal: 4),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          _isExporting
-                                              ? const SizedBox(
-                                                  width: 24,
-                                                  height: 24,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                          strokeWidth: 2),
-                                                )
-                                              : Icon(
-                                                  Icons.upload_rounded,
-                                                  size: 28,
-                                                                                        color: Theme.of(context).colorScheme.secondary,
-
-                                                ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            _isExporting
-                                                ? 'Exporting...'
-                                                : 'Export Data',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelLarge
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: BorderSide(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .outline
-                                          .withOpacity(0.2),
-                                    ),
-                                  ),
-                                  child: InkWell(
-                                    onTap: _isImporting
-                                        ? null
-                                        : _handleImportDatabase,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 16, horizontal: 4),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          _isImporting
-                                              ? const SizedBox(
-                                                  width: 24,
-                                                  height: 24,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                          strokeWidth: 2),
-                                                )
-                                              : Icon(
-                                                  Icons.download_rounded,
-                                                  size: 28,
-                                                                                          color: Theme.of(context).colorScheme.secondary,
-
-                                                ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            _isImporting
-                                                ? 'Importing...'
-                                                : 'Import Data',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelLarge
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Reset Database Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: Colors.red.withOpacity(0.5),
-                            width: 1.5,
-                          ),
+                    // Clear All Relay Data (centered red text link)
+                    Center(
+                      child: TextButton(
+                        onPressed: _isClearing ? null : _handleClearDatabase,
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.warning_rounded,
-                                color: Colors.red,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Deletes all events. The relay will restart automatically.',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
+                        child: _isClearing
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.red,
+                                ),
+                              )
+                            : const Text(
+                                'Clear All Relay Data',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              TextButton(
-                                onPressed:
-                                    _isClearing ? null : _handleClearDatabase,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                ),
-                                child: _isClearing
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.red,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Clear',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
                     ),
                   ],
