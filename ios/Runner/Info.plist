@@ -64,6 +64,8 @@
 	<string>We need access to your location to provide location-based services and features</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to the microphone for voice recognition and audio recording features</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to allow you to select and share images</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
