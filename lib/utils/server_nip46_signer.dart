@@ -6,6 +6,9 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../db/clientAuthDB_isar.dart';
 import 'package:aegis/nostr/nostr.dart' show Event, Filter;
@@ -16,6 +19,7 @@ import 'connect.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'local_tls_proxy_manager_rust.dart';
 import 'platform_utils.dart';
+import '../pages/application/bunker_application_name_page.dart';
 
 class ClientRequest {
   final String method;
@@ -608,7 +612,7 @@ class ServerNIP46Signer {
         if (!isSuccess) {
           responseJson = {
             "id": remoteRequest.id,
-            "result": null,
+            "result": "",
             "error": "unauthorized",
           };
           break;
@@ -661,17 +665,29 @@ class ServerNIP46Signer {
             AegisLogger.error('Database saving failed', e);
             responseJson = {
               "id": remoteRequest.id,
-              "result": null,
+              "result": "",
               "error": "Failed to update application",
             };
           }
         } else {
           // No unused application found with matching remoteSignerPubkey and empty clientPubkey
-          // This means there's no suitable application available for connection
-          AegisLogger.warning('No unused application found with remoteSignerPubkey ${remoteSignerPubkeyFromEvent ?? "unknown"} and empty clientPubkey for client ${event.pubkey}');
+          // Check if there are any unused applications at all
+          final anyUnusedApp = await findUnusedBunkerApplication();
+          
+          if (anyUnusedApp == null) {
+            // No unused applications at all, show dialog to user
+            AegisLogger.warning('No unused application found with remoteSignerPubkey ${remoteSignerPubkeyFromEvent ?? "unknown"} and empty clientPubkey for client ${event.pubkey}. No unused applications available.');
+            _showNewConnectionRequestDialog();
+          } else {
+            // There are unused applications, but not matching this remoteSignerPubkey
+            // Still show dialog because clientpubkey doesn't match and no suitable application available
+            AegisLogger.warning('No unused application found with remoteSignerPubkey ${remoteSignerPubkeyFromEvent ?? "unknown"} and empty clientPubkey for client ${event.pubkey}');
+            _showNewConnectionRequestDialog();
+          }
+          
           responseJson = {
             "id": remoteRequest.id,
-            "result": null,
+            "result": "",
             "error": "No suitable application available. Please create one first.",
           };
         }
@@ -685,7 +701,7 @@ class ServerNIP46Signer {
           if (privateKey == null) {
             responseJson = {
               "id": remoteRequest.id,
-              "result": null,
+              "result": "",
               "error": "No private key found for signing",
             };
             break;
@@ -699,7 +715,7 @@ class ServerNIP46Signer {
             AegisLogger.error('Failed to parse event JSON: $contentStr', e);
             responseJson = {
               "id": remoteRequest.id,
-              "result": null,
+              "result": "",
               "error": "Invalid JSON format",
             };
             break;
@@ -1143,5 +1159,60 @@ class ServerNIP46Signer {
     _threadPool.dispose();
 
     AegisLogger.info('✅ ServerNIP46Signer disposed');
+  }
+
+  /// Show dialog when new connection request arrives but no unused application is available
+  void _showNewConnectionRequestDialog() {
+    // Use addPostFrameCallback to ensure this runs on the UI thread after the current frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = AegisNavigator.navigatorKey.currentContext;
+      if (context == null) {
+        return;
+      }
+
+      try {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              title: Text('New Connection Request'),
+              content: Text('A new application is trying to connect, but no unused application is available. Please create a new application first.'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => AegisNavigator.pop(dialogContext),
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    AegisNavigator.pop(dialogContext);
+                    AegisNavigator.pushPage(
+                      context,
+                      (context) => const BunkerApplicationNamePage(),
+                    );
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(
+                      Theme.of(dialogContext).colorScheme.primary,
+                    ),
+                  ),
+                  child: Text(
+                    'Create Application',
+                    style: TextStyle(
+                      color: Theme.of(dialogContext).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      } catch (e) {
+        AegisLogger.error('Failed to show dialog', e);
+      }
+    });
   }
 }
