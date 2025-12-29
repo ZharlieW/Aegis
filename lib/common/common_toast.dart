@@ -10,9 +10,7 @@ class CommonToast {
   static CommonToast? _instance;
 
   static CommonToast _getInstance() {
-    if (_instance == null) {
-      _instance = new CommonToast._internal();
-    }
+    _instance ??= CommonToast._internal();
     return _instance!;
   }
 

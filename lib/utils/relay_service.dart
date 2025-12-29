@@ -52,12 +52,14 @@ class RelayService {
 
   /// Start the Nostr relay server
   Future<void> start({
-    String host = '0.0.0.0',  // Bind to all interfaces (network accessible)
+    String? host,  // If null, defaults to '127.0.0.1' on iOS (to avoid iCloud Private Relay conflicts) or '0.0.0.0' on other platforms
     String? port,
     int maxRetries = 3,
   }) async {
     try {
-      _host = host;
+      // On iOS, use 127.0.0.1 to avoid conflicts with iCloud Private Relay
+      // iCloud Private Relay can interfere with binding to 0.0.0.0
+      _host = host ?? (PlatformUtils.isIOS ? '127.0.0.1' : '0.0.0.0');
       _port = port != null ? (int.tryParse(port) ?? _defaultPort) : _defaultPort;
 
       // Check if already running

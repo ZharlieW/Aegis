@@ -72,8 +72,13 @@ class LocalTlsProxyManagerRust {
         AegisLogger.info(
             '✅ Certificates loaded, starting Rust TLS proxy server...');
         
+        // On iOS, use 127.0.0.1 to avoid conflicts with iCloud Private Relay
+        // iCloud Private Relay can interfere with binding to 0.0.0.0
+        final host = PlatformUtils.isIOS ? '127.0.0.1' : '0.0.0.0';
+        
         // Call Rust API (throws exception on error)
         tlsProxyStart(
+          host: host,
           tlsPort: _tlsPort,
           wsPort: wsPort,
           fullchainPem: fullchain,
