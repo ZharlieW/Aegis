@@ -104,6 +104,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/images/app_icons/
     - assets/audio/
     - assets/certs/fullchain.pem
     - assets/certs/privatekey.pem

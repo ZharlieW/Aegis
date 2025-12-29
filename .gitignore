@@ -83,3 +83,4 @@ build_android.sh
 assets/certs/fullchain.pem
 assets/certs/privatekey.pem
 zapstore/.env
+/packages/audio_service

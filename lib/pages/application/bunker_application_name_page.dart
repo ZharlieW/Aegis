@@ -1,58 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/app_icon_loader.dart';
 import 'bunker_socket_info.dart';
-
-// Widget to handle SVG network images with error fallback
-class _SvgNetworkImage extends StatefulWidget {
-  final String url;
-  final double size;
-  final Widget fallback;
-
-  const _SvgNetworkImage({
-    required this.url,
-    required this.size,
-    required this.fallback,
-  });
-
-  @override
-  State<_SvgNetworkImage> createState() => _SvgNetworkImageState();
-}
-
-class _SvgNetworkImageState extends State<_SvgNetworkImage> {
-  bool _hasError = false;
-
-  @override
-  Widget build(BuildContext context) {
-    if (_hasError) {
-      return widget.fallback;
-    }
-
-    return SvgPicture.network(
-      widget.url,
-      width: widget.size,
-      height: widget.size,
-      fit: BoxFit.cover,
-      placeholderBuilder: (context) => SizedBox(
-        width: widget.size,
-        height: widget.size,
-        child: Center(
-          child: SizedBox(
-            width: widget.size * 0.5,
-            height: widget.size * 0.5,
-            child: const CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      ),
-      headers: const {
-        'User-Agent': 'Mozilla/5.0',
-      },
-    );
-  }
-}
 
 class BunkerApplicationNamePage extends StatefulWidget {
   const BunkerApplicationNamePage({super.key});
@@ -230,56 +182,14 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
   Widget _buildAppIcon(String name, {double size = 24}) {
     final imageUrl = _getImageForName(name);
     
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      // Check if URL is SVG
-      final isSvg = imageUrl.toLowerCase().endsWith('.svg');
-      
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size / 2),
-        child: isSvg
-            ? _SvgNetworkImage(
-                url: imageUrl,
-                size: size,
-                fallback: _buildInitialIcon(name, size),
-              )
-            : Image.network(
-                imageUrl,
-                width: size,
-                height: size,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback to initial letter icon on error
-                  return _buildInitialIcon(name, size);
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return SizedBox(
-                    width: size,
-                    height: size,
-                    child: Center(
-                      child: SizedBox(
-                        width: size * 0.5,
-                        height: size * 0.5,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-                // Add headers to handle potential CORS or authentication issues
-                headers: const {
-                  'User-Agent': 'Mozilla/5.0',
-                },
-              ),
-      );
-    } else {
-      // No image defined, show first letter
-      return _buildInitialIcon(name, size);
-    }
+    return AppIconLoader.buildIcon(
+      imageUrl: imageUrl,
+      appName: name,
+      size: size,
+      fallback: _buildInitialIcon(name, size),
+      fit: BoxFit.cover,
+      borderRadius: BorderRadius.circular(size / 2),
+    );
   }
   
   // Build initial letter icon
