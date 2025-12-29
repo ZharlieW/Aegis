@@ -11,6 +11,7 @@ import '../../utils/account.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../../utils/local_tls_proxy_manager_rust.dart';
 import '../../utils/took_kit.dart';
+import '../../utils/app_icon_loader.dart';
 import '../activities/activities.dart';
 import 'edit_bunker_socket_info.dart';
 
@@ -168,17 +169,16 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 },
               ),
               _itemWidget('Client app logo',
-                  rightWidget: client.image != null && client.image!.isNotEmpty
-                      ? Image.network(
-                          client.image!,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        )
-                      : CommonImage(
-                          iconName: 'default_app_icon.png',
-                          size: 40,
-                        )),
+                  rightWidget: AppIconLoader.buildIcon(
+                    imageUrl: client.image,
+                    appName: client.name ?? '?',
+                    size: 40,
+                    fallback: CommonImage(
+                      iconName: 'default_app_icon.png',
+                      size: 40,
+                    ),
+                    fit: BoxFit.cover,
+                  )),
               _itemWidget(
                 'URL Scheme',
                 isShowWidget: isNostrconnect,

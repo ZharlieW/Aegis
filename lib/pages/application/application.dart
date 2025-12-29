@@ -7,8 +7,9 @@ import 'package:aegis/utils/relay_service.dart';
 import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:aegis/utils/platform_utils.dart';
+import 'package:aegis/utils/theme_manager.dart';
+import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -41,6 +42,9 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   // Current selected page in split layout (home, localRelay, accounts)
   String _currentPage = 'home';
+  
+  // Theme mode for UI updates
+  ThemeMode _currentThemeMode = ThemeMode.system;
 
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = AccountManager.sharedInstance.applicationMap.values.toList();
@@ -118,6 +122,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     LaunchSchemeUtils.getSchemeData();
     AccountManager.sharedInstance.addObserver(this);
 
+    // Initialize theme mode
+    _currentThemeMode = ThemeManager.themeMode;
+    ThemeManager.themeNotifier.addListener(_onThemeChanged);
+
     // Retrieve version info
     PackageInfo.fromPlatform().then((info) {
       if (mounted) {
@@ -140,7 +148,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   void dispose() {
     _statusUpdateTimer?.cancel();
     AccountManager.sharedInstance.removeObserver(this);
+    ThemeManager.themeNotifier.removeListener(_onThemeChanged);
     super.dispose();
+  }
+
+  void _onThemeChanged() {
+    if (mounted) {
+      setState(() {
+        _currentThemeMode = ThemeManager.themeMode;
+      });
+    }
   }
 
 
@@ -183,6 +200,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     CommonImage(
                       iconName: 'more_icon.png',
                       size: 20,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ).setPaddingOnly(left: 20.0,right: 8.0),
                   ],
                 ),
@@ -196,6 +214,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             child: CommonImage(
               iconName: 'user_icon.png',
               size: 20,
+              color: Theme.of(context).colorScheme.onSurface,
             ).setPaddingOnly(right: 16.0),
           ),
         ],
@@ -263,6 +282,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     trailing: CommonImage(
                       iconName: 'relays_icon.png',
                       size: 22,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     onTap: () {
                       if (useSplitLayout) {
@@ -277,6 +297,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                       }
                     },
                   ),
+                  _buildThemeSettingsTile(context, useSplitLayout),
                   ListTile(
                     selected: useSplitLayout && _currentPage == 'accounts',
                     selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
@@ -287,6 +308,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     trailing: CommonImage(
                       iconName: 'user_icon.png',
                       size: 22,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     onTap: () {
                       if (useSplitLayout) {
@@ -318,6 +340,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                       leading: CommonImage(
                         iconName: 'github_icon.png',
                         size: 22,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       onTap: () async {
                         final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
@@ -344,6 +367,107 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Build theme settings tile
+  Widget _buildThemeSettingsTile(BuildContext context, bool useSplitLayout) {
+    String themeModeText;
+    IconData themeIcon;
+    
+    switch (_currentThemeMode) {
+      case ThemeMode.light:
+        themeModeText = 'Light Mode';
+        themeIcon = Icons.light_mode;
+        break;
+      case ThemeMode.dark:
+        themeModeText = 'Dark Mode';
+        themeIcon = Icons.dark_mode;
+        break;
+      case ThemeMode.system:
+        themeModeText = 'System Default';
+        themeIcon = Icons.brightness_auto;
+        break;
+    }
+
+    return ListTile(
+      title: Text(
+        'Theme',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(
+        themeModeText,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+      ),
+      leading: Icon(
+        themeIcon,
+        size: 22,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      trailing: PopupMenuButton<ThemeMode>(
+        icon: Icon(
+          Icons.arrow_drop_down,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        onSelected: (ThemeMode mode) async {
+          await ThemeManager.setThemeMode(mode);
+          if (!useSplitLayout) {
+            Navigator.pop(context); // Close drawer on mobile
+          }
+        },
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<ThemeMode>>[
+          PopupMenuItem<ThemeMode>(
+            value: ThemeMode.light,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.light_mode,
+                  size: 20,
+                  color: _currentThemeMode == ThemeMode.light
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+                const SizedBox(width: 12),
+                Text('Light Mode'),
+              ],
+            ),
+          ),
+          PopupMenuItem<ThemeMode>(
+            value: ThemeMode.dark,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.dark_mode,
+                  size: 20,
+                  color: _currentThemeMode == ThemeMode.dark
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+                const SizedBox(width: 12),
+                Text('Dark Mode'),
+              ],
+            ),
+          ),
+          PopupMenuItem<ThemeMode>(
+            value: ThemeMode.system,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.brightness_auto,
+                  size: 20,
+                  color: _currentThemeMode == ThemeMode.system
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+                const SizedBox(width: 12),
+                Text('System Default'),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -383,6 +507,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             trailing: CommonImage(
               iconName: 'relays_icon.png',
               size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () {
               Navigator.pop(context); // Close drawer
@@ -392,6 +517,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
               );
             },
           ),
+          _buildThemeSettingsTile(context, false),
           ListTile(
             title: Text(
               'Github',
@@ -400,6 +526,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             trailing: CommonImage(
               iconName: 'github_icon.png',
               size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () async {
               Navigator.pop(context); // Close drawer
@@ -415,6 +542,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             trailing: CommonImage(
               iconName: 'version_icon.png',
               size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () {
               Navigator.pop(context); // Close drawer
@@ -492,7 +620,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     child: CommonImage(
                       iconName: 'add_icon.png',
                       size: 36,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
                     ),
                   ),
                 ),
@@ -526,53 +654,14 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 bool isConnect = _isConnected(value);
 
                 Widget iconWidget() {
-                  // If image exists and is not empty, try to load it
-                  if (value.image != null && value.image!.isNotEmpty) {
-                    final imageUrl = value.image!;
-                    final isSvg = imageUrl.toLowerCase().endsWith('.svg');
-                    
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: isSvg
-                          ? SvgPicture.network(
-                              imageUrl,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              placeholderBuilder: (context) => SizedBox(
-                                width: 40,
-                                height: 40,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: const CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                ),
-                              ),
-                              headers: const {
-                                'User-Agent': 'Mozilla/5.0',
-                              },
-                            )
-                          : Image.network(
-                              imageUrl,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                // If image fails to load, show initial letter
-                                return _buildInitialIcon(value.name ?? '?', 40);
-                              },
-                              headers: const {
-                                'User-Agent': 'Mozilla/5.0',
-                              },
-                            ),
-                    ).setPaddingOnly(right: 8.0);
-                  }
-                  
-                  // No image or image is empty, show initial letter
-                  return _buildInitialIcon(value.name ?? '?', 40)
-                      .setPaddingOnly(right: 8.0);
+                  return AppIconLoader.buildIcon(
+                    imageUrl: value.image,
+                    appName: value.name ?? '?',
+                    size: 40,
+                    fallback: _buildInitialIcon(value.name ?? '?', 40),
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(20),
+                  ).setPaddingOnly(right: 8.0);
                 }
 
                 return GestureDetector(
