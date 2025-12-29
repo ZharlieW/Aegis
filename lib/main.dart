@@ -7,6 +7,7 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:aegis/utils/window_manager.dart';
 import 'package:aegis/utils/android_service_manager.dart';
+import 'package:aegis/utils/theme_manager.dart';
 import 'package:aegis/nostr/nips/nip55/intent_handler.dart';
 import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/content_provider.dart';
@@ -80,6 +81,20 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _initializationFuture = init();
+    // Listen to theme changes
+    ThemeManager.themeNotifier.addListener(_onThemeChanged);
+  }
+
+  @override
+  void dispose() {
+    ThemeManager.themeNotifier.removeListener(_onThemeChanged);
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> init() async {
@@ -94,6 +109,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     try {
       WidgetsBinding.instance.addObserver(this);
       await LocalStorage.init();
+      await ThemeManager.init();
       await Account.sharedInstance.autoLogin();
       
       
@@ -146,10 +162,19 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       title: '',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF615289),
+          seedColor: const Color(0xFF615289),
+          brightness: Brightness.light,
         ),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF615289),
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      themeMode: ThemeManager.themeNotifier.value,
       home: SplashScreen(initializationFuture: _initializationFuture),
     );
   }

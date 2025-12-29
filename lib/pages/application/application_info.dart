@@ -42,8 +42,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
   void _init() async {
     // Get the notifier from AccountManager to listen for updates
     final client = widget.clientAuthDBISAR;
-    final key = client.clientPubkey.isNotEmpty 
-        ? client.clientPubkey 
+    final key = client.clientPubkey.isNotEmpty
+        ? client.clientPubkey
         : (client.remoteSignerPubkey ?? '');
     _appNotifier = AccountManager.sharedInstance.applicationMap[key];
     await _updateBunkerUrl();
@@ -56,16 +56,19 @@ class ApplicationInfoState extends State<ApplicationInfo> {
   Future<void> _updateBunkerUrl() async {
     final client = widget.clientAuthDBISAR;
     String url;
-    
+
     // Use remote signer pubkey if available, otherwise fallback to user pubkey
-    if (client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
-      final relayUrl = ServerNIP46Signer.instance.getRelayUrlForDisplay(secure: _showSecureBunkerUrl);
+    if (client.remoteSignerPubkey != null &&
+        client.remoteSignerPubkey!.isNotEmpty) {
+      final relayUrl = ServerNIP46Signer.instance
+          .getRelayUrlForDisplay(secure: _showSecureBunkerUrl);
       url = "bunker://${client.remoteSignerPubkey}?relay=$relayUrl";
     } else {
       // Fallback to old method for backward compatibility
-      url = ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureBunkerUrl);
+      url =
+          ServerNIP46Signer.instance.getBunkerUrl(secure: _showSecureBunkerUrl);
     }
-    
+
     if (mounted) {
       setState(() {
         _bunkerUrl = url;
@@ -230,7 +233,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                           icon: CommonImage(
                             iconName: 'title_close_icon.png',
                             size: 18,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           label: Text(
                             "Cancel",
@@ -238,7 +241,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  color: Colors.white,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                 ),
                           ),
                         ),
@@ -248,42 +252,54 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                                 Account.sharedInstance.currentPubkey;
                             final client = _currentClient;
                             String clientPubkey = client.clientPubkey;
-                            
+
                             // Remove from memory
                             // Handle case where clientPubkey might be empty (use remoteSignerPubkey as key)
-                            if (clientPubkey.isEmpty && client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
-                              AccountManager.sharedInstance.removeApplicationMap(client.remoteSignerPubkey!);
+                            if (clientPubkey.isEmpty &&
+                                client.remoteSignerPubkey != null &&
+                                client.remoteSignerPubkey!.isNotEmpty) {
+                              AccountManager.sharedInstance
+                                  .removeApplicationMap(
+                                      client.remoteSignerPubkey!);
                             } else {
-                              AccountManager.sharedInstance.removeApplicationMap(clientPubkey);
+                              AccountManager.sharedInstance
+                                  .removeApplicationMap(clientPubkey);
                             }
-                            
+
                             // Delete from database
                             if (clientPubkey.isEmpty) {
                               // If clientPubkey is empty, try to delete by remoteSignerPubkey or by ID
-                              if (client.remoteSignerPubkey != null && client.remoteSignerPubkey!.isNotEmpty) {
-                                await ClientAuthDBISAR.deleteFromDBByRemoteSignerPubkey(
-                                    currentPubkey, client.remoteSignerPubkey!);
+                              if (client.remoteSignerPubkey != null &&
+                                  client.remoteSignerPubkey!.isNotEmpty) {
+                                await ClientAuthDBISAR
+                                    .deleteFromDBByRemoteSignerPubkey(
+                                        currentPubkey,
+                                        client.remoteSignerPubkey!);
                               } else {
                                 // Fallback to delete by ID
-                                await ClientAuthDBISAR.deleteFromDBById(currentPubkey, client.id);
+                                await ClientAuthDBISAR.deleteFromDBById(
+                                    currentPubkey, client.id);
                               }
                             } else {
-                              await ClientAuthDBISAR.deleteFromDB(currentPubkey, clientPubkey);
+                              await ClientAuthDBISAR.deleteFromDB(
+                                  currentPubkey, clientPubkey);
                             }
-                            
+
                             // Delete all signed events for this application
                             // Use clientPubkey if available, otherwise use remoteSignerPubkey
-                            final applicationPubkey = clientPubkey.isNotEmpty 
-                                ? clientPubkey 
+                            final applicationPubkey = clientPubkey.isNotEmpty
+                                ? clientPubkey
                                 : (client.remoteSignerPubkey ?? '');
                             if (applicationPubkey.isNotEmpty) {
-                              await SignedEventDBISAR.deleteAllEventsForApplication(
-                                  currentPubkey, applicationPubkey);
+                              await SignedEventDBISAR
+                                  .deleteAllEventsForApplication(
+                                      currentPubkey, applicationPubkey);
                             }
-                            
+
                             // Update subscription to remove deleted application's remoteSignerPubkey
-                            await ServerNIP46Signer.instance.updateSubscription();
-                            
+                            await ServerNIP46Signer.instance
+                                .updateSubscription();
+
                             CommonTips.success(context, 'Remove success');
                             AegisNavigator.popToRoot(context);
                           },
@@ -294,7 +310,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                           icon: CommonImage(
                             iconName: 'del_icon.png',
                             size: 18,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           label: Text(
                             "Remove",
@@ -302,7 +318,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  color: Colors.white,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                 ),
                           ),
                         ),
@@ -318,12 +335,12 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               icon: CommonImage(
                 iconName: 'del_icon.png',
                 size: 18,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
               label: Text(
                 "Remove",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
               ),
             ),
@@ -339,6 +356,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
       margin: const EdgeInsets.only(top: 30, bottom: 20),
       width: 240,
       height: 240,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
       child: PrettyQrView.data(
         data: _bunkerUrl,
         errorCorrectLevel: QrErrorCorrectLevel.M,
@@ -422,6 +442,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
     required String content,
     GestureTapCallback? onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -440,7 +461,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 child: Text(
                   content,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.black87,
+                        color: colorScheme.onSurface,
                       ),
                 ),
               ),
@@ -449,7 +470,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 child: CommonImage(
                   iconName: 'copy_icon.png',
                   size: 24,
-                  color: Colors.black,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

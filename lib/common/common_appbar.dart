@@ -77,6 +77,7 @@ class BaseAppBarState extends State<CommonAppBar> {
         child: CommonImage(
           iconName: getIcon,
           size: 24,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

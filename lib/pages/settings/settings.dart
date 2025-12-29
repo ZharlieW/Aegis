@@ -76,7 +76,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
                 .textTheme
                 .titleMedium
                 ?.copyWith(
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
           ),
         ),
@@ -100,15 +100,17 @@ class _LogoutDialogState extends State<_LogoutDialog> {
                   : Theme.of(context).colorScheme.surfaceVariant,
             ),
           ),
-          label: Text(
-            "Confirm",
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  color: isConfirmValid ? Colors.white : Colors.grey,
-                ),
-          ),
+            label: Text(
+              "Confirm",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(
+                    color: isConfirmValid 
+                        ? Theme.of(context).colorScheme.onPrimary 
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
         ),
       ],
     );
@@ -189,6 +191,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                           trailing: CommonImage(
                             iconName: 'change_icon.png',
                             size: 22,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           onTap: () => _switchAccount(account),
                         ),
@@ -216,7 +219,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                 label: Text(
                   "Add Account",
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
               ),
@@ -290,7 +293,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                       child: CommonImage(
                         iconName: 'edit_icon.png',
                         size: 24,
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -316,6 +319,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                       child: CommonImage(
                         iconName: 'copy_icon.png',
                         size: 24,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -334,6 +338,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                       child: CommonImage(
                         iconName: 'logout_icon.png',
                         size: 24,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -392,7 +397,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                     .textTheme
                     .titleMedium
                     ?.copyWith(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
             ),

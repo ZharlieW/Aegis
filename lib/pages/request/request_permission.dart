@@ -22,7 +22,7 @@ class RequestPermissionState extends State<RequestPermission> {
             child: CommonImage(
               iconName: 'title_close_icon.png',
               size: 32,
-              color: Colors.black,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

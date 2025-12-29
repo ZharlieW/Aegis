@@ -83,6 +83,7 @@ class AddApplicationState extends State<AddApplication> {
     required String content,
     required onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -94,7 +95,7 @@ class AddApplicationState extends State<AddApplication> {
           horizontal: 16,
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondaryContainer,
+          color: colorScheme.primary,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -102,16 +103,18 @@ class AddApplicationState extends State<AddApplication> {
           children: [
             CommonImage(
               iconName: iconName,
-              size: 56,
+              size: 45,
+              color: colorScheme.onPrimary,
             ),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.black,
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                 ],
