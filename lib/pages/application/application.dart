@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/common/common_toast.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/relay_service.dart';
@@ -373,20 +374,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   // Build theme settings tile
   Widget _buildThemeSettingsTile(BuildContext context, bool useSplitLayout) {
-    String themeModeText;
     IconData themeIcon;
     
     switch (_currentThemeMode) {
       case ThemeMode.light:
-        themeModeText = 'Light Mode';
         themeIcon = Icons.light_mode;
         break;
       case ThemeMode.dark:
-        themeModeText = 'Dark Mode';
         themeIcon = Icons.dark_mode;
         break;
       case ThemeMode.system:
-        themeModeText = 'System Default';
         themeIcon = Icons.brightness_auto;
         break;
     }
@@ -396,79 +393,34 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         'Theme',
         style: Theme.of(context).textTheme.titleMedium,
       ),
-      subtitle: Text(
-        themeModeText,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-      ),
-      leading: Icon(
+      trailing: Icon(
         themeIcon,
         size: 22,
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
-      trailing: PopupMenuButton<ThemeMode>(
-        icon: Icon(
-          Icons.arrow_drop_down,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        onSelected: (ThemeMode mode) async {
-          await ThemeManager.setThemeMode(mode);
-          if (!useSplitLayout) {
-            Navigator.pop(context); // Close drawer on mobile
-          }
-        },
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<ThemeMode>>[
-          PopupMenuItem<ThemeMode>(
-            value: ThemeMode.light,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.light_mode,
-                  size: 20,
-                  color: _currentThemeMode == ThemeMode.light
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
-                const SizedBox(width: 12),
-                Text('Light Mode'),
-              ],
-            ),
-          ),
-          PopupMenuItem<ThemeMode>(
-            value: ThemeMode.dark,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.dark_mode,
-                  size: 20,
-                  color: _currentThemeMode == ThemeMode.dark
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
-                const SizedBox(width: 12),
-                Text('Dark Mode'),
-              ],
-            ),
-          ),
-          PopupMenuItem<ThemeMode>(
-            value: ThemeMode.system,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.brightness_auto,
-                  size: 20,
-                  color: _currentThemeMode == ThemeMode.system
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
-                const SizedBox(width: 12),
-                Text('System Default'),
-              ],
-            ),
-          ),
-        ],
-      ),
+      onTap: () async {
+        // Cycle through: Light -> Dark -> System -> Light
+        ThemeMode nextMode;
+        String modeText;
+        switch (_currentThemeMode) {
+          case ThemeMode.light:
+            nextMode = ThemeMode.dark;
+            modeText = 'Dark Mode';
+            break;
+          case ThemeMode.dark:
+            nextMode = ThemeMode.system;
+            modeText = 'System Default';
+            break;
+          case ThemeMode.system:
+            nextMode = ThemeMode.light;
+            modeText = 'Light Mode';
+            break;
+        }
+        await ThemeManager.setThemeMode(nextMode);
+        if (mounted) {
+          CommonToast.instance.show(context, 'Switched to $modeText', toastType: ToastType.normal);
+        }
+      },
     );
   }
 

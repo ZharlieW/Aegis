@@ -12,6 +12,7 @@ import 'package:aegis/nostr/nips/nip55/intent_handler.dart';
 import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/content_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'pages/home/splash_screen.dart';
@@ -175,6 +176,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
         useMaterial3: true,
       ),
       themeMode: ThemeManager.themeNotifier.value,
+      builder: EasyLoading.init(),
       home: SplashScreen(initializationFuture: _initializationFuture),
     );
   }
