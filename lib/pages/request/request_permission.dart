@@ -53,7 +53,7 @@ class RequestPermissionState extends State<RequestPermission> {
                   ),
                   Text(
                     "This application is requesting permissions to access your Nostr account",
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -75,7 +75,7 @@ class RequestPermissionState extends State<RequestPermission> {
                         'Grant Permissions',
                         style: Theme.of(context)
                             .textTheme
-                            .titleMedium
+                            .bodyLarge
                             ?.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white),
@@ -96,7 +96,7 @@ class RequestPermissionState extends State<RequestPermission> {
                       alignment: Alignment.center,
                       child: Text(
                         'Reject',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w500,
                               color: Theme.of(context).colorScheme.error,
                             ),
@@ -136,7 +136,7 @@ class RequestPermissionState extends State<RequestPermission> {
               const SizedBox(width: 12),
               Text(
                 'Full Access Granted',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.primary,
                 ),

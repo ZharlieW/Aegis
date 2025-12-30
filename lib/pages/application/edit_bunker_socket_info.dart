@@ -59,7 +59,7 @@ class EditApplicationInfoState extends State<EditApplicationInfo> {
                 alignment: Alignment.center,
                 child: Text(
                   'Update',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),

@@ -151,7 +151,9 @@ class AccountBackupState extends State<AccountBackup> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Public account ID',
-            style: Theme.of(context).textTheme.titleMedium),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                )),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -188,7 +190,9 @@ class AccountBackupState extends State<AccountBackup> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Account private key',
-                style: Theme.of(context).textTheme.titleMedium),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    )),
             Row(
               children: [
                 const Text('Show'),
@@ -249,7 +253,7 @@ class AccountBackupState extends State<AccountBackup> {
         // Title
         Text(
           'Private Key Encryption',
-          style: theme.textTheme.titleMedium?.copyWith(
+          style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),

@@ -640,11 +640,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                                   value.name ?? '--',
                                   style: Theme.of(context)
                                       .textTheme
-                                      .titleLarge
+                                      .bodyLarge
                                       ?.copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
@@ -655,7 +656,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                                   connectType,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .titleMedium
+                                      .bodyMedium
                                       ?.copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -674,7 +675,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                           children: [
                             Text(
                               TookKit.formatTimestamp(timestamp),
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             Row(
                               children: [
@@ -691,7 +692,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                                 Text(
                                   isConnect ? 'Connected' : 'Disconnected',
                                   style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                      Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ],
                             ),
@@ -726,7 +727,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             Center(
               child: Text(
                 'Congratulations!\n\nNow you can start using apps that support Aegis!',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w400,
                     ),
@@ -745,7 +746,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         children: [
           Text(
             'The local relay is set to use port ${PlatformUtils.isDesktop ? 18081 : 8081}, but it appears another app is already using this port. Please close the conflicting app and try again.',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
           ).setPadding(
@@ -775,7 +776,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
               ),
               label: Text(
                 "Retry",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Colors.white,
                     ),
               ),

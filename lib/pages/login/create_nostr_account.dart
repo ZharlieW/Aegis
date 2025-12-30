@@ -39,7 +39,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                   children: [
                     Text(
                       "Your Nostr account is ready! This is your nostr public key:",
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
@@ -84,7 +84,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                         child: Text(
                           'Create',
                           style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
                                     fontWeight: FontWeight.w500,
                                 color: Theme.of(context).colorScheme.onPrimary,
                                   ),

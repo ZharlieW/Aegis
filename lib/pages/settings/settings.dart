@@ -74,7 +74,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
             "Cancel",
             style: Theme.of(context)
                 .textTheme
-                .titleMedium
+                .bodyLarge
                 ?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -104,7 +104,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
               "Confirm",
               style: Theme.of(context)
                   .textTheme
-                  .titleMedium
+                  .bodyLarge
                   ?.copyWith(
                     color: isConfirmValid 
                         ? Theme.of(context).colorScheme.onPrimary 
@@ -182,11 +182,11 @@ class SettingsState extends State<Settings> with AccountObservers {
                         child: ListTile(
                           title: Text(
                             account.username ?? '--',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           subtitle: Text(
                             _getNpubKeyToStr(account.pubkey),
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           trailing: CommonImage(
                             iconName: 'change_icon.png',
@@ -218,7 +218,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                 ),
                 label: Text(
                   "Add Account",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
@@ -256,14 +256,14 @@ class SettingsState extends State<Settings> with AccountObservers {
               children: [
                 Text(
                   name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
                 ),
                 Text(
                   _getKeyToStr,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
@@ -373,9 +373,9 @@ class SettingsState extends State<Settings> with AccountObservers {
                 "Cancel",
                 style: Theme.of(context)
                     .textTheme
-                    .titleMedium
+                    .bodyLarge
                     ?.copyWith(
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -395,7 +395,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                 "Confirm",
                 style: Theme.of(context)
                     .textTheme
-                    .titleMedium
+                    .bodyLarge
                     ?.copyWith(
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
@@ -437,9 +437,9 @@ class SettingsState extends State<Settings> with AccountObservers {
               "Cancel",
               style: Theme.of(context)
                   .textTheme
-                  .titleMedium
+                  .bodyLarge
                   ?.copyWith(
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -460,9 +460,9 @@ class SettingsState extends State<Settings> with AccountObservers {
               "Confirm",
               style: Theme.of(context)
                   .textTheme
-                  .titleMedium
+                  .bodyLarge
                   ?.copyWith(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ),

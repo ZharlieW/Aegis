@@ -71,7 +71,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                       children: [
                         Text(
                           "Set up Aegis with your Nostr private key — supports nsec, ncryptsec, and hex formats.",
-                          style: theme.textTheme.titleSmall?.copyWith(
+                          style: theme.textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
@@ -148,7 +148,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                             ),
                             child: Text(
                               'Login',
-                              style: theme.textTheme.titleMedium?.copyWith(
+                              style: theme.textTheme.bodyLarge?.copyWith(
                                 color: colorScheme.onPrimary,
                                 fontWeight: FontWeight.w500,
                               ),

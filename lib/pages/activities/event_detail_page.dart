@@ -81,7 +81,7 @@ class EventDetailPageState extends State<EventDetailPage> {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -220,7 +220,7 @@ class EventDetailPageState extends State<EventDetailPage> {
                         children: [
                           Text(
                             _getEventKindDescription(widget.event.eventKind),
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),

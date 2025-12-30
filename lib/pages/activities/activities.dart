@@ -166,7 +166,7 @@ class ActivitiesState extends State<Activities> {
           const SizedBox(height: 16),
           Text(
             'No signed events',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),

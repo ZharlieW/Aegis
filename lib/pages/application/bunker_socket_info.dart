@@ -129,7 +129,7 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
             },
             child: Text(
               'Done',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                   ),
             ),
@@ -159,7 +159,7 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
                               child: Text(
                                 _bunkerUrl,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleMedium,
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
                             const SizedBox(width: 8),

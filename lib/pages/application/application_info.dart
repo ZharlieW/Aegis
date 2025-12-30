@@ -141,7 +141,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                             child: Text(
                               _bunkerUrl,
                               textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -239,7 +239,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                             "Cancel",
                             style: Theme.of(context)
                                 .textTheme
-                                .titleMedium
+                                .bodyLarge
                                 ?.copyWith(
                                   color:
                                       Theme.of(context).colorScheme.onPrimary,
@@ -339,7 +339,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               ),
               label: Text(
                 "Remove",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
               ),
@@ -380,14 +380,14 @@ class ApplicationInfoState extends State<ApplicationInfo> {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 20,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
           ),
           rightWidget ??
               Text(
                 subTitle,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
         ],
       ),
@@ -412,15 +412,15 @@ class ApplicationInfoState extends State<ApplicationInfo> {
           children: [
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 20,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
             ),
             Row(
               children: [
                 Text(
                   content,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(width: 8),
                 Icon(
@@ -450,8 +450,8 @@ class ApplicationInfoState extends State<ApplicationInfo> {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 20,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
           ),
           const SizedBox(height: 8),
@@ -460,7 +460,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               Expanded(
                 child: Text(
                   content,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurface,
                       ),
                 ),

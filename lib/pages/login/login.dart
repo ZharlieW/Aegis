@@ -65,7 +65,7 @@ class LoginState extends State<Login> {
                   alignment: Alignment.center,
                   child: Text(
                     'Use your private key',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context)
                               .colorScheme
                               .onSecondaryContainer,
@@ -88,7 +88,7 @@ class LoginState extends State<Login> {
                   alignment: Alignment.center,
                   child: Text(
                     'Create a new Nostr account',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                           fontWeight: FontWeight.w500,
                         ),

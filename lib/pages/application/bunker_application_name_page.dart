@@ -296,7 +296,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
             const SizedBox(height: 24),
             Text(
               'Please select an application',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
             ),
@@ -380,7 +380,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
                 alignment: Alignment.center,
                 child: Text(
                   'Continue',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),

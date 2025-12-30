@@ -36,7 +36,7 @@ class AddApplicationState extends State<AddApplication> {
                       ),
                       Text(
                         'You can choose any of these methods to connect with Aegis!',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w500,
                             ),
@@ -113,7 +113,7 @@ class AddApplicationState extends State<AddApplication> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: colorScheme.onPrimary,
                     ),
                   ),
