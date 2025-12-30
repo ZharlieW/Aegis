@@ -181,6 +181,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                       size: 40,
                     ),
                     fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(20),
                   )),
               _itemWidget(
                 'URL Scheme',
