@@ -707,41 +707,10 @@ class ServerNIP46Signer {
             break;
           }
 
-          // Parse the incoming event JSON and ensure it has all required fields
-          Map<String, dynamic> eventData;
-          try {
-            eventData = jsonDecode(contentStr);
-          } catch (e) {
-            AegisLogger.error('Failed to parse event JSON: $contentStr', e);
-            responseJson = {
-              "id": remoteRequest.id,
-              "result": "",
-              "error": "Invalid JSON format",
-            };
-            break;
-          }
-
-          // Ensure pubkey field exists, use user pubkey if missing
-          if (!eventData.containsKey('pubkey') ||
-              eventData['pubkey'] == null ||
-              eventData['pubkey'].toString().isEmpty) {
-            eventData['pubkey'] = userPubkey;
-            AegisLogger.info(
-                'Added missing pubkey field: ${eventData['pubkey']}');
-          }
-
-          // Ensure created_at field exists
-          if (!eventData.containsKey('created_at') ||
-              eventData['created_at'] == null) {
-            eventData['created_at'] =
-                DateTime.now().millisecondsSinceEpoch ~/ 1000;
-          }
-
-          // Re-encode the event JSON with all required fields
-          final completeEventJson = jsonEncode(eventData);
-
+          // Directly pass the event JSON to Rust signing function
+          // This ensures all fields (including tags) are preserved without modification
           final nativeRes = await rust_api.signEvent(
-            eventJson: completeEventJson,
+            eventJson: contentStr,
             privateKey: privateKey,
           );
           // Record the signed event
