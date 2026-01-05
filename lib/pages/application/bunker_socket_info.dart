@@ -188,6 +188,9 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
       margin: const EdgeInsets.only(top: 50),
       width: 240,
       height: 240,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
       child: PrettyQrView.data(
         data: _bunkerUrl,
         errorCorrectLevel: QrErrorCorrectLevel.M,
