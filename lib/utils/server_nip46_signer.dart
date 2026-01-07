@@ -671,25 +671,58 @@ class ServerNIP46Signer {
           }
         } else {
           // No unused application found with matching remoteSignerPubkey and empty clientPubkey
-          // Check if there are any unused applications at all
-          final anyUnusedApp = await findUnusedBunkerApplication();
+          // Automatically create a new application for this connection
+          AegisLogger.info('No unused application found with remoteSignerPubkey ${remoteSignerPubkeyFromEvent ?? "unknown"} and empty clientPubkey for client ${event.pubkey}. Creating new application automatically.');
           
-          if (anyUnusedApp == null) {
-            // No unused applications at all, show dialog to user
-            AegisLogger.warning('No unused application found with remoteSignerPubkey ${remoteSignerPubkeyFromEvent ?? "unknown"} and empty clientPubkey for client ${event.pubkey}. No unused applications available.');
-            _showNewConnectionRequestDialog();
+          // Create a new application
+          final newApp = await createBunkerApplication();
+          
+          if (newApp != null) {
+            // Update the newly created application with clientPubkey
+            final oldKey = newApp.clientPubkey.isEmpty 
+                ? (newApp.remoteSignerPubkey ?? '')
+                : newApp.clientPubkey;
+            if (oldKey.isNotEmpty && AccountManager.sharedInstance.applicationMap.containsKey(oldKey)) {
+              AccountManager.sharedInstance.removeApplicationMap(oldKey);
+            }
+            
+            newApp.clientPubkey = event.pubkey;
+            AccountManager.sharedInstance.addApplicationMap(newApp);
+            
+            try {
+              await ClientAuthDBISAR.saveFromDB(newApp, isUpdate: true);
+
+              // Record connection event
+              await _recordSignedEvent(
+                eventId: remoteRequest.id,
+                eventKind: 24133,
+                eventContent: 'get_public_key',
+                pubkey: event.pubkey,
+                customAppName: newApp.name,
+              );
+
+              responseJson = {
+                "id": remoteRequest.id,
+                "result": userPubkey,
+                "error": "",
+              };
+            } catch (e) {
+              AegisLogger.error('Database saving failed after creating new application', e);
+              responseJson = {
+                "id": remoteRequest.id,
+                "result": "",
+                "error": "Failed to save newly created application",
+              };
+            }
           } else {
-            // There are unused applications, but not matching this remoteSignerPubkey
-            // Still show dialog because clientpubkey doesn't match and no suitable application available
-            AegisLogger.warning('No unused application found with remoteSignerPubkey ${remoteSignerPubkeyFromEvent ?? "unknown"} and empty clientPubkey for client ${event.pubkey}');
-            _showNewConnectionRequestDialog();
+            // Failed to create new application
+            AegisLogger.error('Failed to create new bunker application for client ${event.pubkey}');
+            responseJson = {
+              "id": remoteRequest.id,
+              "result": "",
+              "error": "Failed to create application",
+            };
           }
-          
-          responseJson = {
-            "id": remoteRequest.id,
-            "result": "",
-            "error": "No suitable application available. Please create one first.",
-          };
         }
         break;
 
