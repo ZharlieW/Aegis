@@ -274,8 +274,11 @@ class RelayService {
   }
 
   /// Get relay statistics (event-focused)
-  /// Note: This requires regenerating flutter_rust_bridge code after adding the Rust API
   Future<Map<String, dynamic>?> getStats() async {
+    if(PlatformUtils.isAndroid) {
+      //todo: fix crash
+      return null;
+    }
     try {
       final dbPath = await getDatabasePath();
       final stats = await rust_relay.getRelayStats(dbPath: dbPath);

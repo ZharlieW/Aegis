@@ -279,6 +279,9 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get bottom padding to avoid Android navigation bar
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -288,107 +291,109 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
               ),
         ),
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-            Text(
-              'Please select an application',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+      body: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              Text(
+                'Please select an application',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+              ),
+              const SizedBox(height: 24),
+              // Button to open preset selection dialog
+              SizedBox(
+                height: 56,
+                child: OutlinedButton(
+                  onPressed: _showPresetDialog,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    alignment: Alignment.centerLeft,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
-            ),
-            const SizedBox(height: 24),
-            // Button to open preset selection dialog
-            SizedBox(
-              height: 56,
-              child: OutlinedButton(
-                onPressed: _showPresetDialog,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  alignment: Alignment.centerLeft,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _selectedPresetName ?? 'Select an application',
-                        style: TextStyle(
-                          color: _selectedPresetName != null
-                              ? Theme.of(context).colorScheme.onSurface
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _selectedPresetName ?? 'Select an application',
+                          style: TextStyle(
+                            color: _selectedPresetName != null
+                                ? Theme.of(context).colorScheme.onSurface
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Text field for custom name
-            TextField(
-              controller: _nameController,
-              textAlignVertical: TextAlignVertical.center,
-              decoration: InputDecoration(
-                hintText: 'Enter a custom name',
-                labelText: 'Or enter a custom name',
-                border: const OutlineInputBorder(),
-                isDense: false,
-                contentPadding: const EdgeInsets.all(16),
-                prefixIcon: _currentDisplayName.isNotEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: _buildAppIcon(
-                          _currentDisplayName,
-                          size: 24,
-                        ),
-                      )
-                    : null,
-              ),
-              onChanged: (value) {
-                // Update preset selection based on input
-                setState(() {
-                  final trimmedValue = value.trim();
-                  _currentDisplayName = trimmedValue;
-                  if (_presetApps.containsKey(trimmedValue)) {
-                    _selectedPresetName = trimmedValue;
-                  } else if (trimmedValue != _selectedPresetName) {
-                    _selectedPresetName = null;
-                  }
-                });
-              },
-            ),
-            const Spacer(),
-            // Continue button
-            FilledButton.tonal(
-              onPressed: _onContinue,
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(vertical: 16),
-                alignment: Alignment.center,
-                child: Text(
-                  'Continue',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                      Icon(
+                        Icons.arrow_drop_down,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 16),
+              // Text field for custom name
+              TextField(
+                controller: _nameController,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  hintText: 'Enter a custom name',
+                  labelText: 'Or enter a custom name',
+                  border: const OutlineInputBorder(),
+                  isDense: false,
+                  contentPadding: const EdgeInsets.all(16),
+                  prefixIcon: _currentDisplayName.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: _buildAppIcon(
+                            _currentDisplayName,
+                            size: 24,
+                          ),
+                        )
+                      : null,
+                ),
+                onChanged: (value) {
+                  // Update preset selection based on input
+                  setState(() {
+                    final trimmedValue = value.trim();
+                    _currentDisplayName = trimmedValue;
+                    if (_presetApps.containsKey(trimmedValue)) {
+                      _selectedPresetName = trimmedValue;
+                    } else if (trimmedValue != _selectedPresetName) {
+                      _selectedPresetName = null;
+                    }
+                  });
+                },
+              ),
+              const Spacer(),
+              // Continue button
+              FilledButton.tonal(
+                onPressed: _onContinue,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                ),
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Continue',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 24 + bottomPadding),
+            ],
+          ),
         ),
       ),
     );
