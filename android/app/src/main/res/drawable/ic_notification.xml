@@ -1,0 +1,12 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Simplified shield icon for notification -->
+    <!-- This will be tinted by the system based on theme -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2L4,5v6c0,5.55 3.84,10.74 8,12 4.16,-1.26 8,-6.45 8,-12V5L12,2zM12,4.18L18,6.3v4.7c0,4.54 -3.07,8.85 -6,9.87 -2.93,-1.02 -6,-5.33 -6,-9.87V6.3L12,4.18z"/>
+</vector>
+
