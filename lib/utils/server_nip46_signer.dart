@@ -17,8 +17,10 @@ import '../nostr/signer/local_nostr_signer.dart';
 import 'relay_service.dart';
 import 'connect.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
+import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'local_tls_proxy_manager_rust.dart';
 import 'platform_utils.dart';
+import 'android_service_manager.dart';
 import '../pages/application/bunker_application_name_page.dart';
 
 class ClientRequest {
@@ -69,6 +71,56 @@ class ServerNIP46Signer {
   }
 
   Future<void> _startWebSocketServer() async {
+    // On Android, ensure Service is running (Service will start relay)
+    if (PlatformUtils.isAndroid) {
+      // Check if relay is running
+      if (!await rust_relay.isRelayRunning()) {
+        // Relay not running, ensure Service is started
+        AegisLogger.info('⚠️ Relay not running on Android, ensuring Service is started...');
+        try {
+          // Start Service (Service will start relay)
+          await AndroidServiceManager.startService(port: port);
+          // Wait a bit for Service to start relay
+          await Future.delayed(const Duration(milliseconds: 1000));
+          
+          // Check again
+          if (!await rust_relay.isRelayRunning()) {
+            throw Exception('Failed to start relay in Service');
+          }
+          AegisLogger.info('✅ Relay started by Service');
+        } catch (e) {
+          AegisLogger.error('❌ Failed to start Service or relay', e);
+          rethrow;
+        }
+      } else {
+        AegisLogger.info('✅ Relay already running (by Service)');
+      }
+      
+      // Get relay service instance (it will get URL from rust_relay)
+      relayService = RelayService.instance;
+      // RelayService will automatically get the URL from rust_relay when accessed
+      AegisLogger.info('✅ Relay service ready on ${relayService!.relayUrl}');
+      
+      // Continue with TLS proxy and client initialization
+      final fallbackPort = PlatformUtils.isDesktop ? 18081 : 8081;
+      final wsPort =
+          int.tryParse(relayService!.port) ?? int.tryParse(port) ?? fallbackPort;
+      AegisLogger.info(
+          '🔧 Attempting to start TLS proxy: platform=${PlatformUtils.platformName}, wsPort=$wsPort');
+      try {
+        await LocalTlsProxyManagerRust.instance.ensureStarted(wsPort: wsPort);
+        AegisLogger.info('✅ TLS proxy start completed');
+      } catch (e, stackTrace) {
+        AegisLogger.error('❌ Failed to start local TLS proxy', e);
+        AegisLogger.error('Stack trace', stackTrace);
+      }
+
+      // Initialize and connect client to the relay
+      await _initializeClient();
+      return;
+    }
+    
+    // For non-Android platforms, use original logic
     // Start the Nostr relay using RelayService
     relayService = RelayService.instance;
     await relayService!.start(port: port);

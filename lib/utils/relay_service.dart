@@ -57,6 +57,36 @@ class RelayService {
     int maxRetries = 3,
   }) async {
     try {
+      // On Android, relay should only run in Service
+      if (PlatformUtils.isAndroid) {
+        // Check if relay is already running (by Service)
+        if (await rust_relay.isRelayRunning()) {
+          // Relay running in Service, get URL and reuse
+          try {
+            _relayUrl = await rust_relay.getRelayUrl();
+            AegisLogger.info("✅ Relay running in service on $_relayUrl, reusing");
+            serverNotifier.value = true;
+            recordSessionStartIfUnset();
+            return;
+          } catch (e) {
+            AegisLogger.warning("⚠️ Relay running but can't get URL: $e");
+            // Fallback to default URL
+            _host = host ?? '0.0.0.0';
+            _port = port != null ? (int.tryParse(port) ?? _defaultPort) : _defaultPort;
+            _relayUrl = 'ws://127.0.0.1:$_port';
+            serverNotifier.value = true;
+            recordSessionStartIfUnset();
+            return;
+          }
+        } else {
+          // Relay not running, but we don't start it here on Android
+          // Service should start it automatically
+          AegisLogger.warning("⚠️ Relay not running on Android. Service should start it automatically.");
+          throw Exception("Relay not running. Service should start it automatically.");
+        }
+      }
+      
+      // For non-Android platforms, use original logic
       // On iOS, use 127.0.0.1 to avoid conflicts with iCloud Private Relay
       // iCloud Private Relay can interfere with binding to 0.0.0.0
       _host = host ?? (PlatformUtils.isIOS ? '127.0.0.1' : '0.0.0.0');

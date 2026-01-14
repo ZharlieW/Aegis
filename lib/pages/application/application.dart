@@ -23,6 +23,7 @@ import '../settings/settings.dart';
 import '../settings/local_relay_info.dart';
 import 'add_application.dart';
 import 'application_info.dart';
+import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 
 class Application extends StatefulWidget {
   const Application({super.key});
@@ -46,6 +47,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   
   // Theme mode for UI updates
   ThemeMode _currentThemeMode = ThemeMode.system;
+
+  // For Android: track relay status via isRelayRunning()
+  ValueNotifier<bool>? _androidRelayStatusNotifier;
+  Timer? _androidRelayStatusTimer;
 
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = AccountManager.sharedInstance.applicationMap.values.toList();
@@ -143,11 +148,34 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         setState(() {});
       }
     });
+
+    // On Android, periodically check relay status via isRelayRunning()
+    if (PlatformUtils.isAndroid) {
+      _androidRelayStatusNotifier = ValueNotifier<bool>(false);
+      _checkAndroidRelayStatus(); // Initial check
+      _androidRelayStatusTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+        _checkAndroidRelayStatus();
+      });
+    }
+  }
+
+  Future<void> _checkAndroidRelayStatus() async {
+    if (!PlatformUtils.isAndroid || _androidRelayStatusNotifier == null) return;
+    try {
+      final isRunning = await rust_relay.isRelayRunning();
+      if (_androidRelayStatusNotifier!.value != isRunning) {
+        _androidRelayStatusNotifier!.value = isRunning;
+      }
+    } catch (e) {
+      // Ignore errors, keep current status
+    }
   }
 
   @override
   void dispose() {
     _statusUpdateTimer?.cancel();
+    _androidRelayStatusTimer?.cancel();
+    _androidRelayStatusNotifier?.dispose();
     AccountManager.sharedInstance.removeObserver(this);
     ThemeManager.themeNotifier.removeListener(_onThemeChanged);
     super.dispose();
@@ -527,16 +555,49 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           children: [
             Column(
               children: [
-                ValueListenableBuilder(
-                  valueListenable: RelayService.instance.serverNotifier,
-                  builder: (context, value, child) {
-                    return Expanded(
-                      child: !value
-                          ? _showPortUnAvailableWidget()
-                          : _applicationList(clientList),
-                    );
-                  },
-                ),
+                // On Android, use isRelayRunning() to check status
+                // On other platforms, use serverNotifier
+                PlatformUtils.isAndroid
+                    ? ValueListenableBuilder<bool>(
+                        valueListenable: _androidRelayStatusNotifier ?? ValueNotifier<bool>(false),
+                        builder: (context, isRunning, child) {
+                          if (!isRunning) {
+                            return Expanded(
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const CircularProgressIndicator(),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Waiting for relay to start...',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                          return Expanded(
+                            child: _applicationList(clientList),
+                          );
+                        },
+                      )
+                    : ValueListenableBuilder<bool>(
+                        valueListenable: RelayService.instance.serverNotifier,
+                        builder: (context, value, child) {
+                          if (!value) {
+                            return Expanded(
+                              child: _showPortUnAvailableWidget(),
+                            );
+                          }
+                          return Expanded(
+                            child: _applicationList(clientList),
+                          );
+                        },
+                      ),
               ],
             ).setPaddingOnly(top: 12.0),
             Positioned(
