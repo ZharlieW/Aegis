@@ -197,10 +197,10 @@ class RelayService {
       } else {
         // If not running, just start it
         await start();
-        AegisLogger.info("✅ Relay started");
+        AegisLogger.info("✅ [RELAY_RESTART] Relay started successfully");
       }
     } catch (e) {
-      AegisLogger.error("🚨 Failed to restart relay", e);
+      AegisLogger.error("🚨 [RELAY_RESTART] Failed to restart relay", e);
       rethrow;
     }
   }
@@ -313,9 +313,11 @@ class RelayService {
       final dbPath = await getDatabasePath();
       final stats = await rust_relay.getRelayStats(dbPath: dbPath);
       final totalEvents = int.parse(stats.totalEvents.toString());
+      final connections = int.parse(stats.connections.toString());
 
       return {
         'totalEvents': totalEvents,
+        'connections': connections,
       };
     } catch (e) {
       AegisLogger.error("🚨 Failed to get relay stats", e);

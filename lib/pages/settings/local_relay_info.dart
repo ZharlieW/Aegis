@@ -177,6 +177,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   Timer? _logRefreshTimer;
   final ScrollController _logScrollController = ScrollController();
   bool _showSecureRelayAddress = false;
+  int _connectionCount = 0;
+  Timer? _connectionRefreshTimer;
 
   @override
   void initState() {
@@ -190,6 +192,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   void dispose() {
     RelayService.instance.serverNotifier.removeListener(_onRelayStatusChanged);
     _stopUptimeTimer();
+    _stopConnectionRefreshTimer();
     _stopLogRefreshTimer();
     _logScrollController.dispose();
     super.dispose();
@@ -214,6 +217,38 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   void _stopUptimeTimer() {
     _uptimeTimer?.cancel();
     _uptimeTimer = null;
+  }
+
+  void _startConnectionRefreshTimer() {
+    _connectionRefreshTimer?.cancel();
+    _connectionRefreshTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!mounted || !_isRelayRunning) return;
+      _refreshConnectionCount();
+    });
+  }
+
+  void _stopConnectionRefreshTimer() {
+    _connectionRefreshTimer?.cancel();
+    _connectionRefreshTimer = null;
+  }
+
+  Future<void> _refreshConnectionCount() async {
+    if (!_isRelayRunning) return;
+    
+    try {
+      final stats = await RelayService.instance.getStats();
+      if (mounted && stats != null) {
+        final newCount = stats['connections'] as int? ?? 0;
+        if (newCount != _connectionCount) {
+          setState(() {
+            _connectionCount = newCount;
+          });
+        }
+      }
+    } catch (e) {
+      // Silently fail for connection count refresh to avoid spam
+      // AegisLogger.debug("Failed to refresh connection count: $e");
+    }
   }
 
   String _resolvedRelayAddress() {
@@ -368,6 +403,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           _relayUrl = relayUrl;
           _databaseSize = databaseSize;
           _stats = stats;
+          _connectionCount = stats?['connections'] as int? ?? 0;
           _sessionStartTime = sessionStart;
           _currentSessionUptime = sessionStart != null
               ? DateTime.now().difference(sessionStart)
@@ -378,8 +414,10 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
 
       if (sessionStart != null) {
         _startUptimeTimer();
+        _startConnectionRefreshTimer();
       } else {
         _stopUptimeTimer();
+        _stopConnectionRefreshTimer();
       }
     } catch (e) {
       AegisLogger.error("Failed to load relay info", e);
@@ -979,6 +1017,28 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                   ),
                                   const Spacer(),
                                   _buildAddressModeSelector(),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Connections Section
+                              Row(
+                                children: [
+                                  Text(
+                                    'Connections',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '$_connectionCount',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
                                 ],
                               ),
                             ],
