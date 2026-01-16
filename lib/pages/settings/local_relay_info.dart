@@ -1130,8 +1130,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        _formatNumber(
-                                            _stats!['totalEvents'] as int? ?? 0),
+                                        '${_stats!['totalEvents'] as int? ?? 0}',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
