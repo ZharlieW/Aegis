@@ -74,6 +74,7 @@ dependencies:
     path: packages/nostr-rust-flutter-plugin
   android_content_provider: ^0.5.2
   window_manager: ^0.4.3
+  webview_flutter: ^4.4.2
 
 
 dev_dependencies:
@@ -109,6 +110,7 @@ flutter:
     - assets/certs/fullchain.pem
     - assets/certs/privatekey.pem
     - lib/assets/preset_apps.json
+    - lib/assets/napp_list.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

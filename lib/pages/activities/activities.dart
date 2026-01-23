@@ -9,8 +9,13 @@ import 'event_detail_page.dart';
 
 class Activities extends StatefulWidget {
   final ClientAuthDBISAR? clientAuthDBISAR;
+  final String? applicationPubkey; // For NIP-07 applications
   
-  const Activities({super.key, this.clientAuthDBISAR});
+  const Activities({
+    super.key,
+    this.clientAuthDBISAR,
+    this.applicationPubkey,
+  });
 
   @override
   ActivitiesState createState() => ActivitiesState();
@@ -42,8 +47,11 @@ class ActivitiesState extends State<Activities> {
       List<SignedEventDBISAR> events;
       
       if (widget.clientAuthDBISAR != null) {
-        // Load events for specific pubkey
+        // Load events for specific NIP-46 application (by clientPubkey)
         events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.clientAuthDBISAR!.clientPubkey);
+      } else if (widget.applicationPubkey != null && widget.applicationPubkey!.isNotEmpty) {
+        // Load events for specific NIP-07 application (by applicationPubkey/URL)
+        events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.applicationPubkey!);
       } else {
         // Load all events
         events = await SignedEventManager.sharedInstance.getAllSignedEvents();
@@ -66,6 +74,28 @@ class ActivitiesState extends State<Activities> {
     return TookKit.formatTimestamp(timestamp);
   }
 
+  String _getAppBarTitle() {
+    if (widget.clientAuthDBISAR != null) {
+      return widget.clientAuthDBISAR?.name ?? 'Activities';
+    } else if (widget.applicationPubkey != null && widget.applicationPubkey!.isNotEmpty) {
+      // For NIP-07, try to get app name from first event or use URL
+      if (_filteredEvents.isNotEmpty && _filteredEvents.first.applicationName != null) {
+        return _filteredEvents.first.applicationName!;
+      }
+      // Try to extract domain from URL
+      try {
+        final uri = Uri.tryParse(widget.applicationPubkey!);
+        if (uri != null && uri.host.isNotEmpty) {
+          return uri.host;
+        }
+      } catch (_) {
+        // Ignore
+      }
+      return widget.applicationPubkey!;
+    }
+    return 'Activities';
+  }
+
   String _getEventContent(SignedEventDBISAR event) {
     if (event.eventContent.isNotEmpty) {
       return event.eventContent;
@@ -85,7 +115,7 @@ class ActivitiesState extends State<Activities> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(widget.clientAuthDBISAR != null ? (widget.clientAuthDBISAR?.name ?? 'Activities') : 'Activities'),
+        title: Text(_getAppBarTitle()),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [

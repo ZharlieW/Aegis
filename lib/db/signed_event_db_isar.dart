@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:isar/isar.dart';
 
 import 'db_isar.dart';
@@ -220,5 +221,93 @@ class SignedEventDBISAR {
     }
   }
 
+  /// Get events by connection type (from metadata)
+  static Future<List<SignedEventDBISAR>> getByConnectionType(String userPubkey, String connectionType) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    
+    // Get all events first (since metadata is JSON string, we need to filter in memory)
+    List<SignedEventDBISAR> allEvents;
+    if (_isDefaultUser(userPubkey)) {
+      allEvents = await isar.signedEventDBISARs
+          .where()
+          .sortBySignedTimestampDesc()
+          .findAll();
+    } else {
+      allEvents = await isar.signedEventDBISARs
+          .filter()
+          .userPubkeyEqualTo(userPubkey)
+          .sortBySignedTimestampDesc()
+          .findAll();
+    }
+    
+    // Filter by connection_type in metadata
+    return allEvents.where((event) {
+      if (event.metadata == null || event.metadata!.isEmpty) {
+        return false;
+      }
+      try {
+        final metadata = json.decode(event.metadata!);
+        return metadata['connection_type'] == connectionType;
+      } catch (e) {
+        return false;
+      }
+    }).toList();
+  }
 
-} 
+  /// Get unique applications by connection type
+  /// Returns a map of applicationPubkey -> (latest event, applicationName, url, icon)
+  static Future<Map<String, Map<String, dynamic>>> getUniqueApplicationsByConnectionType(
+    String userPubkey,
+    String connectionType,
+  ) async {
+    final events = await getByConnectionType(userPubkey, connectionType);
+    
+    // Group by applicationPubkey and keep the latest event for each
+    final Map<String, SignedEventDBISAR> latestEvents = {};
+    for (final event in events) {
+      if (event.applicationPubkey == null || event.applicationPubkey!.isEmpty) {
+        continue;
+      }
+      
+      final pubkey = event.applicationPubkey!;
+      if (!latestEvents.containsKey(pubkey) ||
+          event.signedTimestamp > latestEvents[pubkey]!.signedTimestamp) {
+        latestEvents[pubkey] = event;
+      }
+    }
+    
+    // Extract application info from events
+    final Map<String, Map<String, dynamic>> applications = {};
+    for (final entry in latestEvents.entries) {
+      final event = entry.value;
+      String? url;
+      String? title;
+      String? icon;
+      
+      // Extract from metadata
+      if (event.metadata != null && event.metadata!.isNotEmpty) {
+        try {
+          final metadata = json.decode(event.metadata!);
+          url = metadata['url'] as String?;
+          title = metadata['title'] as String?;
+          icon = metadata['icon'] as String?;
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+      
+      applications[entry.key] = {
+        'applicationPubkey': entry.key,
+        'applicationName': event.applicationName ?? title ?? url ?? entry.key,
+        'url': url ?? entry.key,
+        'title': title ?? event.applicationName ?? entry.key,
+        'icon': icon,
+        'lastUsedTimestamp': event.signedTimestamp,
+        'eventCount': events.where((e) => e.applicationPubkey == entry.key).length,
+      };
+    }
+    
+    return applications;
+  }
+}
+ 
