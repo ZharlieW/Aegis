@@ -59,6 +59,9 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   ValueNotifier<bool>? _androidRelayStatusNotifier;
   Timer? _androidRelayStatusTimer;
 
+  // Cache for NIP-07 applications future to prevent flickering
+  Future<Map<String, Map<String, dynamic>>>? _nip07ApplicationsFuture;
+
   List<ValueNotifier<ClientAuthDBISAR>> get clientList {
     final list = AccountManager.sharedInstance.applicationMap.values.toList();
     list.sort((a, b) {
@@ -725,12 +728,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         segments: const [
           ButtonSegment(
             value: 0,
-            label: Text('NIP-46'),
-            icon: Icon(Icons.link),
+            label: Text('Remote'),
+            icon: Icon(Icons.cloud_outlined),
           ),
           ButtonSegment(
             value: 1,
-            label: Text('NIP-07'),
+            label: Text('Browser'),
             icon: Icon(Icons.language),
           ),
         ],
@@ -758,12 +761,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           segments: const [
             ButtonSegment(
               value: 0,
-              label: Text('NIP-46', style: TextStyle(fontSize: 13)),
-              icon: Icon(Icons.link, size: 16),
+              label: Text('Remote', style: TextStyle(fontSize: 13)),
+              icon: Icon(Icons.cloud_outlined, size: 16),
             ),
             ButtonSegment(
               value: 1,
-              label: Text('NIP-07', style: TextStyle(fontSize: 13)),
+              label: Text('Browser', style: TextStyle(fontSize: 13)),
               icon: Icon(Icons.language, size: 16),
             ),
           ],
@@ -901,8 +904,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   // Build NIP-07 application list
   Widget _buildNIP07ApplicationList() {
+    // Use cached future if available, otherwise create new one
+    _nip07ApplicationsFuture ??= _loadNIP07Applications();
+    
     return FutureBuilder<Map<String, Map<String, dynamic>>>(
-      future: _loadNIP07Applications(),
+      key: const ValueKey('nip07_applications'),
+      future: _nip07ApplicationsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1083,6 +1090,15 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       AegisLogger.error('Failed to load NIP-07 applications: $e');
       return {};
     }
+  }
+
+  /// Refresh NIP-07 applications by clearing cache and reloading
+  /// This method can be called when data needs to be refreshed (e.g., after returning from webview)
+  // ignore: unused_element
+  void _refreshNIP07Applications() {
+    setState(() {
+      _nip07ApplicationsFuture = null;
+    });
   }
   
 

@@ -595,25 +595,227 @@ class _WebViewPageState extends State<WebViewPage> {
     }
   }
 
+  Future<void> _handleBackButton() async {
+    final canGoBack = await _controller.canGoBack();
+    if (canGoBack) {
+      await _controller.goBack();
+    } else {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    try {
+      await LocalStorage.init();
+      final account = Account.sharedInstance;
+      if (account.currentPubkey.isEmpty) {
+        return;
+      }
+
+      final key = 'browser_favorites_${account.currentPubkey}';
+      final rawFavorites = LocalStorage.get(key);
+      
+      // Handle different possible types from LocalStorage
+      List<String> favorites = [];
+      if (rawFavorites != null) {
+        if (rawFavorites is List) {
+          // Handle List<dynamic>, List<Object?>, List<String>, etc.
+          favorites = rawFavorites.map((e) {
+            if (e == null) return '';
+            return e.toString();
+          }).where((e) => e.isNotEmpty).toList();
+        } else if (rawFavorites is String) {
+          // If it's a string, try to parse it as JSON
+          try {
+            final decoded = jsonDecode(rawFavorites);
+            if (decoded is List) {
+              favorites = decoded.map((e) {
+                if (e == null) return '';
+                return e.toString();
+              }).where((e) => e.isNotEmpty).toList();
+            } else {
+              // If parsing fails or is not a list, treat as single string
+              favorites = [rawFavorites];
+            }
+          } catch (_) {
+            // If parsing fails, treat as single string
+            favorites = [rawFavorites];
+          }
+        }
+      }
+      
+      final currentUrl = _currentUrl ?? widget.url;
+      if (mounted) {
+        setState(() {
+          _isFavorite = favorites.contains(currentUrl);
+        });
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to load favorite status: $e');
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    try {
+      await LocalStorage.init();
+      final account = Account.sharedInstance;
+      if (account.currentPubkey.isEmpty) {
+        return;
+      }
+
+      final key = 'browser_favorites_${account.currentPubkey}';
+      final rawFavorites = LocalStorage.get(key);
+      
+      // Handle different possible types from LocalStorage
+      List<String> favoriteList = [];
+      if (rawFavorites != null) {
+        if (rawFavorites is List) {
+          // Handle List<dynamic>, List<Object?>, List<String>, etc.
+          favoriteList = rawFavorites.map((e) {
+            if (e == null) return '';
+            return e.toString();
+          }).where((e) => e.isNotEmpty).toList();
+        } else if (rawFavorites is String) {
+          // If it's a string, try to parse it as JSON
+          try {
+            final decoded = jsonDecode(rawFavorites);
+            if (decoded is List) {
+              favoriteList = decoded.map((e) {
+                if (e == null) return '';
+                return e.toString();
+              }).where((e) => e.isNotEmpty).toList();
+            } else {
+              // If parsing fails or is not a list, treat as single string
+              favoriteList = [rawFavorites];
+            }
+          } catch (_) {
+            // If parsing fails, treat as single string
+            favoriteList = [rawFavorites];
+          }
+        }
+      }
+
+      final currentUrl = _currentUrl ?? widget.url;
+
+      if (_isFavorite) {
+        favoriteList.remove(currentUrl);
+      } else {
+        if (!favoriteList.contains(currentUrl)) {
+          favoriteList.add(currentUrl);
+        }
+      }
+
+      // Save as List<String> which LocalStorage.set() supports
+      await LocalStorage.set(key, favoriteList);
+      if (mounted) {
+        setState(() {
+          _isFavorite = !_isFavorite;
+        });
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to toggle favorite: $e');
+    }
+  }
+
+  Future<void> _copyUrl() async {
+    final url = _currentUrl ?? widget.url;
+    await Clipboard.setData(ClipboardData(text: url));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Link copied to clipboard'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _reload() async {
+    await _controller.reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: SizedBox(
+        title: _isLoading
+            ? const SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(widget.title),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _handleBackButton,
+        ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (String value) {
+              switch (value) {
+                case 'favorite':
+                  _toggleFavorite();
+                  break;
+                case 'reload':
+                  _reload();
+                  break;
+                case 'copy':
+                  _copyUrl();
+                  break;
+                case 'exit':
+                  Navigator.of(context).pop();
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'favorite',
+                child: Row(
+                  children: [
+                    Icon(
+                      _isFavorite ? Icons.star : Icons.star_border,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(_isFavorite ? 'Unfavorite' : 'Favorite'),
+                  ],
+                ),
               ),
-            ),
+              const PopupMenuItem<String>(
+                value: 'reload',
+                child: Row(
+                  children: [
+                    Icon(Icons.refresh, size: 20),
+                    SizedBox(width: 12),
+                    Text('Reload'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'copy',
+                child: Row(
+                  children: [
+                    Icon(Icons.copy, size: 20),
+                    SizedBox(width: 12),
+                    Text('Copy Link'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'exit',
+                child: Row(
+                  children: [
+                    Icon(Icons.exit_to_app, size: 20),
+                    SizedBox(width: 12),
+                    Text('Exit'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: WebViewWidget(controller: _controller),
