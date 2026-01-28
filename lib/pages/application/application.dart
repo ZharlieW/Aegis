@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/common/common_toast.dart';
@@ -11,6 +12,7 @@ import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/theme_manager.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -965,7 +967,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         
         return SingleChildScrollView(
           child: Column(
-            children: sortedApps.map((app) => _buildNIP07ApplicationItem(app)).toList(),
+            children: [
+              ...sortedApps.map((app) => _buildNIP07ApplicationItem(app)),
+              _buildAddAppButton(),
+            ],
           ),
         );
       },
@@ -1085,7 +1090,58 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         'nip07',
       );
       
-      return applications;
+      // Filter out non-web apps based on metadata
+      // Check metadata for 'isWebApp' field or valid HTTP/HTTPS URL
+      final webApps = <String, Map<String, dynamic>>{};
+      for (final entry in applications.entries) {
+        final app = entry.value;
+        final url = app['url'] as String? ?? '';
+        final applicationPubkey = app['applicationPubkey'] as String? ?? '';
+        
+        // Get the original event to check metadata
+        final events = await SignedEventDBISAR.getByConnectionType(
+          account.currentPubkey,
+          'nip07',
+        );
+        final event = events.firstWhere(
+          (e) => e.applicationPubkey == applicationPubkey,
+          orElse: () => events.first,
+        );
+        
+        bool isWebApp = false;
+        if (event.metadata != null && event.metadata!.isNotEmpty) {
+          try {
+            final metadata = json.decode(event.metadata!);
+            // Check if metadata explicitly marks it as web app
+            if (metadata['isWebApp'] == true) {
+              isWebApp = true;
+            } else if (metadata['isWebApp'] == false) {
+              isWebApp = false;
+            } else {
+              // If not specified, check if URL is valid HTTP/HTTPS
+              isWebApp = url.isNotEmpty && 
+                  (url.startsWith('http://') || url.startsWith('https://')) &&
+                  url != applicationPubkey;
+            }
+          } catch (e) {
+            // If metadata parse fails, check URL
+            isWebApp = url.isNotEmpty && 
+                (url.startsWith('http://') || url.startsWith('https://')) &&
+                url != applicationPubkey;
+          }
+        } else {
+          // No metadata, check URL
+          isWebApp = url.isNotEmpty && 
+              (url.startsWith('http://') || url.startsWith('https://')) &&
+              url != applicationPubkey;
+        }
+        
+        if (isWebApp) {
+          webApps[entry.key] = app;
+        }
+      }
+      
+      return webApps;
     } catch (e) {
       AegisLogger.error('Failed to load NIP-07 applications: $e');
       return {};
@@ -1094,11 +1150,213 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   /// Refresh NIP-07 applications by clearing cache and reloading
   /// This method can be called when data needs to be refreshed (e.g., after returning from webview)
-  // ignore: unused_element
   void _refreshNIP07Applications() {
     setState(() {
       _nip07ApplicationsFuture = null;
     });
+  }
+
+  Widget _buildAddAppButton() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _showAddAppDialog,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22),
+        height: 72,
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                Icons.add,
+                color: Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+            ).setPaddingOnly(right: 8.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Add Web App',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  Text(
+                    'Add a new web app by URL',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAddAppDialog() async {
+    final urlController = TextEditingController();
+    final nameController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final url = urlController.text.trim();
+          final isValidUrl = url.isNotEmpty &&
+              (url.startsWith('http://') || url.startsWith('https://'));
+
+          return AlertDialog(
+            title: const Text('Add Web App'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: urlController,
+                    decoration: const InputDecoration(
+                      labelText: 'URL *',
+                      hintText: 'https://example.com',
+                      border: OutlineInputBorder(),
+                    ),
+                    autofocus: true,
+                    keyboardType: TextInputType.url,
+                    onChanged: (value) {
+                      setDialogState(() {});
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'App Name (Optional)',
+                      hintText: 'My App',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      setDialogState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: isValidUrl
+                    ? () async {
+                        final url = urlController.text.trim();
+                        final name = nameController.text.trim();
+                        Navigator.of(context).pop();
+                        await _addNIP07App(url, name);
+                      }
+                    : null,
+                child: const Text('Add'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    urlController.dispose();
+    nameController.dispose();
+  }
+
+  Future<void> _addNIP07App(String url, String name) async {
+    try {
+      final account = Account.sharedInstance;
+      if (account.currentPubkey.isEmpty) {
+        return;
+      }
+
+      // Validate URL
+      Uri? uri;
+      try {
+        uri = Uri.parse(url);
+        if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
+          throw Exception('Invalid URL');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid URL. Please enter a valid HTTP or HTTPS URL.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Extract domain from URL for applicationPubkey
+      final applicationPubkey = uri.host.isNotEmpty ? uri.host : url;
+      final appName = name.isNotEmpty ? name : uri.host.isNotEmpty ? uri.host : 'Web App';
+
+      // Create metadata with connection_type, url, and title
+      final metadata = json.encode({
+        'connection_type': 'nip07',
+        'url': url,
+        'title': appName,
+      });
+
+      // Record a signed event to add the app to the list
+      await SignedEventManager.sharedInstance.recordSignedEvent(
+        eventId: 'manual_add_${DateTime.now().millisecondsSinceEpoch}',
+        eventKind: 0, // Kind 0 for manual add
+        eventContent: 'Manual Add Web App',
+        applicationName: appName,
+        applicationPubkey: applicationPubkey,
+        status: 1,
+        metadata: metadata,
+      );
+
+      // Refresh the list
+      _refreshNIP07Applications();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Web app "$appName" added successfully'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to add NIP-07 app: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add web app: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
   
 
