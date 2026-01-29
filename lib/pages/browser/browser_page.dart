@@ -60,6 +60,16 @@ class _BrowserPageState extends State<BrowserPage> {
   void _applyFilter() {
     List<NAppModel> filtered = List.from(_nappList);
 
+    // Filter by platforms - only show web apps
+    filtered = filtered.where((napp) {
+      // If platforms is null or empty, show for backward compatibility
+      if (napp.platforms == null || napp.platforms!.isEmpty) {
+        return true;
+      }
+      // Only show apps that include "web" in their platforms
+      return napp.platforms!.contains('web');
+    }).toList();
+
     // Apply search query
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((napp) {
