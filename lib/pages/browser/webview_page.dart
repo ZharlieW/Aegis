@@ -765,7 +765,9 @@ class _WebViewPageState extends State<WebViewPage> {
           ),
         ],
       ),
-      body: WebViewWidget(controller: _controller),
+      body: SafeArea(
+        child: WebViewWidget(controller: _controller),
+      ),
     );
   }
 }
