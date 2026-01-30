@@ -87,6 +87,19 @@ const UserAppDBISARSchema = CollectionSchema(
         )
       ],
     ),
+    r'createTimestamp': IndexSchema(
+      id: 3876028010171072059,
+      name: r'createTimestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'createTimestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
     r'isFavorite': IndexSchema(
       id: 5742774614603939776,
       name: r'isFavorite',
@@ -228,6 +241,14 @@ extension UserAppDBISARQueryWhereSort
     });
   }
 
+  QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhere> anyCreateTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'createTimestamp'),
+      );
+    });
+  }
+
   QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhere> anyIsFavorite() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -350,6 +371,99 @@ extension UserAppDBISARQueryWhere
               includeUpper: false,
             ));
       }
+    });
+  }
+
+  QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhereClause>
+      createTimestampEqualTo(int createTimestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createTimestamp',
+        value: [createTimestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhereClause>
+      createTimestampNotEqualTo(int createTimestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createTimestamp',
+              lower: [],
+              upper: [createTimestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createTimestamp',
+              lower: [createTimestamp],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createTimestamp',
+              lower: [createTimestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createTimestamp',
+              lower: [],
+              upper: [createTimestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhereClause>
+      createTimestampGreaterThan(
+    int createTimestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createTimestamp',
+        lower: [createTimestamp],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhereClause>
+      createTimestampLessThan(
+    int createTimestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createTimestamp',
+        lower: [],
+        upper: [createTimestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<UserAppDBISAR, UserAppDBISAR, QAfterWhereClause>
+      createTimestampBetween(
+    int lowerCreateTimestamp,
+    int upperCreateTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createTimestamp',
+        lower: [lowerCreateTimestamp],
+        includeLower: includeLower,
+        upper: [upperCreateTimestamp],
+        includeUpper: includeUpper,
+      ));
     });
   }
 

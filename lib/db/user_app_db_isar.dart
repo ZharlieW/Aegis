@@ -31,7 +31,8 @@ class UserAppDBISAR {
   // Metadata (JSON string)
   late String? metadataJson;
   
-  // Creation timestamp
+  // Creation timestamp (indexed for sorting)
+  @Index()
   late int createTimestamp;
   
   // Favorite status (indexed for fast queries)

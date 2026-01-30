@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
@@ -353,7 +354,7 @@ class _BrowserPageState extends State<BrowserPage> {
           ],
           // ALL APPS section
           _buildSectionHeader('ALL APPS', null, topPadding: favorites.isNotEmpty ? 4 : null),
-          _buildAppGrid(allApps, showAddButton: true),
+          _buildAppGrid(allApps, showAddButton: false),
           const SizedBox(height: 16),
         ],
       ),
@@ -662,6 +663,39 @@ class _BrowserPageState extends State<BrowserPage> {
     }
   }
 
+  /// Try to get favicon URL from common paths
+  Future<String> _getFaviconUrl(Uri uri) async {
+    final baseUrl = '${uri.scheme}://${uri.host}';
+    final commonPaths = [
+      '/favicon.ico',
+      '/favicon.png',
+      '/apple-touch-icon.png',
+      '/apple-touch-icon-precomposed.png',
+    ];
+
+    // Try each common favicon path
+    for (final path in commonPaths) {
+      try {
+        final faviconUrl = '$baseUrl$path';
+        final response = await http.head(Uri.parse(faviconUrl)).timeout(
+          const Duration(seconds: 3),
+        );
+        
+        if (response.statusCode == 200) {
+          AegisLogger.info('Found favicon at: $faviconUrl');
+          return faviconUrl;
+        }
+      } catch (e) {
+        // Continue to next path if this one fails
+        continue;
+      }
+    }
+
+    // Fallback to default favicon.ico path
+    AegisLogger.info('Using default favicon path: $baseUrl/favicon.ico');
+    return '$baseUrl/favicon.ico';
+  }
+
   Future<void> _addWebApp(String url, String name) async {
     try {
       // Validate URL
@@ -725,12 +759,15 @@ class _BrowserPageState extends State<BrowserPage> {
       final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : 'Web App');
       final appId = uri.host.isNotEmpty ? uri.host.replaceAll('.', '_') : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
       
+      // Try to get favicon URL
+      final iconUrl = await _getFaviconUrl(uri);
+      
       // Create a new app model
       final newApp = NAppModel(
         id: appId,
         url: url,
         name: appName,
-        icon: '${uri.scheme}://${uri.host}/favicon.ico',
+        icon: iconUrl,
         description: 'User Added',
         platforms: ['web'],
       );
@@ -740,12 +777,9 @@ class _BrowserPageState extends State<BrowserPage> {
       await UserAppDBISAR.saveFromDB(dbApp);
       AegisLogger.info('Successfully saved user-added app to database: ${newApp.name}');
 
-      // Add to the list
+      // Reload list from database to maintain proper sorting (newest first)
       if (mounted) {
-        setState(() {
-          _nappList.add(newApp);
-          _applyFilter();
-        });
+        await _loadNappList();
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

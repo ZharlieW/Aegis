@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
@@ -621,6 +622,39 @@ class _WebViewPageState extends State<WebViewPage> {
     }
   }
 
+  /// Try to get favicon URL from common paths
+  Future<String> _getFaviconUrl(Uri uri) async {
+    final baseUrl = '${uri.scheme}://${uri.host}';
+    final commonPaths = [
+      '/favicon.ico',
+      '/favicon.png',
+      '/apple-touch-icon.png',
+      '/apple-touch-icon-precomposed.png',
+    ];
+
+    // Try each common favicon path
+    for (final path in commonPaths) {
+      try {
+        final faviconUrl = '$baseUrl$path';
+        final response = await http.head(Uri.parse(faviconUrl)).timeout(
+          const Duration(seconds: 3),
+        );
+        
+        if (response.statusCode == 200) {
+          AegisLogger.info('Found favicon at: $faviconUrl');
+          return faviconUrl;
+        }
+      } catch (e) {
+        // Continue to next path if this one fails
+        continue;
+      }
+    }
+
+    // Fallback to default favicon.ico path
+    AegisLogger.info('Using default favicon path: $baseUrl/favicon.ico');
+    return '$baseUrl/favicon.ico';
+  }
+
   Future<void> _toggleFavorite() async {
     try {
       final currentUrl = _currentUrl ?? widget.url;
@@ -632,20 +666,28 @@ class _WebViewPageState extends State<WebViewPage> {
       } else {
         // App doesn't exist in database, create it with favorite status
         final uri = Uri.tryParse(currentUrl);
-        final appId = uri?.host.isNotEmpty == true 
-            ? uri!.host.replaceAll('.', '_') 
+        if (uri == null) {
+          AegisLogger.error('Invalid URL: $currentUrl');
+          return;
+        }
+        
+        final appId = uri.host.isNotEmpty 
+            ? uri.host.replaceAll('.', '_') 
             : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
-        final appName = uri?.host.isNotEmpty == true 
-            ? uri!.host 
+        final appName = uri.host.isNotEmpty 
+            ? uri.host 
             : widget.title.isNotEmpty 
                 ? widget.title 
                 : 'Web App';
+        
+        // Try to get favicon URL
+        final iconUrl = await _getFaviconUrl(uri);
         
         final newApp = UserAppDBISAR(
           appId: appId,
           url: currentUrl,
           name: appName,
-          icon: uri != null ? '${uri.scheme}://${uri.host}/favicon.ico' : '',
+          icon: iconUrl,
           description: 'User Added',
           platformsJson: jsonEncode(['web']),
           createTimestamp: DateTime.now().millisecondsSinceEpoch,
