@@ -3,11 +3,88 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:aegis/navigator/navigator.dart';
-import 'package:aegis/utils/local_storage.dart';
-import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/db/user_app_db_isar.dart';
 import 'napp_model.dart';
 import 'webview_page.dart';
+
+class _AddAppDialog extends StatefulWidget {
+  @override
+  State<_AddAppDialog> createState() => _AddAppDialogState();
+}
+
+class _AddAppDialogState extends State<_AddAppDialog> {
+  final TextEditingController _urlController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final url = _urlController.text.trim();
+    final isValidUrl = url.isNotEmpty &&
+        (url.startsWith('http://') || url.startsWith('https://'));
+
+    return AlertDialog(
+      title: const Text('Add Web App'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _urlController,
+              decoration: const InputDecoration(
+                labelText: 'URL *',
+                hintText: 'https://example.com',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'App Name (Optional)',
+                hintText: 'My App',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: isValidUrl
+              ? () {
+                  Navigator.of(context).pop({
+                    'url': _urlController.text.trim(),
+                    'name': _nameController.text.trim(),
+                  });
+                }
+              : null,
+          child: const Text('Add'),
+        ),
+      ],
+    );
+  }
+}
 
 class BrowserPage extends StatefulWidget {
   const BrowserPage({super.key});
@@ -33,23 +110,102 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Future<void> _loadNappList() async {
     try {
-      // Load NApp list from JSON file
-      final String jsonString = await rootBundle.loadString('lib/assets/napp_list.json');
-      final List<dynamic> jsonList = jsonDecode(jsonString);
+      // Check if preset apps have been imported
+      final isImported = await UserAppDBISAR.isPresetAppsImported();
       
-      _nappList = jsonList.map((item) => NAppModel.fromMap(item as Map<String, dynamic>)).toList();
+      if (!isImported) {
+        // First time: import preset apps from JSON file
+        try {
+          final String jsonString = await rootBundle.loadString('lib/assets/napp_list.json');
+          final List<dynamic> jsonList = jsonDecode(jsonString);
+          final List<Map<String, dynamic>> apps = jsonList
+              .map((item) => item as Map<String, dynamic>)
+              .toList();
+          
+          await UserAppDBISAR.importPresetApps(apps);
+          AegisLogger.info('Imported ${apps.length} preset apps to database');
+        } catch (e) {
+          AegisLogger.error('Failed to import preset apps: $e');
+        }
+      }
+      
+      // Load all apps from database
+      final dbApps = await UserAppDBISAR.getAllFromDB();
+      _nappList = dbApps.map((dbApp) => _convertFromDBApp(dbApp)).toList();
+      
+      AegisLogger.info('Loaded ${_nappList.length} app(s) from database');
       
       if (mounted) {
         _applyFilter();
       }
     } catch (e) {
-      print('Error loading napp_list.json: $e');
+      AegisLogger.error('Failed to load apps: $e');
       // Fallback to empty list
       _nappList = [];
       if (mounted) {
         _applyFilter();
       }
     }
+  }
+
+  /// Convert UserAppDBISAR to NAppModel
+  NAppModel _convertFromDBApp(UserAppDBISAR dbApp) {
+    List<String>? platforms;
+    if (dbApp.platformsJson != null && dbApp.platformsJson!.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(dbApp.platformsJson!);
+        if (decoded is List) {
+          platforms = decoded.map((e) => e.toString()).toList();
+        }
+      } catch (_) {
+        // Ignore parse errors
+      }
+    }
+    
+    Map<String, dynamic> metadata = {};
+    if (dbApp.metadataJson != null && dbApp.metadataJson!.isNotEmpty) {
+      try {
+        metadata = jsonDecode(dbApp.metadataJson!) as Map<String, dynamic>;
+      } catch (_) {
+        // Ignore parse errors
+      }
+    }
+    
+    return NAppModel(
+      id: dbApp.appId,
+      url: dbApp.url,
+      name: dbApp.name,
+      icon: dbApp.icon,
+      description: dbApp.description,
+      platforms: platforms,
+      metadata: metadata,
+    );
+  }
+
+  /// Convert NAppModel to UserAppDBISAR
+  UserAppDBISAR _convertToDBApp(NAppModel app, {bool isPreset = false, bool isFavorite = false}) {
+    String? platformsJson;
+    if (app.platforms != null && app.platforms!.isNotEmpty) {
+      platformsJson = jsonEncode(app.platforms);
+    }
+    
+    String? metadataJson;
+    if (app.metadata.isNotEmpty) {
+      metadataJson = jsonEncode(app.metadata);
+    }
+    
+    return UserAppDBISAR(
+      appId: app.id,
+      url: app.url,
+      name: app.name,
+      icon: app.icon,
+      description: app.description,
+      platformsJson: platformsJson,
+      metadataJson: metadataJson,
+      createTimestamp: DateTime.now().millisecondsSinceEpoch,
+      isPreset: isPreset,
+      isFavorite: isFavorite,
+    );
   }
 
   void _onSearchChanged() {
@@ -97,6 +253,13 @@ class _BrowserPageState extends State<BrowserPage> {
       appBar: AppBar(
         title: const Text('Browser'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _showAddAppDialog,
+            tooltip: 'Add Web App',
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -187,20 +350,24 @@ class _BrowserPageState extends State<BrowserPage> {
           if (favorites.isNotEmpty) ...[
             _buildSectionHeader('FAVORITES', Icons.push_pin),
             _buildAppGrid(favorites),
-            const SizedBox(height: 24),
           ],
           // ALL APPS section
-          _buildSectionHeader('ALL APPS', null),
-          _buildAppGrid(allApps),
+          _buildSectionHeader('ALL APPS', null, topPadding: favorites.isNotEmpty ? 4 : null),
+          _buildAppGrid(allApps, showAddButton: true),
           const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData? icon) {
+  Widget _buildSectionHeader(String title, IconData? icon, {double? topPadding}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: topPadding ?? 8,
+        bottom: 8,
+      ),
       child: Row(
         children: [
           if (icon != null) ...[
@@ -223,10 +390,12 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildAppGrid(List<NAppModel> apps) {
-    if (apps.isEmpty) {
+  Widget _buildAppGrid(List<NAppModel> apps, {bool showAddButton = false}) {
+    if (apps.isEmpty && !showAddButton) {
       return const SizedBox.shrink();
     }
+
+    final itemCount = apps.length + (showAddButton ? 1 : 0);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -236,13 +405,67 @@ class _BrowserPageState extends State<BrowserPage> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           crossAxisSpacing: 12,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.85,
+          mainAxisSpacing: 4,
+          childAspectRatio: 1.0,
         ),
-        itemCount: apps.length,
+        itemCount: itemCount,
         itemBuilder: (context, index) {
+          if (showAddButton && index == apps.length) {
+            return _buildAddButtonItem();
+          }
           return _buildNappGridItem(apps[index]);
         },
+      ),
+    );
+  }
+
+  Widget _buildAddButtonItem() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _showAddAppDialog,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline,
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              Icons.add,
+              size: 32,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add App',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Tap to add',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -260,12 +483,11 @@ class _BrowserPageState extends State<BrowserPage> {
               url: napp.url,
               title: napp.name,
             ),
-          );
+          ).then((_) {
+            // Reload favorites when returning from webview page
+            _loadFavorites();
+          });
         }
-      },
-      onLongPress: () {
-        // Toggle favorite
-        _toggleFavorite(napp, isFavorite);
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -317,18 +539,18 @@ class _BrowserPageState extends State<BrowserPage> {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 2),
-          // Category
-          Text(
-            napp.description,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
+          // const SizedBox(height: 2),
+          // // Category
+          // Text(
+          //   napp.description,
+          //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          //         fontSize: 11,
+          //         color: Theme.of(context).colorScheme.onSurfaceVariant,
+          //       ),
+          //   maxLines: 1,
+          //   overflow: TextOverflow.ellipsis,
+          //   textAlign: TextAlign.center,
+          // ),
         ],
       ),
     );
@@ -414,37 +636,13 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Future<void> _loadFavorites() async {
     try {
-      await LocalStorage.init();
-      final account = Account.sharedInstance;
-      if (account.currentPubkey.isEmpty) {
-        return;
-      }
-
-      final key = 'browser_favorites_${account.currentPubkey}';
-      final rawFavorites = LocalStorage.get(key);
-      
-      // Handle different possible types from LocalStorage
-      List<String> favorites = [];
-      if (rawFavorites != null) {
-        if (rawFavorites is List) {
-          favorites = rawFavorites.map((e) => e.toString()).toList();
-        } else if (rawFavorites is String) {
-          // If it's a string, try to parse it as JSON
-          try {
-            final decoded = jsonDecode(rawFavorites);
-            if (decoded is List) {
-              favorites = decoded.map((e) => e.toString()).toList();
-            }
-          } catch (_) {
-            // If parsing fails, treat as single string
-            favorites = [rawFavorites];
-          }
-        }
-      }
+      // Load favorite apps from database
+      final favoriteApps = await UserAppDBISAR.getFavoriteApps();
+      final favoriteUrls = favoriteApps.map((app) => app.url).toSet();
       
       if (mounted) {
         setState(() {
-          _favoriteIds = favorites.toSet();
+          _favoriteIds = favoriteUrls;
         });
       }
     } catch (e) {
@@ -452,56 +650,120 @@ class _BrowserPageState extends State<BrowserPage> {
     }
   }
 
-  Future<void> _toggleFavorite(NAppModel napp, bool isFavorite) async {
+
+  Future<void> _showAddAppDialog() async {
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => _AddAppDialog(),
+    );
+
+    if (result != null && mounted) {
+      await _addWebApp(result['url'] ?? '', result['name'] ?? '');
+    }
+  }
+
+  Future<void> _addWebApp(String url, String name) async {
     try {
-      await LocalStorage.init();
-      final account = Account.sharedInstance;
-      if (account.currentPubkey.isEmpty) {
+      // Validate URL
+      Uri? uri;
+      try {
+        uri = Uri.parse(url);
+        if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
+          throw Exception('Invalid URL');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid URL. Please enter a valid HTTP or HTTPS URL.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
         return;
       }
 
-      final key = 'browser_favorites_${account.currentPubkey}';
-      final rawFavorites = LocalStorage.get(key);
+      // Check if app already exists
+      final existingApp = _nappList.firstWhere(
+        (app) => app.url == url,
+        orElse: () => NAppModel(
+          id: '',
+          url: '',
+          name: '',
+          icon: '',
+          description: '',
+        ),
+      );
+
+      if (existingApp.url.isNotEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('This app is already in the list.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Check if app already exists in database
+      final existingDbApp = await UserAppDBISAR.getByUrl(url);
+      if (existingDbApp != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('This app is already in the list.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Extract domain from URL for app name and icon
+      final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : 'Web App');
+      final appId = uri.host.isNotEmpty ? uri.host.replaceAll('.', '_') : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
       
-      // Handle different possible types from LocalStorage
-      List<String> favoriteList = [];
-      if (rawFavorites != null) {
-        if (rawFavorites is List) {
-          favoriteList = rawFavorites.map((e) => e.toString()).toList();
-        } else if (rawFavorites is String) {
-          // If it's a string, try to parse it as JSON
-          try {
-            final decoded = jsonDecode(rawFavorites);
-            if (decoded is List) {
-              favoriteList = decoded.map((e) => e.toString()).toList();
-            }
-          } catch (_) {
-            // If parsing fails, treat as single string
-            favoriteList = [rawFavorites];
-          }
-        }
-      }
+      // Create a new app model
+      final newApp = NAppModel(
+        id: appId,
+        url: url,
+        name: appName,
+        icon: '${uri.scheme}://${uri.host}/favicon.ico',
+        description: 'User Added',
+        platforms: ['web'],
+      );
 
-      final appId = napp.id.isNotEmpty ? napp.id : napp.url;
+      // Convert to database model and save (isPreset=false for user-added apps)
+      final dbApp = _convertToDBApp(newApp, isPreset: false);
+      await UserAppDBISAR.saveFromDB(dbApp);
+      AegisLogger.info('Successfully saved user-added app to database: ${newApp.name}');
 
-      if (isFavorite) {
-        favoriteList.remove(appId);
-        favoriteList.remove(napp.url);
-      } else {
-        if (!favoriteList.contains(appId) && !favoriteList.contains(napp.url)) {
-          favoriteList.add(appId);
-        }
-      }
-
-      // Save as List<String> which LocalStorage.set() supports
-      await LocalStorage.set(key, favoriteList);
+      // Add to the list
       if (mounted) {
         setState(() {
-          _favoriteIds = favoriteList.toSet();
+          _nappList.add(newApp);
+          _applyFilter();
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added ${newApp.name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
-      AegisLogger.error('Failed to toggle favorite: $e');
+      AegisLogger.error('Failed to add web app: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add app: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 }

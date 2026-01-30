@@ -8,6 +8,7 @@ import '../utils/logger.dart';
 
 import 'clientAuthDB_isar.dart';
 import 'signed_event_db_isar.dart';
+import 'user_app_db_isar.dart';
 
 class DBISAR {
   DBISAR._internal();
@@ -22,6 +23,7 @@ class DBISAR {
     UserDBISARSchema,
     ClientAuthDBISARSchema,
     SignedEventDBISARSchema,
+    UserAppDBISARSchema,
   ];
 
   Future<Isar> open(String pubkey) async {

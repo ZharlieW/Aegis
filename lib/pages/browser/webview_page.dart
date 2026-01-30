@@ -5,7 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
-import 'package:aegis/utils/local_storage.dart';
+import 'package:aegis/db/user_app_db_isar.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
 class WebViewPage extends StatefulWidget {
@@ -608,48 +608,12 @@ class _WebViewPageState extends State<WebViewPage> {
 
   Future<void> _loadFavoriteStatus() async {
     try {
-      await LocalStorage.init();
-      final account = Account.sharedInstance;
-      if (account.currentPubkey.isEmpty) {
-        return;
-      }
-
-      final key = 'browser_favorites_${account.currentPubkey}';
-      final rawFavorites = LocalStorage.get(key);
-      
-      // Handle different possible types from LocalStorage
-      List<String> favorites = [];
-      if (rawFavorites != null) {
-        if (rawFavorites is List) {
-          // Handle List<dynamic>, List<Object?>, List<String>, etc.
-          favorites = rawFavorites.map((e) {
-            if (e == null) return '';
-            return e.toString();
-          }).where((e) => e.isNotEmpty).toList();
-        } else if (rawFavorites is String) {
-          // If it's a string, try to parse it as JSON
-          try {
-            final decoded = jsonDecode(rawFavorites);
-            if (decoded is List) {
-              favorites = decoded.map((e) {
-                if (e == null) return '';
-                return e.toString();
-              }).where((e) => e.isNotEmpty).toList();
-            } else {
-              // If parsing fails or is not a list, treat as single string
-              favorites = [rawFavorites];
-            }
-          } catch (_) {
-            // If parsing fails, treat as single string
-            favorites = [rawFavorites];
-          }
-        }
-      }
-      
       final currentUrl = _currentUrl ?? widget.url;
+      final app = await UserAppDBISAR.getByUrl(currentUrl);
+      
       if (mounted) {
         setState(() {
-          _isFavorite = favorites.contains(currentUrl);
+          _isFavorite = app?.isFavorite ?? false;
         });
       }
     } catch (e) {
@@ -659,56 +623,39 @@ class _WebViewPageState extends State<WebViewPage> {
 
   Future<void> _toggleFavorite() async {
     try {
-      await LocalStorage.init();
-      final account = Account.sharedInstance;
-      if (account.currentPubkey.isEmpty) {
-        return;
-      }
-
-      final key = 'browser_favorites_${account.currentPubkey}';
-      final rawFavorites = LocalStorage.get(key);
-      
-      // Handle different possible types from LocalStorage
-      List<String> favoriteList = [];
-      if (rawFavorites != null) {
-        if (rawFavorites is List) {
-          // Handle List<dynamic>, List<Object?>, List<String>, etc.
-          favoriteList = rawFavorites.map((e) {
-            if (e == null) return '';
-            return e.toString();
-          }).where((e) => e.isNotEmpty).toList();
-        } else if (rawFavorites is String) {
-          // If it's a string, try to parse it as JSON
-          try {
-            final decoded = jsonDecode(rawFavorites);
-            if (decoded is List) {
-              favoriteList = decoded.map((e) {
-                if (e == null) return '';
-                return e.toString();
-              }).where((e) => e.isNotEmpty).toList();
-            } else {
-              // If parsing fails or is not a list, treat as single string
-              favoriteList = [rawFavorites];
-            }
-          } catch (_) {
-            // If parsing fails, treat as single string
-            favoriteList = [rawFavorites];
-          }
-        }
-      }
-
       final currentUrl = _currentUrl ?? widget.url;
-
-      if (_isFavorite) {
-        favoriteList.remove(currentUrl);
+      final app = await UserAppDBISAR.getByUrl(currentUrl);
+      
+      if (app != null) {
+        // App exists in database, toggle favorite status
+        await UserAppDBISAR.toggleFavorite(currentUrl, !_isFavorite);
       } else {
-        if (!favoriteList.contains(currentUrl)) {
-          favoriteList.add(currentUrl);
-        }
+        // App doesn't exist in database, create it with favorite status
+        final uri = Uri.tryParse(currentUrl);
+        final appId = uri?.host.isNotEmpty == true 
+            ? uri!.host.replaceAll('.', '_') 
+            : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
+        final appName = uri?.host.isNotEmpty == true 
+            ? uri!.host 
+            : widget.title.isNotEmpty 
+                ? widget.title 
+                : 'Web App';
+        
+        final newApp = UserAppDBISAR(
+          appId: appId,
+          url: currentUrl,
+          name: appName,
+          icon: uri != null ? '${uri.scheme}://${uri.host}/favicon.ico' : '',
+          description: 'User Added',
+          platformsJson: jsonEncode(['web']),
+          createTimestamp: DateTime.now().millisecondsSinceEpoch,
+          isFavorite: !_isFavorite,
+          isPreset: false,
+        );
+        
+        await UserAppDBISAR.saveFromDB(newApp);
       }
-
-      // Save as List<String> which LocalStorage.set() supports
-      await LocalStorage.set(key, favoriteList);
+      
       if (mounted) {
         setState(() {
           _isFavorite = !_isFavorite;
