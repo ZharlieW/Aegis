@@ -490,6 +490,9 @@ class _BrowserPageState extends State<BrowserPage> {
           });
         }
       },
+      onLongPress: () {
+        _showDeleteDialog(napp);
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -794,6 +797,63 @@ class _BrowserPageState extends State<BrowserPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to add app: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showDeleteDialog(NAppModel napp) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete App'),
+        content: Text('Are you sure you want to delete "${napp.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _deleteApp(napp);
+    }
+  }
+
+  Future<void> _deleteApp(NAppModel napp) async {
+    try {
+      await UserAppDBISAR.deleteFromDB(napp.url);
+      AegisLogger.info('Successfully deleted app: ${napp.name}');
+
+      // Reload list from database
+      if (mounted) {
+        await _loadNappList();
+        await _loadFavorites();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Deleted ${napp.name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to delete app: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete app: $e'),
             duration: const Duration(seconds: 2),
           ),
         );
