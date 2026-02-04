@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:aegis/utils/account.dart';
@@ -25,9 +24,10 @@ class WebViewPage extends StatefulWidget {
 
 class _WebViewPageState extends State<WebViewPage> {
   late final WebViewController _controller;
-  bool _isLoading = true;
   String? _currentUrl;
   bool _isFavorite = false;
+  bool _canGoBack = false;
+  bool _canGoForward = false;
 
   @override
   void initState() {
@@ -42,15 +42,27 @@ class _WebViewPageState extends State<WebViewPage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
+          onPageStarted: (String url) async {
+            // Update navigation state
+            final canGoBack = await _controller.canGoBack();
+            final canGoForward = await _controller.canGoForward();
+            if (mounted) {
+              setState(() {
+                _canGoBack = canGoBack;
+                _canGoForward = canGoForward;
+              });
+            }
           },
-          onPageFinished: (String url) {
+          onPageFinished: (String url) async {
             setState(() {
-              _isLoading = false;
               _currentUrl = url;
+            });
+            // Update navigation state
+            final canGoBack = await _controller.canGoBack();
+            final canGoForward = await _controller.canGoForward();
+            setState(() {
+              _canGoBack = canGoBack;
+              _canGoForward = canGoForward;
             });
             _injectNIP07();
             _loadFavoriteStatus();
@@ -754,10 +766,32 @@ class _WebViewPageState extends State<WebViewPage> {
     final canGoBack = await _controller.canGoBack();
     if (canGoBack) {
       await _controller.goBack();
+      // Update navigation state after going back
+      if (mounted) {
+        final newCanGoBack = await _controller.canGoBack();
+        final newCanGoForward = await _controller.canGoForward();
+        setState(() {
+          _canGoBack = newCanGoBack;
+          _canGoForward = newCanGoForward;
+        });
+      }
     } else {
       if (mounted) {
         Navigator.of(context).pop();
       }
+    }
+  }
+
+  Future<void> _handleForwardButton() async {
+    await _controller.goForward();
+    // Update navigation state after going forward
+    if (mounted) {
+      final canGoBack = await _controller.canGoBack();
+      final canGoForward = await _controller.canGoForward();
+      setState(() {
+        _canGoBack = canGoBack;
+        _canGoForward = canGoForward;
+      });
     }
   }
 
@@ -862,107 +896,82 @@ class _WebViewPageState extends State<WebViewPage> {
     }
   }
 
-  Future<void> _copyUrl() async {
-    final url = _currentUrl ?? widget.url;
-    await Clipboard.setData(ClipboardData(text: url));
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link copied to clipboard'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
 
   Future<void> _reload() async {
     await _controller.reload();
   }
 
+  Widget _buildBottomToolbar() {
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 34,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            // Go Back button
+            IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: _canGoBack ? _handleBackButton : null,
+              iconSize: 24,
+              tooltip: 'Go Back',
+            ),
+            // Go Forward button
+            IconButton(
+              icon: Icon(Icons.arrow_forward),
+              onPressed: _canGoForward ? _handleForwardButton : null,
+              iconSize: 24,
+              tooltip: 'Go Forward',
+            ),
+            // Bookmark button
+            IconButton(
+              icon: Icon(_isFavorite ? Icons.star : Icons.star_border),
+              onPressed: _toggleFavorite,
+              iconSize: 24,
+              tooltip: _isFavorite ? 'Unfavorite' : 'Favorite',
+            ),
+            // Reload button
+            IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: _reload,
+              iconSize: 24,
+              tooltip: 'Reload',
+            ),
+            // Exit button
+            IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () => Navigator.of(context).pop(),
+              iconSize: 24,
+              tooltip: 'Exit',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: _isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(widget.title),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _handleBackButton,
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (String value) {
-              switch (value) {
-                case 'favorite':
-                  _toggleFavorite();
-                  break;
-                case 'reload':
-                  _reload();
-                  break;
-                case 'copy':
-                  _copyUrl();
-                  break;
-                case 'exit':
-                  Navigator.of(context).pop();
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'favorite',
-                child: Row(
-                  children: [
-                    Icon(
-                      _isFavorite ? Icons.star : Icons.star_border,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(_isFavorite ? 'Unfavorite' : 'Favorite'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'reload',
-                child: Row(
-                  children: [
-                    Icon(Icons.refresh, size: 20),
-                    SizedBox(width: 12),
-                    Text('Reload'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'copy',
-                child: Row(
-                  children: [
-                    Icon(Icons.copy, size: 20),
-                    SizedBox(width: 12),
-                    Text('Copy Link'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'exit',
-                child: Row(
-                  children: [
-                    Icon(Icons.exit_to_app, size: 20),
-                    SizedBox(width: 12),
-                    Text('Exit'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: WebViewWidget(controller: _controller),
+        top: true,
+        child: Column(
+          children: [
+            Expanded(
+              child: WebViewWidget(controller: _controller),
+            ),
+            _buildBottomToolbar(),
+          ],
+        ),
       ),
     );
   }

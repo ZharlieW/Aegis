@@ -1,0 +1,24 @@
+{
+  "version": "0.1.1",
+  "apps": [
+    {
+      "id": "mynostrspace",
+      "url": "https://mynostrspace.com/",
+      "name": "MyNostrSpace.com",
+      "icon": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mynostrspace.com/&size=256",
+      "description": "Nostr social client",
+      "platforms": ["web"],
+      "metadata": {}
+    },
+    {
+      "id": "nostria",
+      "url": "https://nostria.app/",
+      "name": "Nostria",
+      "icon": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nostria.app/&size=256",
+      "description": "Nostr social client",
+      "platforms": ["web"],
+      "metadata": {}
+    }
+  ]
+}
+

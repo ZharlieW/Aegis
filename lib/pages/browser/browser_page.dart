@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
+import 'package:aegis/utils/napp_update_manager.dart';
 import 'napp_model.dart';
 import 'webview_page.dart';
 
@@ -130,6 +131,9 @@ class _BrowserPageState extends State<BrowserPage> {
         }
       }
       
+      // Check and apply incremental updates
+      await _checkAndApplyIncrementalUpdates();
+      
       // Load all apps from database
       final dbApps = await UserAppDBISAR.getAllFromDB();
       _nappList = dbApps.map((dbApp) => _convertFromDBApp(dbApp)).toList();
@@ -146,6 +150,58 @@ class _BrowserPageState extends State<BrowserPage> {
       if (mounted) {
         _applyFilter();
       }
+    }
+  }
+
+  /// Check and apply incremental updates
+  Future<void> _checkAndApplyIncrementalUpdates() async {
+    try {
+      // Get list of unapplied update files
+      final unappliedUpdates = await NappUpdateManager.getUnappliedUpdates();
+      
+      if (unappliedUpdates.isEmpty) {
+        AegisLogger.info('No incremental updates to apply');
+        return;
+      }
+      
+      AegisLogger.info('Found ${unappliedUpdates.length} unapplied update(s)');
+      
+      // Apply each update file in order
+      for (final updateFile in unappliedUpdates) {
+        try {
+          final version = NappUpdateManager.parseUpdateVersion(updateFile);
+          if (version == null) {
+            AegisLogger.warning('Failed to parse version from update file: $updateFile');
+            continue;
+          }
+          
+          AegisLogger.info('Applying incremental update: $updateFile (version: $version)');
+          
+          // Get apps from update file
+          final apps = await NappUpdateManager.getAppsFromUpdate(updateFile);
+          
+          if (apps.isEmpty) {
+            AegisLogger.warning('Update file $updateFile contains no apps');
+            // Still mark as applied to avoid retrying
+            await NappUpdateManager.markVersionApplied(version);
+            continue;
+          }
+          
+          // Apply the incremental update
+          await UserAppDBISAR.applyIncrementalUpdate(apps);
+          
+          // Mark version as applied
+          await NappUpdateManager.markVersionApplied(version);
+          
+          AegisLogger.info('Successfully applied update $version (${apps.length} app(s))');
+        } catch (e) {
+          AegisLogger.error('Failed to apply update file $updateFile: $e');
+          // Continue with next update even if one fails
+        }
+      }
+    } catch (e) {
+      AegisLogger.error('Failed to check incremental updates: $e');
+      // Don't throw - incremental updates are optional
     }
   }
 

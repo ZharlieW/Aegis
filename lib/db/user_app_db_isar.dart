@@ -213,5 +213,12 @@ class UserAppDBISAR {
       });
     }
   }
+
+  /// Apply incremental update (same logic as importPresetApps, but for incremental updates)
+  /// This method preserves favorite status and existing app data when updating
+  static Future<void> applyIncrementalUpdate(List<Map<String, dynamic>> apps) async {
+    // Reuse importPresetApps logic as it already handles updates correctly
+    await importPresetApps(apps);
+  }
 }
 

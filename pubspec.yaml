@@ -111,6 +111,7 @@ flutter:
     - assets/certs/privatekey.pem
     - lib/assets/preset_apps.json
     - lib/assets/napp_list.json
+    - lib/assets/napp_updates/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
