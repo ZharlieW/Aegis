@@ -751,6 +751,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         onSelectionChanged: (Set<int> newSelection) {
           setState(() {
             _selectedSegment = newSelection.first;
+            // Clear cache when switching to Browser segment to refresh the list
+            if (_selectedSegment == 1) {
+              _nip07ApplicationsFuture = null;
+            }
           });
         },
       ),
@@ -784,6 +788,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           onSelectionChanged: (Set<int> newSelection) {
             setState(() {
               _selectedSegment = newSelection.first;
+              // Clear cache when switching to Browser segment to refresh the list
+              if (_selectedSegment == 1) {
+                _nip07ApplicationsFuture = null;
+              }
             });
           },
         ),
