@@ -412,36 +412,42 @@ class _WebViewPageState extends State<WebViewPage> {
         final eventKind = signedEvent['kind'] as int? ?? -1;
         final eventContent = signedEvent['content'] as String? ?? '';
         
-        // Extract domain from URL for applicationPubkey
-        String? applicationPubkey;
-        try {
-          final uri = Uri.parse(widget.url);
-          applicationPubkey = uri.host.isNotEmpty ? uri.host : widget.url;
-        } catch (_) {
-          applicationPubkey = widget.url;
+        // Skip recording kind 22242 (NIP-42 Client Authentication)
+        // This should be handled by remote signer (NIP-46), not NIP-07
+        if (eventKind == 22242) {
+          AegisLogger.info('⚠️ Skipped recording kind 22242 event via NIP-07 (should use remote signer/NIP-46)');
+        } else {
+          // Extract domain from URL for applicationPubkey
+          String? applicationPubkey;
+          try {
+            final uri = Uri.parse(widget.url);
+            applicationPubkey = uri.host.isNotEmpty ? uri.host : widget.url;
+          } catch (_) {
+            applicationPubkey = widget.url;
+          }
+          
+          // Create metadata with connection_type, url, and title
+          final metadata = json.encode({
+            'connection_type': 'nip07',
+            'url': widget.url,
+            'title': widget.title,
+          });
+          
+          // Record the signed event
+          await SignedEventManager.sharedInstance.recordSignedEvent(
+            eventId: eventId,
+            eventKind: eventKind,
+            eventContent: eventContent.isNotEmpty && eventContent.length < 100
+                ? eventContent
+                : 'Signed Event (Kind $eventKind)',
+            applicationName: widget.title,
+            applicationPubkey: applicationPubkey,
+            status: 1,
+            metadata: metadata,
+          );
+          
+          AegisLogger.info('✅ Recorded NIP-07 signed event: $eventId');
         }
-        
-        // Create metadata with connection_type, url, and title
-        final metadata = json.encode({
-          'connection_type': 'nip07',
-          'url': widget.url,
-          'title': widget.title,
-        });
-        
-        // Record the signed event
-        await SignedEventManager.sharedInstance.recordSignedEvent(
-          eventId: eventId,
-          eventKind: eventKind,
-          eventContent: eventContent.isNotEmpty && eventContent.length < 100
-              ? eventContent
-              : 'Signed Event (Kind $eventKind)',
-          applicationName: widget.title,
-          applicationPubkey: applicationPubkey,
-          status: 1,
-          metadata: metadata,
-        );
-        
-        AegisLogger.info('✅ Recorded NIP-07 signed event: $eventId');
       } catch (e) {
         AegisLogger.error('❌ Failed to record NIP-07 signed event: $e');
         // Don't fail the signing if recording fails
@@ -481,6 +487,43 @@ class _WebViewPageState extends State<WebViewPage> {
         privateKey: privateKey,
       );
 
+      // Record the NIP-04 encryption event for NIP-07
+      try {
+        // Extract domain from URL for applicationPubkey
+        String? applicationPubkey;
+        try {
+          final uri = Uri.parse(widget.url);
+          applicationPubkey = uri.host.isNotEmpty ? uri.host : widget.url;
+        } catch (_) {
+          applicationPubkey = widget.url;
+        }
+        
+        // Create metadata with connection_type, url, and title
+        final metadata = json.encode({
+          'connection_type': 'nip07',
+          'url': widget.url,
+          'title': widget.title,
+          'operation': 'nip04_encrypt',
+          'target_pubkey': publicKey,
+        });
+        
+        // Record the encryption event
+        await SignedEventManager.sharedInstance.recordSignedEvent(
+          eventId: 'nip04_encrypt_${DateTime.now().millisecondsSinceEpoch}',
+          eventKind: 4, // Kind 4 for encrypted direct message
+          eventContent: 'NIP-04 Encrypted Data',
+          applicationName: widget.title,
+          applicationPubkey: applicationPubkey,
+          status: 1,
+          metadata: metadata,
+        );
+        
+        AegisLogger.info('✅ Recorded NIP-07 NIP-04 encryption event');
+      } catch (e) {
+        AegisLogger.error('❌ Failed to record NIP-07 NIP-04 encryption event: $e');
+        // Don't fail the encryption if recording fails
+      }
+
       return {
         'id': id,
         'result': encrypted,
@@ -514,6 +557,43 @@ class _WebViewPageState extends State<WebViewPage> {
         publicKey: publicKey,
         privateKey: privateKey,
       );
+
+      // Record the NIP-04 decryption event for NIP-07
+      try {
+        // Extract domain from URL for applicationPubkey
+        String? applicationPubkey;
+        try {
+          final uri = Uri.parse(widget.url);
+          applicationPubkey = uri.host.isNotEmpty ? uri.host : widget.url;
+        } catch (_) {
+          applicationPubkey = widget.url;
+        }
+        
+        // Create metadata with connection_type, url, and title
+        final metadata = json.encode({
+          'connection_type': 'nip07',
+          'url': widget.url,
+          'title': widget.title,
+          'operation': 'nip04_decrypt',
+          'target_pubkey': publicKey,
+        });
+        
+        // Record the decryption event
+        await SignedEventManager.sharedInstance.recordSignedEvent(
+          eventId: 'nip04_decrypt_${DateTime.now().millisecondsSinceEpoch}',
+          eventKind: 4, // Kind 4 for encrypted direct message
+          eventContent: 'NIP-04 Decrypted Data',
+          applicationName: widget.title,
+          applicationPubkey: applicationPubkey,
+          status: 1,
+          metadata: metadata,
+        );
+        
+        AegisLogger.info('✅ Recorded NIP-07 NIP-04 decryption event');
+      } catch (e) {
+        AegisLogger.error('❌ Failed to record NIP-07 NIP-04 decryption event: $e');
+        // Don't fail the decryption if recording fails
+      }
 
       return {
         'id': id,
@@ -549,6 +629,43 @@ class _WebViewPageState extends State<WebViewPage> {
         privateKey: privateKey,
       );
 
+      // Record the NIP-44 encryption event for NIP-07
+      try {
+        // Extract domain from URL for applicationPubkey
+        String? applicationPubkey;
+        try {
+          final uri = Uri.parse(widget.url);
+          applicationPubkey = uri.host.isNotEmpty ? uri.host : widget.url;
+        } catch (_) {
+          applicationPubkey = widget.url;
+        }
+        
+        // Create metadata with connection_type, url, and title
+        final metadata = json.encode({
+          'connection_type': 'nip07',
+          'url': widget.url,
+          'title': widget.title,
+          'operation': 'nip44_encrypt',
+          'target_pubkey': publicKey,
+        });
+        
+        // Record the encryption event
+        await SignedEventManager.sharedInstance.recordSignedEvent(
+          eventId: 'nip44_encrypt_${DateTime.now().millisecondsSinceEpoch}',
+          eventKind: 4, // Kind 4 for encrypted direct message
+          eventContent: 'NIP-44 Encrypted Data',
+          applicationName: widget.title,
+          applicationPubkey: applicationPubkey,
+          status: 1,
+          metadata: metadata,
+        );
+        
+        AegisLogger.info('✅ Recorded NIP-07 NIP-44 encryption event');
+      } catch (e) {
+        AegisLogger.error('❌ Failed to record NIP-07 NIP-44 encryption event: $e');
+        // Don't fail the encryption if recording fails
+      }
+
       return {
         'id': id,
         'result': encrypted,
@@ -582,6 +699,43 @@ class _WebViewPageState extends State<WebViewPage> {
         publicKey: publicKey,
         privateKey: privateKey,
       );
+
+      // Record the NIP-44 decryption event for NIP-07
+      try {
+        // Extract domain from URL for applicationPubkey
+        String? applicationPubkey;
+        try {
+          final uri = Uri.parse(widget.url);
+          applicationPubkey = uri.host.isNotEmpty ? uri.host : widget.url;
+        } catch (_) {
+          applicationPubkey = widget.url;
+        }
+        
+        // Create metadata with connection_type, url, and title
+        final metadata = json.encode({
+          'connection_type': 'nip07',
+          'url': widget.url,
+          'title': widget.title,
+          'operation': 'nip44_decrypt',
+          'target_pubkey': publicKey,
+        });
+        
+        // Record the decryption event
+        await SignedEventManager.sharedInstance.recordSignedEvent(
+          eventId: 'nip44_decrypt_${DateTime.now().millisecondsSinceEpoch}',
+          eventKind: 4, // Kind 4 for encrypted direct message
+          eventContent: 'NIP-44 Decrypted Data',
+          applicationName: widget.title,
+          applicationPubkey: applicationPubkey,
+          status: 1,
+          metadata: metadata,
+        );
+        
+        AegisLogger.info('✅ Recorded NIP-07 NIP-44 decryption event');
+      } catch (e) {
+        AegisLogger.error('❌ Failed to record NIP-07 NIP-44 decryption event: $e');
+        // Don't fail the decryption if recording fails
+      }
 
       return {
         'id': id,
