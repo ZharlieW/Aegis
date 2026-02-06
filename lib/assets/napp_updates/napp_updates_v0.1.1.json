@@ -4,9 +4,9 @@
     {
       "id": "mynostrspace",
       "url": "https://mynostrspace.com/",
-      "name": "MyNostrSpace.com",
-      "icon": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mynostrspace.com/&size=256",
-      "description": "Nostr social client",
+      "name": "MyNostrSpace",
+      "icon": "https://mynostrspace.com/mynostrspace_logo.png",
+      "description": "Nostr like it's 2009",
       "platforms": ["web"],
       "metadata": {}
     },
