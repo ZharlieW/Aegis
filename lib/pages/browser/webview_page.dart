@@ -43,6 +43,7 @@ class _WebViewPageState extends State<WebViewPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) async {
+            if (!mounted) return;
             // Update navigation state
             final canGoBack = await _controller.canGoBack();
             final canGoForward = await _controller.canGoForward();
@@ -54,17 +55,22 @@ class _WebViewPageState extends State<WebViewPage> {
             }
           },
           onPageFinished: (String url) async {
+            if (!mounted) return;
             setState(() {
               _currentUrl = url;
             });
             // Update navigation state
+            if (!mounted) return;
             final canGoBack = await _controller.canGoBack();
             final canGoForward = await _controller.canGoForward();
+            if (!mounted) return;
             setState(() {
               _canGoBack = canGoBack;
               _canGoForward = canGoForward;
             });
+            if (!mounted) return;
             _injectNIP07();
+            if (!mounted) return;
             _loadFavoriteStatus();
           },
         ),
@@ -79,6 +85,7 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   Future<void> _injectNIP07() async {
+    if (!mounted) return;
     try {
       // Get current user's public key
       final account = Account.sharedInstance;
@@ -251,6 +258,7 @@ class _WebViewPageState extends State<WebViewPage> {
         })();
       ''';
 
+      if (!mounted) return;
       await _controller.runJavaScript(nip07Code);
       AegisLogger.info('✅ NIP-07 JavaScript injected');
     } catch (e) {
@@ -259,6 +267,7 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   Future<void> _handleNostrMessage(String message) async {
+    if (!mounted) return;
     try {
       final data = json.decode(message);
       final method = data['method'] as String;
@@ -294,10 +303,12 @@ class _WebViewPageState extends State<WebViewPage> {
       }
 
       // Send response back to JavaScript
+      if (!mounted) return;
       final responseJson = json.encode(result);
       await _controller.runJavaScript('window.handleNostrResponse($responseJson);');
     } catch (e) {
       AegisLogger.error('❌ Error handling Nostr message: $e');
+      if (!mounted) return;
       try {
         final errorData = json.decode(message);
         final errorId = errorData['id'] as int? ?? 0;
@@ -305,9 +316,11 @@ class _WebViewPageState extends State<WebViewPage> {
           'id': errorId,
           'error': e.toString(),
         });
+        if (!mounted) return;
         await _controller.runJavaScript('window.handleNostrResponse($errorResponse);');
       } catch (_) {
         // If message is not valid JSON, send a generic error
+        if (!mounted) return;
         final errorResponse = json.encode({
           'id': 0,
           'error': e.toString(),
@@ -763,18 +776,20 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   Future<void> _handleBackButton() async {
+    if (!mounted) return;
     final canGoBack = await _controller.canGoBack();
     if (canGoBack) {
+      if (!mounted) return;
       await _controller.goBack();
       // Update navigation state after going back
-      if (mounted) {
-        final newCanGoBack = await _controller.canGoBack();
-        final newCanGoForward = await _controller.canGoForward();
-        setState(() {
-          _canGoBack = newCanGoBack;
-          _canGoForward = newCanGoForward;
-        });
-      }
+      if (!mounted) return;
+      final newCanGoBack = await _controller.canGoBack();
+      final newCanGoForward = await _controller.canGoForward();
+      if (!mounted) return;
+      setState(() {
+        _canGoBack = newCanGoBack;
+        _canGoForward = newCanGoForward;
+      });
     } else {
       if (mounted) {
         Navigator.of(context).pop();
@@ -783,16 +798,17 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   Future<void> _handleForwardButton() async {
+    if (!mounted) return;
     await _controller.goForward();
     // Update navigation state after going forward
-    if (mounted) {
-      final canGoBack = await _controller.canGoBack();
-      final canGoForward = await _controller.canGoForward();
-      setState(() {
-        _canGoBack = canGoBack;
-        _canGoForward = canGoForward;
-      });
-    }
+    if (!mounted) return;
+    final canGoBack = await _controller.canGoBack();
+    final canGoForward = await _controller.canGoForward();
+    if (!mounted) return;
+    setState(() {
+      _canGoBack = canGoBack;
+      _canGoForward = canGoForward;
+    });
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -898,6 +914,7 @@ class _WebViewPageState extends State<WebViewPage> {
 
 
   Future<void> _reload() async {
+    if (!mounted) return;
     await _controller.reload();
   }
 
@@ -957,6 +974,13 @@ class _WebViewPageState extends State<WebViewPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // WebViewController will be automatically disposed by Flutter
+    // but we ensure no callbacks are executed after dispose
+    super.dispose();
   }
 
   @override
