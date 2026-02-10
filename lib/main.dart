@@ -12,9 +12,12 @@ import 'package:aegis/nostr/nips/nip55/intent_handler.dart';
 import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/content_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nostr_rust/src/rust/frb_generated.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/utils/locale_manager.dart';
 import 'pages/home/splash_screen.dart';
 
 void main() async {
@@ -111,6 +114,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       await LocalStorage.init();
       await ThemeManager.init();
+      await LocaleManager.init();
       await Account.sharedInstance.autoLogin();
       
       
@@ -158,26 +162,39 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: AegisNavigator.navigatorKey,
-      title: '',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF615289),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF615289),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-      themeMode: ThemeManager.themeNotifier.value,
-      builder: EasyLoading.init(),
-      home: SplashScreen(initializationFuture: _initializationFuture),
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: LocaleManager.localeNotifier,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          navigatorKey: AegisNavigator.navigatorKey,
+          title: '',
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: locale,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF615289),
+              brightness: Brightness.light,
+            ),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF615289),
+              brightness: Brightness.dark,
+            ),
+            useMaterial3: true,
+          ),
+          themeMode: ThemeManager.themeNotifier.value,
+          builder: EasyLoading.init(),
+          home: SplashScreen(initializationFuture: _initializationFuture),
+        );
+      },
     );
   }
 

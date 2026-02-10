@@ -1,0 +1,243 @@
+{
+  "@@locale": "zh",
+  "appTitle": "Aegis",
+  "confirm": "确认",
+  "cancel": "取消",
+  "settings": "设置",
+  "logout": "退出登录",
+  "login": "登录",
+  "usePrivateKey": "使用私钥登录",
+  "setupAegisWithNsec": "使用 Nostr 私钥配置 Aegis，支持 nsec、ncryptsec 和 hex 格式。",
+  "privateKey": "私钥",
+  "privateKeyHint": "nsec / ncryptsec / hex 密钥",
+  "password": "密码",
+  "passwordHint": "输入密码以解密 ncryptsec",
+  "contentCannotBeEmpty": "内容不能为空！",
+  "passwordRequiredForNcryptsec": "ncryptsec 需要输入密码！",
+  "decryptNcryptsecFailed": "解密 ncryptsec 失败，请检查密码。",
+  "invalidPrivateKeyFormat": "私钥格式无效！",
+  "loginSuccess": "登录成功！",
+  "loginFailed": "登录失败：{message}",
+  "@loginFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "typeConfirmToProceed": "输入「confirm」以继续",
+  "logoutConfirm": "确定要退出登录吗？",
+  "notLoggedIn": "未登录",
+  "language": "语言",
+  "english": "English",
+  "simplifiedChinese": "简体中文",
+  "addAccount": "添加账号",
+  "updateSuccessful": "更新成功！",
+  "switchAccount": "切换账号",
+  "switchAccountConfirm": "确定要切换账号吗？",
+  "switchSuccessfully": "切换成功！",
+  "renameAccount": "重命名账号",
+  "accountName": "账号名称",
+  "enterNewName": "输入新名称",
+  "accounts": "账号",
+  "localRelay": "本地 Relay",
+  "remote": "远程",
+  "browser": "浏览器",
+  "theme": "主题",
+  "github": "Github",
+  "version": "版本",
+  "appSubtitle": "Aegis - Nostr 签名器",
+  "darkMode": "深色模式",
+  "lightMode": "浅色模式",
+  "systemDefault": "跟随系统",
+  "switchedTo": "已切换至 {mode}",
+  "@switchedTo": {
+    "placeholders": {
+      "mode": {"type": "String"}
+    }
+  },
+  "home": "首页",
+  "waitingForRelayStart": "正在等待 Relay 启动...",
+  "connected": "已连接",
+  "disconnected": "未连接",
+  "errorLoadingNip07Applications": "加载 NIP-07 应用失败：{error}",
+  "@errorLoadingNip07Applications": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "noNip07ApplicationsHint": "暂无 NIP-07 应用。\n\n使用浏览器访问 Nostr 应用！",
+  "unknown": "未知",
+  "active": "活跃",
+  "congratulationsEmptyState": "恭喜！\n\n现在可以开始使用支持 Aegis 的应用了！",
+  "localRelayPortInUse": "本地 Relay 使用端口 {port}，但该端口似乎已被其他应用占用。请关闭冲突应用后重试。",
+  "@localRelayPortInUse": {
+    "placeholders": {
+      "port": {"type": "String"}
+    }
+  },
+  "nip46Started": "NIP-46 签名器已启动！",
+  "nip46FailedToStart": "启动失败。",
+  "retry": "重试",
+  "clear": "清除",
+  "clearDatabase": "清除数据库",
+  "clearDatabaseConfirm": "将删除所有 Relay 数据，若 Relay 正在运行则会重启。此操作不可撤销。",
+  "importDatabase": "导入数据库",
+  "importDatabaseHint": "输入要导入的数据库目录路径。导入前会备份现有数据库。",
+  "databaseDirectoryPath": "数据库目录路径",
+  "import": "导入",
+  "export": "导出",
+  "restart": "重启",
+  "restartRelay": "重启 Relay",
+  "restartRelayConfirm": "确定要重启 Relay 吗？Relay 将暂时停止后重新启动。",
+  "relayRestartedSuccess": "Relay 已成功重启",
+  "relayRestartFailed": "重启 Relay 失败：{message}",
+  "@relayRestartFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "databaseClearedSuccess": "数据库已成功清除",
+  "databaseClearFailed": "清除数据库失败",
+  "errorWithMessage": "错误：{message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "exportDatabase": "导出数据库",
+  "exportDatabaseHint": "将把 Relay 数据库导出为 ZIP 文件，导出可能需要片刻。",
+  "databaseExportedTo": "数据库已导出至：{path}",
+  "@databaseExportedTo": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "databaseExportedZip": "数据库已导出为 ZIP 文件：{path}",
+  "@databaseExportedZip": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "databaseExportFailed": "导出数据库失败",
+  "importDatabaseReplaceHint": "将用导入的备份替换当前数据库。导入前会备份现有数据库。此操作不可撤销。",
+  "selectDatabaseBackupFile": "选择数据库备份文件（ZIP）或目录",
+  "selectDatabaseBackupDir": "选择数据库备份目录",
+  "fileOrDirNotExist": "所选文件或目录不存在",
+  "databaseImportedSuccess": "数据库已成功导入",
+  "databaseImportFailed": "导入数据库失败",
+  "status": "状态",
+  "address": "地址",
+  "protocol": "协议",
+  "connections": "连接数",
+  "running": "运行中",
+  "stopped": "已停止",
+  "addressCopiedToClipboard": "地址已复制到剪贴板",
+  "exportData": "导出数据",
+  "importData": "导入数据",
+  "systemLogs": "系统日志",
+  "clearAllRelayData": "清除所有 Relay 数据",
+  "noLogsAvailable": "暂无日志",
+  "passwordRequired": "请输入密码",
+  "encryptionFailed": "加密失败：{message}",
+  "@encryptionFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "encryptedKeyCopiedToClipboard": "加密私钥已复制到剪贴板",
+  "accountBackup": "账号备份",
+  "publicAccountId": "公开账号 ID",
+  "accountPrivateKey": "账号私钥",
+  "show": "显示",
+  "generate": "生成",
+  "enterEncryptionPassword": "输入加密密码",
+  "privateKeyEncryption": "私钥加密",
+  "encryptPrivateKeyHint": "加密私钥以提高安全性。将使用密码对私钥进行加密。",
+  "ncryptsecHint": "加密后的密钥将以「ncryptsec1」开头，无密码无法使用。",
+  "encryptAndCopyPrivateKey": "加密并复制私钥",
+  "privateKeyEncryptedSuccess": "私钥加密成功！",
+  "encryptedKeyNcryptsec": "加密密钥（ncryptsec）：",
+  "createNewNostrAccount": "创建新的 Nostr 账号",
+  "accountReadyPublicKeyHint": "您的 Nostr 账号已就绪！这是您的 nostr 公钥：",
+  "nostrPubkey": "Nostr 公钥",
+  "create": "创建",
+  "createSuccess": "创建成功！",
+  "application": "应用",
+  "createApplication": "创建应用",
+  "addNewApplication": "添加新应用",
+  "addNsecbunkerManually": "手动添加 nsecbunker",
+  "loginUsingUrlScheme": "通过 URL Scheme 登录",
+  "addApplicationMethodsHint": "您可以选择以下任一方式与 Aegis 连接！",
+  "urlSchemeLoginHint": "请使用支持 Aegis URL  scheme 的应用打开以登录",
+  "name": "名称",
+  "applicationInfo": "应用信息",
+  "activities": "动态",
+  "clientPubkey": "客户端公钥",
+  "remove": "移除",
+  "removeAppConfirm": "确定要移除此应用的所有权限吗？",
+  "removeSuccess": "移除成功",
+  "nameCannotBeEmpty": "名称不能为空",
+  "nameTooLong": "名称过长。",
+  "updateSuccess": "更新成功",
+  "editConfiguration": "编辑配置",
+  "update": "更新",
+  "search": "搜索...",
+  "enterCustomName": "输入自定义名称",
+  "selectApplication": "选择应用",
+  "addWebApp": "添加网页应用",
+  "urlHint": "https://example.com",
+  "appNameHint": "我的应用",
+  "add": "添加",
+  "searchNostrApps": "搜索 Nostr 应用...",
+  "invalidUrlHint": "无效的 URL，请输入有效的 HTTP 或 HTTPS 地址。",
+  "appAlreadyInList": "该应用已在列表中。",
+  "appAdded": "已添加 {name}",
+  "@appAdded": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "appAddFailed": "添加应用失败：{error}",
+  "@appAddFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "deleteApp": "删除应用",
+  "deleteAppConfirm": "确定要删除「{name}」吗？",
+  "@deleteAppConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "delete": "删除",
+  "appDeleted": "已删除 {name}",
+  "@appDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "appDeleteFailed": "删除应用失败：{error}",
+  "@appDeleteFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "copiedToClipboard": "已复制到剪贴板",
+  "eventDetails": "事件详情",
+  "eventDetailsCopiedToClipboard": "事件详情已复制到剪贴板",
+  "rawMetadataCopiedToClipboard": "原始元数据已复制到剪贴板",
+  "permissionRequest": "权限请求",
+  "permissionRequestContent": "此应用正在请求访问您的 Nostr 账号的权限",
+  "grantPermissions": "授予权限",
+  "reject": "拒绝",
+  "fullAccessGranted": "已授予完整访问权限",
+  "fullAccessHint": "此应用将拥有您 Nostr 账号的完整访问权限，包括：",
+  "permissionAccessPubkey": "访问您的 Nostr 公钥",
+  "permissionSignEvents": "签名 Nostr 事件",
+  "permissionEncryptDecrypt": "加密与解密事件（NIP-04 与 NIP-44）",
+  "tips": "提示",
+  "schemeLoginFirst": "无法解析链接，请先登录。",
+  "newConnectionRequest": "新连接请求",
+  "newConnectionNoSlotHint": "有新应用尝试连接，但没有可用的应用槽位。请先创建新应用。",
+  "copiedSuccessfully": "复制成功"
+}

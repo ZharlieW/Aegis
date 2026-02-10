@@ -1,0 +1,243 @@
+{
+  "@@locale": "en",
+  "appTitle": "Aegis",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "settings": "Settings",
+  "logout": "Logout",
+  "login": "Login",
+  "usePrivateKey": "Use your private key",
+  "setupAegisWithNsec": "Set up Aegis with your Nostr private key — supports nsec, ncryptsec, and hex formats.",
+  "privateKey": "Private Key",
+  "privateKeyHint": "nsec / ncryptsec / hex key",
+  "password": "Password",
+  "passwordHint": "Enter password to decrypt ncryptsec",
+  "contentCannotBeEmpty": "The content cannot be empty!",
+  "passwordRequiredForNcryptsec": "Password is required for ncryptsec!",
+  "decryptNcryptsecFailed": "Failed to decrypt ncryptsec. Please check your password.",
+  "invalidPrivateKeyFormat": "Invalid private key format!",
+  "loginSuccess": "Login successful!",
+  "loginFailed": "Login failed: {message}",
+  "@loginFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "typeConfirmToProceed": "Type \"confirm\" to proceed",
+  "logoutConfirm": "Are you sure you want to log out?",
+  "notLoggedIn": "Not logged in",
+  "language": "Language",
+  "english": "English",
+  "simplifiedChinese": "简体中文",
+  "addAccount": "Add Account",
+  "updateSuccessful": "Update successful!",
+  "switchAccount": "Switch account",
+  "switchAccountConfirm": "Are you sure you want to switch accounts?",
+  "switchSuccessfully": "Switch successfully!",
+  "renameAccount": "Rename Account",
+  "accountName": "Account Name",
+  "enterNewName": "Enter new name",
+  "accounts": "Accounts",
+  "localRelay": "Local Relay",
+  "remote": "Remote",
+  "browser": "Browser",
+  "theme": "Theme",
+  "github": "Github",
+  "version": "Version",
+  "appSubtitle": "Aegis - Nostr Signer",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "systemDefault": "System Default",
+  "switchedTo": "Switched to {mode}",
+  "@switchedTo": {
+    "placeholders": {
+      "mode": {"type": "String"}
+    }
+  },
+  "home": "Home",
+  "waitingForRelayStart": "Waiting for relay to start...",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "errorLoadingNip07Applications": "Error loading NIP-07 applications: {error}",
+  "@errorLoadingNip07Applications": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "noNip07ApplicationsHint": "No NIP-07 applications yet.\n\nUse Browser to access Nostr apps!",
+  "unknown": "Unknown",
+  "active": "Active",
+  "congratulationsEmptyState": "Congratulations!\n\nNow you can start using apps that support Aegis!",
+  "localRelayPortInUse": "The local relay is set to use port {port}, but it appears another app is already using this port. Please close the conflicting app and try again.",
+  "@localRelayPortInUse": {
+    "placeholders": {
+      "port": {"type": "String"}
+    }
+  },
+  "nip46Started": "NIP-46 Signer started!",
+  "nip46FailedToStart": "Failed to start.",
+  "retry": "Retry",
+  "clear": "Clear",
+  "clearDatabase": "Clear Database",
+  "clearDatabaseConfirm": "This will delete all relay data and restart the relay if it is running. This action cannot be undone.",
+  "importDatabase": "Import Database",
+  "importDatabaseHint": "Enter the path to the database directory to import. The existing database will be backed up before import.",
+  "databaseDirectoryPath": "Database directory path",
+  "import": "Import",
+  "export": "Export",
+  "restart": "Restart",
+  "restartRelay": "Restart Relay",
+  "restartRelayConfirm": "Are you sure you want to restart the relay? The relay will be temporarily stopped and then restarted.",
+  "relayRestartedSuccess": "Relay restarted successfully",
+  "relayRestartFailed": "Failed to restart relay: {message}",
+  "@relayRestartFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "databaseClearedSuccess": "Database cleared successfully",
+  "databaseClearFailed": "Failed to clear database",
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "exportDatabase": "Export Database",
+  "exportDatabaseHint": "This will export the relay database as a ZIP file. The export may take a few moments.",
+  "databaseExportedTo": "Database exported to: {path}",
+  "@databaseExportedTo": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "databaseExportedZip": "Database exported as ZIP file: {path}",
+  "@databaseExportedZip": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "databaseExportFailed": "Failed to export database",
+  "importDatabaseReplaceHint": "This will replace the current database with the imported backup. The existing database will be backed up before import. This action cannot be undone.",
+  "selectDatabaseBackupFile": "Select database backup file (ZIP) or directory",
+  "selectDatabaseBackupDir": "Select database backup directory",
+  "fileOrDirNotExist": "Selected file or directory does not exist",
+  "databaseImportedSuccess": "Database imported successfully",
+  "databaseImportFailed": "Failed to import database",
+  "status": "Status",
+  "address": "Address",
+  "protocol": "Protocol",
+  "connections": "Connections",
+  "running": "Running",
+  "stopped": "Stopped",
+  "addressCopiedToClipboard": "Address copied to clipboard",
+  "exportData": "Export Data",
+  "importData": "Import Data",
+  "systemLogs": "System Logs",
+  "clearAllRelayData": "Clear All Relay Data",
+  "noLogsAvailable": "No logs available",
+  "passwordRequired": "Password is required",
+  "encryptionFailed": "Encryption failed: {message}",
+  "@encryptionFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "encryptedKeyCopiedToClipboard": "Encrypted private key copied to clipboard",
+  "accountBackup": "Account backup",
+  "publicAccountId": "Public account ID",
+  "accountPrivateKey": "Account private key",
+  "show": "Show",
+  "generate": "Generate",
+  "enterEncryptionPassword": "Enter encryption password",
+  "privateKeyEncryption": "Private Key Encryption",
+  "encryptPrivateKeyHint": "Encrypt your private key to enhance security. The key will be encrypted using a password.",
+  "ncryptsecHint": "The encrypted key will start with \"ncryptsec1\" and cannot be used without the password.",
+  "encryptAndCopyPrivateKey": "Encrypt and Copy Private Key",
+  "privateKeyEncryptedSuccess": "Private key encrypted successfully!",
+  "encryptedKeyNcryptsec": "Encrypted key (ncryptsec):",
+  "createNewNostrAccount": "Create a new Nostr account",
+  "accountReadyPublicKeyHint": "Your Nostr account is ready! This is your nostr public key:",
+  "nostrPubkey": "Nostr Pubkey",
+  "create": "Create",
+  "createSuccess": "Create successfully!",
+  "application": "Application",
+  "createApplication": "Create Application",
+  "addNewApplication": "Add a new application",
+  "addNsecbunkerManually": "Add a nsecbunker manually",
+  "loginUsingUrlScheme": "Login using URL Scheme",
+  "addApplicationMethodsHint": "You can choose any of these methods to connect with Aegis!",
+  "urlSchemeLoginHint": "Open with an app that supports Aegis URL scheme to log in",
+  "name": "Name",
+  "applicationInfo": "Application Info",
+  "activities": "Activities",
+  "clientPubkey": "Client pubkey",
+  "remove": "Remove",
+  "removeAppConfirm": "Are you sure you want to remove all permissions from this application?",
+  "removeSuccess": "Remove success",
+  "nameCannotBeEmpty": "The name cannot be empty",
+  "nameTooLong": "The name is too long.",
+  "updateSuccess": "Update success",
+  "editConfiguration": "Edit configuration",
+  "update": "Update",
+  "search": "Search...",
+  "enterCustomName": "Enter a custom name",
+  "selectApplication": "Select an application",
+  "addWebApp": "Add Web App",
+  "urlHint": "https://example.com",
+  "appNameHint": "My App",
+  "add": "Add",
+  "searchNostrApps": "Search Nostr Apps...",
+  "invalidUrlHint": "Invalid URL. Please enter a valid HTTP or HTTPS URL.",
+  "appAlreadyInList": "This app is already in the list.",
+  "appAdded": "Added {name}",
+  "@appAdded": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "appAddFailed": "Failed to add app: {error}",
+  "@appAddFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "deleteApp": "Delete App",
+  "deleteAppConfirm": "Are you sure you want to delete \"{name}\"?",
+  "@deleteAppConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "delete": "Delete",
+  "appDeleted": "Deleted {name}",
+  "@appDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "appDeleteFailed": "Failed to delete app: {error}",
+  "@appDeleteFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "copiedToClipboard": "Copied to clipboard",
+  "eventDetails": "Event Details",
+  "eventDetailsCopiedToClipboard": "Event details copied to clipboard",
+  "rawMetadataCopiedToClipboard": "Raw metadata copied to clipboard",
+  "permissionRequest": "Permission Request",
+  "permissionRequestContent": "This application is requesting permissions to access your Nostr account",
+  "grantPermissions": "Grant Permissions",
+  "reject": "Reject",
+  "fullAccessGranted": "Full Access Granted",
+  "fullAccessHint": "This application will have full access to your Nostr account, including:",
+  "permissionAccessPubkey": "Access your Nostr public key",
+  "permissionSignEvents": "Sign Nostr events",
+  "permissionEncryptDecrypt": "Encrypt and decrypt events (NIP-04 & NIP-44)",
+  "tips": "Tips",
+  "schemeLoginFirst": "Unable to resolve scheme, please login first.",
+  "newConnectionRequest": "New Connection Request",
+  "newConnectionNoSlotHint": "A new application is trying to connect, but no unused application is available. Please create a new application first.",
+  "copiedSuccessfully": "Copied successfully"
+}
