@@ -83,6 +83,96 @@ class AppLocalizationsEn extends AppLocalizations {
   String get simplifiedChinese => '简体中文';
 
   @override
+  String get japanese => '日本語';
+
+  @override
+  String get korean => '한국어';
+
+  @override
+  String get spanish => 'Español';
+
+  @override
+  String get french => 'Français';
+
+  @override
+  String get german => 'Deutsch';
+
+  @override
+  String get portuguese => 'Português';
+
+  @override
+  String get russian => 'Русский';
+
+  @override
+  String get arabic => 'العربية';
+
+  @override
+  String get azerbaijani => 'Azərbaycan';
+
+  @override
+  String get bulgarian => 'Български';
+
+  @override
+  String get catalan => 'Català';
+
+  @override
+  String get czech => 'Čeština';
+
+  @override
+  String get danish => 'Dansk';
+
+  @override
+  String get greek => 'Ελληνικά';
+
+  @override
+  String get estonian => 'Eesti';
+
+  @override
+  String get farsi => 'فارسی';
+
+  @override
+  String get hindi => 'हिन्दी';
+
+  @override
+  String get hungarian => 'Magyar';
+
+  @override
+  String get indonesian => 'Bahasa Indonesia';
+
+  @override
+  String get italian => 'Italiano';
+
+  @override
+  String get latvian => 'Latviešu';
+
+  @override
+  String get dutch => 'Nederlands';
+
+  @override
+  String get polish => 'Polski';
+
+  @override
+  String get swedish => 'Svenska';
+
+  @override
+  String get thai => 'ไทย';
+
+  @override
+  String get turkish => 'Türkçe';
+
+  @override
+  String get ukrainian => 'Українська';
+
+  @override
+  String get urdu => 'اردو';
+
+  @override
+  String get vietnamese => 'Tiếng Việt';
+
+  @override
+  String get traditionalChinese => '繁體中文';
+
+  @override
   String get addAccount => 'Add Account';
 
   @override
@@ -545,4 +635,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copiedSuccessfully => 'Copied successfully';
+
+  @override
+  String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
+
+  @override
+  String get relayStatsSize => 'SIZE';
+
+  @override
+  String get relayStatsEvents => 'EVENTS';
+
+  @override
+  String get relayStatsUptime => 'UPTIME';
+
+  @override
+  String get shareRelayBackupSubject => 'Nostr Relay Database Backup';
+
+  @override
+  String get shareRelayBackupIosText => 'Nostr Relay Database Backup\n\nTap \"Save to Files\" to save to Files app.';
+
+  @override
+  String get shareRelayBackupIosSnackbar => 'Database exported as ZIP file. Use \"Save to Files\" in the share sheet to save.';
+
+  @override
+  String databaseExportedToIosHint(String path) {
+    return 'Database exported to: $path\n\nYou can access it via Files app > On My iPhone > Aegis';
+  }
+
+  @override
+  String get shareRelayBackupAndroidText => 'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.';
+
+  @override
+  String get shareRelayBackupAndroidSnackbar => 'Database exported as ZIP file. Choose where to save in the share sheet.';
+
+  @override
+  String get protocolWs => 'WS';
+
+  @override
+  String get protocolWss => 'WSS';
+
+  @override
+  String get confirmLiteral => 'confirm';
+
+  @override
+  String get errorCannotDetermineHomeDir => 'Cannot determine home directory';
+
+  @override
+  String get errorZipFileNotFound => 'ZIP file not found';
+
+  @override
+  String get unitBytes => 'B';
+
+  @override
+  String get unitKB => 'KB';
+
+  @override
+  String get unitMB => 'MB';
+
+  @override
+  String get unitGB => 'GB';
+
+  @override
+  String get durationZero => '0s';
+
+  @override
+  String get durationDayShort => 'd';
+
+  @override
+  String get durationHourShort => 'h';
+
+  @override
+  String get durationMinuteShort => 'm';
+
+  @override
+  String get durationSecondShort => 's';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get pleaseSelectApplication => 'Please select an application';
+
+  @override
+  String get orEnterCustomName => 'Or enter a custom name';
+
+  @override
+  String get continueButton => 'Continue';
 }

@@ -5,7 +5,36 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
+import 'app_localizations_az.dart';
+import 'app_localizations_bg.dart';
+import 'app_localizations_ca.dart';
+import 'app_localizations_cs.dart';
+import 'app_localizations_da.dart';
+import 'app_localizations_de.dart';
+import 'app_localizations_el.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_et.dart';
+import 'app_localizations_fa.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_hu.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_it.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_lv.dart';
+import 'app_localizations_nl.dart';
+import 'app_localizations_pl.dart';
+import 'app_localizations_pt.dart';
+import 'app_localizations_ru.dart';
+import 'app_localizations_sv.dart';
+import 'app_localizations_th.dart';
+import 'app_localizations_tr.dart';
+import 'app_localizations_uk.dart';
+import 'app_localizations_ur.dart';
+import 'app_localizations_vi.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -91,8 +120,38 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
+    Locale('az'),
+    Locale('bg'),
+    Locale('ca'),
+    Locale('cs'),
+    Locale('da'),
+    Locale('de'),
+    Locale('el'),
     Locale('en'),
-    Locale('zh')
+    Locale('es'),
+    Locale('et'),
+    Locale('fa'),
+    Locale('fr'),
+    Locale('hi'),
+    Locale('hu'),
+    Locale('id'),
+    Locale('it'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('lv'),
+    Locale('nl'),
+    Locale('pl'),
+    Locale('pt'),
+    Locale('ru'),
+    Locale('sv'),
+    Locale('th'),
+    Locale('tr'),
+    Locale('uk'),
+    Locale('ur'),
+    Locale('vi'),
+    Locale('zh'),
+    Locale('zh', 'TW')
   ];
 
   /// No description provided for @appTitle.
@@ -238,6 +297,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'简体中文'**
   String get simplifiedChinese;
+
+  /// No description provided for @japanese.
+  ///
+  /// In en, this message translates to:
+  /// **'日本語'**
+  String get japanese;
+
+  /// No description provided for @korean.
+  ///
+  /// In en, this message translates to:
+  /// **'한국어'**
+  String get korean;
+
+  /// No description provided for @spanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Español'**
+  String get spanish;
+
+  /// No description provided for @french.
+  ///
+  /// In en, this message translates to:
+  /// **'Français'**
+  String get french;
+
+  /// No description provided for @german.
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get german;
+
+  /// No description provided for @portuguese.
+  ///
+  /// In en, this message translates to:
+  /// **'Português'**
+  String get portuguese;
+
+  /// No description provided for @russian.
+  ///
+  /// In en, this message translates to:
+  /// **'Русский'**
+  String get russian;
+
+  /// No description provided for @arabic.
+  ///
+  /// In en, this message translates to:
+  /// **'العربية'**
+  String get arabic;
+
+  /// No description provided for @azerbaijani.
+  ///
+  /// In en, this message translates to:
+  /// **'Azərbaycan'**
+  String get azerbaijani;
+
+  /// No description provided for @bulgarian.
+  ///
+  /// In en, this message translates to:
+  /// **'Български'**
+  String get bulgarian;
+
+  /// No description provided for @catalan.
+  ///
+  /// In en, this message translates to:
+  /// **'Català'**
+  String get catalan;
+
+  /// No description provided for @czech.
+  ///
+  /// In en, this message translates to:
+  /// **'Čeština'**
+  String get czech;
+
+  /// No description provided for @danish.
+  ///
+  /// In en, this message translates to:
+  /// **'Dansk'**
+  String get danish;
+
+  /// No description provided for @greek.
+  ///
+  /// In en, this message translates to:
+  /// **'Ελληνικά'**
+  String get greek;
+
+  /// No description provided for @estonian.
+  ///
+  /// In en, this message translates to:
+  /// **'Eesti'**
+  String get estonian;
+
+  /// No description provided for @farsi.
+  ///
+  /// In en, this message translates to:
+  /// **'فارسی'**
+  String get farsi;
+
+  /// No description provided for @hindi.
+  ///
+  /// In en, this message translates to:
+  /// **'हिन्दी'**
+  String get hindi;
+
+  /// No description provided for @hungarian.
+  ///
+  /// In en, this message translates to:
+  /// **'Magyar'**
+  String get hungarian;
+
+  /// No description provided for @indonesian.
+  ///
+  /// In en, this message translates to:
+  /// **'Bahasa Indonesia'**
+  String get indonesian;
+
+  /// No description provided for @italian.
+  ///
+  /// In en, this message translates to:
+  /// **'Italiano'**
+  String get italian;
+
+  /// No description provided for @latvian.
+  ///
+  /// In en, this message translates to:
+  /// **'Latviešu'**
+  String get latvian;
+
+  /// No description provided for @dutch.
+  ///
+  /// In en, this message translates to:
+  /// **'Nederlands'**
+  String get dutch;
+
+  /// No description provided for @polish.
+  ///
+  /// In en, this message translates to:
+  /// **'Polski'**
+  String get polish;
+
+  /// No description provided for @swedish.
+  ///
+  /// In en, this message translates to:
+  /// **'Svenska'**
+  String get swedish;
+
+  /// No description provided for @thai.
+  ///
+  /// In en, this message translates to:
+  /// **'ไทย'**
+  String get thai;
+
+  /// No description provided for @turkish.
+  ///
+  /// In en, this message translates to:
+  /// **'Türkçe'**
+  String get turkish;
+
+  /// No description provided for @ukrainian.
+  ///
+  /// In en, this message translates to:
+  /// **'Українська'**
+  String get ukrainian;
+
+  /// No description provided for @urdu.
+  ///
+  /// In en, this message translates to:
+  /// **'اردو'**
+  String get urdu;
+
+  /// No description provided for @vietnamese.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiếng Việt'**
+  String get vietnamese;
+
+  /// No description provided for @traditionalChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'繁體中文'**
+  String get traditionalChinese;
 
   /// No description provided for @addAccount.
   ///
@@ -1114,6 +1353,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copied successfully'**
   String get copiedSuccessfully;
+
+  /// No description provided for @importDatabasePathHint.
+  ///
+  /// In en, this message translates to:
+  /// **'/path/to/nostr_relay_backup_...'**
+  String get importDatabasePathHint;
+
+  /// No description provided for @relayStatsSize.
+  ///
+  /// In en, this message translates to:
+  /// **'SIZE'**
+  String get relayStatsSize;
+
+  /// No description provided for @relayStatsEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'EVENTS'**
+  String get relayStatsEvents;
+
+  /// No description provided for @relayStatsUptime.
+  ///
+  /// In en, this message translates to:
+  /// **'UPTIME'**
+  String get relayStatsUptime;
+
+  /// No description provided for @shareRelayBackupSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Nostr Relay Database Backup'**
+  String get shareRelayBackupSubject;
+
+  /// No description provided for @shareRelayBackupIosText.
+  ///
+  /// In en, this message translates to:
+  /// **'Nostr Relay Database Backup\n\nTap \"Save to Files\" to save to Files app.'**
+  String get shareRelayBackupIosText;
+
+  /// No description provided for @shareRelayBackupIosSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Database exported as ZIP file. Use \"Save to Files\" in the share sheet to save.'**
+  String get shareRelayBackupIosSnackbar;
+
+  /// No description provided for @databaseExportedToIosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Database exported to: {path}\n\nYou can access it via Files app > On My iPhone > Aegis'**
+  String databaseExportedToIosHint(String path);
+
+  /// No description provided for @shareRelayBackupAndroidText.
+  ///
+  /// In en, this message translates to:
+  /// **'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.'**
+  String get shareRelayBackupAndroidText;
+
+  /// No description provided for @shareRelayBackupAndroidSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Database exported as ZIP file. Choose where to save in the share sheet.'**
+  String get shareRelayBackupAndroidSnackbar;
+
+  /// No description provided for @protocolWs.
+  ///
+  /// In en, this message translates to:
+  /// **'WS'**
+  String get protocolWs;
+
+  /// No description provided for @protocolWss.
+  ///
+  /// In en, this message translates to:
+  /// **'WSS'**
+  String get protocolWss;
+
+  /// No description provided for @confirmLiteral.
+  ///
+  /// In en, this message translates to:
+  /// **'confirm'**
+  String get confirmLiteral;
+
+  /// No description provided for @errorCannotDetermineHomeDir.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot determine home directory'**
+  String get errorCannotDetermineHomeDir;
+
+  /// No description provided for @errorZipFileNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'ZIP file not found'**
+  String get errorZipFileNotFound;
+
+  /// No description provided for @unitBytes.
+  ///
+  /// In en, this message translates to:
+  /// **'B'**
+  String get unitBytes;
+
+  /// No description provided for @unitKB.
+  ///
+  /// In en, this message translates to:
+  /// **'KB'**
+  String get unitKB;
+
+  /// No description provided for @unitMB.
+  ///
+  /// In en, this message translates to:
+  /// **'MB'**
+  String get unitMB;
+
+  /// No description provided for @unitGB.
+  ///
+  /// In en, this message translates to:
+  /// **'GB'**
+  String get unitGB;
+
+  /// No description provided for @durationZero.
+  ///
+  /// In en, this message translates to:
+  /// **'0s'**
+  String get durationZero;
+
+  /// No description provided for @durationDayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'d'**
+  String get durationDayShort;
+
+  /// No description provided for @durationHourShort.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get durationHourShort;
+
+  /// No description provided for @durationMinuteShort.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get durationMinuteShort;
+
+  /// No description provided for @durationSecondShort.
+  ///
+  /// In en, this message translates to:
+  /// **'s'**
+  String get durationSecondShort;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @pleaseSelectApplication.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an application'**
+  String get pleaseSelectApplication;
+
+  /// No description provided for @orEnterCustomName.
+  ///
+  /// In en, this message translates to:
+  /// **'Or enter a custom name'**
+  String get orEnterCustomName;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -1125,7 +1532,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['ar', 'az', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fa', 'fr', 'hi', 'hu', 'id', 'it', 'ja', 'ko', 'lv', 'nl', 'pl', 'pt', 'ru', 'sv', 'th', 'tr', 'uk', 'ur', 'vi', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1133,10 +1540,48 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
 
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'zh': {
+  switch (locale.countryCode) {
+    case 'TW': return AppLocalizationsZhTw();
+   }
+  break;
+   }
+  }
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'ar': return AppLocalizationsAr();
+    case 'az': return AppLocalizationsAz();
+    case 'bg': return AppLocalizationsBg();
+    case 'ca': return AppLocalizationsCa();
+    case 'cs': return AppLocalizationsCs();
+    case 'da': return AppLocalizationsDa();
+    case 'de': return AppLocalizationsDe();
+    case 'el': return AppLocalizationsEl();
     case 'en': return AppLocalizationsEn();
+    case 'es': return AppLocalizationsEs();
+    case 'et': return AppLocalizationsEt();
+    case 'fa': return AppLocalizationsFa();
+    case 'fr': return AppLocalizationsFr();
+    case 'hi': return AppLocalizationsHi();
+    case 'hu': return AppLocalizationsHu();
+    case 'id': return AppLocalizationsId();
+    case 'it': return AppLocalizationsIt();
+    case 'ja': return AppLocalizationsJa();
+    case 'ko': return AppLocalizationsKo();
+    case 'lv': return AppLocalizationsLv();
+    case 'nl': return AppLocalizationsNl();
+    case 'pl': return AppLocalizationsPl();
+    case 'pt': return AppLocalizationsPt();
+    case 'ru': return AppLocalizationsRu();
+    case 'sv': return AppLocalizationsSv();
+    case 'th': return AppLocalizationsTh();
+    case 'tr': return AppLocalizationsTr();
+    case 'uk': return AppLocalizationsUk();
+    case 'ur': return AppLocalizationsUr();
+    case 'vi': return AppLocalizationsVi();
     case 'zh': return AppLocalizationsZh();
   }
 
