@@ -498,14 +498,11 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         l10n.language,
         style: Theme.of(context).textTheme.titleMedium,
       ),
-      subtitle: Text(
+      trailing: Text(
         languageLabel,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      trailing: Icon(
-        Icons.translate,
-        size: 22,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
       onTap: () => AegisNavigator.pushPage(context, (context) => const LanguagePage()),
     );
@@ -520,14 +517,11 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         l10n.language,
         style: Theme.of(context).textTheme.titleMedium,
       ),
-      subtitle: Text(
+      trailing: Text(
         languageLabel,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      trailing: Icon(
-        Icons.translate,
-        size: 22,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
       onTap: () {
         Navigator.pop(context);
