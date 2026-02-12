@@ -2,6 +2,7 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
+import '../../generated/l10n/app_localizations.dart';
 import '../../navigator/navigator.dart';
 import 'create_nostr_account.dart';
 import 'login_private_key.dart';
@@ -64,7 +65,7 @@ class LoginState extends State<Login> {
                   margin: const EdgeInsets.symmetric(vertical: 16),
                   alignment: Alignment.center,
                   child: Text(
-                    'Use your private key',
+                    AppLocalizations.of(context)!.usePrivateKey,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context)
                               .colorScheme
@@ -87,7 +88,7 @@ class LoginState extends State<Login> {
                   margin: const EdgeInsets.symmetric(vertical: 16),
                   alignment: Alignment.center,
                   child: Text(
-                    'Create a new Nostr account',
+                    AppLocalizations.of(context)!.createNewNostrAccount,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                           fontWeight: FontWeight.w500,

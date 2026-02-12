@@ -7,6 +7,7 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
 import 'package:aegis/utils/napp_update_manager.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'napp_model.dart';
 import 'webview_page.dart';
 
@@ -32,8 +33,9 @@ class _AddAppDialogState extends State<_AddAppDialog> {
     final isValidUrl = url.isNotEmpty &&
         (url.startsWith('http://') || url.startsWith('https://'));
 
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Add Web App'),
+      title: Text(l10n.addWebApp),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -41,10 +43,10 @@ class _AddAppDialogState extends State<_AddAppDialog> {
           children: [
             TextField(
               controller: _urlController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'URL *',
-                hintText: 'https://example.com',
-                border: OutlineInputBorder(),
+                hintText: l10n.urlHint,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               keyboardType: TextInputType.url,
@@ -55,10 +57,10 @@ class _AddAppDialogState extends State<_AddAppDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'App Name (Optional)',
-                hintText: 'My App',
-                border: OutlineInputBorder(),
+                hintText: l10n.appNameHint,
+                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {});
@@ -70,7 +72,7 @@ class _AddAppDialogState extends State<_AddAppDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: isValidUrl
@@ -81,7 +83,7 @@ class _AddAppDialogState extends State<_AddAppDialog> {
                   });
                 }
               : null,
-          child: const Text('Add'),
+          child: Text(l10n.add),
         ),
       ],
     );
@@ -314,7 +316,7 @@ class _BrowserPageState extends State<BrowserPage> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _showAddAppDialog,
-            tooltip: 'Add Web App',
+            tooltip: AppLocalizations.of(context)!.addWebApp,
           ),
         ],
       ),
@@ -358,7 +360,7 @@ class _BrowserPageState extends State<BrowserPage> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                hintText: 'Search Nostr Apps...',
+                hintText: AppLocalizations.of(context)!.searchNostrApps,
                 hintStyle: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 15,
@@ -767,9 +769,9 @@ class _BrowserPageState extends State<BrowserPage> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid URL. Please enter a valid HTTP or HTTPS URL.'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.invalidUrlHint),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -791,9 +793,9 @@ class _BrowserPageState extends State<BrowserPage> {
       if (existingApp.url.isNotEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('This app is already in the list.'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.appAlreadyInList),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -805,9 +807,9 @@ class _BrowserPageState extends State<BrowserPage> {
       if (existingDbApp != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('This app is already in the list.'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.appAlreadyInList),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -842,7 +844,7 @@ class _BrowserPageState extends State<BrowserPage> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added ${newApp.name}'),
+            content: Text(AppLocalizations.of(context)!.appAdded(newApp.name)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -852,7 +854,7 @@ class _BrowserPageState extends State<BrowserPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to add app: $e'),
+            content: Text(AppLocalizations.of(context)!.appAddFailed(e.toString())),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -864,19 +866,19 @@ class _BrowserPageState extends State<BrowserPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete App'),
-        content: Text('Are you sure you want to delete "${napp.name}"?'),
+        title: Text(AppLocalizations.of(context)!.deleteApp),
+        content: Text(AppLocalizations.of(context)!.deleteAppConfirm(napp.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -899,7 +901,7 @@ class _BrowserPageState extends State<BrowserPage> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Deleted ${napp.name}'),
+            content: Text(AppLocalizations.of(context)!.appDeleted(napp.name)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -909,7 +911,7 @@ class _BrowserPageState extends State<BrowserPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete app: $e'),
+            content: Text(AppLocalizations.of(context)!.appDeleteFailed(e.toString())),
             duration: const Duration(seconds: 2),
           ),
         );

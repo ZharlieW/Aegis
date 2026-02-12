@@ -13,9 +13,13 @@ class LocaleManager {
   /// Initialize locale from local storage. Call after [LocalStorage.init].
   static Future<void> init() async {
     try {
-      final saved = LocalStorage.get(_localeKey);
-      if (saved != null && saved.toString().trim().isNotEmpty) {
-        _locale = Locale(saved.toString().trim());
+      final saved = LocalStorage.get(_localeKey)?.toString().trim();
+      if (saved != null && saved.isNotEmpty) {
+        if (saved == 'zh_TW') {
+          _locale = const Locale('zh', 'TW');
+        } else {
+          _locale = Locale(saved);
+        }
       } else {
         _locale = null;
       }
@@ -30,6 +34,14 @@ class LocaleManager {
   static Future<void> setLocale(Locale? locale) async {
     _locale = locale;
     _localeNotifier.value = locale;
-    await LocalStorage.set(_localeKey, locale?.languageCode ?? '');
+    String value = '';
+    if (locale != null) {
+      if (locale.languageCode == 'zh' && locale.countryCode == 'TW') {
+        value = 'zh_TW';
+      } else {
+        value = locale.languageCode;
+      }
+    }
+    await LocalStorage.set(_localeKey, value);
   }
 }

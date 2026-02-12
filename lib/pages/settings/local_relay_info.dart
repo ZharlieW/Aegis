@@ -11,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 
+import 'package:aegis/generated/l10n/app_localizations.dart';
+
 /// Dialog widget for clearing database confirmation
 class _ClearDatabaseDialog extends StatefulWidget {
   const _ClearDatabaseDialog();
@@ -37,23 +39,21 @@ class _ClearDatabaseDialogState extends State<_ClearDatabaseDialog> {
   @override
   Widget build(BuildContext context) {
     final isConfirmValid = _confirmController.text.toLowerCase() == 'confirm';
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Clear Database'),
+      title: Text(l10n.clearDatabase),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'This will delete all relay data and restart the relay if it is running. '
-              'This action cannot be undone.',
-            ),
+            Text(l10n.clearDatabaseConfirm),
             const SizedBox(height: 16),
             TextField(
               controller: _confirmController,
-              decoration: const InputDecoration(
-                labelText: 'Type "confirm" to proceed',
-                hintText: 'confirm',
+              decoration: InputDecoration(
+                labelText: l10n.typeConfirmToProceed,
+                hintText: l10n.confirmLiteral,
               ),
               autofocus: true,
               onChanged: (value) {
@@ -66,7 +66,7 @@ class _ClearDatabaseDialogState extends State<_ClearDatabaseDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed:
@@ -74,7 +74,7 @@ class _ClearDatabaseDialogState extends State<_ClearDatabaseDialog> {
           style: TextButton.styleFrom(
             foregroundColor: isConfirmValid ? Colors.red : Colors.grey,
           ),
-          child: const Text('Clear'),
+          child: Text(l10n.clear),
         ),
       ],
     );
@@ -107,23 +107,21 @@ class _ImportDatabaseDialogState extends State<_ImportDatabaseDialog> {
   @override
   Widget build(BuildContext context) {
     final isPathValid = _pathController.text.trim().isNotEmpty;
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Import Database'),
+      title: Text(l10n.importDatabase),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Enter the path to the database directory to import. '
-              'The existing database will be backed up before import.',
-            ),
+            Text(l10n.importDatabaseHint),
             const SizedBox(height: 16),
             TextField(
               controller: _pathController,
-              decoration: const InputDecoration(
-                labelText: 'Database directory path',
-                hintText: '/path/to/nostr_relay_backup_...',
+              decoration: InputDecoration(
+                labelText: l10n.databaseDirectoryPath,
+                hintText: l10n.importDatabasePathHint,
                 border: OutlineInputBorder(),
               ),
               autofocus: true,
@@ -137,13 +135,13 @@ class _ImportDatabaseDialogState extends State<_ImportDatabaseDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(null),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: isPathValid
               ? () => Navigator.of(context).pop(_pathController.text.trim())
               : null,
-          child: const Text('Import'),
+          child: Text(l10n.import),
         ),
       ],
     );
@@ -275,14 +273,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         ButtonSegment(
           value: 'ws',
           label: Text(
-            'WS',
+            AppLocalizations.of(context)!.protocolWs,
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
         ButtonSegment(
           value: 'wss',
           label: Text(
-            'WSS',
+            AppLocalizations.of(context)!.protocolWss,
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -435,15 +433,16 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     }
   }
 
-  String _formatBytes(int bytes) {
+  String _formatBytes(BuildContext context, int bytes) {
+    final l10n = AppLocalizations.of(context)!;
     if (bytes < 1024) {
-      return '$bytes B';
+      return '$bytes ${l10n.unitBytes}';
     } else if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(2)} KB';
+      return '${(bytes / 1024).toStringAsFixed(2)} ${l10n.unitKB}';
     } else if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} ${l10n.unitMB}';
     } else {
-      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} ${l10n.unitGB}';
     }
   }
 
@@ -456,48 +455,66 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     return number.toString();
   }
 
-  String _formatDuration(int seconds) {
+  String _formatDuration(BuildContext context, int seconds) {
+    final l10n = AppLocalizations.of(context)!;
+    final d = l10n.durationDayShort;
+    final h = l10n.durationHourShort;
+    final m = l10n.durationMinuteShort;
+    final s = l10n.durationSecondShort;
     if (seconds <= 0) {
-      return '0s';
+      return l10n.durationZero;
     }
     final duration = Duration(seconds: seconds);
     if (duration.inDays > 0) {
       final days = duration.inDays;
       final hours = duration.inHours % 24;
-      return hours > 0 ? '${days}d ${hours}h' : '${days}d';
+      return hours > 0 ? '${days}$d ${hours}$h' : '${days}$d';
     }
     if (duration.inHours > 0) {
       final hours = duration.inHours;
       final minutes = duration.inMinutes % 60;
-      return minutes > 0 ? '${hours}h ${minutes}m' : '${hours}h';
+      return minutes > 0 ? '${hours}$h ${minutes}$m' : '${hours}$h';
     }
     if (duration.inMinutes > 0) {
       final minutes = duration.inMinutes;
       final secs = duration.inSeconds % 60;
-      return secs > 0 ? '${minutes}m ${secs}s' : '${minutes}m';
+      return secs > 0 ? '${minutes}$m ${secs}$s' : '${minutes}$m';
     }
-    return '${duration.inSeconds}s';
+    return '${duration.inSeconds}$s';
+  }
+
+  String _userFacingError(BuildContext context, Object e) {
+    final msg = e.toString();
+    final l10n = AppLocalizations.of(context)!;
+    if (msg.contains('Cannot determine home directory')) {
+      return l10n.errorCannotDetermineHomeDir;
+    }
+    if (msg.contains('ZIP file not found')) {
+      return l10n.errorZipFileNotFound;
+    }
+    return msg;
   }
 
   Future<void> _handleRestartRelay() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Restart Relay'),
-        content: const Text(
-          'Are you sure you want to restart the relay? The relay will be temporarily stopped and then restarted.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Restart'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(l10n.restartRelay),
+          content: Text(l10n.restartRelayConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.restart),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true) return;
@@ -510,7 +527,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       await RelayService.instance.restart();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Relay restarted successfully')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.relayRestartedSuccess)),
         );
         await _loadRelayInfo();
       }
@@ -518,7 +535,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to restart relay", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to restart relay: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.relayRestartFailed(e.toString()))),
         );
       }
     } finally {
@@ -547,14 +564,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       if (success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Database cleared successfully')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.databaseClearedSuccess)),
           );
           await _loadRelayInfo();
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to clear database')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.databaseClearFailed)),
           );
         }
       }
@@ -562,7 +579,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to clear database", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -578,22 +595,23 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Export Database'),
-        content: const Text(
-          'This will export the relay database as a ZIP file. The export may take a few moments.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Export'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(l10n.exportDatabase),
+          content: Text(l10n.exportDatabaseHint),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.export),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true) return;
@@ -646,18 +664,17 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
             try {
               final zipFile = File(exportedPath);
               if (await zipFile.exists()) {
+                final l10n = AppLocalizations.of(context)!;
                 await Share.shareXFiles(
                   [XFile(exportedPath)],
-                  subject: 'Nostr Relay Database Backup',
-                  text:
-                      'Nostr Relay Database Backup\n\nTap "Save to Files" to save to Files app.',
+                  subject: l10n.shareRelayBackupSubject,
+                  text: l10n.shareRelayBackupIosText,
                 );
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Database exported as ZIP file. Use "Save to Files" in the share sheet to save.'),
-                    duration: Duration(seconds: 5),
+                  SnackBar(
+                    content: Text(l10n.shareRelayBackupIosSnackbar),
+                    duration: const Duration(seconds: 5),
                   ),
                 );
               } else {
@@ -665,31 +682,31 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
               }
             } catch (e) {
               AegisLogger.error("Failed to share database on iOS", e);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      'Database exported to: $exportedPath\n\nYou can access it via Files app > On My iPhone > Aegis'),
-                  duration: const Duration(seconds: 7),
-                ),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.databaseExportedToIosHint(exportedPath)),
+                    duration: const Duration(seconds: 7),
+                  ),
+                );
+              }
             }
           } else if (PlatformUtils.isAndroid) {
             // For Android, use share_plus to let user choose save location
             try {
               final zipFile = File(exportedPath);
               if (await zipFile.exists()) {
+                final l10n = AppLocalizations.of(context)!;
                 await Share.shareXFiles(
                   [XFile(exportedPath)],
-                  subject: 'Nostr Relay Database Backup',
-                  text:
-                      'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.',
+                  subject: l10n.shareRelayBackupSubject,
+                  text: l10n.shareRelayBackupAndroidText,
                 );
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Database exported as ZIP file. Choose where to save in the share sheet.'),
-                    duration: Duration(seconds: 5),
+                  SnackBar(
+                    content: Text(l10n.shareRelayBackupAndroidSnackbar),
+                    duration: const Duration(seconds: 5),
                   ),
                 );
               } else {
@@ -697,18 +714,20 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
               }
             } catch (e) {
               AegisLogger.error("Failed to share database on Android", e);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Database exported to: $exportedPath'),
-                  duration: const Duration(seconds: 5),
-                ),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.databaseExportedTo(exportedPath)),
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
             }
           } else {
             // For Desktop, show path
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Database exported as ZIP file: $exportedPath'),
+                content: Text(AppLocalizations.of(context)!.databaseExportedZip(exportedPath)),
                 duration: const Duration(seconds: 5),
               ),
             );
@@ -717,7 +736,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to export database')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.databaseExportFailed)),
           );
         }
       }
@@ -725,7 +744,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to export database", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -741,22 +760,23 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Import Database'),
-        content: const Text(
-          'This will replace the current database with the imported backup. The existing database will be backed up before import. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Import'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(l10n.importDatabase),
+          content: Text(l10n.importDatabaseReplaceHint),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child:             Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.import),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true) return;
@@ -774,7 +794,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         result = await FilePicker.platform.pickFiles(
           type: FileType.custom,
           allowedExtensions: ['zip'],
-          dialogTitle: 'Select database backup file (ZIP) or directory',
+          dialogTitle: AppLocalizations.of(context)!.selectDatabaseBackupFile,
         );
       } catch (e) {
         AegisLogger.warning(
@@ -782,7 +802,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
         // Fallback to directory picker
         try {
           final dirResult = await FilePicker.platform.getDirectoryPath(
-            dialogTitle: 'Select database backup directory',
+            dialogTitle: AppLocalizations.of(context)!.selectDatabaseBackupDir,
           );
           importPath = dirResult;
         } catch (e2) {
@@ -823,8 +843,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Selected file or directory does not exist')),
+            SnackBar(
+                content: Text(AppLocalizations.of(context)!.fileOrDirNotExist)),
           );
         }
         return;
@@ -835,14 +855,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       if (success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Database imported successfully')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.databaseImportedSuccess)),
           );
           await _loadRelayInfo();
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to import database')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.databaseImportFailed)),
           );
         }
       }
@@ -850,7 +870,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to import database", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -867,7 +887,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Local Relay',
+          AppLocalizations.of(context)!.localRelay,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -881,7 +901,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.restart_alt),
-            tooltip: 'Restart Relay',
+            tooltip: AppLocalizations.of(context)!.restartRelay,
             onPressed: _isRestarting ? null : _handleRestartRelay,
           ),
         ],
@@ -918,7 +938,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               Row(
                                 children: [
                                   Text(
-                                    'Status',
+                                    AppLocalizations.of(context)!.status,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium,
@@ -940,7 +960,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                       ),
                                     ),
                                     child: Text(
-                                      _isRelayRunning ? 'Running' : 'Stopped',
+                                      _isRelayRunning ? AppLocalizations.of(context)!.running : AppLocalizations.of(context)!.stopped,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -959,7 +979,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               Row(
                                 children: [
                                   Text(
-                                    'Address',
+                                    AppLocalizations.of(context)!.address,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium,
@@ -972,10 +992,10 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                           ClipboardData(text: address));
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Text(
-                                              'Address copied to clipboard'),
-                                          duration: Duration(seconds: 2),
+                                              AppLocalizations.of(context)!.addressCopiedToClipboard),
+                                          duration: const Duration(seconds: 2),
                                         ),
                                       );
                                     },
@@ -1010,7 +1030,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               Row(
                                 children: [
                                   Text(
-                                    'Protocol',
+                                    AppLocalizations.of(context)!.protocol,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium,
@@ -1024,7 +1044,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               Row(
                                 children: [
                                   Text(
-                                    'Connections',
+                                    AppLocalizations.of(context)!.connections,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium,
@@ -1071,7 +1091,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      'SIZE',
+                                      AppLocalizations.of(context)!.relayStatsSize,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -1084,7 +1104,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      _formatBytes(_databaseSize),
+                                      _formatBytes(context, _databaseSize),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -1117,7 +1137,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'EVENTS',
+                                        AppLocalizations.of(context)!.relayStatsEvents,
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
@@ -1163,7 +1183,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      'UPTIME',
+                                      AppLocalizations.of(context)!.relayStatsUptime,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -1176,7 +1196,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      _formatDuration(
+                                      _formatDuration(context,
                                           _currentSessionUptime.inSeconds),
                                       style: Theme.of(context)
                                           .textTheme
@@ -1216,7 +1236,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             // Export Data List Item
                             ListTile(
                               title: Text(
-                                'Export Data',
+                                AppLocalizations.of(context)!.exportData,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               trailing: Icon(
@@ -1228,7 +1248,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             // Import Data List Item
                             ListTile(
                               title: Text(
-                                'Import Data',
+                                AppLocalizations.of(context)!.importData,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               trailing: Icon(
@@ -1240,7 +1260,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             // System Logs List Item
                             ListTile(
                               title: Text(
-                                'System Logs',
+                                AppLocalizations.of(context)!.systemLogs,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               trailing: Icon(
@@ -1278,7 +1298,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(24),
                                           child: Text(
-                                            'No logs available',
+                                            AppLocalizations.of(context)!.noLogsAvailable,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium
@@ -1332,9 +1352,9 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                   color: Colors.red,
                                 ),
                               )
-                            : const Text(
-                                'Clear All Relay Data',
-                                style: TextStyle(
+                            : Text(
+                                AppLocalizations.of(context)!.clearAllRelayData,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

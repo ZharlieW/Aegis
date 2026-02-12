@@ -8,6 +8,7 @@ import 'nostr_wallet_connection_parser.dart';
 import 'logger.dart';
 import 'platform_utils.dart';
 import '../db/clientAuthDB_isar.dart';
+import '../generated/l10n/app_localizations.dart';
 import 'local_tls_proxy_manager_rust.dart';
 
 /// URL Scheme Handler for Aegis and NostrSigner schemes
@@ -186,9 +187,10 @@ class UrlSchemeHandler {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text("Tips"),
-          content: const Text("Unable to resolve scheme, please login first."),
+          title: Text(l10n.tips),
+          content: Text(l10n.schemeLoginFirst),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
           ),
@@ -200,7 +202,7 @@ class UrlSchemeHandler {
                     Theme.of(context).colorScheme.surfaceBright),
               ),
               label: Text(
-                "Cancel",
+                l10n.cancel,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Colors.black,
                 ),

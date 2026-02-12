@@ -3,6 +3,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/common_image.dart';
+import '../../generated/l10n/app_localizations.dart';
 
 class RequestPermission extends StatefulWidget {
   const RequestPermission({super.key});
@@ -27,7 +28,7 @@ class RequestPermissionState extends State<RequestPermission> {
           ),
         ),
         title: Text(
-          'Permission Request',
+          AppLocalizations.of(context)!.permissionRequest,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -52,7 +53,7 @@ class RequestPermissionState extends State<RequestPermission> {
                     ),
                   ),
                   Text(
-                    "This application is requesting permissions to access your Nostr account",
+                    AppLocalizations.of(context)!.permissionRequestContent,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
@@ -72,7 +73,7 @@ class RequestPermissionState extends State<RequestPermission> {
                       margin: const EdgeInsets.symmetric(vertical: 16),
                       alignment: Alignment.center,
                       child: Text(
-                        'Grant Permissions',
+                        AppLocalizations.of(context)!.grantPermissions,
                         style: Theme.of(context)
                             .textTheme
                             .bodyLarge
@@ -95,7 +96,7 @@ class RequestPermissionState extends State<RequestPermission> {
                       margin: const EdgeInsets.symmetric(vertical: 16),
                       alignment: Alignment.center,
                       child: Text(
-                        'Reject',
+                        AppLocalizations.of(context)!.reject,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w500,
                               color: Theme.of(context).colorScheme.error,
@@ -135,7 +136,7 @@ class RequestPermissionState extends State<RequestPermission> {
               ),
               const SizedBox(width: 12),
               Text(
-                'Full Access Granted',
+                AppLocalizations.of(context)!.fullAccessGranted,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.primary,
@@ -145,15 +146,15 @@ class RequestPermissionState extends State<RequestPermission> {
           ),
           const SizedBox(height: 16),
           Text(
-            'This application will have full access to your Nostr account, including:',
+            AppLocalizations.of(context)!.fullAccessHint,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
-          _permissionItem('Access your Nostr public key'),
-          _permissionItem('Sign Nostr events'),
-          _permissionItem('Encrypt and decrypt events (NIP-04 & NIP-44)'),
+          _permissionItem(AppLocalizations.of(context)!.permissionAccessPubkey),
+          _permissionItem(AppLocalizations.of(context)!.permissionSignEvents),
+          _permissionItem(AppLocalizations.of(context)!.permissionEncryptDecrypt),
         ],
       ),
     );

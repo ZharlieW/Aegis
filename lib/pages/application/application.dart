@@ -10,6 +10,7 @@ import 'package:aegis/utils/took_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/theme_manager.dart';
+import 'package:aegis/utils/locale_manager.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:flutter/material.dart';
@@ -18,12 +19,14 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../db/clientAuthDB_isar.dart';
 import '../../db/signed_event_db_isar.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/launch_scheme_utils.dart';
 import '../../utils/server_nip46_signer.dart';
 import '../login/login.dart';
 import '../settings/settings.dart';
 import '../settings/local_relay_info.dart';
+import '../settings/language_page.dart';
 import '../browser/browser_page.dart';
 import '../activities/activities.dart';
 import 'add_application.dart';
@@ -275,7 +278,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             Container(
               padding: const EdgeInsets.all(20),
               child: Text(
-                'Aegis - Nostr Signer',
+                AppLocalizations.of(context)!.appSubtitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   fontSize: 24,
@@ -292,7 +295,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     selected: useSplitLayout && _currentPage == 'home',
                     selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
                     title: Text(
-                      'Home',
+                      AppLocalizations.of(context)!.home,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     trailing: Icon(
@@ -312,7 +315,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     selected: useSplitLayout && _currentPage == 'localRelay',
                     selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
                     title: Text(
-                      'Local Relay',
+                      AppLocalizations.of(context)!.localRelay,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     trailing: CommonImage(
@@ -337,7 +340,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     selected: useSplitLayout && _currentPage == 'browser',
                     selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
                     title: Text(
-                      'Browser',
+                      AppLocalizations.of(context)!.browser,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     trailing: Icon(
@@ -359,11 +362,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     },
                   ),
                   _buildThemeSettingsTile(context, useSplitLayout),
+                  _buildLanguageTile(context, useSplitLayout),
                   ListTile(
                     selected: useSplitLayout && _currentPage == 'accounts',
                     selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
                     title: Text(
-                      'Accounts',
+                      AppLocalizations.of(context)!.accounts,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     trailing: CommonImage(
@@ -395,7 +399,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
-                        'Github',
+                        AppLocalizations.of(context)!.github,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       leading: CommonImage(
@@ -415,9 +419,9 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                       alignment: Alignment.centerRight,
                       child: Text(
                         _appVersion.isNotEmpty && _buildNumber.isNotEmpty
-                            ? 'v$_appVersion($_buildNumber)'
+                            ? '${AppLocalizations.of(context)!.version}: $_appVersion($_buildNumber)'
                             : _appVersion.isNotEmpty
-                                ? 'v$_appVersion'
+                                ? '${AppLocalizations.of(context)!.version}: $_appVersion'
                                 : '--',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
@@ -448,9 +452,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         break;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       title: Text(
-        'Theme',
+        l10n.theme,
         style: Theme.of(context).textTheme.titleMedium,
       ),
       trailing: Icon(
@@ -465,23 +470,109 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         switch (_currentThemeMode) {
           case ThemeMode.light:
             nextMode = ThemeMode.dark;
-            modeText = 'Dark Mode';
+            modeText = l10n.darkMode;
             break;
           case ThemeMode.dark:
             nextMode = ThemeMode.system;
-            modeText = 'System Default';
+            modeText = l10n.systemDefault;
             break;
           case ThemeMode.system:
             nextMode = ThemeMode.light;
-            modeText = 'Light Mode';
+            modeText = l10n.lightMode;
             break;
         }
         await ThemeManager.setThemeMode(nextMode);
         if (mounted) {
-          CommonToast.instance.show(context, 'Switched to $modeText', toastType: ToastType.normal);
+          CommonToast.instance.show(context, l10n.switchedTo(modeText), toastType: ToastType.normal);
         }
       },
     );
+  }
+
+  Widget _buildLanguageTile(BuildContext context, bool useSplitLayout) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = LocaleManager.currentLocale;
+    final String languageLabel = _languageLabelForLocale(l10n, current);
+    return ListTile(
+      title: Text(
+        l10n.language,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(
+        languageLabel,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      trailing: Icon(
+        Icons.translate,
+        size: 22,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onTap: () => AegisNavigator.pushPage(context, (context) => const LanguagePage()),
+    );
+  }
+
+  Widget _buildLanguageTileForDrawer(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = LocaleManager.currentLocale;
+    final String languageLabel = _languageLabelForLocale(l10n, current);
+    return ListTile(
+      title: Text(
+        l10n.language,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(
+        languageLabel,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      trailing: Icon(
+        Icons.translate,
+        size: 22,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onTap: () {
+        Navigator.pop(context);
+        AegisNavigator.pushPage(context, (context) => const LanguagePage());
+      },
+    );
+  }
+
+  String _languageLabelForLocale(AppLocalizations l10n, Locale? locale) {
+    if (locale == null) return '${l10n.language} (${l10n.english})';
+    if (locale.languageCode == 'zh' && locale.countryCode == 'TW') return l10n.traditionalChinese;
+    switch (locale.languageCode) {
+      case 'en': return l10n.english;
+      case 'zh': return l10n.simplifiedChinese;
+      case 'ja': return l10n.japanese;
+      case 'ko': return l10n.korean;
+      case 'es': return l10n.spanish;
+      case 'fr': return l10n.french;
+      case 'de': return l10n.german;
+      case 'pt': return l10n.portuguese;
+      case 'ru': return l10n.russian;
+      case 'ar': return l10n.arabic;
+      case 'az': return l10n.azerbaijani;
+      case 'bg': return l10n.bulgarian;
+      case 'ca': return l10n.catalan;
+      case 'cs': return l10n.czech;
+      case 'da': return l10n.danish;
+      case 'el': return l10n.greek;
+      case 'et': return l10n.estonian;
+      case 'fa': return l10n.farsi;
+      case 'hi': return l10n.hindi;
+      case 'hu': return l10n.hungarian;
+      case 'id': return l10n.indonesian;
+      case 'it': return l10n.italian;
+      case 'lv': return l10n.latvian;
+      case 'nl': return l10n.dutch;
+      case 'pl': return l10n.polish;
+      case 'sv': return l10n.swedish;
+      case 'th': return l10n.thai;
+      case 'tr': return l10n.turkish;
+      case 'uk': return l10n.ukrainian;
+      case 'ur': return l10n.urdu;
+      case 'vi': return l10n.vietnamese;
+      default: return locale.toString();
+    }
   }
 
   // Build mobile drawer menu
@@ -500,7 +591,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   Container(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'Aegis - Nostr Signer',
+                      AppLocalizations.of(context)!.appSubtitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 24,
@@ -513,7 +604,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           ),
           ListTile(
             title: Text(
-              'Local Relay',
+              AppLocalizations.of(context)!.localRelay,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             trailing: CommonImage(
@@ -531,7 +622,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           ),
           ListTile(
             title: Text(
-              'Browser',
+              AppLocalizations.of(context)!.browser,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             trailing: Icon(
@@ -548,9 +639,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             },
           ),
           _buildThemeSettingsTile(context, false),
+          _buildLanguageTileForDrawer(context),
           ListTile(
             title: Text(
-              'Github',
+              AppLocalizations.of(context)!.github,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             trailing: CommonImage(
@@ -566,7 +658,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           ),
           ListTile(
             title: Text(
-              'Version: ${_appVersion.isNotEmpty ? _appVersion : '--'}${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
+              '${AppLocalizations.of(context)!.version}: ${_appVersion.isNotEmpty ? _appVersion : '--'}${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             trailing: CommonImage(
@@ -629,7 +721,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                                     const CircularProgressIndicator(),
                                     const SizedBox(height: 16),
                                     Text(
-                                      'Waiting for relay to start...',
+                                      AppLocalizations.of(context)!.waitingForRelayStart,
                                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                             color: Theme.of(context).colorScheme.primary,
                                           ),
@@ -735,16 +827,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         borderRadius: BorderRadius.circular(12),
       ),
       child: SegmentedButton<int>(
-        segments: const [
+        segments: [
           ButtonSegment(
             value: 0,
-            label: Text('Remote'),
-            icon: Icon(Icons.cloud_outlined),
+            label: Text(AppLocalizations.of(context)!.remote),
+            icon: const Icon(Icons.cloud_outlined),
           ),
           ButtonSegment(
             value: 1,
-            label: Text('Browser'),
-            icon: Icon(Icons.language),
+            label: Text(AppLocalizations.of(context)!.browser),
+            icon: const Icon(Icons.language),
           ),
         ],
         selected: {_selectedSegment},
@@ -772,16 +864,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             minimumSize: const Size(0, 36),
             visualDensity: VisualDensity.compact,
           ),
-          segments: const [
+          segments: [
             ButtonSegment(
               value: 0,
-              label: Text('Remote', style: TextStyle(fontSize: 13)),
-              icon: Icon(Icons.cloud_outlined, size: 16),
+              label: Text(AppLocalizations.of(context)!.remote, style: const TextStyle(fontSize: 13)),
+              icon: const Icon(Icons.cloud_outlined, size: 16),
             ),
             ButtonSegment(
               value: 1,
-              label: Text('Browser', style: TextStyle(fontSize: 13)),
-              icon: Icon(Icons.language, size: 16),
+              label: Text(AppLocalizations.of(context)!.browser, style: const TextStyle(fontSize: 13)),
+              icon: const Icon(Icons.language, size: 16),
             ),
           ],
           selected: {_selectedSegment},
@@ -902,7 +994,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                                   ),
                                 ).setPaddingOnly(right: 8.0),
                                 Text(
-                                  isConnect ? 'Connected' : 'Disconnected',
+                                  isConnect ? AppLocalizations.of(context)!.connected : AppLocalizations.of(context)!.disconnected,
                                   style:
                                       Theme.of(context).textTheme.bodyMedium,
                                 ),
@@ -936,7 +1028,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         if (snapshot.hasError) {
           return Center(
             child: Text(
-              'Error loading NIP-07 applications: ${snapshot.error}',
+              AppLocalizations.of(context)!.errorLoadingNip07Applications(snapshot.error.toString()),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.error,
                   ),
@@ -963,7 +1055,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   ),
                   Center(
                     child: Text(
-                      'No NIP-07 applications yet.\n\nUse Browser to access Nostr apps!',
+                      AppLocalizations.of(context)!.noNip07ApplicationsHint,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.w400,
@@ -993,7 +1085,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   }
   
   Widget _buildNIP07ApplicationItem(Map<String, dynamic> app) {
-    final applicationName = app['applicationName'] as String? ?? 'Unknown';
+    final applicationName = app['applicationName'] as String? ?? AppLocalizations.of(context)!.unknown;
     final icon = app['icon'] as String?;
     final timestamp = app['lastUsedTimestamp'] as int? ?? 0;
     final applicationPubkey = app['applicationPubkey'] as String? ?? '';
@@ -1079,7 +1171,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                       ),
                     ).setPaddingOnly(right: 8.0),
                     Text(
-                      'Active',
+                      AppLocalizations.of(context)!.active,
                       style:
                           Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -1181,7 +1273,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             ),
             Center(
               child: Text(
-                'Congratulations!\n\nNow you can start using apps that support Aegis!',
+                AppLocalizations.of(context)!.congratulationsEmptyState,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w400,
@@ -1200,7 +1292,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       child: Column(
         children: [
           Text(
-            'The local relay is set to use port ${PlatformUtils.isDesktop ? 18081 : 8081}, but it appears another app is already using this port. Please close the conflicting app and try again.',
+            AppLocalizations.of(context)!.localRelayPortInUse(PlatformUtils.isDesktop ? '18081' : '8081'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -1220,7 +1312,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   if (mounted) {
                     CommonTips.success(
                       context,
-                      isConnect ? 'NIP-46 Signer started!' : 'Failed to start.',
+                      isConnect ? AppLocalizations.of(context)!.nip46Started : AppLocalizations.of(context)!.nip46FailedToStart,
                     );
                   }
                 });
@@ -1230,7 +1322,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     Theme.of(context).colorScheme.primary),
               ),
               label: Text(
-                "Retry",
+                AppLocalizations.of(context)!.retry,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Colors.white,
                     ),

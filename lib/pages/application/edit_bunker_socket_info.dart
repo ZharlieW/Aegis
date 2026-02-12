@@ -4,6 +4,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../db/clientAuthDB_isar.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../../navigator/navigator.dart';
 
 class EditApplicationInfo extends StatefulWidget {
@@ -23,7 +24,7 @@ class EditApplicationInfoState extends State<EditApplicationInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Edit configuration',
+          AppLocalizations.of(context)!.editConfiguration,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -58,7 +59,7 @@ class EditApplicationInfoState extends State<EditApplicationInfo> {
                 margin: const EdgeInsets.symmetric(vertical: 16),
                 alignment: Alignment.center,
                 child: Text(
-                  'Update',
+                  AppLocalizations.of(context)!.update,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Theme.of(context).colorScheme.onPrimary,
@@ -75,11 +76,11 @@ class EditApplicationInfoState extends State<EditApplicationInfo> {
   void updateName(){
     String name = nameController.text.trim();
     if(name.isEmpty)  {
-      CommonTips.error(context,'The name cannot be empty');
+      CommonTips.error(context, AppLocalizations.of(context)!.nameCannotBeEmpty);
       return;
     }
     if(name.length > 15)  {
-      CommonTips.error(context,'The name is too long.');
+      CommonTips.error(context, AppLocalizations.of(context)!.nameTooLong);
       return;
     }
 
@@ -88,7 +89,7 @@ class EditApplicationInfoState extends State<EditApplicationInfo> {
 
     ClientAuthDBISAR.saveFromDB(clientNotifier.value,isUpdate: true);
 
-    CommonTips.success(context,'Update success');
+    CommonTips.success(context, AppLocalizations.of(context)!.updateSuccess);
     AegisNavigator.pop(context);
   }
 }

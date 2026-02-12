@@ -6,6 +6,7 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/common/common_appbar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 
 class AddApplication extends StatefulWidget {
   const AddApplication({super.key});
@@ -20,8 +21,8 @@ class AddApplicationState extends State<AddApplication> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const CommonAppBar(
-            title: 'Add a new application',
+          CommonAppBar(
+            title: AppLocalizations.of(context)!.addNewApplication,
           ),
           SliverList(
             delegate: SliverChildListDelegate(
@@ -35,7 +36,7 @@ class AddApplicationState extends State<AddApplication> {
                         height: 24,
                       ),
                       Text(
-                        'You can choose any of these methods to connect with Aegis!',
+                        AppLocalizations.of(context)!.addApplicationMethodsHint,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w500,
@@ -52,18 +53,18 @@ class AddApplicationState extends State<AddApplication> {
                           )
                         },
                         iconName: 'nsecbunker_icon.png',
-                        title: 'Add a nsecbunker manually',
+                        title: AppLocalizations.of(context)!.addNsecbunkerManually,
                         content: "",
                       ),
                       _cardWidget(
                         onTap: () {
                           CommonTips.error(
                             context,
-                            'Open with an app that supports Aegis URL scheme to log in',
+                            AppLocalizations.of(context)!.urlSchemeLoginHint,
                           );
                         },
                         iconName: 'clipboard_icon.png',
-                        title: 'Login using URL Scheme',
+                        title: AppLocalizations.of(context)!.loginUsingUrlScheme,
                         content: '',
                       ),
                     ],

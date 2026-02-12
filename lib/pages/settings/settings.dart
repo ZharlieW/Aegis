@@ -4,6 +4,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../db/userDB_isar.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../../navigator/navigator.dart';
 import '../../utils/account.dart';
 import '../../utils/account_manager.dart';
@@ -36,20 +37,21 @@ class _LogoutDialogState extends State<_LogoutDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isConfirmValid = _confirmController.text.toLowerCase() == 'confirm';
     return AlertDialog(
-      title: const Text("Logout"),
+      title: Text(l10n.logout),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Are you sure you want to log out?"),
+            Text(l10n.logoutConfirm),
             const SizedBox(height: 16),
             TextField(
               controller: _confirmController,
-              decoration: const InputDecoration(
-                labelText: 'Type "confirm" to proceed',
+              decoration: InputDecoration(
+                labelText: l10n.typeConfirmToProceed,
                 hintText: 'confirm',
               ),
               autofocus: true,
@@ -71,7 +73,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
                 Theme.of(context).colorScheme.surfaceBright),
           ),
           label: Text(
-            "Cancel",
+            l10n.cancel,
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge
@@ -86,7 +88,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
                   Account instance = Account.sharedInstance;
                   if (instance.currentPrivkey.isEmpty ||
                       instance.currentPubkey.isEmpty) {
-                    CommonTips.error(context, 'Not logged in');
+                    CommonTips.error(context, l10n.notLoggedIn);
                     return;
                   }
                   Account.sharedInstance.logout();
@@ -100,17 +102,17 @@ class _LogoutDialogState extends State<_LogoutDialog> {
                   : Theme.of(context).colorScheme.surfaceVariant,
             ),
           ),
-            label: Text(
-              "Confirm",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(
-                    color: isConfirmValid 
-                        ? Theme.of(context).colorScheme.onPrimary 
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
+          label: Text(
+            l10n.confirm,
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge
+                ?.copyWith(
+                  color: isConfirmValid
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
         ),
       ],
     );
@@ -156,10 +158,11 @@ class SettingsState extends State<Settings> with AccountObservers {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Accounts',
+          l10n.accounts,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -217,7 +220,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                       Theme.of(context).colorScheme.primary),
                 ),
                 label: Text(
-                  "Add Account",
+                  l10n.addAccount,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
@@ -282,7 +285,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                         currentUser.username = newName;
                         await AccountManager.sharedInstance.saveAccount(currentUser);
                         getAccountList();
-                        CommonTips.success(context, 'Update successful!');
+                        CommonTips.success(context, AppLocalizations.of(context)!.updateSuccessful);
                       },
                     );
                   },
@@ -352,15 +355,15 @@ class SettingsState extends State<Settings> with AccountObservers {
   }
 
   void _switchAccount(UserDBISAR account) async {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("Switch account"),
-          content:
-          const Text("Are you sure you want to switch accounts?"),
+          title: Text(l10n.switchAccount),
+          content: Text(l10n.switchAccountConfirm),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0), //
+            borderRadius: BorderRadius.circular(12.0),
           ),
           actions: [
             ElevatedButton.icon(
@@ -370,7 +373,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                     Theme.of(context).colorScheme.surfaceBright),
               ),
               label: Text(
-                "Cancel",
+                l10n.cancel,
                 style: Theme.of(context)
                     .textTheme
                     .bodyLarge
@@ -380,10 +383,10 @@ class SettingsState extends State<Settings> with AccountObservers {
               ),
             ),
             ElevatedButton.icon(
-              onPressed: () async{
-                await Account.sharedInstance.loginSuccess(account.pubkey,null);
+              onPressed: () async {
+                await Account.sharedInstance.loginSuccess(account.pubkey, null);
                 getAccountList();
-                CommonTips.success(context, 'Switch successfully!');
+                CommonTips.success(context, l10n.switchSuccessfully);
                 AegisNavigator.pop(context);
               },
               style: ButtonStyle(
@@ -392,7 +395,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                 ),
               ),
               label: Text(
-                "Confirm",
+                l10n.confirm,
                 style: Theme.of(context)
                     .textTheme
                     .bodyLarge
@@ -412,17 +415,18 @@ class SettingsState extends State<Settings> with AccountObservers {
     required String initialName,
     required void Function(String newName) onConfirm,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: initialName);
 
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rename Account'),
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.renameAccount),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Account Name',
-            hintText: 'Enter new name',
+          decoration: InputDecoration(
+            labelText: l10n.accountName,
+            hintText: l10n.enterNewName,
           ),
           autofocus: true,
         ),
@@ -434,7 +438,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                   Theme.of(context).colorScheme.surfaceBright),
             ),
             label: Text(
-              "Cancel",
+              l10n.cancel,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -448,7 +452,7 @@ class SettingsState extends State<Settings> with AccountObservers {
               final newName = controller.text.trim();
               if (newName.isNotEmpty) {
                 onConfirm(newName);
-                Navigator.of(context).pop();
+                Navigator.of(ctx).pop();
               }
             },
             style: ButtonStyle(
@@ -457,7 +461,7 @@ class SettingsState extends State<Settings> with AccountObservers {
               ),
             ),
             label: Text(
-              "Confirm",
+              l10n.confirm,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge

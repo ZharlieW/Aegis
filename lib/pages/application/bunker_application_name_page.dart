@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
+import '../../generated/l10n/app_localizations.dart';
 import 'bunker_socket_info.dart';
 
 class BunkerApplicationNamePage extends StatefulWidget {
@@ -79,7 +80,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
           
           return AlertDialog(
             title: Text(
-              'Select an application',
+              AppLocalizations.of(context)!.selectApplication,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             content: SizedBox(
@@ -92,7 +93,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
                     controller: _dialogSearchController,
                     autofocus: true,
                     decoration: InputDecoration(
-                      hintText: 'Search...',
+                      hintText: AppLocalizations.of(context)!.search,
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: _dialogSearchQuery.isNotEmpty
                           ? IconButton(
@@ -122,7 +123,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
                       child: filteredNames.isEmpty
                           ? Center(
                               child: Text(
-                                'No results found',
+                                AppLocalizations.of(context)!.noResultsFound,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
@@ -150,7 +151,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
             ],
           );
@@ -255,12 +256,12 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
     String name = _nameController.text.trim();
     
     if (name.isEmpty) {
-      CommonTips.error(context, 'The name cannot be empty');
+      CommonTips.error(context, AppLocalizations.of(context)!.nameCannotBeEmpty);
       return;
     }
     
     if (name.length > 15) {
-      CommonTips.error(context, 'The name is too long.');
+      CommonTips.error(context, AppLocalizations.of(context)!.nameTooLong);
       return;
     }
 
@@ -285,7 +286,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Application',
+          AppLocalizations.of(context)!.application,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -299,7 +300,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
             children: [
               const SizedBox(height: 24),
               Text(
-                'Please select an application',
+                AppLocalizations.of(context)!.pleaseSelectApplication,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -321,7 +322,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
                     children: [
                       Expanded(
                         child: Text(
-                          _selectedPresetName ?? 'Select an application',
+                          _selectedPresetName ?? AppLocalizations.of(context)!.selectApplication,
                           style: TextStyle(
                             color: _selectedPresetName != null
                                 ? Theme.of(context).colorScheme.onSurface
@@ -343,8 +344,8 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
                 controller: _nameController,
                 textAlignVertical: TextAlignVertical.center,
                 decoration: InputDecoration(
-                  hintText: 'Enter a custom name',
-                  labelText: 'Or enter a custom name',
+                  hintText: AppLocalizations.of(context)!.enterCustomName,
+                  labelText: AppLocalizations.of(context)!.orEnterCustomName,
                   border: const OutlineInputBorder(),
                   isDense: false,
                   contentPadding: const EdgeInsets.all(16),
@@ -383,7 +384,7 @@ class BunkerApplicationNamePageState extends State<BunkerApplicationNamePage> {
                   margin: const EdgeInsets.symmetric(vertical: 16),
                   alignment: Alignment.center,
                   child: Text(
-                    'Continue',
+                    AppLocalizations.of(context)!.continueButton,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500,
                           color: Theme.of(context).colorScheme.onPrimary,

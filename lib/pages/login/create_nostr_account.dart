@@ -4,6 +4,7 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/common_appbar.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../../nostr/keychain.dart';
 import '../../utils/account.dart';
 
@@ -30,7 +31,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
       body: CustomScrollView(
         slivers: [
           CommonAppBar(
-            title: 'Create a new Nostr account',
+            title: AppLocalizations.of(context)!.createNewNostrAccount,
           ),
           SliverList(
             delegate: SliverChildListDelegate(
@@ -38,7 +39,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                 Column(
                   children: [
                     Text(
-                      "Your Nostr account is ready! This is your nostr public key:",
+                      AppLocalizations.of(context)!.accountReadyPublicKeyHint,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
@@ -60,7 +61,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                             fontSize: 16.0,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        labelText: 'NostrPubkey',
+                        labelText: AppLocalizations.of(context)!.nostrPubkey,
                         labelStyle: TextStyle(
                           fontSize: 16.0,
                           color: Theme.of(context).colorScheme.onSurface,
@@ -82,7 +83,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
                         margin: const EdgeInsets.symmetric(vertical: 16),
                         alignment: Alignment.center,
                         child: Text(
-                          'Create',
+                          AppLocalizations.of(context)!.create,
                           style:
                               Theme.of(context).textTheme.bodyLarge?.copyWith(
                                     fontWeight: FontWeight.w500,
@@ -105,7 +106,7 @@ class CreateNostrAccountState extends State<CreateNostrAccount> {
     String privkey = _keychain.private;
     Account.sharedInstance.loginSuccess(_keychain.public,privkey);
 
-    CommonTips.success(context, 'Create successfully !');
+    CommonTips.success(context, AppLocalizations.of(context)!.createSuccess);
     AegisNavigator.popToRoot(context);
   }
 

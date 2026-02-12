@@ -21,6 +21,7 @@ import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'local_tls_proxy_manager_rust.dart';
 import 'platform_utils.dart';
 import 'android_service_manager.dart';
+import '../generated/l10n/app_localizations.dart';
 import '../pages/application/bunker_application_name_page.dart';
 
 class ClientRequest {
@@ -1229,16 +1230,17 @@ class ServerNIP46Signer {
           context: context,
           barrierDismissible: false,
           builder: (BuildContext dialogContext) {
+            final l10n = AppLocalizations.of(dialogContext)!;
             return AlertDialog(
-              title: Text('New Connection Request'),
-              content: Text('A new application is trying to connect, but no unused application is available. Please create a new application first.'),
+              title: Text(l10n.newConnectionRequest),
+              content: Text(l10n.newConnectionNoSlotHint),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.0),
               ),
               actions: [
                 TextButton(
                   onPressed: () => AegisNavigator.pop(dialogContext),
-                  child: Text('Cancel'),
+                  child: Text(l10n.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -1254,7 +1256,7 @@ class ServerNIP46Signer {
                     ),
                   ),
                   child: Text(
-                    'Create Application',
+                    l10n.createApplication,
                     style: TextStyle(
                       color: Theme.of(dialogContext).colorScheme.onPrimary,
                     ),

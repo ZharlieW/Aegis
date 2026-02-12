@@ -12,6 +12,7 @@ import '../../utils/server_nip46_signer.dart';
 import '../../utils/local_tls_proxy_manager_rust.dart';
 import '../../utils/took_kit.dart';
 import '../../utils/app_icon_loader.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../activities/activities.dart';
 import 'edit_bunker_socket_info.dart';
 
@@ -98,7 +99,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Application Info',
+          AppLocalizations.of(context)!.applicationInfo,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w400,
               ),
@@ -116,7 +117,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 ),
               );
             },
-            tooltip: 'Activities',
+            tooltip: AppLocalizations.of(context)!.activities,
           ),
         ],
       ),
@@ -159,7 +160,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 const SizedBox(height: 20),
               ],
               _optionItemWidget(
-                title: 'Name',
+                title: AppLocalizations.of(context)!.name,
                 content: client.name ?? '--',
                 iconName: 'edit_icon.png',
                 onTap: () {
@@ -189,7 +190,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 subTitle: client.scheme ?? '--',
               ),
               _copyableItemWidget(
-                title: 'Client pubkey',
+                title: AppLocalizations.of(context)!.clientPubkey,
                 content: client.clientPubkey,
                 onTap: () => TookKit.copyKey(context, client.clientPubkey),
               ),
@@ -216,11 +217,10 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
+                    final l10n = AppLocalizations.of(context)!;
                     return AlertDialog(
-                      title: const Text("Remove"),
-                      content: const Text(
-                        "Are you sure you want to remove all permissions from this application?",
-                      ),
+                      title: Text(l10n.remove),
+                      content: Text(l10n.removeAppConfirm),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0), // 圆角
                       ),
@@ -237,7 +237,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           label: Text(
-                            "Cancel",
+                            AppLocalizations.of(context)!.cancel,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge
@@ -301,7 +301,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                             await ServerNIP46Signer.instance
                                 .updateSubscription();
 
-                            CommonTips.success(context, 'Remove success');
+                            CommonTips.success(context, AppLocalizations.of(context)!.removeSuccess);
                             AegisNavigator.popToRoot(context);
                           },
                           style: ButtonStyle(
@@ -314,7 +314,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           label: Text(
-                            "Remove",
+                            AppLocalizations.of(context)!.remove,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium
@@ -339,7 +339,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
               label: Text(
-                "Remove",
+                AppLocalizations.of(context)!.remove,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),

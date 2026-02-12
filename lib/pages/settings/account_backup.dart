@@ -9,6 +9,7 @@ import '../../nostr/nips/nip49/nip49.dart';
 import '../../nostr/nips/nip49/nip49_utils.dart';
 import '../../utils/account.dart';
 import '../../utils/took_kit.dart';
+import '../../generated/l10n/app_localizations.dart';
 
 class AccountBackup extends StatefulWidget {
   const AccountBackup({super.key});
@@ -59,7 +60,7 @@ class AccountBackupState extends State<AccountBackup> {
   Future<void> _encryptPrivateKey() async {
     if (_passwordController.text.isEmpty) {
       setState(() {
-        _encryptionError = 'Password is required';
+        _encryptionError = AppLocalizations.of(context)!.passwordRequired;
       });
       return;
     }
@@ -90,14 +91,14 @@ class AccountBackupState extends State<AccountBackup> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Encrypted private key copied to clipboard'),
+            content: Text(AppLocalizations.of(context)!.encryptedKeyCopiedToClipboard),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       }
     } catch (e) {
       setState(() {
-        _encryptionError = 'Encryption failed: $e';
+        _encryptionError = AppLocalizations.of(context)!.encryptionFailed(e.toString());
       });
     } finally {
       setState(() {
@@ -125,8 +126,8 @@ class AccountBackupState extends State<AccountBackup> {
         },
         child: CustomScrollView(
           slivers: [
-            const CommonAppBar(
-              title: 'Account backup',
+            CommonAppBar(
+              title: AppLocalizations.of(context)!.accountBackup,
             ),
             SliverList(
               delegate: SliverChildListDelegate([
@@ -150,7 +151,7 @@ class AccountBackupState extends State<AccountBackup> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Public account ID',
+        Text(AppLocalizations.of(context)!.publicAccountId,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                 )),
@@ -189,13 +190,13 @@ class AccountBackupState extends State<AccountBackup> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Account private key',
+            Text(AppLocalizations.of(context)!.accountPrivateKey,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
                     )),
             Row(
               children: [
-                const Text('Show'),
+                Text(AppLocalizations.of(context)!.show),
                 Switch(
                   value: !_isObscured,
                   onChanged: (value) {
@@ -252,7 +253,7 @@ class AccountBackupState extends State<AccountBackup> {
       children: [
         // Title
         Text(
-          'Private Key Encryption',
+          AppLocalizations.of(context)!.privateKeyEncryption,
           style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -271,12 +272,12 @@ class AccountBackupState extends State<AccountBackup> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Encrypt your private key to enhance security. The key will be encrypted using a password.',
+                AppLocalizations.of(context)!.encryptPrivateKeyHint,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'The encrypted key will start with "ncryptsec1" and cannot be used without the password.',
+                AppLocalizations.of(context)!.ncryptsecHint,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
@@ -300,7 +301,7 @@ class AccountBackupState extends State<AccountBackup> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Password',
+                  AppLocalizations.of(context)!.password,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -314,7 +315,7 @@ class AccountBackupState extends State<AccountBackup> {
                     });
                   },
                   icon: const Icon(Icons.refresh, size: 16),
-                  label: const Text('Generate'),
+                  label: Text(AppLocalizations.of(context)!.generate),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     minimumSize: const Size(0, 0),
@@ -327,7 +328,7 @@ class AccountBackupState extends State<AccountBackup> {
               controller: _passwordController,
               obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
-                hintText: 'Enter encryption password',
+                hintText: AppLocalizations.of(context)!.enterEncryptionPassword,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -390,9 +391,9 @@ class AccountBackupState extends State<AccountBackup> {
                       color: colorScheme.onPrimary,
                     ),
                   )
-                : const Text(
-                    'Encrypt and Copy Private Key',
-                    style: TextStyle(
+                : Text(
+                    AppLocalizations.of(context)!.encryptAndCopyPrivateKey,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -446,7 +447,7 @@ class AccountBackupState extends State<AccountBackup> {
                     Icon(Icons.check_circle, color: colorScheme.primary, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Private key encrypted successfully!',
+                      AppLocalizations.of(context)!.privateKeyEncryptedSuccess,
                       style: TextStyle(
                         color: colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.w500,
@@ -456,7 +457,7 @@ class AccountBackupState extends State<AccountBackup> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Encrypted key (ncryptsec):',
+                  AppLocalizations.of(context)!.encryptedKeyNcryptsec,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),

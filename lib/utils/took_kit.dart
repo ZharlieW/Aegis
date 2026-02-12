@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -47,7 +48,7 @@ class TookKit{
         text: keyContent,
       ),
     );
-    CommonTips.success(context, 'copied successfully');
+    CommonTips.success(context, AppLocalizations.of(context)!.copiedSuccessfully);
   }
 
   static String formatTimestamp(int timestamp) {

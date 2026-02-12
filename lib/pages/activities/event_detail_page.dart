@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../db/clientAuthDB_isar.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../../utils/account_manager.dart';
 
 class EventDetailPage extends StatefulWidget {
@@ -125,9 +126,9 @@ class EventDetailPageState extends State<EventDetailPage> {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: value));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Copied to clipboard'),
-                          duration: Duration(seconds: 2),
+                        SnackBar(
+                          content: Text(AppLocalizations.of(context)!.copiedToClipboard),
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                     },
@@ -152,7 +153,7 @@ class EventDetailPageState extends State<EventDetailPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Event Details'),
+        title: Text(AppLocalizations.of(context)!.eventDetails),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [
@@ -160,7 +161,7 @@ class EventDetailPageState extends State<EventDetailPage> {
             onPressed: () {
               // Share event details
               final eventDetails = '''
-                Event Details:
+                ${AppLocalizations.of(context)!.eventDetails}:
                 - Event ID: ${widget.event.eventId}
                 - Event Kind: ${_getEventKindDescription(widget.event.eventKind)} (${widget.event.eventKind})
                 - Content: ${widget.event.eventContent}
@@ -170,10 +171,10 @@ class EventDetailPageState extends State<EventDetailPage> {
               ''';
               Clipboard.setData(ClipboardData(text: eventDetails));
               ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                          content: Text('Event details copied to clipboard'),
-                          duration: Duration(seconds: 2),
-                        ),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.eventDetailsCopiedToClipboard),
+                  duration: const Duration(seconds: 2),
+                ),
               );
             },
             icon: Icon(
@@ -244,7 +245,7 @@ class EventDetailPageState extends State<EventDetailPage> {
 
               // Event details
               _buildInfoSection(
-                'Event Details',
+                AppLocalizations.of(context)!.eventDetails,
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -324,9 +325,9 @@ class EventDetailPageState extends State<EventDetailPage> {
                               onPressed: () {
                                 Clipboard.setData(ClipboardData(text: widget.event.metadata!));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Raw metadata copied to clipboard'),
-                                    duration: Duration(seconds: 2),
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!.rawMetadataCopiedToClipboard),
+                                    duration: const Duration(seconds: 2),
                                   ),
                                 );
                               },

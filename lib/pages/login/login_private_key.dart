@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../common/common_appbar.dart';
 import '../../common/common_tips.dart';
+import '../../generated/l10n/app_localizations.dart';
 import '../../navigator/navigator.dart';
 import '../../nostr/utils.dart';
 import '../../nostr/nips/nip49/nip49.dart';
@@ -50,7 +51,8 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -59,8 +61,8 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
         },
         child: CustomScrollView(
           slivers: [
-            const CommonAppBar(
-              title: 'Use your private key',
+            CommonAppBar(
+              title: l10n.usePrivateKey,
             ),
             SliverList(
               delegate: SliverChildListDelegate(
@@ -70,7 +72,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                     child: Column(
                       children: [
                         Text(
-                          "Set up Aegis with your Nostr private key — supports nsec, ncryptsec, and hex formats.",
+                          l10n.setupAegisWithNsec,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
@@ -83,8 +85,8 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                           textAlignVertical: TextAlignVertical.center,
                           style: theme.textTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Private Key',
-                            hintText: 'nsec / ncryptsec / hex key',
+                            labelText: l10n.privateKey,
+                            hintText: l10n.privateKeyHint,
                             border: const OutlineInputBorder(),
                             contentPadding: const EdgeInsets.all(12),
                             prefixIcon: Icon(Icons.key, color: colorScheme.onSurfaceVariant),
@@ -112,8 +114,8 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                             textAlignVertical: TextAlignVertical.center,
                             style: theme.textTheme.bodyLarge,
                             decoration: InputDecoration(
-                              labelText: 'Password',
-                              hintText: 'Enter password to decrypt ncryptsec',
+                              labelText: l10n.password,
+                              hintText: l10n.passwordHint,
                               border: const OutlineInputBorder(),
                               contentPadding: const EdgeInsets.all(12),
                               prefixIcon: Icon(Icons.lock_outline, color: colorScheme.onSurfaceVariant),
@@ -147,7 +149,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
                               ),
                             ),
                             child: Text(
-                              'Login',
+                              l10n.login,
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 color: colorScheme.onPrimary,
                                 fontWeight: FontWeight.w500,
@@ -171,28 +173,29 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
     final key = _keyController.text.trim();
     if (key.isEmpty) {
       if (mounted) {
-        CommonTips.error(context, 'The content cannot be empty!');
+        CommonTips.error(context, AppLocalizations.of(context)!.contentCannotBeEmpty);
       }
       return;
     }
 
     try {
       String privateKey;
-      
+      final l10n = AppLocalizations.of(context)!;
+
       if (_isNcryptsec) {
         final password = _passwordController.text.trim();
         if (password.isEmpty) {
           if (mounted) {
-            CommonTips.error(context, 'Password is required for ncryptsec!');
+            CommonTips.error(context, l10n.passwordRequiredForNcryptsec);
           }
           return;
         }
-        
+
         try {
           privateKey = await NIP49.decrypt(key, password);
         } catch (e) {
           if (mounted) {
-            CommonTips.error(context, 'Failed to decrypt ncryptsec. Please check your password.');
+            CommonTips.error(context, l10n.decryptNcryptsecFailed);
           }
           return;
         }
@@ -204,7 +207,7 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
 
       if (privateKey.length != 64 || !RegExp(r'^[a-fA-F0-9]+$').hasMatch(privateKey)) {
         if (mounted) {
-          CommonTips.error(context, 'Invalid private key format!');
+          CommonTips.error(context, l10n.invalidPrivateKeyFormat);
         }
         return;
       }
@@ -213,13 +216,12 @@ class LoginPrivateKeyState extends State<LoginPrivateKey> {
       Account.sharedInstance.loginSuccess(publicKey, privateKey);
 
       if (mounted) {
-        CommonTips.success(context, 'Login successful!');
+        CommonTips.success(context, l10n.loginSuccess);
         AegisNavigator.popToRoot(context);
       }
-      
     } catch (e) {
       if (mounted) {
-        CommonTips.error(context, 'Login failed: ${e.toString()}');
+        CommonTips.error(context, AppLocalizations.of(context)!.loginFailed(e.toString()));
       }
     }
   }
