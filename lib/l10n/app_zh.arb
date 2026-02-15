@@ -104,6 +104,8 @@
       "port": {"type": "String"}
     }
   },
+  "localRelayChangePort": "修改端口",
+  "localRelayChangePortHint": "修改端口后，请在应用中更新 signer 链接（bunker URL）。",
   "nip46Started": "NIP-46 签名器已启动！",
   "nip46FailedToStart": "启动失败。",
   "retry": "重试",

@@ -269,6 +269,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get localRelayChangePort => '修改端口';
+
+  @override
+  String get localRelayChangePortHint => '修改端口后，请在应用中更新 signer 链接（bunker URL）。';
+
+  @override
   String get nip46Started => 'NIP-46 签名器已启动！';
 
   @override

@@ -658,6 +658,18 @@ abstract class AppLocalizations {
   /// **'The local relay is set to use port {port}, but it appears another app is already using this port. Please close the conflicting app and try again.'**
   String localRelayPortInUse(String port);
 
+  /// No description provided for @localRelayChangePort.
+  ///
+  /// In en, this message translates to:
+  /// **'Change port'**
+  String get localRelayChangePort;
+
+  /// No description provided for @localRelayChangePortHint.
+  ///
+  /// In en, this message translates to:
+  /// **'After changing the port, you need to update the signer link (bunker URL) in your applications.'**
+  String get localRelayChangePortHint;
+
   /// No description provided for @nip46Started.
   ///
   /// In en, this message translates to:

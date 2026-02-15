@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'logger.dart';
+import 'local_storage.dart';
 import 'platform_utils.dart';
 
 /// Nostr Relay Service using rust nostr-relay-builder
@@ -50,6 +51,24 @@ class RelayService {
   /// Get default port based on platform
   static int get _defaultPort => PlatformUtils.isDesktop ? 18081 : 8081;
 
+  /// Storage key for user-preferred relay port (optional override)
+  static const String _keyLocalRelayPort = 'local_relay_port';
+
+  /// Current preferred port: from LocalStorage if set, otherwise platform default.
+  /// Used by start(port: null) and by ServerNIP46Signer when starting.
+  static String get preferredPort {
+    try {
+      final v = LocalStorage.get(_keyLocalRelayPort);
+      if (v != null && v is String) return v;
+    } catch (_) {}
+    return _defaultPort.toString();
+  }
+
+  /// Save user-preferred relay port. After changing, caller should start relay with new port.
+  static Future<void> setPreferredPort(String port) async {
+    await LocalStorage.set(_keyLocalRelayPort, port);
+  }
+
   /// Start the Nostr relay server
   Future<void> start({
     String? host,  // If null, defaults to '127.0.0.1' on iOS (to avoid iCloud Private Relay conflicts) or '0.0.0.0' on other platforms
@@ -90,7 +109,7 @@ class RelayService {
       // On iOS, use 127.0.0.1 to avoid conflicts with iCloud Private Relay
       // iCloud Private Relay can interfere with binding to 0.0.0.0
       _host = host ?? (PlatformUtils.isIOS ? '127.0.0.1' : '0.0.0.0');
-      _port = port != null ? (int.tryParse(port) ?? _defaultPort) : _defaultPort;
+      _port = port != null ? (int.tryParse(port) ?? _defaultPort) : (int.tryParse(preferredPort) ?? _defaultPort);
 
       // Check if already running
       if (await rust_relay.isRelayRunning()) {
@@ -125,7 +144,7 @@ class RelayService {
           return;
         } catch (e) {
           attempts++;
-          lastError = e as Exception;
+          lastError = e is Exception ? e : Exception(e.toString());
           
           // Check if it's an IO error related to database locks
           final errorMsg = e.toString().toLowerCase();

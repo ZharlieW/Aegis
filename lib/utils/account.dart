@@ -219,13 +219,13 @@ class Account {
     AccountManager.sharedInstance.accountMap[user.pubkey] = user;
 
     LocalNostrSigner.instance.init();
-    final defaultPort = PlatformUtils.isDesktop ? '18081' : '8081';
-    
+    final port = RelayService.preferredPort;
+
     // On Android, start foreground service to keep relay and signer running
     if (PlatformUtils.isAndroid) {
-      await AndroidServiceManager.startService(port: defaultPort);
+      await AndroidServiceManager.startService(port: port);
     } else {
-      await ServerNIP46Signer.instance.start(defaultPort);
+      await ServerNIP46Signer.instance.start(port);
     }
 
     if(isInit){

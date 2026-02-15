@@ -1282,31 +1282,31 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   }
 
   Widget _showPortUnAvailableWidget() {
+    final l10n = AppLocalizations.of(context)!;
+    final preferredPort = RelayService.preferredPort;
     return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            AppLocalizations.of(context)!.localRelayPortInUse(PlatformUtils.isDesktop ? '18081' : '8081'),
+            l10n.localRelayPortInUse(preferredPort),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
           ).setPadding(
               const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0)),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           SizedBox(
             width: 200,
             child: ElevatedButton.icon(
               onPressed: () async {
-                final defaultPort = PlatformUtils.isDesktop ? '18081' : '8081';
-                await ServerNIP46Signer.instance.start(defaultPort);
+                await ServerNIP46Signer.instance.start(preferredPort);
                 RelayService.instance.serverNotifier.addListener(() {
                   bool isConnect = RelayService.instance.serverNotifier.value;
                   if (mounted) {
                     CommonTips.success(
                       context,
-                      isConnect ? AppLocalizations.of(context)!.nip46Started : AppLocalizations.of(context)!.nip46FailedToStart,
+                      isConnect ? l10n.nip46Started : l10n.nip46FailedToStart,
                     );
                   }
                 });
@@ -1316,16 +1316,100 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     Theme.of(context).colorScheme.primary),
               ),
               label: Text(
-                AppLocalizations.of(context)!.retry,
+                l10n.retry,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Colors.white,
                     ),
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => _showChangePortDialog(),
+            child: Text(l10n.localRelayChangePort),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _showChangePortDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: RelayService.preferredPort);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.localRelayChangePort),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.localRelayChangePortHint),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Port',
+                    hintText: '1024-65535',
+                  ),
+                  onSubmitted: (value) {
+                    final p = int.tryParse(value);
+                    if (p != null && p >= 1024 && p <= 65535) {
+                      Navigator.of(context).pop(value);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = controller.text.trim();
+                final p = int.tryParse(value);
+                if (p == null || p < 1024 || p > 65535) {
+                  return;
+                }
+                Navigator.of(context).pop(value);
+              },
+              child: Text(l10n.confirm),
+            ),
+          ],
+        );
+      },
+    ).whenComplete(() => controller.dispose());
+    if (result == null || !mounted) return;
+    await RelayService.setPreferredPort(result);
+    try {
+      await ServerNIP46Signer.instance.start(result);
+      RelayService.instance.serverNotifier.addListener(() {
+        final isConnect = RelayService.instance.serverNotifier.value;
+        if (mounted) {
+          CommonTips.success(
+            context,
+            isConnect ? l10n.nip46Started : l10n.nip46FailedToStart,
+          );
+        }
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.localRelayChangePortHint)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.nip46FailedToStart} $e')),
+        );
+      }
+    }
   }
 
 

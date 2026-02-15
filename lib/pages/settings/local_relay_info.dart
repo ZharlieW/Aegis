@@ -535,7 +535,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to restart relay", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.relayRestartFailed(e.toString()))),
+          SnackBar(content: Text(AppLocalizations.of(context)!.relayRestartFailed(_userFacingError(context, e)))),
         );
       }
     } finally {

@@ -269,6 +269,12 @@ class AppLocalizationsDa extends AppLocalizations {
   }
 
   @override
+  String get localRelayChangePort => 'Change port';
+
+  @override
+  String get localRelayChangePortHint => 'After changing the port, you need to update the signer link (bunker URL) in your applications.';
+
+  @override
   String get nip46Started => 'NIP-46-signatur startet!';
 
   @override

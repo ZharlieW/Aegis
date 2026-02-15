@@ -104,6 +104,8 @@
       "port": {"type": "String"}
     }
   },
+  "localRelayChangePort": "Change port",
+  "localRelayChangePortHint": "After changing the port, you need to update the signer link (bunker URL) in your applications.",
   "nip46Started": "NIP-46 Signer started!",
   "nip46FailedToStart": "Failed to start.",
   "retry": "Retry",
