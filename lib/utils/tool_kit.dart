@@ -6,8 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-class TookKit{
-  static String getShortStrByHex64(String hex64){
+/// Utility class for hex/base64 conversion, clipboard, and timestamp formatting.
+class ToolKit {
+  static String getShortStrByHex64(String hex64) {
     // First, the hexadecimal string is converted to an array of bytes
     List<int> bytes = hexStringToBytes(hex64);
 
@@ -16,16 +17,13 @@ class TookKit{
     return base64String;
   }
 
-  static String decodeHex64(String base64String){
-
+  static String decodeHex64(String base64String) {
     // Use Base64 decoding to restore a short string to an array of bytes
     List<int> decodedBytes = base64Decode(base64String);
     // Finally, the byte array is converted back to a hexadecimal string
     String decodedHex64 = bytesToHexString(decodedBytes);
-    print('The decoded hexadecimal string: $decodedHex64');
     return decodedHex64;
   }
-
 
   static List<int> hexStringToBytes(String hex) {
     int length = hex.length;
@@ -57,4 +55,3 @@ class TookKit{
     return formatter.format(date);
   }
 }
-

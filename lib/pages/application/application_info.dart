@@ -4,17 +4,17 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
-import '../../common/common_image.dart';
-import '../../common/common_tips.dart';
-import '../../navigator/navigator.dart';
-import '../../utils/account.dart';
-import '../../utils/server_nip46_signer.dart';
-import '../../utils/local_tls_proxy_manager_rust.dart';
-import '../../utils/took_kit.dart';
-import '../../utils/app_icon_loader.dart';
-import '../../generated/l10n/app_localizations.dart';
-import '../activities/activities.dart';
-import 'edit_bunker_socket_info.dart';
+import 'package:aegis/common/common_image.dart';
+import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
+import 'package:aegis/utils/tool_kit.dart';
+import 'package:aegis/utils/app_icon_loader.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/pages/activities/activities.dart';
+import 'package:aegis/pages/application/edit_bunker_socket_info.dart';
 
 class ApplicationInfo extends StatefulWidget {
   final ClientAuthDBISAR clientAuthDBISAR;
@@ -134,7 +134,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 Column(
                   children: [
                     GestureDetector(
-                      onTap: () => TookKit.copyKey(context, _bunkerUrl),
+                      onTap: () => ToolKit.copyKey(context, _bunkerUrl),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -192,7 +192,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
               _copyableItemWidget(
                 title: AppLocalizations.of(context)!.clientPubkey,
                 content: client.clientPubkey,
-                onTap: () => TookKit.copyKey(context, client.clientPubkey),
+                onTap: () => ToolKit.copyKey(context, client.clientPubkey),
               ),
               const SizedBox(
                 height: 40,

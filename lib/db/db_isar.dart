@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:aegis/db/userDB_isar.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import '../utils/logger.dart';
+import 'package:aegis/utils/logger.dart';
 
-import 'clientAuthDB_isar.dart';
-import 'signed_event_db_isar.dart';
-import 'user_app_db_isar.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/db/user_app_db_isar.dart';
 
 class DBISAR {
   DBISAR._internal();

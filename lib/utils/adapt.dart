@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'dart:io' show Platform;
-import '../navigator/navigator.dart';
+import 'package:aegis/navigator/navigator.dart';
 
 final ValueNotifier<double> textScaleFactorNotifier = ValueNotifier(1.0);
 

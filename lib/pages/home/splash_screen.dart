@@ -4,9 +4,9 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/pages/application/application.dart';
 import 'package:flutter/material.dart';
 
-import '../../navigator/navigator.dart';
-import '../../utils/account.dart';
-import '../login/login.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/pages/login/login.dart';
 
 class SplashScreen extends StatefulWidget {
   final Future<void> initializationFuture;

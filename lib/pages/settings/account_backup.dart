@@ -2,14 +2,14 @@ import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../common/common_appbar.dart';
-import '../../common/common_image.dart';
-import '../../nostr/nips/nip19/nip19.dart';
-import '../../nostr/nips/nip49/nip49.dart';
-import '../../nostr/nips/nip49/nip49_utils.dart';
-import '../../utils/account.dart';
-import '../../utils/took_kit.dart';
-import '../../generated/l10n/app_localizations.dart';
+import 'package:aegis/common/common_appbar.dart';
+import 'package:aegis/common/common_image.dart';
+import 'package:aegis/nostr/nips/nip19/nip19.dart';
+import 'package:aegis/nostr/nips/nip49/nip49.dart';
+import 'package:aegis/nostr/nips/nip49/nip49_utils.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/tool_kit.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 
 class AccountBackup extends StatefulWidget {
   const AccountBackup({super.key});
@@ -164,7 +164,7 @@ class AccountBackupState extends State<AccountBackup> {
             ),
             GestureDetector(
               onTap: () {
-                TookKit.copyKey(context, nupKey);
+                ToolKit.copyKey(context, nupKey);
               },
               child: SizedBox(
                 width: 48,
@@ -224,7 +224,7 @@ class AccountBackupState extends State<AccountBackup> {
             ),
             GestureDetector(
               onTap: () {
-                TookKit.copyKey(context, nsecKeyStr);
+                ToolKit.copyKey(context, nsecKeyStr);
               },
               child: SizedBox(
                 width: 48,

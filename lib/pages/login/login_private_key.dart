@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../common/common_appbar.dart';
-import '../../common/common_tips.dart';
-import '../../generated/l10n/app_localizations.dart';
-import '../../navigator/navigator.dart';
-import '../../nostr/utils.dart';
-import '../../nostr/nips/nip49/nip49.dart';
-import '../../utils/account.dart';
+import 'package:aegis/common/common_appbar.dart';
+import 'package:aegis/common/common_tips.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/nostr/utils.dart';
+import 'package:aegis/nostr/nips/nip49/nip49.dart';
+import 'package:aegis/utils/account.dart';
 
 class LoginPrivateKey extends StatefulWidget {
   const LoginPrivateKey({super.key});

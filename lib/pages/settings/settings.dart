@@ -3,14 +3,14 @@ import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
-import '../../db/userDB_isar.dart';
-import '../../generated/l10n/app_localizations.dart';
-import '../../navigator/navigator.dart';
-import '../../utils/account.dart';
-import '../../utils/account_manager.dart';
-import '../../utils/took_kit.dart';
-import '../login/login.dart';
-import 'account_backup.dart';
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/tool_kit.dart';
+import 'package:aegis/pages/login/login.dart';
+import 'package:aegis/pages/settings/account_backup.dart';
 
 /// Dialog widget for logout confirmation
 class _LogoutDialog extends StatefulWidget {
@@ -313,7 +313,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                     String npubKey =
                         Account.getNupPublicKey(account.currentPubkey);
 
-                    TookKit.copyKey(context, npubKey);
+                    ToolKit.copyKey(context, npubKey);
                   },
                   child: SizedBox(
                     width: 48,

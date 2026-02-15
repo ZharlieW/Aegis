@@ -3,7 +3,7 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
-import '../event.dart';
+import 'package:aegis/nostr/event.dart';
 import 'nostr_signer.dart';
 
 class LocalNostrSigner implements NostrSigner {

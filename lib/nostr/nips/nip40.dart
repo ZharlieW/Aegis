@@ -1,5 +1,5 @@
-import '../event.dart';
-import '../utils.dart';
+import 'package:aegis/nostr/event.dart';
+import 'package:aegis/nostr/utils.dart';
 
 /// NIP-40 helpers for expiration timestamps.
 class Nip40 {

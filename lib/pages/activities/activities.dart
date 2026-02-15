@@ -1,10 +1,10 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/db/signed_event_db_isar.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
-import 'package:aegis/utils/took_kit.dart';
+import 'package:aegis/utils/tool_kit.dart';
 import 'package:flutter/material.dart';
 
-import '../../db/clientAuthDB_isar.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'event_detail_page.dart';
 
 class Activities extends StatefulWidget {
@@ -71,7 +71,7 @@ class ActivitiesState extends State<Activities> {
 
 
   String _formatTimestamp(int timestamp) {
-    return TookKit.formatTimestamp(timestamp);
+    return ToolKit.formatTimestamp(timestamp);
   }
 
   String _getAppBarTitle() {

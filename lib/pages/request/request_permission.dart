@@ -2,8 +2,8 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/common_image.dart';
-import '../../generated/l10n/app_localizations.dart';
+import 'package:aegis/common/common_image.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 
 class RequestPermission extends StatefulWidget {
   const RequestPermission({super.key});

@@ -1,4 +1,4 @@
-import '../event.dart';
+import 'package:aegis/nostr/event.dart';
 
 abstract class NostrSigner {
 

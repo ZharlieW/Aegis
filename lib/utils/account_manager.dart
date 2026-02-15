@@ -1,9 +1,9 @@
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../db/db_isar.dart';
-import '../db/userDB_isar.dart';
-import '../nostr/utils.dart';
+import 'package:aegis/db/db_isar.dart';
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/nostr/utils.dart';
 import 'account.dart';
 import 'local_storage.dart';
 

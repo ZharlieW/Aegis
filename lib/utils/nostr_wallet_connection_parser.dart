@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
-import '../common/common_constant.dart';
+import 'package:aegis/common/common_constant.dart';
 import 'package:aegis/nostr/nostr.dart' show Event;
-import '../nostr/signer/local_nostr_signer.dart';
-import 'account.dart';
-import 'connect.dart';
-import 'url_scheme_handler.dart';
-import 'logger.dart';
+import 'package:aegis/nostr/signer/local_nostr_signer.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/connect.dart';
+import 'package:aegis/utils/url_scheme_handler.dart';
+import 'package:aegis/utils/logger.dart';
 
 class NostrWalletConnectionParserHandler {
   static ClientAuthDBISAR? parseUri(String? uri) {

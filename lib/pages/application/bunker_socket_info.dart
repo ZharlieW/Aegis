@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
-import '../../common/common_image.dart';
-import '../../navigator/navigator.dart';
-import '../../utils/server_nip46_signer.dart';
-import '../../utils/local_tls_proxy_manager_rust.dart';
-import '../../utils/took_kit.dart';
-import '../../db/clientAuthDB_isar.dart';
-import '../../utils/account_manager.dart';
+import 'package:aegis/common/common_image.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
+import 'package:aegis/utils/tool_kit.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/utils/account_manager.dart';
 
 class BunkerSocketInfo extends StatefulWidget {
   final String? applicationName;
@@ -151,7 +151,7 @@ class BunkerSocketInfoState extends State<BunkerSocketInfo> {
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => TookKit.copyKey(context, _bunkerUrl),
+                        onTap: () => ToolKit.copyKey(context, _bunkerUrl),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

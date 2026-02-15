@@ -8,18 +8,18 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/android_service_manager.dart';
 
-import '../common/common_constant.dart';
-import '../db/clientAuthDB_isar.dart';
-import '../db/db_isar.dart';
-import '../db/signed_event_db_isar.dart';
-import '../db/userDB_isar.dart';
-import '../navigator/navigator.dart';
-import '../nostr/keychain.dart';
-import '../nostr/nips/nip19/nip19.dart';
-import '../nostr/signer/local_nostr_signer.dart';
-import '../nostr/utils.dart';
-import '../pages/login/login.dart';
-import 'local_storage.dart';
+import 'package:aegis/common/common_constant.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/db_isar.dart';
+import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/nostr/keychain.dart';
+import 'package:aegis/nostr/nips/nip19/nip19.dart';
+import 'package:aegis/nostr/signer/local_nostr_signer.dart';
+import 'package:aegis/nostr/utils.dart';
+import 'package:aegis/pages/login/login.dart';
+import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/key_manager.dart';
 
 abstract mixin class AccountObservers {
@@ -219,7 +219,7 @@ class Account {
     AccountManager.sharedInstance.accountMap[user.pubkey] = user;
 
     LocalNostrSigner.instance.init();
-    final port = RelayService.preferredPort;
+    final port = RelayService.instance.preferredPort;
 
     // On Android, start foreground service to keep relay and signer running
     if (PlatformUtils.isAndroid) {

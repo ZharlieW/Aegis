@@ -1,71 +1,21 @@
+import 'package:aegis/core/app_bootstrap.dart';
+import 'package:aegis/core/service_locator.dart';
 import 'package:aegis/navigator/navigator.dart';
-import 'package:aegis/utils/account.dart';
-import 'package:aegis/utils/background_audio_manager.dart';
-import 'package:aegis/utils/launch_scheme_utils.dart';
-import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/logger.dart';
-import 'package:aegis/utils/signed_event_manager.dart';
-import 'package:aegis/utils/window_manager.dart';
-import 'package:aegis/utils/android_service_manager.dart';
+import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/theme_manager.dart';
-import 'package:aegis/nostr/nips/nip55/intent_handler.dart';
-import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 import 'package:aegis/nostr/nips/nip55/content_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:nostr_rust/src/rust/frb_generated.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/utils/locale_manager.dart';
-import 'pages/home/splash_screen.dart';
+import 'package:aegis/pages/home/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize RustLib for Nostr functionality
-  try {
-    await RustLib.init();
-    AegisLogger.info('✅ RustLib initialized successfully');
-  } catch (e) {
-    AegisLogger.error('❌ Failed to initialize RustLib: $e');
-  }
-  
-  // Initialize NIP-55 handler for Android Intent communication
-  try {
-    await NIP55Handler.initialize();
-    AegisLogger.info('✅ NIP-55 handler initialized successfully');
-  } catch (e) {
-    AegisLogger.error('❌ Failed to initialize NIP-55 handler: $e');
-  }
-  
-  // Initialize Intent handler for Android MainActivity communication
-  try {
-    await IntentHandler.initialize();
-    AegisLogger.info('✅ Intent handler initialized successfully');
-  } catch (e) {
-    AegisLogger.error('❌ Failed to initialize Intent handler: $e');
-  }
-  
-  // Initialize Android service manager for foreground service
-  try {
-    AndroidServiceManager.initialize();
-    AegisLogger.info('✅ Android service manager initialized successfully');
-  } catch (e) {
-    AegisLogger.error('❌ Failed to initialize Android service manager: $e');
-  }
-  
-  // Initialize intl library
-  await initializeDateFormatting();
-  
-  // Initialize window manager for desktop platforms
-  try {
-    await OXWindowManager().initWindow();
-    AegisLogger.info('✅ Window manager initialized successfully');
-  } catch (e) {
-    AegisLogger.error('❌ Failed to initialize window manager: $e');
-  }
-  
+  setupServiceLocator();
+  await AppBootstrap.runPreApp();
   runApp(MainApp());
 }
 
@@ -102,62 +52,9 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   Future<void> init() async {
-    try {
-      // Initialize audio service (will be skipped on Android)
-      await BackgroundAudioManager().init();
-    } catch (e) {
-      // Log error but don't crash the app
-      AegisLogger.error("Failed to initialize audio service: $e");
-    }
-
-    try {
-      WidgetsBinding.instance.addObserver(this);
-      await LocalStorage.init();
-      await ThemeManager.init();
-      await LocaleManager.init();
-      await Account.sharedInstance.autoLogin();
-      
-      
-      // Clean up on app startup
-      _performStartupCleanup();
-      
-      // Schedule periodic cleanup
-      _schedulePeriodicCleanup();
-    } catch (e) {
-      AegisLogger.error("Failed to initialize app: $e");
-    }
-  }
-  
-
-  /// Perform startup cleanup
-  void _performStartupCleanup() async {
-    try {
-      AegisLogger.info("🚀 Starting startup cleanup of signed events");
-      await SignedEventManager.sharedInstance.cleanupOnStartup();
-    } catch (e) {
-      AegisLogger.error("Failed to perform startup cleanup: $e");
-    }
-  }
-
-  /// Schedule periodic cleanup for signed events
-  void _schedulePeriodicCleanup() {
-    // Run cleanup every 30 minutes when app is active
-    Future.delayed(const Duration(minutes: 30), () {
-      _performPeriodicCleanup();
-    });
-  }
-
-  /// Perform periodic cleanup
-  void _performPeriodicCleanup() async {
-    try {
-      AegisLogger.info("🔄 Starting periodic cleanup of signed events");
-      await SignedEventManager.sharedInstance.periodicCleanup();
-    } catch (e) {
-      AegisLogger.error("Failed to perform periodic cleanup: $e");
-    } finally {
-      // Schedule next cleanup
-      _schedulePeriodicCleanup();
-    }
+    WidgetsBinding.instance.addObserver(this);
+    await AppBootstrap.runAppInit();
+    AppBootstrap.scheduleDeferred();
   }
 
   @override

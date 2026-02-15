@@ -6,7 +6,7 @@ import 'package:aegis/common/common_toast.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/relay_service.dart';
-import 'package:aegis/utils/took_kit.dart';
+import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/theme_manager.dart';
@@ -14,23 +14,21 @@ import 'package:aegis/utils/locale_manager.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../db/clientAuthDB_isar.dart';
-import '../../db/signed_event_db_isar.dart';
-import '../../generated/l10n/app_localizations.dart';
-import '../../navigator/navigator.dart';
-import '../../utils/launch_scheme_utils.dart';
-import '../../utils/server_nip46_signer.dart';
-import '../login/login.dart';
-import '../settings/settings.dart';
-import '../settings/local_relay_info.dart';
-import '../settings/language_page.dart';
-import '../browser/browser_page.dart';
-import '../activities/activities.dart';
-import 'add_application.dart';
-import 'application_info.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/launch_scheme_utils.dart';
+import 'package:aegis/utils/server_nip46_signer.dart';
+import 'package:aegis/pages/settings/settings.dart';
+import 'package:aegis/pages/settings/local_relay_info.dart';
+import 'package:aegis/pages/browser/browser_page.dart';
+import 'package:aegis/pages/activities/activities.dart';
+import 'package:aegis/pages/application/application_info.dart';
+import 'package:aegis/pages/application/application_sidebar.dart';
+import 'package:aegis/pages/application/application_home_content.dart';
 import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 
 class Application extends StatefulWidget {
@@ -243,7 +241,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             ),
           ),
         ),
-        title: _currentPage == 'home' ? _buildSegmentSelectorForAppBar() : null,
+        title: _currentPage == 'home'
+            ? ApplicationHomeSegmentSelector(
+                selectedSegment: _selectedSegment,
+                onSegmentChanged: (v) => setState(() {
+                  _selectedSegment = v;
+                  if (v == 1) _nip07ApplicationsFuture = null;
+                }),
+                onClearNip07Cache: () => _nip07ApplicationsFuture = null,
+              )
+            : null,
         centerTitle: true,
         actions: [
           GestureDetector(
@@ -263,270 +270,43 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     );
   }
 
-  // Build wide layout sidebar menu
-  Widget _buildSideMenu(BuildContext context, {bool useSplitLayout = false}) {
-    return Container(
-      width: 280,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-      ),
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                AppLocalizations.of(context)!.appSubtitle,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            // Menu items
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  ListTile(
-                    selected: useSplitLayout && _currentPage == 'home',
-                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                    title: Text(
-                      AppLocalizations.of(context)!.home,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    trailing: Icon(
-                      Icons.home,
-                      size: 22,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    onTap: () {
-                      if (useSplitLayout) {
-                        setState(() {
-                          _currentPage = 'home';
-                        });
-                      }
-                    },
-                  ),
-                  ListTile(
-                    selected: useSplitLayout && _currentPage == 'localRelay',
-                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                    title: Text(
-                      AppLocalizations.of(context)!.localRelay,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    trailing: CommonImage(
-                      iconName: 'relays_icon.png',
-                      size: 22,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    onTap: () {
-                      if (useSplitLayout) {
-                        setState(() {
-                          _currentPage = 'localRelay';
-                        });
-                      } else {
-                        AegisNavigator.pushPage(
-                          context,
-                          (context) => const LocalRelayInfo(),
-                        );
-                      }
-                    },
-                  ),
-                  ListTile(
-                    selected: useSplitLayout && _currentPage == 'browser',
-                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                    title: Text(
-                      AppLocalizations.of(context)!.browser,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    trailing: Icon(
-                      Icons.language,
-                      size: 22,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    onTap: () {
-                      if (useSplitLayout) {
-                        setState(() {
-                          _currentPage = 'browser';
-                        });
-                      } else {
-                        AegisNavigator.pushPage(
-                          context,
-                          (context) => const BrowserPage(),
-                        );
-                      }
-                    },
-                  ),
-                  _buildThemeSettingsTile(context, useSplitLayout),
-                  _buildLanguageTile(context, useSplitLayout),
-                  ListTile(
-                    selected: useSplitLayout && _currentPage == 'accounts',
-                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                    title: Text(
-                      AppLocalizations.of(context)!.accounts,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    trailing: CommonImage(
-                      iconName: 'user_icon.png',
-                      size: 22,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    onTap: () {
-                      if (useSplitLayout) {
-                        setState(() {
-                          _currentPage = 'accounts';
-                        });
-                      } else {
-                        AegisNavigator.pushPage(context, (context) => const Settings());
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-            // Bottom row: Github (left) and Version (right)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Github on left
-                  Expanded(
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        AppLocalizations.of(context)!.github,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      leading: CommonImage(
-                        iconName: 'github_icon.png',
-                        size: 22,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      onTap: () async {
-                        final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
-                        await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
-                      },
-                    ),
-                  ),
-                  // Version on right
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        _appVersion.isNotEmpty && _buildNumber.isNotEmpty
-                            ? '${AppLocalizations.of(context)!.version}: $_appVersion($_buildNumber)'
-                            : _appVersion.isNotEmpty
-                                ? '${AppLocalizations.of(context)!.version}: $_appVersion'
-                                : '--',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Build theme settings tile
-  Widget _buildThemeSettingsTile(BuildContext context, bool useSplitLayout) {
-    IconData themeIcon;
-    
+  void _onThemeCycleTap() {
+    final l10n = AppLocalizations.of(context)!;
+    ThemeMode nextMode;
+    String modeText;
     switch (_currentThemeMode) {
       case ThemeMode.light:
-        themeIcon = Icons.light_mode;
+        nextMode = ThemeMode.dark;
+        modeText = l10n.darkMode;
         break;
       case ThemeMode.dark:
-        themeIcon = Icons.dark_mode;
+        nextMode = ThemeMode.system;
+        modeText = l10n.systemDefault;
         break;
       case ThemeMode.system:
-        themeIcon = Icons.brightness_auto;
+        nextMode = ThemeMode.light;
+        modeText = l10n.lightMode;
         break;
     }
-
-    final l10n = AppLocalizations.of(context)!;
-    return ListTile(
-      title: Text(
-        l10n.theme,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      trailing: Icon(
-        themeIcon,
-        size: 22,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-      onTap: () async {
-        // Cycle through: Light -> Dark -> System -> Light
-        ThemeMode nextMode;
-        String modeText;
-        switch (_currentThemeMode) {
-          case ThemeMode.light:
-            nextMode = ThemeMode.dark;
-            modeText = l10n.darkMode;
-            break;
-          case ThemeMode.dark:
-            nextMode = ThemeMode.system;
-            modeText = l10n.systemDefault;
-            break;
-          case ThemeMode.system:
-            nextMode = ThemeMode.light;
-            modeText = l10n.lightMode;
-            break;
-        }
-        await ThemeManager.setThemeMode(nextMode);
-        if (mounted) {
-          CommonToast.instance.show(context, l10n.switchedTo(modeText), toastType: ToastType.normal);
-        }
-      },
-    );
+    ThemeManager.setThemeMode(nextMode);
+    if (mounted) {
+      CommonToast.instance.show(context, l10n.switchedTo(modeText), toastType: ToastType.normal);
+    }
   }
 
-  Widget _buildLanguageTile(BuildContext context, bool useSplitLayout) {
+  // Build wide layout sidebar menu
+  Widget _buildSideMenu(BuildContext context, {bool useSplitLayout = false}) {
     final l10n = AppLocalizations.of(context)!;
-    final current = LocaleManager.currentLocale;
-    final String languageLabel = _languageLabelForLocale(l10n, current);
-    return ListTile(
-      title: Text(
-        l10n.language,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      trailing: Text(
-        languageLabel,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-      onTap: () => AegisNavigator.pushPage(context, (context) => const LanguagePage()),
-    );
-  }
-
-  Widget _buildLanguageTileForDrawer(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final current = LocaleManager.currentLocale;
-    final String languageLabel = _languageLabelForLocale(l10n, current);
-    return ListTile(
-      title: Text(
-        l10n.language,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      trailing: Text(
-        languageLabel,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-      onTap: () {
-        Navigator.pop(context);
-        AegisNavigator.pushPage(context, (context) => const LanguagePage());
-      },
+    final languageLabel = _languageLabelForLocale(l10n, LocaleManager.currentLocale);
+    return ApplicationSidebar(
+      currentPage: _currentPage,
+      onPageSelected: (p) => setState(() => _currentPage = p),
+      appVersion: _appVersion,
+      buildNumber: _buildNumber,
+      currentThemeMode: _currentThemeMode,
+      onThemeTap: _onThemeCycleTap,
+      languageLabel: languageLabel,
+      useSplitLayout: useSplitLayout,
     );
   }
 
@@ -571,101 +351,14 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   // Build mobile drawer menu
   Widget _buildMobileDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          Container(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      AppLocalizations.of(context)!.appSubtitle,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ListTile(
-            title: Text(
-              AppLocalizations.of(context)!.localRelay,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: CommonImage(
-              iconName: 'relays_icon.png',
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              Navigator.pop(context); // Close drawer
-              AegisNavigator.pushPage(
-                context,
-                (context) => const LocalRelayInfo(),
-              );
-            },
-          ),
-          ListTile(
-            title: Text(
-              AppLocalizations.of(context)!.browser,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: Icon(
-              Icons.language,
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              Navigator.pop(context); // Close drawer
-              AegisNavigator.pushPage(
-                context,
-                (context) => const BrowserPage(),
-              );
-            },
-          ),
-          _buildThemeSettingsTile(context, false),
-          _buildLanguageTileForDrawer(context),
-          ListTile(
-            title: Text(
-              AppLocalizations.of(context)!.github,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: CommonImage(
-              iconName: 'github_icon.png',
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () async {
-              Navigator.pop(context); // Close drawer
-              final Uri fallbackUri = Uri.parse('https://github.com/ZharlieW/Aegis');
-              await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
-            },
-          ),
-          ListTile(
-            title: Text(
-              '${AppLocalizations.of(context)!.version}: ${_appVersion.isNotEmpty ? _appVersion : '--'}${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: CommonImage(
-              iconName: 'version_icon.png',
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              Navigator.pop(context); // Close drawer
-            },
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    final languageLabel = _languageLabelForLocale(l10n, LocaleManager.currentLocale);
+    return ApplicationDrawer(
+      appVersion: _appVersion,
+      buildNumber: _buildNumber,
+      currentThemeMode: _currentThemeMode,
+      onThemeTap: _onThemeCycleTap,
+      languageLabel: languageLabel,
     );
   }
 
@@ -689,115 +382,51 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool useSplitLayout =
         PlatformUtils.isDesktop || screenWidth >= _splitLayoutBreakpoint;
-    
+    final relayNotifier = PlatformUtils.isAndroid
+        ? (_androidRelayStatusNotifier ?? ValueNotifier<bool>(false))
+        : RelayService.instance.serverNotifier;
+
+    final listContent = ValueListenableBuilder<bool>(
+      valueListenable: relayNotifier,
+      builder: (context, isRelayRunning, child) {
+        if (!isRelayRunning && _selectedSegment == 0) {
+          if (PlatformUtils.isAndroid) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    AppLocalizations.of(context)!.waitingForRelayStart,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return _showPortUnAvailableWidget();
+        }
+        return _selectedSegment == 0
+            ? _applicationList(_getNIP46Applications())
+            : _buildNIP07ApplicationList();
+      },
+    );
+
     return SafeArea(
       child: SizedBox(
         height: double.infinity,
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                // Segment selector (only for desktop/split layout)
-                if (useSplitLayout && _currentPage == 'home')
-                  _buildSegmentSelector(),
-                // On Android, use isRelayRunning() to check status
-                // On other platforms, use serverNotifier
-                PlatformUtils.isAndroid
-                    ? ValueListenableBuilder<bool>(
-                        valueListenable: _androidRelayStatusNotifier ?? ValueNotifier<bool>(false),
-                        builder: (context, isRunning, child) {
-                          if (!isRunning && _selectedSegment == 0) {
-                            return Expanded(
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const CircularProgressIndicator(),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      AppLocalizations.of(context)!.waitingForRelayStart,
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: Theme.of(context).colorScheme.primary,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          return Expanded(
-                            child: _selectedSegment == 0
-                                ? _applicationList(_getNIP46Applications())
-                                : _buildNIP07ApplicationList(),
-                          );
-                        },
-                      )
-                    : ValueListenableBuilder<bool>(
-                        valueListenable: RelayService.instance.serverNotifier,
-                        builder: (context, value, child) {
-                          if (!value && _selectedSegment == 0) {
-                            return Expanded(
-                              child: _showPortUnAvailableWidget(),
-                            );
-                          }
-                          return Expanded(
-                            child: _selectedSegment == 0
-                                ? _applicationList(_getNIP46Applications())
-                                : _buildNIP07ApplicationList(),
-                          );
-                        },
-                      ),
-              ],
-            ).setPaddingOnly(top: 12.0),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () {
-                  // If Browser segment is selected, navigate to BrowserPage
-                  if (_selectedSegment == 1) {
-                    AegisNavigator.pushPage(
-                      context,
-                      (context) => const BrowserPage(),
-                    );
-                    return;
-                  }
-                  // Otherwise, navigate to AddApplication (for Remote segment)
-                  Account account = Account.sharedInstance;
-                  bool isEmpty = account.currentPubkey.isEmpty ||
-                      account.currentPrivkey.isEmpty;
-                  AegisNavigator.pushPage(
-                    context,
-                    (context) =>
-                        isEmpty ? const Login() : const AddApplication(),
-                  );
-                },
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color:  Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(56),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha((0.14 * 255).round()),
-                        offset: const Offset(0, 4),
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: CommonImage(
-                      iconName: 'add_icon.png',
-                      size: 36,
-                      color: Theme.of(context).colorScheme.onSecondaryContainer,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+        child: ApplicationHomeContent(
+          showSegmentSelector: useSplitLayout && _currentPage == 'home',
+          selectedSegment: _selectedSegment,
+          onSegmentChanged: (v) => setState(() {
+            _selectedSegment = v;
+            if (v == 1) _nip07ApplicationsFuture = null;
+          }),
+          listContent: listContent,
+          onClearNip07Cache: () => _nip07ApplicationsFuture = null,
         ),
       ),
     );
@@ -811,78 +440,6 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           (app.connectionType == EConnectionType.bunker.toInt ||
            app.connectionType == EConnectionType.nostrconnect.toInt);
     }).toList();
-  }
-
-  // Build segment selector
-  Widget _buildSegmentSelector() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SegmentedButton<int>(
-        segments: [
-          ButtonSegment(
-            value: 0,
-            label: Text(AppLocalizations.of(context)!.remote),
-            icon: const Icon(Icons.cloud_outlined),
-          ),
-          ButtonSegment(
-            value: 1,
-            label: Text(AppLocalizations.of(context)!.browser),
-            icon: const Icon(Icons.language),
-          ),
-        ],
-        selected: {_selectedSegment},
-        onSelectionChanged: (Set<int> newSelection) {
-          setState(() {
-            _selectedSegment = newSelection.first;
-            // Clear cache when switching to Browser segment to refresh the list
-            if (_selectedSegment == 1) {
-              _nip07ApplicationsFuture = null;
-            }
-          });
-        },
-      ),
-    );
-  }
-  
-  // Build segment selector for AppBar (compact version)
-  Widget _buildSegmentSelectorForAppBar() {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 220),
-        child: SegmentedButton<int>(
-          style: SegmentedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            minimumSize: const Size(0, 36),
-            visualDensity: VisualDensity.compact,
-          ),
-          segments: [
-            ButtonSegment(
-              value: 0,
-              label: Text(AppLocalizations.of(context)!.remote, style: const TextStyle(fontSize: 13)),
-              icon: const Icon(Icons.cloud_outlined, size: 16),
-            ),
-            ButtonSegment(
-              value: 1,
-              label: Text(AppLocalizations.of(context)!.browser, style: const TextStyle(fontSize: 13)),
-              icon: const Icon(Icons.language, size: 16),
-            ),
-          ],
-          selected: {_selectedSegment},
-          onSelectionChanged: (Set<int> newSelection) {
-            setState(() {
-              _selectedSegment = newSelection.first;
-              // Clear cache when switching to Browser segment to refresh the list
-              if (_selectedSegment == 1) {
-                _nip07ApplicationsFuture = null;
-              }
-            });
-          },
-        ),
-      ),
-    );
   }
 
   Widget _applicationList(
@@ -972,7 +529,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              TookKit.formatTimestamp(timestamp),
+                              ToolKit.formatTimestamp(timestamp),
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             Row(
@@ -1151,7 +708,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  TookKit.formatTimestamp(timestamp),
+                  ToolKit.formatTimestamp(timestamp),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Row(
@@ -1283,7 +840,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   Widget _showPortUnAvailableWidget() {
     final l10n = AppLocalizations.of(context)!;
-    final preferredPort = RelayService.preferredPort;
+    final preferredPort = RelayService.instance.preferredPort;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1335,7 +892,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   Future<void> _showChangePortDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: RelayService.preferredPort);
+    final controller = TextEditingController(text: RelayService.instance.preferredPort);
     final result = await showDialog<String>(
       context: context,
       builder: (context) {
@@ -1386,7 +943,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       },
     ).whenComplete(() => controller.dispose());
     if (result == null || !mounted) return;
-    await RelayService.setPreferredPort(result);
+    await RelayService.instance.setPreferredPort(result);
     try {
       await ServerNIP46Signer.instance.start(result);
       RelayService.instance.serverNotifier.addListener(() {

@@ -4,13 +4,15 @@ import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
-import 'logger.dart';
-import 'local_storage.dart';
-import 'platform_utils.dart';
+
+import 'package:aegis/core/contracts/relay_service_interface.dart';
+import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/local_storage.dart';
+import 'package:aegis/utils/platform_utils.dart';
 
 /// Nostr Relay Service using rust nostr-relay-builder
 /// This replaces the old AegisWebSocketServer
-class RelayService {
+class RelayService implements IRelayService {
   static final RelayService instance = RelayService._internal();
   factory RelayService() => instance;
 
@@ -23,7 +25,22 @@ class RelayService {
   String? _relayUrl;
   DateTime? _sessionStartTime;
 
+  @override
+  String get preferredPort {
+    try {
+      final v = LocalStorage.get(_keyLocalRelayPort);
+      if (v != null && v is String) return v;
+    } catch (_) {}
+    return _defaultPort.toString();
+  }
+
+  @override
+  Future<void> setPreferredPort(String port) async {
+    await LocalStorage.set(_keyLocalRelayPort, port);
+  }
+
   /// Get the relay URL (for client connections)
+  @override
   String get relayUrl {
     if (_relayUrl != null) return _relayUrl!;
     // If bound to 0.0.0.0, return localhost for local connections
@@ -33,17 +50,21 @@ class RelayService {
   }
 
   /// Get the relay port
+  @override
   String get port => _port.toString();
 
   /// Get the current session start time (if known)
+  @override
   DateTime? get sessionStartTime => _sessionStartTime;
 
   /// Ensure we have a session start timestamp when relay is confirmed running
+  @override
   void recordSessionStartIfUnset() {
     _sessionStartTime ??= DateTime.now();
   }
 
   /// Clear the cached session start timestamp
+  @override
   void clearSessionStart() {
     _sessionStartTime = null;
   }
@@ -54,22 +75,8 @@ class RelayService {
   /// Storage key for user-preferred relay port (optional override)
   static const String _keyLocalRelayPort = 'local_relay_port';
 
-  /// Current preferred port: from LocalStorage if set, otherwise platform default.
-  /// Used by start(port: null) and by ServerNIP46Signer when starting.
-  static String get preferredPort {
-    try {
-      final v = LocalStorage.get(_keyLocalRelayPort);
-      if (v != null && v is String) return v;
-    } catch (_) {}
-    return _defaultPort.toString();
-  }
-
-  /// Save user-preferred relay port. After changing, caller should start relay with new port.
-  static Future<void> setPreferredPort(String port) async {
-    await LocalStorage.set(_keyLocalRelayPort, port);
-  }
-
   /// Start the Nostr relay server
+  @override
   Future<void> start({
     String? host,  // If null, defaults to '127.0.0.1' on iOS (to avoid iCloud Private Relay conflicts) or '0.0.0.0' on other platforms
     String? port,
@@ -109,7 +116,7 @@ class RelayService {
       // On iOS, use 127.0.0.1 to avoid conflicts with iCloud Private Relay
       // iCloud Private Relay can interfere with binding to 0.0.0.0
       _host = host ?? (PlatformUtils.isIOS ? '127.0.0.1' : '0.0.0.0');
-      _port = port != null ? (int.tryParse(port) ?? _defaultPort) : (int.tryParse(preferredPort) ?? _defaultPort);
+      _port = port != null ? (int.tryParse(port) ?? _defaultPort) : (int.tryParse(this.preferredPort) ?? _defaultPort);
 
       // Check if already running
       if (await rust_relay.isRelayRunning()) {
@@ -174,6 +181,7 @@ class RelayService {
   }
 
   /// Stop the relay server
+  @override
   Future<void> stop() async {
     try {
       if (!await rust_relay.isRelayRunning()) {
@@ -225,11 +233,13 @@ class RelayService {
   }
 
   /// Check if relay is running
+  @override
   Future<bool> isRunning() async {
     return await rust_relay.isRelayRunning();
   }
 
   /// Get the current relay URL from the running instance
+  @override
   Future<String?> getUrl() async {
     try {
       if (!await rust_relay.isRelayRunning()) {

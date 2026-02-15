@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../generated/l10n/app_localizations.dart';
-import '../../utils/locale_manager.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/utils/locale_manager.dart';
 
 /// Full-page language selection. Replaces the language dialog.
 class LanguagePage extends StatelessWidget {

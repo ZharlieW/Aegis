@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../../signer/local_nostr_signer.dart';
-import '../../string_util.dart';
+import 'package:aegis/nostr/signer/local_nostr_signer.dart';
+import 'package:aegis/nostr/string_util.dart';
 import 'package:aegis/utils/thread_pool_manager.dart';
 
 class NostrRemoteRequest {

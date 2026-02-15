@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../navigator/navigator.dart';
-import '../pages/login/login.dart';
-import 'account.dart';
-import 'account_manager.dart';
-import 'launch_scheme_utils.dart';
-import 'nostr_wallet_connection_parser.dart';
-import 'logger.dart';
-import 'platform_utils.dart';
-import '../db/clientAuthDB_isar.dart';
-import '../generated/l10n/app_localizations.dart';
-import 'local_tls_proxy_manager_rust.dart';
+import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/pages/login/login.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/launch_scheme_utils.dart';
+import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
+import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/platform_utils.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
 
 /// URL Scheme Handler for Aegis and NostrSigner schemes
 class UrlSchemeHandler {

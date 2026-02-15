@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
-import '../../generated/l10n/app_localizations.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'bunker_socket_info.dart';
 
 class BunkerApplicationNamePage extends StatefulWidget {

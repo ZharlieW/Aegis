@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../event.dart';
+import 'package:aegis/nostr/event.dart';
 
 /// NIP-42 helpers for relay authentication.
 class Nip42 {

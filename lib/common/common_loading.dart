@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import '../utils/adapt.dart';
+import 'package:aegis/utils/adapt.dart';
 
 class OXLoading extends State<StatefulWidget> with TickerProviderStateMixin {
 

@@ -1,8 +1,8 @@
 import 'package:isar/isar.dart';
 
-import '../nostr/utils.dart';
-import '../utils/account.dart';
-import '../utils/account_manager.dart';
+import 'package:aegis/nostr/utils.dart';
+import 'package:aegis/utils/account.dart';
+import 'package:aegis/utils/account_manager.dart';
 import 'db_isar.dart';
 
 part 'userDB_isar.g.dart';

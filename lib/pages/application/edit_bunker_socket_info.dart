@@ -3,9 +3,9 @@ import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
-import '../../db/clientAuthDB_isar.dart';
-import '../../generated/l10n/app_localizations.dart';
-import '../../navigator/navigator.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/navigator/navigator.dart';
 
 class EditApplicationInfo extends StatefulWidget {
 

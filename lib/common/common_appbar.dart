@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../navigator/navigator.dart';
+import 'package:aegis/navigator/navigator.dart';
 import 'common_image.dart';
 
 const double commonBarHeight = 56.0;

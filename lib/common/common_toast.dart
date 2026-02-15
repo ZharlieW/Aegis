@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import '../utils/adapt.dart';
-import 'common_image.dart';
+import 'package:aegis/utils/adapt.dart';
+import 'package:aegis/common/common_image.dart';
 
 class CommonToast {
   static CommonToast get instance => _getInstance();

@@ -3,10 +3,10 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/common_appbar.dart';
-import '../../generated/l10n/app_localizations.dart';
-import '../../nostr/keychain.dart';
-import '../../utils/account.dart';
+import 'package:aegis/common/common_appbar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/nostr/keychain.dart';
+import 'package:aegis/utils/account.dart';
 
 class CreateNostrAccount extends StatefulWidget {
   const CreateNostrAccount({super.key});

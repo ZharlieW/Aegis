@@ -6,10 +6,10 @@ import 'account.dart';
 import 'nostr_wallet_connection_parser.dart';
 import 'url_scheme_handler.dart';
 import 'logger.dart';
-import '../db/userDB_isar.dart';
-import '../utils/local_storage.dart';
-import '../nostr/utils.dart';
-import '../nostr/nips/nip55/nip55_handler.dart';
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/utils/local_storage.dart';
+import 'package:aegis/nostr/utils.dart';
+import 'package:aegis/nostr/nips/nip55/nip55_handler.dart';
 
 
 class LaunchSchemeUtils {

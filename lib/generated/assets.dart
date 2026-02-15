@@ -205,7 +205,7 @@ class Assets {
   static const String utilsSignedEventManager = 'lib/utils/signed_event_manager.dart';
   static const String utilsThemeManager = 'lib/utils/theme_manager.dart';
   static const String utilsThreadPoolManager = 'lib/utils/thread_pool_manager.dart';
-  static const String utilsTookKit = 'lib/utils/took_kit.dart';
+  static const String utilsToolKit = 'lib/utils/tool_kit.dart';
   static const String utilsUrlSchemeHandler = 'lib/utils/url_scheme_handler.dart';
   static const String utilsWidgetTool = 'lib/utils/widget_tool.dart';
   static const String utilsWindowManager = 'lib/utils/window_manager.dart';

@@ -1,6 +1,6 @@
-import '../../keychain.dart';
-import '../../string_util.dart';
-import '../nip19/nip19.dart';
+import 'package:aegis/nostr/keychain.dart';
+import 'package:aegis/nostr/string_util.dart';
+import 'package:aegis/nostr/nips/nip19/nip19.dart';
 
 /// This client is designed for nostr client.
 class NostrRemoteSignerInfo {

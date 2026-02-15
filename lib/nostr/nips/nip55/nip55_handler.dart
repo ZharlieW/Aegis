@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
-import '../../../utils/logger.dart';
-import '../../../utils/local_storage.dart';
-import '../../../db/userDB_isar.dart';
-import '../../../db/db_isar.dart';
-import '../../../db/signed_event_db_isar.dart';
-import '../../../utils/key_manager.dart';
-import '../nip19/nip19.dart';
-import '../../../nostr/utils.dart';
+import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/local_storage.dart';
+import 'package:aegis/db/userDB_isar.dart';
+import 'package:aegis/db/db_isar.dart';
+import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/utils/key_manager.dart';
+import 'package:aegis/nostr/nips/nip19/nip19.dart';
+import 'package:aegis/nostr/utils.dart';
 
 /// NIP-55 Core Service Handler
 /// Handles all NIP-55 business logic including Content Provider and Intent requests
