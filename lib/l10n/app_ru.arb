@@ -18,7 +18,13 @@
   "invalidPrivateKeyFormat": "Недопустимый формат приватного ключа!",
   "loginSuccess": "Вход выполнен!",
   "loginFailed": "Ошибка входа: {message}",
-  "@loginFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@loginFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "typeConfirmToProceed": "Введите «confirm» для продолжения",
   "logoutConfirm": "Вы уверены, что хотите выйти?",
   "notLoggedIn": "Не выполнен вход",
@@ -75,19 +81,37 @@
   "lightMode": "Светлая тема",
   "systemDefault": "Системная",
   "switchedTo": "Переключено на {mode}",
-  "@switchedTo": {"placeholders": {"mode": {"type": "String"}}},
+  "@switchedTo": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "home": "Главная",
   "waitingForRelayStart": "Ожидание запуска релея...",
   "connected": "Подключено",
   "disconnected": "Отключено",
   "errorLoadingNip07Applications": "Ошибка загрузки приложений NIP-07: {error}",
-  "@errorLoadingNip07Applications": {"placeholders": {"error": {"type": "String"}}},
+  "@errorLoadingNip07Applications": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "noNip07ApplicationsHint": "Пока нет приложений NIP-07.\n\nИспользуйте браузер для доступа к приложениям Nostr!",
   "unknown": "Неизвестно",
   "active": "Активно",
   "congratulationsEmptyState": "Поздравляем!\n\nТеперь вы можете использовать приложения с поддержкой Aegis!",
   "localRelayPortInUse": "Локальный релей настроен на порт {port}, но его, похоже, уже использует другое приложение. Закройте конфликтующее приложение и попробуйте снова.",
-  "@localRelayPortInUse": {"placeholders": {"port": {"type": "String"}}},
+  "@localRelayPortInUse": {
+    "placeholders": {
+      "port": {
+        "type": "String"
+      }
+    }
+  },
   "nip46Started": "Подписание NIP-46 запущено!",
   "nip46FailedToStart": "Не удалось запустить.",
   "retry": "Повторить",
@@ -104,17 +128,41 @@
   "restartRelayConfirm": "Перезапустить релей? Он будет временно остановлен и затем запущен снова.",
   "relayRestartedSuccess": "Релей успешно перезапущен",
   "relayRestartFailed": "Не удалось перезапустить релей: {message}",
-  "@relayRestartFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@relayRestartFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "databaseClearedSuccess": "База данных успешно очищена",
   "databaseClearFailed": "Не удалось очистить базу данных",
   "errorWithMessage": "Ошибка: {message}",
-  "@errorWithMessage": {"placeholders": {"message": {"type": "String"}}},
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "exportDatabase": "Экспорт базы данных",
   "exportDatabaseHint": "База данных релея будет экспортирована в ZIP-файл. Экспорт может занять некоторое время.",
   "databaseExportedTo": "База данных экспортирована в: {path}",
-  "@databaseExportedTo": {"placeholders": {"path": {"type": "String"}}},
+  "@databaseExportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "databaseExportedZip": "База данных экспортирована как ZIP: {path}",
-  "@databaseExportedZip": {"placeholders": {"path": {"type": "String"}}},
+  "@databaseExportedZip": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "databaseExportFailed": "Не удалось экспортировать базу данных",
   "importDatabaseReplaceHint": "Текущая база будет заменена импортируемой копией. Текущая база будет сохранена перед импортом. Это действие нельзя отменить.",
   "selectDatabaseBackupFile": "Выберите файл (ZIP) или каталог резервной копии",
@@ -136,7 +184,13 @@
   "noLogsAvailable": "Нет доступных журналов",
   "passwordRequired": "Требуется пароль",
   "encryptionFailed": "Ошибка шифрования: {message}",
-  "@encryptionFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@encryptionFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "encryptedKeyCopiedToClipboard": "Зашифрованный приватный ключ скопирован в буфер обмена",
   "accountBackup": "Резервная копия аккаунта",
   "publicAccountId": "Публичный ID аккаунта",
@@ -185,17 +239,47 @@
   "invalidUrlHint": "Недопустимый URL. Введите корректный HTTP- или HTTPS-адрес.",
   "appAlreadyInList": "Это приложение уже в списке.",
   "appAdded": "Добавлено {name}",
-  "@appAdded": {"placeholders": {"name": {"type": "String"}}},
+  "@appAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "appAddFailed": "Не удалось добавить приложение: {error}",
-  "@appAddFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@appAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "deleteApp": "Удалить приложение",
   "deleteAppConfirm": "Удалить «{name}»?",
-  "@deleteAppConfirm": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteAppConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "delete": "Удалить",
   "appDeleted": "Удалено {name}",
-  "@appDeleted": {"placeholders": {"name": {"type": "String"}}},
+  "@appDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "appDeleteFailed": "Не удалось удалить приложение: {error}",
-  "@appDeleteFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@appDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "copiedToClipboard": "Скопировано в буфер обмена",
   "eventDetails": "Подробности события",
   "eventDetailsCopiedToClipboard": "Подробности события скопированы в буфер обмена",
@@ -217,5 +301,38 @@
   "noResultsFound": "Ничего не найдено",
   "pleaseSelectApplication": "Выберите приложение",
   "orEnterCustomName": "Или введите своё название",
-  "continueButton": "Продолжить"
+  "continueButton": "Продолжить",
+  "confirmLiteral": "confirm",
+  "databaseExportedToIosHint": "Database exported to: {path}\n\nYou can access it via Files app > On My iPhone > Aegis",
+  "durationDayShort": "d",
+  "durationHourShort": "h",
+  "durationMinuteShort": "m",
+  "durationSecondShort": "s",
+  "durationZero": "0s",
+  "errorCannotDetermineHomeDir": "Cannot determine home directory",
+  "errorZipFileNotFound": "ZIP file not found",
+  "importDatabasePathHint": "/path/to/nostr_relay_backup_...",
+  "localRelayChangePort": "Change port",
+  "localRelayChangePortHint": "After changing the port, you need to update the signer link (bunker URL) in your applications.",
+  "protocolWs": "WS",
+  "protocolWss": "WSS",
+  "relayStatsEvents": "EVENTS",
+  "relayStatsSize": "SIZE",
+  "relayStatsUptime": "UPTIME",
+  "shareRelayBackupAndroidSnackbar": "Database exported as ZIP file. Choose where to save in the share sheet.",
+  "shareRelayBackupAndroidText": "Nostr Relay Database Backup\n\nChoose where to save the ZIP file.",
+  "shareRelayBackupIosSnackbar": "Database exported as ZIP file. Use \"Save to Files\" in the share sheet to save.",
+  "shareRelayBackupIosText": "Nostr Relay Database Backup\n\nTap \"Save to Files\" to save to Files app.",
+  "shareRelayBackupSubject": "Nostr Relay Database Backup",
+  "unitBytes": "B",
+  "unitGB": "GB",
+  "unitKB": "KB",
+  "unitMB": "MB",
+  "@databaseExportedToIosHint": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  }
 }

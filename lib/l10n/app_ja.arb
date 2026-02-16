@@ -18,7 +18,13 @@
   "invalidPrivateKeyFormat": "秘密鍵の形式が無効です！",
   "loginSuccess": "ログインに成功しました！",
   "loginFailed": "ログインに失敗しました：{message}",
-  "@loginFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@loginFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "typeConfirmToProceed": "続行するには「confirm」と入力",
   "logoutConfirm": "ログアウトしてもよろしいですか？",
   "notLoggedIn": "未ログイン",
@@ -75,19 +81,37 @@
   "lightMode": "ライトモード",
   "systemDefault": "システムに従う",
   "switchedTo": "{mode} に切り替えました",
-  "@switchedTo": {"placeholders": {"mode": {"type": "String"}}},
+  "@switchedTo": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "home": "ホーム",
   "waitingForRelayStart": "Relay の起動を待っています...",
   "connected": "接続済み",
   "disconnected": "未接続",
   "errorLoadingNip07Applications": "NIP-07 アプリの読み込みに失敗しました：{error}",
-  "@errorLoadingNip07Applications": {"placeholders": {"error": {"type": "String"}}},
+  "@errorLoadingNip07Applications": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "noNip07ApplicationsHint": "NIP-07 アプリはまだありません。\n\nブラウザで Nostr アプリにアクセスしてください！",
   "unknown": "不明",
   "active": "アクティブ",
   "congratulationsEmptyState": "おめでとうございます！\n\nAegis 対応アプリの利用を開始できます！",
   "localRelayPortInUse": "ローカル Relay はポート {port} を使用する設定ですが、別のアプリが既に使用しているようです。競合するアプリを終了してから再試行してください。",
-  "@localRelayPortInUse": {"placeholders": {"port": {"type": "String"}}},
+  "@localRelayPortInUse": {
+    "placeholders": {
+      "port": {
+        "type": "String"
+      }
+    }
+  },
   "nip46Started": "NIP-46 署名を開始しました！",
   "nip46FailedToStart": "開始に失敗しました。",
   "retry": "再試行",
@@ -104,17 +128,41 @@
   "restartRelayConfirm": "Relay を再起動してもよろしいですか？一時停止してから再起動します。",
   "relayRestartedSuccess": "Relay の再起動に成功しました",
   "relayRestartFailed": "Relay の再起動に失敗しました：{message}",
-  "@relayRestartFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@relayRestartFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "databaseClearedSuccess": "データベースのクリアに成功しました",
   "databaseClearFailed": "データベースのクリアに失敗しました",
   "errorWithMessage": "エラー：{message}",
-  "@errorWithMessage": {"placeholders": {"message": {"type": "String"}}},
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "exportDatabase": "データベースをエクスポート",
   "exportDatabaseHint": "Relay データベースを ZIP ファイルとしてエクスポートします。しばらくかかる場合があります。",
   "databaseExportedTo": "データベースをエクスポートしました：{path}",
-  "@databaseExportedTo": {"placeholders": {"path": {"type": "String"}}},
+  "@databaseExportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "databaseExportedZip": "データベースを ZIP ファイルとしてエクスポートしました：{path}",
-  "@databaseExportedZip": {"placeholders": {"path": {"type": "String"}}},
+  "@databaseExportedZip": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "databaseExportFailed": "データベースのエクスポートに失敗しました",
   "importDatabaseReplaceHint": "現在のデータベースがインポートしたバックアップで置き換わります。既存のデータベースはインポート前にバックアップされます。この操作は元に戻せません。",
   "selectDatabaseBackupFile": "データベースバックアップファイル（ZIP）またはディレクトリを選択",
@@ -136,7 +184,13 @@
   "noLogsAvailable": "ログがありません",
   "passwordRequired": "パスワードを入力してください",
   "encryptionFailed": "暗号化に失敗しました：{message}",
-  "@encryptionFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@encryptionFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "encryptedKeyCopiedToClipboard": "暗号化された秘密鍵をクリップボードにコピーしました",
   "accountBackup": "アカウントバックアップ",
   "publicAccountId": "公開アカウント ID",
@@ -185,17 +239,47 @@
   "invalidUrlHint": "無効な URL です。有効な HTTP または HTTPS の URL を入力してください。",
   "appAlreadyInList": "このアプリは既にリストにあります。",
   "appAdded": "{name} を追加しました",
-  "@appAdded": {"placeholders": {"name": {"type": "String"}}},
+  "@appAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "appAddFailed": "アプリの追加に失敗しました：{error}",
-  "@appAddFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@appAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "deleteApp": "アプリを削除",
   "deleteAppConfirm": "「{name}」を削除してもよろしいですか？",
-  "@deleteAppConfirm": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteAppConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "delete": "削除",
   "appDeleted": "{name} を削除しました",
-  "@appDeleted": {"placeholders": {"name": {"type": "String"}}},
+  "@appDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "appDeleteFailed": "アプリの削除に失敗しました：{error}",
-  "@appDeleteFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@appDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "copiedToClipboard": "クリップボードにコピーしました",
   "eventDetails": "イベント詳細",
   "eventDetailsCopiedToClipboard": "イベント詳細をクリップボードにコピーしました",
@@ -217,5 +301,38 @@
   "noResultsFound": "結果が見つかりません",
   "pleaseSelectApplication": "アプリを選択してください",
   "orEnterCustomName": "またはカスタム名を入力",
-  "continueButton": "続ける"
+  "continueButton": "続ける",
+  "confirmLiteral": "confirm",
+  "databaseExportedToIosHint": "Database exported to: {path}\n\nYou can access it via Files app > On My iPhone > Aegis",
+  "durationDayShort": "d",
+  "durationHourShort": "h",
+  "durationMinuteShort": "m",
+  "durationSecondShort": "s",
+  "durationZero": "0s",
+  "errorCannotDetermineHomeDir": "Cannot determine home directory",
+  "errorZipFileNotFound": "ZIP file not found",
+  "importDatabasePathHint": "/path/to/nostr_relay_backup_...",
+  "localRelayChangePort": "Change port",
+  "localRelayChangePortHint": "After changing the port, you need to update the signer link (bunker URL) in your applications.",
+  "protocolWs": "WS",
+  "protocolWss": "WSS",
+  "relayStatsEvents": "EVENTS",
+  "relayStatsSize": "SIZE",
+  "relayStatsUptime": "UPTIME",
+  "shareRelayBackupAndroidSnackbar": "Database exported as ZIP file. Choose where to save in the share sheet.",
+  "shareRelayBackupAndroidText": "Nostr Relay Database Backup\n\nChoose where to save the ZIP file.",
+  "shareRelayBackupIosSnackbar": "Database exported as ZIP file. Use \"Save to Files\" in the share sheet to save.",
+  "shareRelayBackupIosText": "Nostr Relay Database Backup\n\nTap \"Save to Files\" to save to Files app.",
+  "shareRelayBackupSubject": "Nostr Relay Database Backup",
+  "unitBytes": "B",
+  "unitGB": "GB",
+  "unitKB": "KB",
+  "unitMB": "MB",
+  "@databaseExportedToIosHint": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  }
 }

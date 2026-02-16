@@ -18,7 +18,13 @@
   "invalidPrivateKeyFormat": "¡Formato de clave privada no válido!",
   "loginSuccess": "¡Sesión iniciada correctamente!",
   "loginFailed": "Error al iniciar sesión: {message}",
-  "@loginFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@loginFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "typeConfirmToProceed": "Escribe \"confirm\" para continuar",
   "logoutConfirm": "¿Seguro que quieres cerrar sesión?",
   "notLoggedIn": "No has iniciado sesión",
@@ -75,19 +81,37 @@
   "lightMode": "Modo claro",
   "systemDefault": "Predeterminado del sistema",
   "switchedTo": "Cambiado a {mode}",
-  "@switchedTo": {"placeholders": {"mode": {"type": "String"}}},
+  "@switchedTo": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "home": "Inicio",
   "waitingForRelayStart": "Esperando a que arranque el relay...",
   "connected": "Conectado",
   "disconnected": "Desconectado",
   "errorLoadingNip07Applications": "Error al cargar aplicaciones NIP-07: {error}",
-  "@errorLoadingNip07Applications": {"placeholders": {"error": {"type": "String"}}},
+  "@errorLoadingNip07Applications": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "noNip07ApplicationsHint": "Aún no hay aplicaciones NIP-07.\n\n¡Usa el navegador para acceder a apps Nostr!",
   "unknown": "Desconocido",
   "active": "Activo",
   "congratulationsEmptyState": "¡Enhorabuena!\n\nYa puedes usar aplicaciones compatibles con Aegis.",
   "localRelayPortInUse": "El relay local usa el puerto {port}, pero parece que otra aplicación ya lo está usando. Cierra la aplicación en conflicto e inténtalo de nuevo.",
-  "@localRelayPortInUse": {"placeholders": {"port": {"type": "String"}}},
+  "@localRelayPortInUse": {
+    "placeholders": {
+      "port": {
+        "type": "String"
+      }
+    }
+  },
   "nip46Started": "¡Firmante NIP-46 iniciado!",
   "nip46FailedToStart": "Error al iniciar.",
   "retry": "Reintentar",
@@ -104,17 +128,41 @@
   "restartRelayConfirm": "¿Seguro que quieres reiniciar el relay? Se detendrá temporalmente y se volverá a iniciar.",
   "relayRestartedSuccess": "Relay reiniciado correctamente",
   "relayRestartFailed": "Error al reiniciar el relay: {message}",
-  "@relayRestartFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@relayRestartFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "databaseClearedSuccess": "Base de datos borrada correctamente",
   "databaseClearFailed": "Error al borrar la base de datos",
   "errorWithMessage": "Error: {message}",
-  "@errorWithMessage": {"placeholders": {"message": {"type": "String"}}},
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "exportDatabase": "Exportar base de datos",
   "exportDatabaseHint": "Se exportará la base de datos del relay como archivo ZIP. Puede tardar un momento.",
   "databaseExportedTo": "Base de datos exportada a: {path}",
-  "@databaseExportedTo": {"placeholders": {"path": {"type": "String"}}},
+  "@databaseExportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "databaseExportedZip": "Base de datos exportada como ZIP: {path}",
-  "@databaseExportedZip": {"placeholders": {"path": {"type": "String"}}},
+  "@databaseExportedZip": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "databaseExportFailed": "Error al exportar la base de datos",
   "importDatabaseReplaceHint": "La base de datos actual se sustituirá por la copia importada. La base actual se respaldará antes. Esta acción no se puede deshacer.",
   "selectDatabaseBackupFile": "Seleccionar archivo (ZIP) o directorio de copia de la base de datos",
@@ -136,7 +184,13 @@
   "noLogsAvailable": "No hay registros",
   "passwordRequired": "Se requiere contraseña",
   "encryptionFailed": "Error de cifrado: {message}",
-  "@encryptionFailed": {"placeholders": {"message": {"type": "String"}}},
+  "@encryptionFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "encryptedKeyCopiedToClipboard": "Clave privada cifrada copiada al portapapeles",
   "accountBackup": "Copia de seguridad de la cuenta",
   "publicAccountId": "ID público de la cuenta",
@@ -185,17 +239,47 @@
   "invalidUrlHint": "URL no válida. Introduce una URL HTTP o HTTPS válida.",
   "appAlreadyInList": "Esta aplicación ya está en la lista.",
   "appAdded": "Añadido {name}",
-  "@appAdded": {"placeholders": {"name": {"type": "String"}}},
+  "@appAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "appAddFailed": "Error al añadir la aplicación: {error}",
-  "@appAddFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@appAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "deleteApp": "Eliminar aplicación",
   "deleteAppConfirm": "¿Seguro que quieres eliminar \"{name}\"?",
-  "@deleteAppConfirm": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteAppConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "delete": "Eliminar",
   "appDeleted": "Eliminado {name}",
-  "@appDeleted": {"placeholders": {"name": {"type": "String"}}},
+  "@appDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "appDeleteFailed": "Error al eliminar la aplicación: {error}",
-  "@appDeleteFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@appDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "copiedToClipboard": "Copiado al portapapeles",
   "eventDetails": "Detalles del evento",
   "eventDetailsCopiedToClipboard": "Detalles del evento copiados al portapapeles",
@@ -217,5 +301,38 @@
   "noResultsFound": "No se encontraron resultados",
   "pleaseSelectApplication": "Por favor selecciona una aplicación",
   "orEnterCustomName": "O introduce un nombre personalizado",
-  "continueButton": "Continuar"
+  "continueButton": "Continuar",
+  "confirmLiteral": "confirm",
+  "databaseExportedToIosHint": "Database exported to: {path}\n\nYou can access it via Files app > On My iPhone > Aegis",
+  "durationDayShort": "d",
+  "durationHourShort": "h",
+  "durationMinuteShort": "m",
+  "durationSecondShort": "s",
+  "durationZero": "0s",
+  "errorCannotDetermineHomeDir": "Cannot determine home directory",
+  "errorZipFileNotFound": "ZIP file not found",
+  "importDatabasePathHint": "/path/to/nostr_relay_backup_...",
+  "localRelayChangePort": "Change port",
+  "localRelayChangePortHint": "After changing the port, you need to update the signer link (bunker URL) in your applications.",
+  "protocolWs": "WS",
+  "protocolWss": "WSS",
+  "relayStatsEvents": "EVENTS",
+  "relayStatsSize": "SIZE",
+  "relayStatsUptime": "UPTIME",
+  "shareRelayBackupAndroidSnackbar": "Database exported as ZIP file. Choose where to save in the share sheet.",
+  "shareRelayBackupAndroidText": "Nostr Relay Database Backup\n\nChoose where to save the ZIP file.",
+  "shareRelayBackupIosSnackbar": "Database exported as ZIP file. Use \"Save to Files\" in the share sheet to save.",
+  "shareRelayBackupIosText": "Nostr Relay Database Backup\n\nTap \"Save to Files\" to save to Files app.",
+  "shareRelayBackupSubject": "Nostr Relay Database Backup",
+  "unitBytes": "B",
+  "unitGB": "GB",
+  "unitKB": "KB",
+  "unitMB": "MB",
+  "@databaseExportedToIosHint": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  }
 }

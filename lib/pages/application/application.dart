@@ -230,14 +230,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       appBar: AppBar(
         leadingWidth: 56,
         leading: Builder(
-          builder: (context) => GestureDetector(
-            onTap: () => Scaffold.of(context).openDrawer(),
-            child: Center(
-              child: CommonImage(
-                iconName: 'more_icon.png',
-                size: 20,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+          builder: (context) => IconButton(
+            icon: CommonImage(
+              iconName: 'more_icon.png',
+              size: 20,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
         ),
@@ -253,16 +255,18 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             : null,
         centerTitle: true,
         actions: [
-          GestureDetector(
-            onTap: () => AegisNavigator.pushPage(context, (context) => const Settings()),
-            child: Center(
-              child: CommonImage(
-                iconName: 'user_icon.png',
-                size: 20,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+          IconButton(
+            icon: CommonImage(
+              iconName: 'user_icon.png',
+              size: 20,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
-          ).setPaddingOnly(right: 16.0),
+            onPressed: () => AegisNavigator.pushPage(context, (context) => const Settings()),
+            style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
         ],
       ),
       drawer: _buildMobileDrawer(context),
@@ -461,14 +465,17 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                 bool isConnect = _isConnected(value);
 
                 Widget iconWidget() {
-                  return AppIconLoader.buildIcon(
-                    imageUrl: value.image,
-                    appName: value.name ?? '?',
-                    size: 40,
-                    fallback: _buildInitialIcon(value.name ?? '?', 40),
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(20),
-                  ).setPaddingOnly(right: 8.0);
+                  return Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8),
+                    child: AppIconLoader.buildIcon(
+                      imageUrl: value.image,
+                      appName: value.name ?? '?',
+                      size: 40,
+                      fallback: _buildInitialIcon(value.name ?? '?', 40),
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  );
                 }
 
                 return GestureDetector(
@@ -482,6 +489,14 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     height: 72,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+                          width: 1,
+                        ),
+                      ),
+                    ),
                     child: Row(
                       children: [
                         iconWidget(),
@@ -534,16 +549,19 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                             ),
                             Row(
                               children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: isConnect
-                                        ? Colors.greenAccent
-                                        : Colors.grey,
-                                    borderRadius: BorderRadius.circular(32),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.only(end: 8),
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: isConnect
+                                          ? Colors.greenAccent
+                                          : Colors.grey,
+                                      borderRadius: BorderRadius.circular(32),
+                                    ),
                                   ),
-                                ).setPaddingOnly(right: 8.0),
+                                ),
                                 Text(
                                   isConnect ? AppLocalizations.of(context)!.connected : AppLocalizations.of(context)!.disconnected,
                                   style:

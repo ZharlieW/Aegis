@@ -994,6 +994,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
+  String get localRelayChangePort => 'Change port';
+
+  @override
+  String get localRelayChangePortHint => 'After changing the port, you need to update the signer link (bunker URL) in your applications.';
+
+  @override
   String get nip46Started => 'NIP-46 簽署器已啟動！';
 
   @override
@@ -1360,6 +1366,80 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get copiedSuccessfully => '複製成功';
+
+  @override
+  String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
+
+  @override
+  String get relayStatsSize => 'SIZE';
+
+  @override
+  String get relayStatsEvents => 'EVENTS';
+
+  @override
+  String get relayStatsUptime => 'UPTIME';
+
+  @override
+  String get shareRelayBackupSubject => 'Nostr Relay Database Backup';
+
+  @override
+  String get shareRelayBackupIosText => 'Nostr Relay Database Backup\n\nTap \"Save to Files\" to save to Files app.';
+
+  @override
+  String get shareRelayBackupIosSnackbar => 'Database exported as ZIP file. Use \"Save to Files\" in the share sheet to save.';
+
+  @override
+  String databaseExportedToIosHint(String path) {
+    return 'Database exported to: $path\n\nYou can access it via Files app > On My iPhone > Aegis';
+  }
+
+  @override
+  String get shareRelayBackupAndroidText => 'Nostr Relay Database Backup\n\nChoose where to save the ZIP file.';
+
+  @override
+  String get shareRelayBackupAndroidSnackbar => 'Database exported as ZIP file. Choose where to save in the share sheet.';
+
+  @override
+  String get protocolWs => 'WS';
+
+  @override
+  String get protocolWss => 'WSS';
+
+  @override
+  String get confirmLiteral => 'confirm';
+
+  @override
+  String get errorCannotDetermineHomeDir => 'Cannot determine home directory';
+
+  @override
+  String get errorZipFileNotFound => 'ZIP file not found';
+
+  @override
+  String get unitBytes => 'B';
+
+  @override
+  String get unitKB => 'KB';
+
+  @override
+  String get unitMB => 'MB';
+
+  @override
+  String get unitGB => 'GB';
+
+  @override
+  String get durationZero => '0s';
+
+  @override
+  String get durationDayShort => 'd';
+
+  @override
+  String get durationHourShort => 'h';
+
+  @override
+  String get durationMinuteShort => 'm';
+
+  @override
+  String get durationSecondShort => 's';
 
   @override
   String get noResultsFound => '找不到結果';
