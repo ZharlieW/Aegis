@@ -137,38 +137,43 @@ class ApplicationHomeSegmentSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 220),
-        child: SegmentedButton<int>(
-          style: SegmentedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            minimumSize: const Size(0, 36),
-            visualDensity: VisualDensity.compact,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: IntrinsicWidth(
+          child: SegmentedButton<int>(
+            style: SegmentedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: const Size(0, 36),
+              visualDensity: VisualDensity.compact,
+            ),
+            segments: [
+              ButtonSegment(
+                value: 0,
+                label: Text(
+                    l10n.remote,
+                    style: const TextStyle(fontSize: 13),
+                    softWrap: false),
+                icon: const Icon(Icons.cloud_outlined, size: 16),
+              ),
+              ButtonSegment(
+                value: 1,
+                label: Text(
+                    l10n.browser,
+                    style: const TextStyle(fontSize: 13),
+                    softWrap: false),
+                icon: const Icon(Icons.language, size: 16),
+              ),
+            ],
+            selected: {selectedSegment},
+            onSelectionChanged: (Set<int> newSelection) {
+              onSegmentChanged(newSelection.first);
+              if (newSelection.first == 1) {
+                onClearNip07Cache();
+              }
+            },
           ),
-          segments: [
-            ButtonSegment(
-              value: 0,
-              label: Text(
-                  AppLocalizations.of(context)!.remote,
-                  style: const TextStyle(fontSize: 13)),
-              icon: const Icon(Icons.cloud_outlined, size: 16),
-            ),
-            ButtonSegment(
-              value: 1,
-              label: Text(
-                  AppLocalizations.of(context)!.browser,
-                  style: const TextStyle(fontSize: 13)),
-              icon: const Icon(Icons.language, size: 16),
-            ),
-          ],
-          selected: {selectedSegment},
-          onSelectionChanged: (Set<int> newSelection) {
-            onSegmentChanged(newSelection.first);
-            if (newSelection.first == 1) {
-              onClearNip07Cache();
-            }
-          },
         ),
       ),
     );
