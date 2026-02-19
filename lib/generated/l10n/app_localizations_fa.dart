@@ -447,6 +447,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get ncryptsecHint => 'کلید رمزنگاری‌شده با \"ncryptsec1\" شروع می‌شود و بدون رمز عبور قابل استفاده نیست.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ هشدار: در صورت از دست دادن رمز عبور، قادر به بازیابی کلید نخواهید بود.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'رمزنگاری و کپی کلید خصوصی';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsFa extends AppLocalizations {
   String get searchNostrApps => 'جستجوی برنامه‌های Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'نام برنامه (اختیاری)';
+
+  @override
+  String get loading => 'در حال بارگذاری...';
+
+  @override
+  String get noNappsFound => 'برنامه‌ای یافت نشد';
+
+  @override
+  String get favorites => 'موارد دلخواه';
+
+  @override
+  String get allApps => 'همه برنامه‌ها';
+
+  @override
+  String get addApp => 'افزودن برنامه';
+
+  @override
+  String get tapToAdd => 'برای افزودن لمس کنید';
+
+  @override
+  String get webApp => 'برنامه وب';
+
+  @override
+  String get userAdded => 'اضافه شده توسط کاربر';
+
+  @override
   String get invalidUrlHint => 'URL نامعتبر. یک URL معتبر HTTP یا HTTPS وارد کنید.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'اندازه';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'رویدادها';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'زمان فعالیت';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

@@ -282,7 +282,7 @@ class AccountBackupState extends State<AccountBackup> {
               ),
               const SizedBox(height: 8),
               Text(
-                '⚠️ Warning: If you lose your password, you will not be able to recover your key.',
+                AppLocalizations.of(context)!.losePasswordKeyRecoveryWarning,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.error,
                   fontWeight: FontWeight.w500,

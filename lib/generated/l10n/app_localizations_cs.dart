@@ -447,6 +447,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get ncryptsecHint => 'Zašifrovaný klíč bude začínat na \"ncryptsec1\" a nelze jej použít bez hesla.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Varování: Pokud ztratíte heslo, nebudete moci obnovit klíč.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Zašifrovat a zkopírovat soukromý klíč';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsCs extends AppLocalizations {
   String get searchNostrApps => 'Hledat aplikace Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Název aplikace (volitelné)';
+
+  @override
+  String get loading => 'Načítání...';
+
+  @override
+  String get noNappsFound => 'Žádné aplikace nenalezeny';
+
+  @override
+  String get favorites => 'Oblíbené';
+
+  @override
+  String get allApps => 'Všechny aplikace';
+
+  @override
+  String get addApp => 'Přidat aplikaci';
+
+  @override
+  String get tapToAdd => 'Klepněte pro přidání';
+
+  @override
+  String get webApp => 'Webová aplikace';
+
+  @override
+  String get userAdded => 'Přidáno uživatelem';
+
+  @override
   String get invalidUrlHint => 'Neplatná URL. Zadejte platnou HTTP nebo HTTPS URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsCs extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Velikost';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Události';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Doba provozu';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

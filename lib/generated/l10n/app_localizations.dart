@@ -994,6 +994,12 @@ abstract class AppLocalizations {
   /// **'The encrypted key will start with \"ncryptsec1\" and cannot be used without the password.'**
   String get ncryptsecHint;
 
+  /// No description provided for @losePasswordKeyRecoveryWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ Warning: If you lose your password, you will not be able to recover your key.'**
+  String get losePasswordKeyRecoveryWarning;
+
   /// No description provided for @encryptAndCopyPrivateKey.
   ///
   /// In en, this message translates to:
@@ -1204,6 +1210,66 @@ abstract class AppLocalizations {
   /// **'Search Nostr Apps...'**
   String get searchNostrApps;
 
+  /// No description provided for @urlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'URL *'**
+  String get urlLabel;
+
+  /// No description provided for @appNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'App Name (Optional)'**
+  String get appNameOptional;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @noNappsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No NApps found'**
+  String get noNappsFound;
+
+  /// No description provided for @favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favorites;
+
+  /// No description provided for @allApps.
+  ///
+  /// In en, this message translates to:
+  /// **'All Apps'**
+  String get allApps;
+
+  /// No description provided for @addApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add App'**
+  String get addApp;
+
+  /// No description provided for @tapToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add'**
+  String get tapToAdd;
+
+  /// No description provided for @webApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Web App'**
+  String get webApp;
+
+  /// No description provided for @userAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'User Added'**
+  String get userAdded;
+
   /// No description provided for @invalidUrlHint.
   ///
   /// In en, this message translates to:
@@ -1375,19 +1441,19 @@ abstract class AppLocalizations {
   /// No description provided for @relayStatsSize.
   ///
   /// In en, this message translates to:
-  /// **'SIZE'**
+  /// **'Size'**
   String get relayStatsSize;
 
   /// No description provided for @relayStatsEvents.
   ///
   /// In en, this message translates to:
-  /// **'EVENTS'**
+  /// **'Events'**
   String get relayStatsEvents;
 
   /// No description provided for @relayStatsUptime.
   ///
   /// In en, this message translates to:
-  /// **'UPTIME'**
+  /// **'Uptime'**
   String get relayStatsUptime;
 
   /// No description provided for @shareRelayBackupSubject.

@@ -447,6 +447,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get ncryptsecHint => 'خفیہ کلید \"ncryptsec1\" سے شروع ہو گی اور بغیر پاس ورڈ استعمال نہیں ہو سکتی۔';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ انتباہ: اگر آپ اپنا پاس ورڈ کھو دیتے ہیں تو اپنی کلید بازیافت نہیں کر سکیں گے۔';
+
+  @override
   String get encryptAndCopyPrivateKey => 'نجی کلید خفیہ اور کاپی کریں';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsUr extends AppLocalizations {
   String get searchNostrApps => 'Nostr ایپس تلاش کریں...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'ایپ کا نام (اختیاری)';
+
+  @override
+  String get loading => 'لوڈ ہو رہا ہے...';
+
+  @override
+  String get noNappsFound => 'کوئی ایپ نہیں ملی';
+
+  @override
+  String get favorites => 'پسندیدہ';
+
+  @override
+  String get allApps => 'تمام ایپس';
+
+  @override
+  String get addApp => 'ایپ شامل کریں';
+
+  @override
+  String get tapToAdd => 'شامل کرنے کے لیے ٹیپ کریں';
+
+  @override
+  String get webApp => 'ویب ایپ';
+
+  @override
+  String get userAdded => 'صارف کے ذریعہ شامل';
+
+  @override
   String get invalidUrlHint => 'غلط URL۔ درست HTTP یا HTTPS URL درج کریں۔';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsUr extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'سائز';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'واقعات';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'اپ ٹائم';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

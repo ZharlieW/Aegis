@@ -447,6 +447,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get ncryptsecHint => 'คีย์ที่เข้ารหัสจะขึ้นต้นด้วย \"ncryptsec1\" และใช้ไม่ได้โดยไม่มีรหัสผ่าน';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ คำเตือน: หากคุณลืมรหัสผ่าน จะไม่สามารถกู้คืนคีย์ได้';
+
+  @override
   String get encryptAndCopyPrivateKey => 'เข้ารหัสและคัดลอกคีย์ส่วนตัว';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsTh extends AppLocalizations {
   String get searchNostrApps => 'ค้นหาแอป Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'ชื่อแอป (ไม่บังคับ)';
+
+  @override
+  String get loading => 'กำลังโหลด...';
+
+  @override
+  String get noNappsFound => 'ไม่พบแอป';
+
+  @override
+  String get favorites => 'รายการโปรด';
+
+  @override
+  String get allApps => 'แอปทั้งหมด';
+
+  @override
+  String get addApp => 'เพิ่มแอป';
+
+  @override
+  String get tapToAdd => 'แตะเพื่อเพิ่ม';
+
+  @override
+  String get webApp => 'แอปเว็บ';
+
+  @override
+  String get userAdded => 'เพิ่มโดยผู้ใช้';
+
+  @override
   String get invalidUrlHint => 'URL ไม่ถูกต้อง กรุณาใส่ URL HTTP หรือ HTTPS ที่ถูกต้อง';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'ขนาด';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'เหตุการณ์';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'เวลาทำงาน';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

@@ -447,6 +447,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get ncryptsecHint => 'Зашифрований ключ починатиметься з \"ncryptsec1\" і не може бути використаний без пароля.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Попередження: якщо ви втратите пароль, ви не зможете відновити ключ.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Зашифрувати та скопіювати приватний ключ';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsUk extends AppLocalizations {
   String get searchNostrApps => 'Пошук додатків Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Назва додатку (необов\'язково)';
+
+  @override
+  String get loading => 'Завантаження...';
+
+  @override
+  String get noNappsFound => 'Додатки не знайдено';
+
+  @override
+  String get favorites => 'Обране';
+
+  @override
+  String get allApps => 'Усі додатки';
+
+  @override
+  String get addApp => 'Додати додаток';
+
+  @override
+  String get tapToAdd => 'Натисніть, щоб додати';
+
+  @override
+  String get webApp => 'Веб-додаток';
+
+  @override
+  String get userAdded => 'Додано користувачем';
+
+  @override
   String get invalidUrlHint => 'Недійсна URL. Введіть дійсну HTTP або HTTPS URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Розмір';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Події';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Час роботи';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

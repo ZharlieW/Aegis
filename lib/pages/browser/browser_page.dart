@@ -44,7 +44,7 @@ class _AddAppDialogState extends State<_AddAppDialog> {
             TextField(
               controller: _urlController,
               decoration: InputDecoration(
-                labelText: 'URL *',
+                labelText: l10n.urlLabel,
                 hintText: l10n.urlHint,
                 border: const OutlineInputBorder(),
               ),
@@ -58,7 +58,7 @@ class _AddAppDialogState extends State<_AddAppDialog> {
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: 'App Name (Optional)',
+                labelText: l10n.appNameOptional,
                 hintText: l10n.appNameHint,
                 border: const OutlineInputBorder(),
               ),
@@ -310,7 +310,7 @@ class _BrowserPageState extends State<BrowserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Browser'),
+        title: Text(AppLocalizations.of(context)!.browser),
         elevation: 0,
         actions: [
           IconButton(
@@ -381,9 +381,10 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Widget _buildNappGrid() {
     if (_filteredNappList.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Text(
-          _nappList.isEmpty ? 'Loading...' : 'No NApps found',
+          _nappList.isEmpty ? l10n.loading : l10n.noNappsFound,
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -407,11 +408,11 @@ class _BrowserPageState extends State<BrowserPage> {
         children: [
           // FAVORITES section
           if (favorites.isNotEmpty) ...[
-            _buildSectionHeader('FAVORITES', Icons.push_pin),
+            _buildSectionHeader(AppLocalizations.of(context)!.favorites, Icons.push_pin),
             _buildAppGrid(favorites),
           ],
           // ALL APPS section
-          _buildSectionHeader('ALL APPS', null, topPadding: favorites.isNotEmpty ? 4 : null),
+          _buildSectionHeader(AppLocalizations.of(context)!.allApps, null, topPadding: favorites.isNotEmpty ? 4 : null),
           _buildAppGrid(allApps, showAddButton: false),
           const SizedBox(height: 16),
         ],
@@ -504,7 +505,7 @@ class _BrowserPageState extends State<BrowserPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add App',
+            AppLocalizations.of(context)!.addApp,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.primary,
@@ -515,7 +516,7 @@ class _BrowserPageState extends State<BrowserPage> {
           ),
           const SizedBox(height: 2),
           Text(
-            'Tap to add',
+            AppLocalizations.of(context)!.tapToAdd,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 11,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -817,7 +818,7 @@ class _BrowserPageState extends State<BrowserPage> {
       }
 
       // Extract domain from URL for app name and icon
-      final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : 'Web App');
+      final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : AppLocalizations.of(context)!.webApp);
       final appId = uri.host.isNotEmpty ? uri.host.replaceAll('.', '_') : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
       
       // Try to get favicon URL
@@ -829,7 +830,7 @@ class _BrowserPageState extends State<BrowserPage> {
         url: url,
         name: appName,
         icon: iconUrl,
-        description: 'User Added',
+        description: AppLocalizations.of(context)!.userAdded,
         platforms: ['web'],
       );
 

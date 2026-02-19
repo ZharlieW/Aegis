@@ -447,6 +447,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get ncryptsecHint => 'La clé chiffrée commencera par « ncryptsec1 » et ne pourra pas être utilisée sans le mot de passe.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Avertissement : si vous perdez votre mot de passe, vous ne pourrez pas récupérer votre clé.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Chiffrer et copier la clé privée';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsFr extends AppLocalizations {
   String get searchNostrApps => 'Rechercher des applications Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Nom de l\'application (optionnel)';
+
+  @override
+  String get loading => 'Chargement...';
+
+  @override
+  String get noNappsFound => 'Aucune application trouvée';
+
+  @override
+  String get favorites => 'Favoris';
+
+  @override
+  String get allApps => 'Toutes les applications';
+
+  @override
+  String get addApp => 'Ajouter une application';
+
+  @override
+  String get tapToAdd => 'Appuyez pour ajouter';
+
+  @override
+  String get webApp => 'Application web';
+
+  @override
+  String get userAdded => 'Ajouté par l\'utilisateur';
+
+  @override
   String get invalidUrlHint => 'URL invalide. Entrez une URL HTTP ou HTTPS valide.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Taille';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Événements';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Disponibilité';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

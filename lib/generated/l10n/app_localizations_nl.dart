@@ -447,6 +447,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get ncryptsecHint => 'De versleutelde sleutel begint met \"ncryptsec1\" en kan niet worden gebruikt zonder wachtwoord.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Waarschuwing: Als u uw wachtwoord verliest, kunt u uw sleutel niet herstellen.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Privésleutel versleutelen en kopiëren';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsNl extends AppLocalizations {
   String get searchNostrApps => 'Nostr-apps zoeken...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Appnaam (optioneel)';
+
+  @override
+  String get loading => 'Laden...';
+
+  @override
+  String get noNappsFound => 'Geen apps gevonden';
+
+  @override
+  String get favorites => 'Favorieten';
+
+  @override
+  String get allApps => 'Alle apps';
+
+  @override
+  String get addApp => 'App toevoegen';
+
+  @override
+  String get tapToAdd => 'Tik om toe te voegen';
+
+  @override
+  String get webApp => 'Webapp';
+
+  @override
+  String get userAdded => 'Door gebruiker toegevoegd';
+
+  @override
   String get invalidUrlHint => 'Ongeldige URL. Voer een geldige HTTP- of HTTPS-URL in.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Grootte';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Gebeurtenissen';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Uptime';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

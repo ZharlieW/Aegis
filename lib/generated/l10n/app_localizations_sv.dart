@@ -447,6 +447,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ncryptsecHint => 'Den krypterade nyckeln börjar med \"ncryptsec1\" och kan inte användas utan lösenord.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Varning: Om du tappar ditt lösenord kan du inte återställa din nyckel.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Kryptera och kopiera privat nyckel';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsSv extends AppLocalizations {
   String get searchNostrApps => 'Sök Nostr-appar...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Appnamn (valfritt)';
+
+  @override
+  String get loading => 'Laddar...';
+
+  @override
+  String get noNappsFound => 'Inga appar hittades';
+
+  @override
+  String get favorites => 'Favoriter';
+
+  @override
+  String get allApps => 'Alla appar';
+
+  @override
+  String get addApp => 'Lägg till app';
+
+  @override
+  String get tapToAdd => 'Tryck för att lägga till';
+
+  @override
+  String get webApp => 'Webbapp';
+
+  @override
+  String get userAdded => 'Tillagd av användare';
+
+  @override
   String get invalidUrlHint => 'Ogiltig URL. Ange en giltig HTTP- eller HTTPS-URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Storlek';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Händelser';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Drifttid';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

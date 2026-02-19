@@ -447,6 +447,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ncryptsecHint => '加密后的密钥将以「ncryptsec1」开头，无密码无法使用。';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ 警告：若忘记密码，将无法恢复您的密钥。';
+
+  @override
   String get encryptAndCopyPrivateKey => '加密并复制私钥';
 
   @override
@@ -550,6 +553,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchNostrApps => '搜索 Nostr 应用...';
+
+  @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => '应用名称（选填）';
+
+  @override
+  String get loading => '加载中...';
+
+  @override
+  String get noNappsFound => '未找到 NApps';
+
+  @override
+  String get favorites => '收藏';
+
+  @override
+  String get allApps => '全部应用';
+
+  @override
+  String get addApp => '添加应用';
+
+  @override
+  String get tapToAdd => '点击添加';
+
+  @override
+  String get webApp => '网页应用';
+
+  @override
+  String get userAdded => '用户添加';
 
   @override
   String get invalidUrlHint => '无效的 URL，请输入有效的 HTTP 或 HTTPS 地址。';
@@ -1172,6 +1205,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get ncryptsecHint => '加密後的金鑰將以「ncryptsec1」開頭，無密碼無法使用。';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ 警告：若忘記密碼，將無法恢復您的金鑰。';
+
+  @override
   String get encryptAndCopyPrivateKey => '加密並複製私鑰';
 
   @override
@@ -1277,6 +1313,36 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get searchNostrApps => '搜尋 Nostr 應用程式...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => '應用名稱（選填）';
+
+  @override
+  String get loading => '載入中...';
+
+  @override
+  String get noNappsFound => '未找到 NApps';
+
+  @override
+  String get favorites => '收藏';
+
+  @override
+  String get allApps => '全部應用';
+
+  @override
+  String get addApp => '新增應用';
+
+  @override
+  String get tapToAdd => '點擊新增';
+
+  @override
+  String get webApp => '網頁應用';
+
+  @override
+  String get userAdded => '使用者新增';
+
+  @override
   String get invalidUrlHint => '無效的 URL，請輸入有效的 HTTP 或 HTTPS 網址。';
 
   @override
@@ -1371,13 +1437,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => '大小';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => '事件數';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => '運行時長';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

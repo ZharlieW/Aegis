@@ -447,6 +447,9 @@ class AppLocalizationsEt extends AppLocalizations {
   String get ncryptsecHint => 'Krüptitud võti algab \"ncryptsec1\" ja seda ei saa paroolita kasutada.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Hoiatus: kui kaotate parooli, ei saa te oma võtit taastada.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Krüpti ja kopeeri privaatvõti';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsEt extends AppLocalizations {
   String get searchNostrApps => 'Otsi Nostr rakendusi...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Rakenduse nimi (valikuline)';
+
+  @override
+  String get loading => 'Laadimine...';
+
+  @override
+  String get noNappsFound => 'Rakendusi ei leitud';
+
+  @override
+  String get favorites => 'Lemmikud';
+
+  @override
+  String get allApps => 'Kõik rakendused';
+
+  @override
+  String get addApp => 'Lisa rakendus';
+
+  @override
+  String get tapToAdd => 'Puuduta lisamiseks';
+
+  @override
+  String get webApp => 'Veebirakendus';
+
+  @override
+  String get userAdded => 'Kasutaja lisatud';
+
+  @override
   String get invalidUrlHint => 'Vigane URL. Sisesta kehtiv HTTP või HTTPS URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsEt extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Suurus';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Sündmused';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Tööaeg';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

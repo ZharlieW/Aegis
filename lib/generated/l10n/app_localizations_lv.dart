@@ -447,6 +447,9 @@ class AppLocalizationsLv extends AppLocalizations {
   String get ncryptsecHint => 'Šifrētā atslēga sāksies ar \"ncryptsec1\" un nevar izmantot bez paroles.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Brīdinājums: Ja zaudēsit paroli, nevarēsiet atgūt atslēgu.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Šifrēt un nokopēt privāto atslēgu';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsLv extends AppLocalizations {
   String get searchNostrApps => 'Meklēt Nostr lietotnes...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Lietotnes nosaukums (pēc izvēles)';
+
+  @override
+  String get loading => 'Ielādē...';
+
+  @override
+  String get noNappsFound => 'Lietotnes nav atrastas';
+
+  @override
+  String get favorites => 'Favorīti';
+
+  @override
+  String get allApps => 'Visas lietotnes';
+
+  @override
+  String get addApp => 'Pievienot lietotni';
+
+  @override
+  String get tapToAdd => 'Pieskarieties, lai pievienotu';
+
+  @override
+  String get webApp => 'Tīmekļa lietotne';
+
+  @override
+  String get userAdded => 'Pievienoja lietotājs';
+
+  @override
   String get invalidUrlHint => 'Nederīga URL. Ievadiet derīgu HTTP vai HTTPS URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsLv extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Izmērs';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Notikumi';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Darbības laiks';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

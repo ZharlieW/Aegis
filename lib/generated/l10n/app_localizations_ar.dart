@@ -447,6 +447,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ncryptsecHint => 'المفتاح المشفر سيبدأ بـ \"ncryptsec1\" ولا يمكن استخدامه بدون كلمة المرور.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ تحذير: إذا فقدت كلمة المرور، لن تتمكن من استرداد المفتاح.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'تشفير ونسخ المفتاح الخاص';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searchNostrApps => 'البحث في تطبيقات Nostr...';
 
   @override
+  String get urlLabel => 'الرابط *';
+
+  @override
+  String get appNameOptional => 'اسم التطبيق (اختياري)';
+
+  @override
+  String get loading => 'جاري التحميل...';
+
+  @override
+  String get noNappsFound => 'لم يتم العثور على تطبيقات';
+
+  @override
+  String get favorites => 'المفضلة';
+
+  @override
+  String get allApps => 'جميع التطبيقات';
+
+  @override
+  String get addApp => 'إضافة تطبيق';
+
+  @override
+  String get tapToAdd => 'انقر للإضافة';
+
+  @override
+  String get webApp => 'تطبيق ويب';
+
+  @override
+  String get userAdded => 'أضافه المستخدم';
+
+  @override
   String get invalidUrlHint => 'رابط غير صالح. أدخل رابط HTTP أو HTTPS صالح.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'الحجم';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'الأحداث';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'وقت التشغيل';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

@@ -447,6 +447,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get ncryptsecHint => '暗号化されたキーは「ncryptsec1」で始まり、パスワードがないと使用できません。';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ 警告：パスワードを忘れるとキーを復元できません。';
+
+  @override
   String get encryptAndCopyPrivateKey => '暗号化して秘密鍵をコピー';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searchNostrApps => 'Nostr アプリを検索...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'アプリ名（任意）';
+
+  @override
+  String get loading => '読み込み中...';
+
+  @override
+  String get noNappsFound => 'アプリが見つかりません';
+
+  @override
+  String get favorites => 'お気に入り';
+
+  @override
+  String get allApps => 'すべてのアプリ';
+
+  @override
+  String get addApp => 'アプリを追加';
+
+  @override
+  String get tapToAdd => 'タップして追加';
+
+  @override
+  String get webApp => 'ウェブアプリ';
+
+  @override
+  String get userAdded => 'ユーザーが追加';
+
+  @override
   String get invalidUrlHint => '無効な URL です。有効な HTTP または HTTPS の URL を入力してください。';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'サイズ';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'イベント数';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => '稼働時間';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

@@ -447,6 +447,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get ncryptsecHint => 'Το κρυπτογραφημένο κλειδί θα ξεκινά με \"ncryptsec1\" και δεν μπορεί να χρησιμοποιηθεί χωρίς κωδικό.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Προειδοποίηση: αν χάσετε τον κωδικό σας, δεν θα μπορείτε να ανακτήσετε το κλειδί σας.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Κρυπτογράφηση και αντιγραφή ιδιωτικού κλειδιού';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsEl extends AppLocalizations {
   String get searchNostrApps => 'Αναζήτηση εφαρμογών Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Όνομα εφαρμογής (προαιρετικό)';
+
+  @override
+  String get loading => 'Φόρτωση...';
+
+  @override
+  String get noNappsFound => 'Δεν βρέθηκαν εφαρμογές';
+
+  @override
+  String get favorites => 'Αγαπημένα';
+
+  @override
+  String get allApps => 'Όλες οι εφαρμογές';
+
+  @override
+  String get addApp => 'Προσθήκη εφαρμογής';
+
+  @override
+  String get tapToAdd => 'Πατήστε για προσθήκη';
+
+  @override
+  String get webApp => 'Δικτυακή εφαρμογή';
+
+  @override
+  String get userAdded => 'Προστέθηκε από χρήστη';
+
+  @override
   String get invalidUrlHint => 'Μη έγκυρη URL. Εισάγετε έγκυρη HTTP ή HTTPS URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsEl extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Μέγεθος';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Συμβάντα';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Λειτουργία';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

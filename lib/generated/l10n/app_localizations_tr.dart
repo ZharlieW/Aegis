@@ -447,6 +447,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ncryptsecHint => 'Şifreli anahtar \"ncryptsec1\" ile başlayacak ve parola olmadan kullanılamaz.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Uyarı: Parolanızı kaybederseniz anahtarınızı kurtaramazsınız.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Şifrele ve özel anahtarı kopyala';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsTr extends AppLocalizations {
   String get searchNostrApps => 'Nostr uygulamalarında ara...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Uygulama adı (isteğe bağlı)';
+
+  @override
+  String get loading => 'Yükleniyor...';
+
+  @override
+  String get noNappsFound => 'Uygulama bulunamadı';
+
+  @override
+  String get favorites => 'Favoriler';
+
+  @override
+  String get allApps => 'Tüm uygulamalar';
+
+  @override
+  String get addApp => 'Uygulama ekle';
+
+  @override
+  String get tapToAdd => 'Eklemek için dokunun';
+
+  @override
+  String get webApp => 'Web uygulaması';
+
+  @override
+  String get userAdded => 'Kullanıcı tarafından eklendi';
+
+  @override
   String get invalidUrlHint => 'Geçersiz URL. Geçerli bir HTTP veya HTTPS URL gir.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Boyut';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Etkinlikler';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Çalışma süresi';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

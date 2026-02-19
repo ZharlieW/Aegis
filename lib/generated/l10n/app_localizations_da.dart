@@ -447,6 +447,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get ncryptsecHint => 'Den krypterede nøgle starter med \"ncryptsec1\" og kan ikke bruges uden adgangskode.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Advarsel: Hvis du mister din adgangskode, kan du ikke gendanne din nøgle.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Krypter og kopiér privat nøgle';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsDa extends AppLocalizations {
   String get searchNostrApps => 'Søg Nostr-apps...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'App-navn (valgfrit)';
+
+  @override
+  String get loading => 'Indlæser...';
+
+  @override
+  String get noNappsFound => 'Ingen apps fundet';
+
+  @override
+  String get favorites => 'Favoritter';
+
+  @override
+  String get allApps => 'Alle apps';
+
+  @override
+  String get addApp => 'Tilføj app';
+
+  @override
+  String get tapToAdd => 'Tryk for at tilføje';
+
+  @override
+  String get webApp => 'Webapp';
+
+  @override
+  String get userAdded => 'Tilføjet af bruger';
+
+  @override
   String get invalidUrlHint => 'Ugyldig URL. Indtast en gyldig HTTP- eller HTTPS-URL.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsDa extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Størrelse';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Begivenheder';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Oppetid';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

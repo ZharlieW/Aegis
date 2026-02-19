@@ -447,6 +447,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get ncryptsecHint => 'La clau xifrada començarà per \"ncryptsec1\" i no es pot fer servir sense contrasenya.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Avís: si perds la contrasenya, no podràs recuperar la clau.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Xifrar i copiar clau privada';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsCa extends AppLocalizations {
   String get searchNostrApps => 'Cercar aplicacions Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Nom de l\'aplicació (opcional)';
+
+  @override
+  String get loading => 'Carregant...';
+
+  @override
+  String get noNappsFound => 'No s\'han trobat aplicacions';
+
+  @override
+  String get favorites => 'Preferits';
+
+  @override
+  String get allApps => 'Totes les aplicacions';
+
+  @override
+  String get addApp => 'Afegir aplicació';
+
+  @override
+  String get tapToAdd => 'Toqueu per afegir';
+
+  @override
+  String get webApp => 'Aplicació web';
+
+  @override
+  String get userAdded => 'Afegit per l\'usuari';
+
+  @override
   String get invalidUrlHint => 'URL no vàlida. Introdueix una URL HTTP o HTTPS vàlida.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsCa extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Mida';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Esdeveniments';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Temps actiu';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

@@ -447,6 +447,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ncryptsecHint => '암호화된 키는 \"ncryptsec1\"로 시작하며, 비밀번호 없이는 사용할 수 없습니다.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ 경고: 비밀번호를 분실하면 키를 복구할 수 없습니다.';
+
+  @override
   String get encryptAndCopyPrivateKey => '암호화 후 개인 키 복사';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsKo extends AppLocalizations {
   String get searchNostrApps => 'Nostr 앱 검색...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => '앱 이름 (선택)';
+
+  @override
+  String get loading => '로딩 중...';
+
+  @override
+  String get noNappsFound => '앱을 찾을 수 없습니다';
+
+  @override
+  String get favorites => '즐겨찾기';
+
+  @override
+  String get allApps => '모든 앱';
+
+  @override
+  String get addApp => '앱 추가';
+
+  @override
+  String get tapToAdd => '탭하여 추가';
+
+  @override
+  String get webApp => '웹 앱';
+
+  @override
+  String get userAdded => '사용자 추가';
+
+  @override
   String get invalidUrlHint => '잘못된 URL입니다. 올바른 HTTP 또는 HTTPS URL을 입력하세요.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => '크기';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => '이벤트';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => '가동 시간';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

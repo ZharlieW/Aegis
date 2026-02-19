@@ -447,6 +447,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get ncryptsecHint => 'Kunci terenkripsi akan dimulai dengan \"ncryptsec1\" dan tidak dapat digunakan tanpa kata sandi.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Peringatan: Jika Anda kehilangan kata sandi, Anda tidak dapat memulihkan kunci.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Enkripsi dan Salin Kunci Pribadi';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsId extends AppLocalizations {
   String get searchNostrApps => 'Cari Aplikasi Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Nama Aplikasi (Opsional)';
+
+  @override
+  String get loading => 'Memuat...';
+
+  @override
+  String get noNappsFound => 'Tidak ada aplikasi ditemukan';
+
+  @override
+  String get favorites => 'Favorit';
+
+  @override
+  String get allApps => 'Semua Aplikasi';
+
+  @override
+  String get addApp => 'Tambah Aplikasi';
+
+  @override
+  String get tapToAdd => 'Ketuk untuk menambah';
+
+  @override
+  String get webApp => 'Aplikasi Web';
+
+  @override
+  String get userAdded => 'Ditambahkan pengguna';
+
+  @override
   String get invalidUrlHint => 'URL tidak valid. Silakan masukkan URL HTTP atau HTTPS yang valid.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Ukuran';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Acara';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Waktu aktif';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

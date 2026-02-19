@@ -447,6 +447,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get ncryptsecHint => 'A titkosított kulcs \"ncryptsec1\" előtaggal kezdődik és jelszó nélkül nem használható.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Figyelmeztetés: Ha elveszíti a jelszavát, nem tudja helyreállítani a kulcsot.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Privát kulcs titkosítása és másolása';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsHu extends AppLocalizations {
   String get searchNostrApps => 'Nostr alkalmazások keresése...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Alkalmazás neve (opcionális)';
+
+  @override
+  String get loading => 'Betöltés...';
+
+  @override
+  String get noNappsFound => 'Nem található alkalmazás';
+
+  @override
+  String get favorites => 'Kedvencek';
+
+  @override
+  String get allApps => 'Minden alkalmazás';
+
+  @override
+  String get addApp => 'Alkalmazás hozzáadása';
+
+  @override
+  String get tapToAdd => 'Érintse a hozzáadáshoz';
+
+  @override
+  String get webApp => 'Webalkalmazás';
+
+  @override
+  String get userAdded => 'Felhasználó által hozzáadva';
+
+  @override
   String get invalidUrlHint => 'Érvénytelen URL. Adjon meg érvényes HTTP vagy HTTPS URL-t.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsHu extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Méret';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Események';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Üzemidő';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

@@ -447,6 +447,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get ncryptsecHint => 'Şifrələnmiş açar \"ncryptsec1\" ilə başlayacaq və parolsuz istifadə oluna bilməz.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Xəbərdarlıq: Parolunuzu itirsəniz, açarınızı bərpa edə bilməyəcəksiniz.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Özəl açarı şifrələ və kopyala';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsAz extends AppLocalizations {
   String get searchNostrApps => 'Nostr tətbiqlərini axtar...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Tətbiq adı (İstəyə bağlı)';
+
+  @override
+  String get loading => 'Yüklənir...';
+
+  @override
+  String get noNappsFound => 'NApps tapılmadı';
+
+  @override
+  String get favorites => 'Sevimlilər';
+
+  @override
+  String get allApps => 'Bütün tətbiqlər';
+
+  @override
+  String get addApp => 'Tətbiq əlavə et';
+
+  @override
+  String get tapToAdd => 'Əlavə etmək üçün toxunun';
+
+  @override
+  String get webApp => 'Veb tətbiq';
+
+  @override
+  String get userAdded => 'İstifadəçi əlavə etdi';
+
+  @override
   String get invalidUrlHint => 'Etibarsız URL. Etibarlı HTTP və ya HTTPS URL daxil edin.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsAz extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Ölçü';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Hadisələr';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'İş vaxtı';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';

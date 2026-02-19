@@ -447,6 +447,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get ncryptsecHint => 'Khóa mã hóa sẽ bắt đầu bằng \"ncryptsec1\" và không dùng được nếu thiếu mật khẩu.';
 
   @override
+  String get losePasswordKeyRecoveryWarning => '⚠️ Cảnh báo: Nếu mất mật khẩu, bạn sẽ không thể khôi phục khóa.';
+
+  @override
   String get encryptAndCopyPrivateKey => 'Mã hóa và sao khóa riêng';
 
   @override
@@ -552,6 +555,36 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searchNostrApps => 'Tìm ứng dụng Nostr...';
 
   @override
+  String get urlLabel => 'URL *';
+
+  @override
+  String get appNameOptional => 'Tên ứng dụng (tùy chọn)';
+
+  @override
+  String get loading => 'Đang tải...';
+
+  @override
+  String get noNappsFound => 'Không tìm thấy ứng dụng';
+
+  @override
+  String get favorites => 'Yêu thích';
+
+  @override
+  String get allApps => 'Tất cả ứng dụng';
+
+  @override
+  String get addApp => 'Thêm ứng dụng';
+
+  @override
+  String get tapToAdd => 'Chạm để thêm';
+
+  @override
+  String get webApp => 'Ứng dụng web';
+
+  @override
+  String get userAdded => 'Người dùng đã thêm';
+
+  @override
   String get invalidUrlHint => 'URL không hợp lệ. Nhập URL HTTP hoặc HTTPS hợp lệ.';
 
   @override
@@ -646,13 +679,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get importDatabasePathHint => '/path/to/nostr_relay_backup_...';
 
   @override
-  String get relayStatsSize => 'SIZE';
+  String get relayStatsSize => 'Kích thước';
 
   @override
-  String get relayStatsEvents => 'EVENTS';
+  String get relayStatsEvents => 'Sự kiện';
 
   @override
-  String get relayStatsUptime => 'UPTIME';
+  String get relayStatsUptime => 'Thời gian hoạt động';
 
   @override
   String get shareRelayBackupSubject => 'Nostr Relay Database Backup';
