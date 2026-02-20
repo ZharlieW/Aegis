@@ -631,6 +631,12 @@ class AppLocalizationsAz extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Hadisə təfərrüatları buferə kopyalandı';
 
   @override
+  String get noSignedEvents => 'İmzalanmış hadisə yoxdur';
+
+  @override
+  String get signedEventsEmptyHint => 'İmzaladıqda imzalanmış hadisələr burada görünəcək';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Xam metadata buferə kopyalandı';
 
   @override

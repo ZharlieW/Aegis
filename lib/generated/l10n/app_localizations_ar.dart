@@ -631,6 +631,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'تم نسخ تفاصيل الحدث';
 
   @override
+  String get noSignedEvents => 'لا توجد أحداث موقعة';
+
+  @override
+  String get signedEventsEmptyHint => 'ستظهر الأحداث الموقعة هنا عند توقيعك لها';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'تم نسخ البيانات الوصفية الأولية';
 
   @override

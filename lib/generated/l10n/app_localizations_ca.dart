@@ -631,6 +631,12 @@ class AppLocalizationsCa extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Detalls de l\'esdeveniment copiats al porta-retalls';
 
   @override
+  String get noSignedEvents => 'Cap esdeveniment signat';
+
+  @override
+  String get signedEventsEmptyHint => 'Els esdeveniments signats apareixeran aquí quan els signeu';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Metadades en brut copiades al porta-retalls';
 
   @override

@@ -631,6 +631,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Details gebeurtenis gekopieerd naar klembord';
 
   @override
+  String get noSignedEvents => 'Geen ondertekende gebeurtenissen';
+
+  @override
+  String get signedEventsEmptyHint => 'Ondertekende gebeurtenissen verschijnen hier wanneer u ze ondertekent';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Ruwe metadata gekopieerd naar klembord';
 
   @override

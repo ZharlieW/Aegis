@@ -294,6 +294,8 @@
   "copiedToClipboard": "کلپ بورڈ پر کاپی",
   "eventDetails": "ایونٹ کی تفصیلات",
   "eventDetailsCopiedToClipboard": "ایونٹ کی تفصیلات کلپ بورڈ پر کاپی",
+  "noSignedEvents": "کوئی دستخط شدہ واقعات نہیں",
+  "signedEventsEmptyHint": "دستخط کرنے پر دستخط شدہ واقعات یہاں ظاہر ہوں گے",
   "rawMetadataCopiedToClipboard": "خام میٹا ڈیٹا کلپ بورڈ پر کاپی",
   "permissionRequest": "اجازت کی درخواست",
   "permissionRequestContent": "یہ ایپ آپ کے Nostr اکاؤنٹ تک رسائی کی اجازت مانگ رہی ہے",

@@ -294,6 +294,8 @@
   "copiedToClipboard": "Скопировано в буфер обмена",
   "eventDetails": "Подробности события",
   "eventDetailsCopiedToClipboard": "Подробности события скопированы в буфер обмена",
+  "noSignedEvents": "Нет подписанных событий",
+  "signedEventsEmptyHint": "Подписанные события появятся здесь после подписания",
   "rawMetadataCopiedToClipboard": "Исходные метаданные скопированы в буфер обмена",
   "permissionRequest": "Запрос разрешения",
   "permissionRequestContent": "Это приложение запрашивает доступ к вашему аккаунту Nostr",

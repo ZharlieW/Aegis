@@ -631,6 +631,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Деталі події скопійовано в буфер обміну';
 
   @override
+  String get noSignedEvents => 'Немає підписаних подій';
+
+  @override
+  String get signedEventsEmptyHint => 'Підписані події з\'являться тут, коли ви їх підпишете';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Сирині метадані скопійовано в буфер обміну';
 
   @override

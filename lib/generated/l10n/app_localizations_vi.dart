@@ -631,6 +631,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Đã sao chi tiết sự kiện vào clipboard';
 
   @override
+  String get noSignedEvents => 'Chưa có sự kiện đã ký';
+
+  @override
+  String get signedEventsEmptyHint => 'Sự kiện đã ký sẽ hiển thị ở đây khi bạn ký';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Đã sao siêu dữ liệu thô vào clipboard';
 
   @override

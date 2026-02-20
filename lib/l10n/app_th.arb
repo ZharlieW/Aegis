@@ -294,6 +294,8 @@
   "copiedToClipboard": "คัดลอกแล้ว",
   "eventDetails": "รายละเอียดเหตุการณ์",
   "eventDetailsCopiedToClipboard": "คัดลอกรายละเอียดเหตุการณ์แล้ว",
+  "noSignedEvents": "ไม่มีเหตุการณ์ที่ลงนาม",
+  "signedEventsEmptyHint": "เหตุการณ์ที่ลงนามจะแสดงที่นี่เมื่อคุณลงนาม",
   "rawMetadataCopiedToClipboard": "คัดลอกเมตาดาต้าดิบแล้ว",
   "permissionRequest": "คำขอลิทธิ์",
   "permissionRequestContent": "แอปนี้กำลังขอสิทธิ์เข้าถึงบัญชี Nostr ของคุณ",

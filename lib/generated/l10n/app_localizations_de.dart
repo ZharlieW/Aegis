@@ -631,6 +631,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Ereignisdetails in die Zwischenablage kopiert';
 
   @override
+  String get noSignedEvents => 'Keine signierten Ereignisse';
+
+  @override
+  String get signedEventsEmptyHint => 'Signierte Ereignisse erscheinen hier, wenn Sie sie signieren';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Rohe Metadaten in die Zwischenablage kopiert';
 
   @override

@@ -294,6 +294,8 @@
   "copiedToClipboard": "Vágólapra másolva",
   "eventDetails": "Esemény részletei",
   "eventDetailsCopiedToClipboard": "Esemény részletei vágólapra másolva",
+  "noSignedEvents": "Nincs aláírt esemény",
+  "signedEventsEmptyHint": "Az aláírt események itt fognak megjelenni, amikor aláírod őket",
   "rawMetadataCopiedToClipboard": "Nyers metaadatok vágólapra másolva",
   "permissionRequest": "Jogosultság kérés",
   "permissionRequestContent": "Ez az alkalmazás hozzáférést kér a Nostr fiókjához",

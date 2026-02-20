@@ -631,6 +631,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'इवेंट विवरण क्लिपबोर्ड पर कॉपी';
 
   @override
+  String get noSignedEvents => 'कोई हस्ताक्षरित इवेंट नहीं';
+
+  @override
+  String get signedEventsEmptyHint => 'जब आप हस्ताक्षर करेंगे तो हस्ताक्षरित इवेंट यहाँ दिखेंगे';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'रॉ मेटाडेटा क्लिपबोर्ड पर कॉपी';
 
   @override

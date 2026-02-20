@@ -294,6 +294,8 @@
   "copiedToClipboard": "Gekopieerd naar klembord",
   "eventDetails": "Details gebeurtenis",
   "eventDetailsCopiedToClipboard": "Details gebeurtenis gekopieerd naar klembord",
+  "noSignedEvents": "Geen ondertekende gebeurtenissen",
+  "signedEventsEmptyHint": "Ondertekende gebeurtenissen verschijnen hier wanneer u ze ondertekent",
   "rawMetadataCopiedToClipboard": "Ruwe metadata gekopieerd naar klembord",
   "permissionRequest": "Machtigingsverzoek",
   "permissionRequestContent": "Deze applicatie vraagt toestemming om uw Nostr-account te openen",

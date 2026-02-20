@@ -294,6 +294,8 @@
   "copiedToClipboard": "क्लिपबोर्ड पर कॉपी",
   "eventDetails": "इवेंट विवरण",
   "eventDetailsCopiedToClipboard": "इवेंट विवरण क्लिपबोर्ड पर कॉपी",
+  "noSignedEvents": "कोई हस्ताक्षरित इवेंट नहीं",
+  "signedEventsEmptyHint": "जब आप हस्ताक्षर करेंगे तो हस्ताक्षरित इवेंट यहाँ दिखेंगे",
   "rawMetadataCopiedToClipboard": "रॉ मेटाडेटा क्लिपबोर्ड पर कॉपी",
   "permissionRequest": "अनुमति अनुरोध",
   "permissionRequestContent": "यह ऐप आपके Nostr खाते तक पहुँच की अनुमति माँग रहा है",

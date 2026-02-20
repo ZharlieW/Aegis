@@ -294,6 +294,8 @@
   "copiedToClipboard": "Copié dans le presse-papiers",
   "eventDetails": "Détails de l'événement",
   "eventDetailsCopiedToClipboard": "Détails de l'événement copiés dans le presse-papiers",
+  "noSignedEvents": "Aucun événement signé",
+  "signedEventsEmptyHint": "Les événements signés apparaîtront ici lorsque vous les signerez",
   "rawMetadataCopiedToClipboard": "Métadonnées brutes copiées dans le presse-papiers",
   "permissionRequest": "Demande de permission",
   "permissionRequestContent": "Cette application demande l'accès à votre compte Nostr",

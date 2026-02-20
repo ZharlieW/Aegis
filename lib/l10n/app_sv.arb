@@ -294,6 +294,8 @@
   "copiedToClipboard": "Kopierad till urklipp",
   "eventDetails": "Händelsedetaljer",
   "eventDetailsCopiedToClipboard": "Händelsedetaljer kopierade till urklipp",
+  "noSignedEvents": "Inga signerade händelser",
+  "signedEventsEmptyHint": "Signerade händelser visas här när du signerar dem",
   "rawMetadataCopiedToClipboard": "Rå metadata kopierad till urklipp",
   "permissionRequest": "Behörighetsbegäran",
   "permissionRequestContent": "Denna applikation begär behörighet att komma åt ditt Nostr-konto",

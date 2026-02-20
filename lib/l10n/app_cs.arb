@@ -294,6 +294,8 @@
   "copiedToClipboard": "Zkopírováno do schránky",
   "eventDetails": "Podrobnosti události",
   "eventDetailsCopiedToClipboard": "Podrobnosti události zkopírovány do schránky",
+  "noSignedEvents": "Žádné podepsané události",
+  "signedEventsEmptyHint": "Podepsané události se zde zobrazí, když je podepíšete",
   "rawMetadataCopiedToClipboard": "Surová metadata zkopírována do schránky",
   "permissionRequest": "Žádost o oprávnění",
   "permissionRequestContent": "Tato aplikace žádá o oprávnění k přístupu k vašemu účtu Nostr",

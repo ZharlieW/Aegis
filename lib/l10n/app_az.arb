@@ -294,6 +294,8 @@
   "copiedToClipboard": "Buferə kopyalandı",
   "eventDetails": "Hadisə təfərrüatları",
   "eventDetailsCopiedToClipboard": "Hadisə təfərrüatları buferə kopyalandı",
+  "noSignedEvents": "İmzalanmış hadisə yoxdur",
+  "signedEventsEmptyHint": "İmzaladıqda imzalanmış hadisələr burada görünəcək",
   "rawMetadataCopiedToClipboard": "Xam metadata buferə kopyalandı",
   "permissionRequest": "İcazə tələbi",
   "permissionRequestContent": "Bu tətbiq Nostr hesabınıza daxil olmaq üçün icazə tələb edir",

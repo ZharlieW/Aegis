@@ -631,6 +631,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Podrobnosti události zkopírovány do schránky';
 
   @override
+  String get noSignedEvents => 'Žádné podepsané události';
+
+  @override
+  String get signedEventsEmptyHint => 'Podepsané události se zde zobrazí, když je podepíšete';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Surová metadata zkopírována do schránky';
 
   @override

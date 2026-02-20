@@ -631,6 +631,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'คัดลอกรายละเอียดเหตุการณ์แล้ว';
 
   @override
+  String get noSignedEvents => 'ไม่มีเหตุการณ์ที่ลงนาม';
+
+  @override
+  String get signedEventsEmptyHint => 'เหตุการณ์ที่ลงนามจะแสดงที่นี่เมื่อคุณลงนาม';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'คัดลอกเมตาดาต้าดิบแล้ว';
 
   @override

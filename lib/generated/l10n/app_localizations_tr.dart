@@ -631,6 +631,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Olay ayrıntıları panoya kopyalandı';
 
   @override
+  String get noSignedEvents => 'İmzalı etkinlik yok';
+
+  @override
+  String get signedEventsEmptyHint => 'İmzaladığınızda imzalı etkinlikler burada görünecek';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Ham meta veriler panoya kopyalandı';
 
   @override

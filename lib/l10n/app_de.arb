@@ -294,6 +294,8 @@
   "copiedToClipboard": "In die Zwischenablage kopiert",
   "eventDetails": "Ereignisdetails",
   "eventDetailsCopiedToClipboard": "Ereignisdetails in die Zwischenablage kopiert",
+  "noSignedEvents": "Keine signierten Ereignisse",
+  "signedEventsEmptyHint": "Signierte Ereignisse erscheinen hier, wenn Sie sie signieren",
   "rawMetadataCopiedToClipboard": "Rohe Metadaten in die Zwischenablage kopiert",
   "permissionRequest": "Berechtigungsanfrage",
   "permissionRequestContent": "Diese Anwendung fordert Zugriff auf dein Nostr-Konto an",

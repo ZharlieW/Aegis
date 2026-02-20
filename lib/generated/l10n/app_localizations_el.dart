@@ -631,6 +631,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Οι λεπτομέρειες συμβάντος αντιγράφηκαν';
 
   @override
+  String get noSignedEvents => 'Δεν υπάρχουν υπογεγραμμένα συμβάντα';
+
+  @override
+  String get signedEventsEmptyHint => 'Τα υπογεγραμμένα συμβάντα θα εμφανιστούν εδώ όταν τα υπογράψετε';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Τα ακατέργαστα μεταδεδομένα αντιγράφηκαν';
 
   @override

@@ -294,6 +294,8 @@
   "copiedToClipboard": "Copiado para a área de transferência",
   "eventDetails": "Detalhes do evento",
   "eventDetailsCopiedToClipboard": "Detalhes do evento copiados para a área de transferência",
+  "noSignedEvents": "Nenhum evento assinado",
+  "signedEventsEmptyHint": "Os eventos assinados aparecerão aqui quando os assinar",
   "rawMetadataCopiedToClipboard": "Metadados brutos copiados para a área de transferência",
   "permissionRequest": "Pedido de permissão",
   "permissionRequestContent": "Esta aplicação está a pedir permissão para aceder à tua conta Nostr",

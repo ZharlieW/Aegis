@@ -268,6 +268,8 @@
   "copiedToClipboard": "Copied to clipboard",
   "eventDetails": "Event Details",
   "eventDetailsCopiedToClipboard": "Event details copied to clipboard",
+  "noSignedEvents": "No signed events",
+  "signedEventsEmptyHint": "Signed events will appear here when you sign them",
   "rawMetadataCopiedToClipboard": "Raw metadata copied to clipboard",
   "permissionRequest": "Permission Request",
   "permissionRequestContent": "This application is requesting permissions to access your Nostr account",

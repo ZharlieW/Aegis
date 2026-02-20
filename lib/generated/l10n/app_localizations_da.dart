@@ -631,6 +631,12 @@ class AppLocalizationsDa extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Begivenhedsdetaljer kopieret til udklipsholder';
 
   @override
+  String get noSignedEvents => 'Ingen signerede begivenheder';
+
+  @override
+  String get signedEventsEmptyHint => 'Signerede begivenheder vises her, når du signerer dem';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Rå metadata kopieret til udklipsholder';
 
   @override

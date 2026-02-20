@@ -631,6 +631,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => '事件详情已复制到剪贴板';
 
   @override
+  String get noSignedEvents => '暂无已签名事件';
+
+  @override
+  String get signedEventsEmptyHint => '当您使用应用签名后，已签名事件会显示在这里';
+
+  @override
   String get rawMetadataCopiedToClipboard => '原始元数据已复制到剪贴板';
 
   @override
@@ -1387,6 +1393,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get eventDetailsCopiedToClipboard => '事件詳情已複製到剪貼簿';
+
+  @override
+  String get noSignedEvents => '暫無已簽名事件';
+
+  @override
+  String get signedEventsEmptyHint => '當您使用應用簽名後，已簽名事件會顯示在這裡';
 
   @override
   String get rawMetadataCopiedToClipboard => '原始中繼資料已複製到剪貼簿';

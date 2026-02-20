@@ -631,6 +631,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Подробности события скопированы в буфер обмена';
 
   @override
+  String get noSignedEvents => 'Нет подписанных событий';
+
+  @override
+  String get signedEventsEmptyHint => 'Подписанные события появятся здесь после подписания';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Исходные метаданные скопированы в буфер обмена';
 
   @override

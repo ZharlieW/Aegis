@@ -294,6 +294,8 @@
   "copiedToClipboard": "已複製到剪貼簿",
   "eventDetails": "事件詳情",
   "eventDetailsCopiedToClipboard": "事件詳情已複製到剪貼簿",
+  "noSignedEvents": "暫無已簽名事件",
+  "signedEventsEmptyHint": "當您使用應用簽名後，已簽名事件會顯示在這裡",
   "rawMetadataCopiedToClipboard": "原始中繼資料已複製到剪貼簿",
   "permissionRequest": "權限請求",
   "permissionRequestContent": "此應用程式正在請求存取您的 Nostr 帳號的權限",

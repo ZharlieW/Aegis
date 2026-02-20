@@ -294,6 +294,8 @@
   "copiedToClipboard": "Đã sao vào clipboard",
   "eventDetails": "Chi tiết sự kiện",
   "eventDetailsCopiedToClipboard": "Đã sao chi tiết sự kiện vào clipboard",
+  "noSignedEvents": "Chưa có sự kiện đã ký",
+  "signedEventsEmptyHint": "Sự kiện đã ký sẽ hiển thị ở đây khi bạn ký",
   "rawMetadataCopiedToClipboard": "Đã sao siêu dữ liệu thô vào clipboard",
   "permissionRequest": "Yêu cầu quyền",
   "permissionRequestContent": "Ứng dụng này đang yêu cầu quyền truy cập tài khoản Nostr của bạn",

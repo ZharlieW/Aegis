@@ -294,6 +294,8 @@
   "copiedToClipboard": "Copiato negli appunti",
   "eventDetails": "Dettagli evento",
   "eventDetailsCopiedToClipboard": "Dettagli evento copiati negli appunti",
+  "noSignedEvents": "Nessun evento firmato",
+  "signedEventsEmptyHint": "Gli eventi firmati appariranno qui quando li firmi",
   "rawMetadataCopiedToClipboard": "Metadati grezzi copiati negli appunti",
   "permissionRequest": "Richiesta di autorizzazione",
   "permissionRequestContent": "Questa applicazione richiede l'accesso al tuo account Nostr",

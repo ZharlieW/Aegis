@@ -631,6 +631,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Händelsedetaljer kopierade till urklipp';
 
   @override
+  String get noSignedEvents => 'Inga signerade händelser';
+
+  @override
+  String get signedEventsEmptyHint => 'Signerade händelser visas här när du signerar dem';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Rå metadata kopierad till urklipp';
 
   @override

@@ -294,6 +294,8 @@
   "copiedToClipboard": "클립보드에 복사됨",
   "eventDetails": "이벤트 세부정보",
   "eventDetailsCopiedToClipboard": "이벤트 세부정보가 클립보드에 복사됨",
+  "noSignedEvents": "서명된 이벤트 없음",
+  "signedEventsEmptyHint": "서명하면 서명된 이벤트가 여기에 표시됩니다",
   "rawMetadataCopiedToClipboard": "원시 메타데이터가 클립보드에 복사됨",
   "permissionRequest": "권한 요청",
   "permissionRequestContent": "이 앱이 Nostr 계정 액세스 권한을 요청하고 있습니다",

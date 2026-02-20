@@ -1342,6 +1342,18 @@ abstract class AppLocalizations {
   /// **'Event details copied to clipboard'**
   String get eventDetailsCopiedToClipboard;
 
+  /// No description provided for @noSignedEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'No signed events'**
+  String get noSignedEvents;
+
+  /// No description provided for @signedEventsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed events will appear here when you sign them'**
+  String get signedEventsEmptyHint;
+
   /// No description provided for @rawMetadataCopiedToClipboard.
   ///
   /// In en, this message translates to:

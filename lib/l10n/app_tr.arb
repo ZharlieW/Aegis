@@ -294,6 +294,8 @@
   "copiedToClipboard": "Panoya kopyalandı",
   "eventDetails": "Olay ayrıntıları",
   "eventDetailsCopiedToClipboard": "Olay ayrıntıları panoya kopyalandı",
+  "noSignedEvents": "İmzalı etkinlik yok",
+  "signedEventsEmptyHint": "İmzaladığınızda imzalı etkinlikler burada görünecek",
   "rawMetadataCopiedToClipboard": "Ham meta veriler panoya kopyalandı",
   "permissionRequest": "İzin isteği",
   "permissionRequestContent": "Bu uygulama Nostr hesabına erişim izni istiyor",

@@ -631,6 +631,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Detalles del evento copiados al portapapeles';
 
   @override
+  String get noSignedEvents => 'No hay eventos firmados';
+
+  @override
+  String get signedEventsEmptyHint => 'Los eventos firmados aparecerán aquí cuando los firmes';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Metadatos crudos copiados al portapapeles';
 
   @override

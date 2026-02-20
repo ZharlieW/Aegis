@@ -631,6 +631,12 @@ class AppLocalizationsBg extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Подробностите за събитието са копирани в клипборда';
 
   @override
+  String get noSignedEvents => 'Няма подписани събития';
+
+  @override
+  String get signedEventsEmptyHint => 'Подписаните събития ще се появят тук, когато ги подпишете';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Суровите метаданни са копирани в клипборда';
 
   @override

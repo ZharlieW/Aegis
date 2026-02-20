@@ -294,6 +294,8 @@
   "copiedToClipboard": "Αντιγράφηκε",
   "eventDetails": "Λεπτομέρειες συμβάντος",
   "eventDetailsCopiedToClipboard": "Οι λεπτομέρειες συμβάντος αντιγράφηκαν",
+  "noSignedEvents": "Δεν υπάρχουν υπογεγραμμένα συμβάντα",
+  "signedEventsEmptyHint": "Τα υπογεγραμμένα συμβάντα θα εμφανιστούν εδώ όταν τα υπογράψετε",
   "rawMetadataCopiedToClipboard": "Τα ακατέργαστα μεταδεδομένα αντιγράφηκαν",
   "permissionRequest": "Αίτηση δικαιώματος",
   "permissionRequestContent": "Αυτή η εφαρμογή ζητά δικαιώματα πρόσβασης στον λογαριασμό Nostr σας",

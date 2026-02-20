@@ -294,6 +294,8 @@
   "copiedToClipboard": "Copiado al portapapeles",
   "eventDetails": "Detalles del evento",
   "eventDetailsCopiedToClipboard": "Detalles del evento copiados al portapapeles",
+  "noSignedEvents": "No hay eventos firmados",
+  "signedEventsEmptyHint": "Los eventos firmados aparecerán aquí cuando los firmes",
   "rawMetadataCopiedToClipboard": "Metadatos crudos copiados al portapapeles",
   "permissionRequest": "Solicitud de permisos",
   "permissionRequestContent": "Esta aplicación solicita permisos para acceder a tu cuenta Nostr",

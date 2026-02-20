@@ -631,6 +631,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Esemény részletei vágólapra másolva';
 
   @override
+  String get noSignedEvents => 'Nincs aláírt esemény';
+
+  @override
+  String get signedEventsEmptyHint => 'Az aláírt események itt fognak megjelenni, amikor aláírod őket';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Nyers metaadatok vágólapra másolva';
 
   @override

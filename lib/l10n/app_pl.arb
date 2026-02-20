@@ -294,6 +294,8 @@
   "copiedToClipboard": "Skopiowano do schowka",
   "eventDetails": "Szczegóły zdarzenia",
   "eventDetailsCopiedToClipboard": "Szczegóły zdarzenia skopiowane do schowka",
+  "noSignedEvents": "Brak podpisanych zdarzeń",
+  "signedEventsEmptyHint": "Podpisane zdarzenia pojawią się tutaj po ich podpisaniu",
   "rawMetadataCopiedToClipboard": "Surowe metadane skopiowane do schowka",
   "permissionRequest": "Żądanie uprawnień",
   "permissionRequestContent": "Ta aplikacja prosi o uprawnienia do Twojego konta Nostr",

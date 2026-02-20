@@ -631,6 +631,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Detalhes do evento copiados para a área de transferência';
 
   @override
+  String get noSignedEvents => 'Nenhum evento assinado';
+
+  @override
+  String get signedEventsEmptyHint => 'Os eventos assinados aparecerão aqui quando os assinar';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Metadados brutos copiados para a área de transferência';
 
   @override

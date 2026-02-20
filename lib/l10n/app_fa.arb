@@ -294,6 +294,8 @@
   "copiedToClipboard": "در کلیپ‌بورد کپی شد",
   "eventDetails": "جزئیات رویداد",
   "eventDetailsCopiedToClipboard": "جزئیات رویداد در کلیپ‌بورد کپی شد",
+  "noSignedEvents": "رویداد امضا شده‌ای وجود ندارد",
+  "signedEventsEmptyHint": "رویدادهای امضا شده پس از امضا اینجا نمایش داده می‌شوند",
   "rawMetadataCopiedToClipboard": "متادیتای خام در کلیپ‌بورد کپی شد",
   "permissionRequest": "درخواست مجوز",
   "permissionRequestContent": "این برنامه درخواست دسترسی به حساب Nostr شما را دارد",

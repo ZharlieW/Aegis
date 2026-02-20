@@ -294,6 +294,8 @@
   "copiedToClipboard": "クリップボードにコピーしました",
   "eventDetails": "イベント詳細",
   "eventDetailsCopiedToClipboard": "イベント詳細をクリップボードにコピーしました",
+  "noSignedEvents": "署名されたイベントはありません",
+  "signedEventsEmptyHint": "署名すると、署名されたイベントがここに表示されます",
   "rawMetadataCopiedToClipboard": "生メタデータをクリップボードにコピーしました",
   "permissionRequest": "権限リクエスト",
   "permissionRequestContent": "このアプリは Nostr アカウントへのアクセス権限を要求しています",

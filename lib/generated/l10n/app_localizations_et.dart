@@ -631,6 +631,12 @@ class AppLocalizationsEt extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Sündmuse üksikasjad kopeeritud lõikelauale';
 
   @override
+  String get noSignedEvents => 'Allkirjastatud sündmusi pole';
+
+  @override
+  String get signedEventsEmptyHint => 'Allkirjastatud sündmused kuvatakse siin, kui need allkirjastate';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Toormetaandmed kopeeritud lõikelauale';
 
   @override

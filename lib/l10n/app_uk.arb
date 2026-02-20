@@ -294,6 +294,8 @@
   "copiedToClipboard": "Скопійовано в буфер обміну",
   "eventDetails": "Деталі події",
   "eventDetailsCopiedToClipboard": "Деталі події скопійовано в буфер обміну",
+  "noSignedEvents": "Немає підписаних подій",
+  "signedEventsEmptyHint": "Підписані події з'являться тут, коли ви їх підпишете",
   "rawMetadataCopiedToClipboard": "Сирині метадані скопійовано в буфер обміну",
   "permissionRequest": "Запит дозволу",
   "permissionRequestContent": "Цей додаток запитує дозвіл на доступ до вашого облікового запису Nostr",

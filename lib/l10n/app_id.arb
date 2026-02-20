@@ -294,6 +294,8 @@
   "copiedToClipboard": "Disalin ke clipboard",
   "eventDetails": "Detail Acara",
   "eventDetailsCopiedToClipboard": "Detail acara disalin ke clipboard",
+  "noSignedEvents": "Tidak ada acara yang ditandatangani",
+  "signedEventsEmptyHint": "Acara yang ditandatangani akan muncul di sini saat Anda menandatanganinya",
   "rawMetadataCopiedToClipboard": "Metadata mentah disalin ke clipboard",
   "permissionRequest": "Permintaan Izin",
   "permissionRequestContent": "Aplikasi ini meminta izin untuk mengakses akun Nostr Anda",

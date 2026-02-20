@@ -5,6 +5,7 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'event_detail_page.dart';
 
 class Activities extends StatefulWidget {
@@ -195,14 +196,14 @@ class ActivitiesState extends State<Activities> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No signed events',
+            AppLocalizations.of(context)!.noSignedEvents,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Signed events will appear here when you sign them',
+            AppLocalizations.of(context)!.signedEventsEmptyHint,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

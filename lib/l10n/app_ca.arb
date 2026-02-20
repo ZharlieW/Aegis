@@ -294,6 +294,8 @@
   "copiedToClipboard": "Copiat al porta-retalls",
   "eventDetails": "Detalls de l'esdeveniment",
   "eventDetailsCopiedToClipboard": "Detalls de l'esdeveniment copiats al porta-retalls",
+  "noSignedEvents": "Cap esdeveniment signat",
+  "signedEventsEmptyHint": "Els esdeveniments signats apareixeran aquí quan els signeu",
   "rawMetadataCopiedToClipboard": "Metadades en brut copiades al porta-retalls",
   "permissionRequest": "Sol·licitud de permisos",
   "permissionRequestContent": "Aquesta aplicació demana permisos per accedir al teu compte Nostr",

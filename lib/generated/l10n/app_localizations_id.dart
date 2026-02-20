@@ -631,6 +631,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Detail acara disalin ke clipboard';
 
   @override
+  String get noSignedEvents => 'Tidak ada acara yang ditandatangani';
+
+  @override
+  String get signedEventsEmptyHint => 'Acara yang ditandatangani akan muncul di sini saat Anda menandatanganinya';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Metadata mentah disalin ke clipboard';
 
   @override

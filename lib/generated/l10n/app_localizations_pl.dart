@@ -631,6 +631,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Szczegóły zdarzenia skopiowane do schowka';
 
   @override
+  String get noSignedEvents => 'Brak podpisanych zdarzeń';
+
+  @override
+  String get signedEventsEmptyHint => 'Podpisane zdarzenia pojawią się tutaj po ich podpisaniu';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Surowe metadane skopiowane do schowka';
 
   @override

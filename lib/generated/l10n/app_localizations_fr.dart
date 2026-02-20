@@ -631,6 +631,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Détails de l\'événement copiés dans le presse-papiers';
 
   @override
+  String get noSignedEvents => 'Aucun événement signé';
+
+  @override
+  String get signedEventsEmptyHint => 'Les événements signés apparaîtront ici lorsque vous les signerez';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Métadonnées brutes copiées dans le presse-papiers';
 
   @override

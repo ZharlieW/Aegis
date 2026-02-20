@@ -631,6 +631,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Dettagli evento copiati negli appunti';
 
   @override
+  String get noSignedEvents => 'Nessun evento firmato';
+
+  @override
+  String get signedEventsEmptyHint => 'Gli eventi firmati appariranno qui quando li firmi';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Metadati grezzi copiati negli appunti';
 
   @override

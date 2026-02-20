@@ -294,6 +294,8 @@
   "copiedToClipboard": "Nokopēts starpliktuvē",
   "eventDetails": "Notikuma detaļas",
   "eventDetailsCopiedToClipboard": "Notikuma detaļas nokopētas starpliktuvē",
+  "noSignedEvents": "Nav parakstītu notikumu",
+  "signedEventsEmptyHint": "Parakstītie notikumi parādīsies šeit, kad tos parakstīsiet",
   "rawMetadataCopiedToClipboard": "Neapstrādāti metadati nokopēti starpliktuvē",
   "permissionRequest": "Atļaujas pieprasījums",
   "permissionRequestContent": "Šī lietotne pieprasa atļauju piekļūt jūsu Nostr kontam",

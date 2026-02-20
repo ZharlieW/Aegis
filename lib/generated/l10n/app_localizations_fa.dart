@@ -631,6 +631,12 @@ class AppLocalizationsFa extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'جزئیات رویداد در کلیپ‌بورد کپی شد';
 
   @override
+  String get noSignedEvents => 'رویداد امضا شده‌ای وجود ندارد';
+
+  @override
+  String get signedEventsEmptyHint => 'رویدادهای امضا شده پس از امضا اینجا نمایش داده می‌شوند';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'متادیتای خام در کلیپ‌بورد کپی شد';
 
   @override

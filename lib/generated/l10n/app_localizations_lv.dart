@@ -631,6 +631,12 @@ class AppLocalizationsLv extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'Notikuma detaļas nokopētas starpliktuvē';
 
   @override
+  String get noSignedEvents => 'Nav parakstītu notikumu';
+
+  @override
+  String get signedEventsEmptyHint => 'Parakstītie notikumi parādīsies šeit, kad tos parakstīsiet';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'Neapstrādāti metadati nokopēti starpliktuvē';
 
   @override

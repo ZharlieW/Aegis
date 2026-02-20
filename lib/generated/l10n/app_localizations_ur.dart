@@ -631,6 +631,12 @@ class AppLocalizationsUr extends AppLocalizations {
   String get eventDetailsCopiedToClipboard => 'ایونٹ کی تفصیلات کلپ بورڈ پر کاپی';
 
   @override
+  String get noSignedEvents => 'کوئی دستخط شدہ واقعات نہیں';
+
+  @override
+  String get signedEventsEmptyHint => 'دستخط کرنے پر دستخط شدہ واقعات یہاں ظاہر ہوں گے';
+
+  @override
   String get rawMetadataCopiedToClipboard => 'خام میٹا ڈیٹا کلپ بورڈ پر کاپی';
 
   @override

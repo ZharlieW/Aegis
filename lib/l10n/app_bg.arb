@@ -294,6 +294,8 @@
   "copiedToClipboard": "Копирано в клипборда",
   "eventDetails": "Подробности за събитието",
   "eventDetailsCopiedToClipboard": "Подробностите за събитието са копирани в клипборда",
+  "noSignedEvents": "Няма подписани събития",
+  "signedEventsEmptyHint": "Подписаните събития ще се появят тук, когато ги подпишете",
   "rawMetadataCopiedToClipboard": "Суровите метаданни са копирани в клипборда",
   "permissionRequest": "Заявка за разрешение",
   "permissionRequestContent": "Това приложение иска разрешение за достъп до вашия акаунт Nostr",

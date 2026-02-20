@@ -294,6 +294,8 @@
   "copiedToClipboard": "Kopieret til udklipsholder",
   "eventDetails": "Begivenhedsdetaljer",
   "eventDetailsCopiedToClipboard": "Begivenhedsdetaljer kopieret til udklipsholder",
+  "noSignedEvents": "Ingen signerede begivenheder",
+  "signedEventsEmptyHint": "Signerede begivenheder vises her, når du signerer dem",
   "rawMetadataCopiedToClipboard": "Rå metadata kopieret til udklipsholder",
   "permissionRequest": "Tilladelsesanmodning",
   "permissionRequestContent": "Denne applikation anmoder om tilladelse til at få adgang til din Nostr-konto",

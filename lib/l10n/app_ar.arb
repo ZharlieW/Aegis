@@ -294,6 +294,8 @@
   "copiedToClipboard": "تم النسخ",
   "eventDetails": "تفاصيل الحدث",
   "eventDetailsCopiedToClipboard": "تم نسخ تفاصيل الحدث",
+  "noSignedEvents": "لا توجد أحداث موقعة",
+  "signedEventsEmptyHint": "ستظهر الأحداث الموقعة هنا عند توقيعك لها",
   "rawMetadataCopiedToClipboard": "تم نسخ البيانات الوصفية الأولية",
   "permissionRequest": "طلب الإذن",
   "permissionRequestContent": "هذا التطبيق يطلب إذناً للوصول إلى حساب Nostr",

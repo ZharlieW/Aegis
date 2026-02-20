@@ -294,6 +294,8 @@
   "copiedToClipboard": "Kopeeritud lõikelauale",
   "eventDetails": "Sündmuse üksikasjad",
   "eventDetailsCopiedToClipboard": "Sündmuse üksikasjad kopeeritud lõikelauale",
+  "noSignedEvents": "Allkirjastatud sündmusi pole",
+  "signedEventsEmptyHint": "Allkirjastatud sündmused kuvatakse siin, kui need allkirjastate",
   "rawMetadataCopiedToClipboard": "Toormetaandmed kopeeritud lõikelauale",
   "permissionRequest": "Õiguse taotlus",
   "permissionRequestContent": "See rakendus küsib ligipääsu sinu Nostr kontole",
