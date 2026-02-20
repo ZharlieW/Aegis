@@ -103,6 +103,7 @@ class _BrowserPageState extends State<BrowserPage> {
   List<NAppModel> _filteredNappList = [];
   String _searchQuery = '';
   Set<String> _favoriteIds = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -116,7 +117,7 @@ class _BrowserPageState extends State<BrowserPage> {
     try {
       // Check if preset apps have been imported
       final isImported = await UserAppDBISAR.isPresetAppsImported();
-      
+
       if (!isImported) {
         // First time: import preset apps from JSON file
         try {
@@ -125,23 +126,23 @@ class _BrowserPageState extends State<BrowserPage> {
           final List<Map<String, dynamic>> apps = jsonList
               .map((item) => item as Map<String, dynamic>)
               .toList();
-          
+
           await UserAppDBISAR.importPresetApps(apps);
           AegisLogger.info('Imported ${apps.length} preset apps to database');
         } catch (e) {
           AegisLogger.error('Failed to import preset apps: $e');
         }
       }
-      
+
       // Check and apply incremental updates
       await _checkAndApplyIncrementalUpdates();
-      
+
       // Load all apps from database
       final dbApps = await UserAppDBISAR.getAllFromDB();
       _nappList = dbApps.map((dbApp) => _convertFromDBApp(dbApp)).toList();
-      
+
       AegisLogger.info('Loaded ${_nappList.length} app(s) from database');
-      
+
       if (mounted) {
         _applyFilter();
       }
@@ -151,6 +152,10 @@ class _BrowserPageState extends State<BrowserPage> {
       _nappList = [];
       if (mounted) {
         _applyFilter();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -380,11 +385,36 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Widget _buildNappGrid() {
+    final l10n = AppLocalizations.of(context)!;
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.loading,
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     if (_filteredNappList.isEmpty) {
-      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Text(
-          _nappList.isEmpty ? l10n.loading : l10n.noNappsFound,
+          l10n.noNappsFound,
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -411,9 +441,9 @@ class _BrowserPageState extends State<BrowserPage> {
             _buildSectionHeader(AppLocalizations.of(context)!.favorites, Icons.push_pin),
             _buildAppGrid(favorites),
           ],
-          // ALL APPS section
+          // ALL APPS section (always show so that "Add App" tile is visible when list is empty)
           _buildSectionHeader(AppLocalizations.of(context)!.allApps, null, topPadding: favorites.isNotEmpty ? 4 : null),
-          _buildAppGrid(allApps, showAddButton: false),
+          _buildAppGrid(allApps, showAddButton: true),
           const SizedBox(height: 16),
         ],
       ),
@@ -533,9 +563,12 @@ class _BrowserPageState extends State<BrowserPage> {
   Widget _buildNappGridItem(NAppModel napp) {
     final isFavorite = _favoriteIds.contains(napp.id) || _favoriteIds.contains(napp.url);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
+    return Semantics(
+      label: napp.name,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
         if (napp.url.isNotEmpty) {
           AegisNavigator.pushPage(
             context,
@@ -552,11 +585,11 @@ class _BrowserPageState extends State<BrowserPage> {
       onLongPress: () {
         _showDeleteDialog(napp);
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // App Icon
-          Stack(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // App Icon
+            Stack(
             children: [
               Container(
                 width: 64,
@@ -614,7 +647,8 @@ class _BrowserPageState extends State<BrowserPage> {
           //   overflow: TextOverflow.ellipsis,
           //   textAlign: TextAlign.center,
           // ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -759,6 +793,8 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Future<void> _addWebApp(String url, String name) async {
+    // Capture l10n before any await to avoid using context across async gap
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Validate URL
       Uri? uri;
@@ -771,7 +807,7 @@ class _BrowserPageState extends State<BrowserPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.invalidUrlHint),
+              content: Text(l10n.invalidUrlHint),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -795,7 +831,7 @@ class _BrowserPageState extends State<BrowserPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.appAlreadyInList),
+              content: Text(l10n.appAlreadyInList),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -809,7 +845,7 @@ class _BrowserPageState extends State<BrowserPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.appAlreadyInList),
+              content: Text(l10n.appAlreadyInList),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -818,19 +854,19 @@ class _BrowserPageState extends State<BrowserPage> {
       }
 
       // Extract domain from URL for app name and icon
-      final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : AppLocalizations.of(context)!.webApp);
+      final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : l10n.webApp);
       final appId = uri.host.isNotEmpty ? uri.host.replaceAll('.', '_') : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
-      
+
       // Try to get favicon URL
       final iconUrl = await _getFaviconUrl(uri);
-      
+
       // Create a new app model
       final newApp = NAppModel(
         id: appId,
         url: url,
         name: appName,
         icon: iconUrl,
-        description: AppLocalizations.of(context)!.userAdded,
+        description: l10n.userAdded,
         platforms: ['web'],
       );
 
@@ -842,20 +878,21 @@ class _BrowserPageState extends State<BrowserPage> {
       // Reload list from database to maintain proper sorting (newest first)
       if (mounted) {
         await _loadNappList();
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.appAdded(newApp.name)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.appAdded(newApp.name)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } catch (e) {
       AegisLogger.error('Failed to add web app: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.appAddFailed(e.toString())),
+            content: Text(l10n.appAddFailed(e.toString())),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -891,6 +928,7 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Future<void> _deleteApp(NAppModel napp) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       await UserAppDBISAR.deleteFromDB(napp.url);
       AegisLogger.info('Successfully deleted app: ${napp.name}');
@@ -899,20 +937,21 @@ class _BrowserPageState extends State<BrowserPage> {
       if (mounted) {
         await _loadNappList();
         await _loadFavorites();
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.appDeleted(napp.name)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.appDeleted(napp.name)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } catch (e) {
       AegisLogger.error('Failed to delete app: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.appDeleteFailed(e.toString())),
+            content: Text(l10n.appDeleteFailed(e.toString())),
             duration: const Duration(seconds: 2),
           ),
         );
