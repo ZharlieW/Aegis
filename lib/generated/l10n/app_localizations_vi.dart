@@ -766,4 +766,25 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get continueButton => 'Tiếp tục';
+
+  @override
+  String get goBack => 'Quay lại';
+
+  @override
+  String get goForward => 'Đi tới';
+
+  @override
+  String get favorite => 'Yêu thích';
+
+  @override
+  String get unfavorite => 'Bỏ khỏi yêu thích';
+
+  @override
+  String get reload => 'Tải lại';
+
+  @override
+  String get exit => 'Thoát';
+
+  @override
+  String get activitiesLoadFailed => 'Không thể tải hoạt động';
 }

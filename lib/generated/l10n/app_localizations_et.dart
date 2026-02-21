@@ -766,4 +766,25 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get continueButton => 'Jätka';
+
+  @override
+  String get goBack => 'Tagasi';
+
+  @override
+  String get goForward => 'Edasi';
+
+  @override
+  String get favorite => 'Lemmik';
+
+  @override
+  String get unfavorite => 'Eemalda lemmikute seast';
+
+  @override
+  String get reload => 'Laadi uuesti';
+
+  @override
+  String get exit => 'Välju';
+
+  @override
+  String get activitiesLoadFailed => 'Tegevuste laadimine ebaõnnestus';
 }

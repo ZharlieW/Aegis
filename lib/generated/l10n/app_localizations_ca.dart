@@ -766,4 +766,25 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get continueButton => 'Continua';
+
+  @override
+  String get goBack => 'Enrere';
+
+  @override
+  String get goForward => 'Endavant';
+
+  @override
+  String get favorite => 'Preferit';
+
+  @override
+  String get unfavorite => 'Treure de preferits';
+
+  @override
+  String get reload => 'Actualitzar';
+
+  @override
+  String get exit => 'Sortir';
+
+  @override
+  String get activitiesLoadFailed => 'No s\'han pogut carregar les activitats';
 }

@@ -766,4 +766,25 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get continueButton => 'Pokračovat';
+
+  @override
+  String get goBack => 'Zpět';
+
+  @override
+  String get goForward => 'Vpřed';
+
+  @override
+  String get favorite => 'Oblíbené';
+
+  @override
+  String get unfavorite => 'Odebrat z oblíbených';
+
+  @override
+  String get reload => 'Obnovit';
+
+  @override
+  String get exit => 'Ukončit';
+
+  @override
+  String get activitiesLoadFailed => 'Nepodařilo se načíst aktivity';
 }

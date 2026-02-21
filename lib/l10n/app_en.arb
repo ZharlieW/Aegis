@@ -317,5 +317,12 @@
   "noResultsFound": "No results found",
   "pleaseSelectApplication": "Please select an application",
   "orEnterCustomName": "Or enter a custom name",
-  "continueButton": "Continue"
+  "continueButton": "Continue",
+  "goBack": "Go Back",
+  "goForward": "Go Forward",
+  "favorite": "Favorite",
+  "unfavorite": "Unfavorite",
+  "reload": "Reload",
+  "exit": "Exit",
+  "activitiesLoadFailed": "Failed to load activities"
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/navigator/navigator.dart';
 import 'event_detail_page.dart';
 
 class Activities extends StatefulWidget {
@@ -25,6 +26,7 @@ class Activities extends StatefulWidget {
 class ActivitiesState extends State<Activities> {
   List<SignedEventDBISAR> _filteredEvents = [];
   bool _isLoading = true;
+  bool _hasLoadError = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -42,30 +44,36 @@ class ActivitiesState extends State<Activities> {
   Future<void> _loadEvents() async {
     setState(() {
       _isLoading = true;
+      _hasLoadError = false;
     });
 
     try {
       List<SignedEventDBISAR> events;
-      
+
       if (widget.clientAuthDBISAR != null) {
-        // Load events for specific NIP-46 application (by clientPubkey)
         events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.clientAuthDBISAR!.clientPubkey);
       } else if (widget.applicationPubkey != null && widget.applicationPubkey!.isNotEmpty) {
-        // Load events for specific NIP-07 application (by applicationPubkey/URL)
         events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.applicationPubkey!);
       } else {
-        // Load all events
         events = await SignedEventManager.sharedInstance.getAllSignedEvents();
       }
-      
-      setState(() {
-        _filteredEvents = events;
-        _isLoading = false;
-      });
+
+      if (mounted) {
+        setState(() {
+          _filteredEvents = events;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasLoadError = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.activitiesLoadFailed)),
+        );
+      }
     }
   }
 
@@ -75,26 +83,23 @@ class ActivitiesState extends State<Activities> {
     return ToolKit.formatTimestamp(timestamp);
   }
 
-  String _getAppBarTitle() {
+  String _getAppBarTitle(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.clientAuthDBISAR != null) {
-      return widget.clientAuthDBISAR?.name ?? 'Activities';
+      return widget.clientAuthDBISAR?.name ?? l10n.activities;
     } else if (widget.applicationPubkey != null && widget.applicationPubkey!.isNotEmpty) {
-      // For NIP-07, try to get app name from first event or use URL
       if (_filteredEvents.isNotEmpty && _filteredEvents.first.applicationName != null) {
         return _filteredEvents.first.applicationName!;
       }
-      // Try to extract domain from URL
       try {
         final uri = Uri.tryParse(widget.applicationPubkey!);
         if (uri != null && uri.host.isNotEmpty) {
           return uri.host;
         }
-      } catch (_) {
-        // Ignore
-      }
+      } catch (_) {}
       return widget.applicationPubkey!;
     }
-    return 'Activities';
+    return l10n.activities;
   }
 
   String _getEventContent(SignedEventDBISAR event) {
@@ -116,7 +121,7 @@ class ActivitiesState extends State<Activities> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(_getAppBarTitle()),
+        title: Text(_getAppBarTitle(context)),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [
@@ -170,9 +175,11 @@ class ActivitiesState extends State<Activities> {
                     Expanded(
                       child: _isLoading
                           ? const Center(child: CircularProgressIndicator())
-                          : _filteredEvents.isEmpty
-                              ? _buildEmptyState()
-                              : _buildEventsList(),
+                          : _hasLoadError
+                              ? _buildLoadErrorState()
+                              : _filteredEvents.isEmpty
+                                  ? _buildEmptyState()
+                                  : _buildEventsList(),
                     ),
                   ],
                 ),
@@ -184,8 +191,31 @@ class ActivitiesState extends State<Activities> {
     );
   }
 
+  Widget _buildLoadErrorState() {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            l10n.activitiesLoadFailed,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _loadEvents,
+            icon: const Icon(Icons.refresh),
+            label: Text(l10n.retry),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
-    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -233,12 +263,7 @@ class ActivitiesState extends State<Activities> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EventDetailPage(event: event),
-          ),
-        );
+        AegisNavigator.pushPage(context, (context) => EventDetailPage(event: event));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),

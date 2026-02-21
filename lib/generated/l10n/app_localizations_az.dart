@@ -766,4 +766,25 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get continueButton => 'Davam et';
+
+  @override
+  String get goBack => 'Geri';
+
+  @override
+  String get goForward => 'İrəli';
+
+  @override
+  String get favorite => 'Sevimli';
+
+  @override
+  String get unfavorite => 'Sevimlilərdən çıx';
+
+  @override
+  String get reload => 'Yenilə';
+
+  @override
+  String get exit => 'Çıxış';
+
+  @override
+  String get activitiesLoadFailed => 'Fəaliyyətlər yüklənə bilmədi';
 }

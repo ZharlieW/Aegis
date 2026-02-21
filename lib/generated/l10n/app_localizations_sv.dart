@@ -766,4 +766,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get continueButton => 'Fortsätt';
+
+  @override
+  String get goBack => 'Tillbaka';
+
+  @override
+  String get goForward => 'Framåt';
+
+  @override
+  String get favorite => 'Favorit';
+
+  @override
+  String get unfavorite => 'Ta bort från favoriter';
+
+  @override
+  String get reload => 'Ladda om';
+
+  @override
+  String get exit => 'Avsluta';
+
+  @override
+  String get activitiesLoadFailed => 'Kunde inte ladda aktiviteter';
 }

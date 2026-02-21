@@ -766,4 +766,25 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get continueButton => 'ดำเนินการต่อ';
+
+  @override
+  String get goBack => 'กลับ';
+
+  @override
+  String get goForward => 'ไปข้างหน้า';
+
+  @override
+  String get favorite => 'รายการโปรด';
+
+  @override
+  String get unfavorite => 'ลบออกจากรายการโปรด';
+
+  @override
+  String get reload => 'โหลดใหม่';
+
+  @override
+  String get exit => 'ออก';
+
+  @override
+  String get activitiesLoadFailed => 'โหลดกิจกรรมไม่สำเร็จ';
 }

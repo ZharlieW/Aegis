@@ -766,4 +766,25 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get continueButton => 'Tovább';
+
+  @override
+  String get goBack => 'Vissza';
+
+  @override
+  String get goForward => 'Előre';
+
+  @override
+  String get favorite => 'Kedvenc';
+
+  @override
+  String get unfavorite => 'Eltávolítás a kedvencekből';
+
+  @override
+  String get reload => 'Újratöltés';
+
+  @override
+  String get exit => 'Kilépés';
+
+  @override
+  String get activitiesLoadFailed => 'A tevékenységek betöltése sikertelen';
 }

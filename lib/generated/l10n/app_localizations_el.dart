@@ -766,4 +766,25 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get continueButton => 'Συνέχεια';
+
+  @override
+  String get goBack => 'Πίσω';
+
+  @override
+  String get goForward => 'Μπροστά';
+
+  @override
+  String get favorite => 'Αγαπημένο';
+
+  @override
+  String get unfavorite => 'Αφαίρεση από αγαπημένα';
+
+  @override
+  String get reload => 'Ανανέωση';
+
+  @override
+  String get exit => 'Έξοδος';
+
+  @override
+  String get activitiesLoadFailed => 'Αποτυχία φόρτωσης δραστηριοτήτων';
 }

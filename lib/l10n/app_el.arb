@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Πίσω",
+  "goForward": "Μπροστά",
+  "favorite": "Αγαπημένο",
+  "unfavorite": "Αφαίρεση από αγαπημένα",
+  "reload": "Ανανέωση",
+  "exit": "Έξοδος",
+  "activitiesLoadFailed": "Αποτυχία φόρτωσης δραστηριοτήτων",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

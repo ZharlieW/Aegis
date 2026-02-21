@@ -766,4 +766,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get continueButton => 'متابعة';
+
+  @override
+  String get goBack => 'رجوع';
+
+  @override
+  String get goForward => 'تقدّم';
+
+  @override
+  String get favorite => 'مفضلة';
+
+  @override
+  String get unfavorite => 'إلغاء المفضلة';
+
+  @override
+  String get reload => 'إعادة تحميل';
+
+  @override
+  String get exit => 'خروج';
+
+  @override
+  String get activitiesLoadFailed => 'فشل تحميل النشاطات';
 }

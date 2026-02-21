@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Kembali",
+  "goForward": "Maju",
+  "favorite": "Favorit",
+  "unfavorite": "Hapus dari favorit",
+  "reload": "Muat ulang",
+  "exit": "Keluar",
+  "activitiesLoadFailed": "Gagal memuat aktivitas",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

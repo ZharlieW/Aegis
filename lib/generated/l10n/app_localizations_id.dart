@@ -766,4 +766,25 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get continueButton => 'Lanjutkan';
+
+  @override
+  String get goBack => 'Kembali';
+
+  @override
+  String get goForward => 'Maju';
+
+  @override
+  String get favorite => 'Favorit';
+
+  @override
+  String get unfavorite => 'Hapus dari favorit';
+
+  @override
+  String get reload => 'Muat ulang';
+
+  @override
+  String get exit => 'Keluar';
+
+  @override
+  String get activitiesLoadFailed => 'Gagal memuat aktivitas';
 }

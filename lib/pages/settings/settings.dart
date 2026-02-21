@@ -52,7 +52,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
               controller: _confirmController,
               decoration: InputDecoration(
                 labelText: l10n.typeConfirmToProceed,
-                hintText: 'confirm',
+                hintText: l10n.confirmLiteral,
               ),
               autofocus: true,
               onChanged: (value) {

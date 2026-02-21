@@ -766,4 +766,25 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get continueButton => 'Fortsæt';
+
+  @override
+  String get goBack => 'Tilbage';
+
+  @override
+  String get goForward => 'Fremad';
+
+  @override
+  String get favorite => 'Favorit';
+
+  @override
+  String get unfavorite => 'Fjern favorit';
+
+  @override
+  String get reload => 'Genindlæs';
+
+  @override
+  String get exit => 'Afslut';
+
+  @override
+  String get activitiesLoadFailed => 'Kunne ikke indlæse aktiviteter';
 }

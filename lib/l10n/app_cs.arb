@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Zpět",
+  "goForward": "Vpřed",
+  "favorite": "Oblíbené",
+  "unfavorite": "Odebrat z oblíbených",
+  "reload": "Obnovit",
+  "exit": "Ukončit",
+  "activitiesLoadFailed": "Nepodařilo se načíst aktivity",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

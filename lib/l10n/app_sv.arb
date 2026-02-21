@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Tillbaka",
+  "goForward": "Framåt",
+  "favorite": "Favorit",
+  "unfavorite": "Ta bort från favoriter",
+  "reload": "Ladda om",
+  "exit": "Avsluta",
+  "activitiesLoadFailed": "Kunde inte ladda aktiviteter",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

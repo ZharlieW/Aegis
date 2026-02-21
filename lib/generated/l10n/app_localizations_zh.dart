@@ -766,6 +766,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get continueButton => '继续';
+
+  @override
+  String get goBack => '后退';
+
+  @override
+  String get goForward => '前进';
+
+  @override
+  String get favorite => '收藏';
+
+  @override
+  String get unfavorite => '取消收藏';
+
+  @override
+  String get reload => '刷新';
+
+  @override
+  String get exit => '退出';
+
+  @override
+  String get activitiesLoadFailed => '加载活动失败';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -1530,4 +1551,25 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get continueButton => '繼續';
+
+  @override
+  String get goBack => '返回';
+
+  @override
+  String get goForward => '前進';
+
+  @override
+  String get favorite => '收藏';
+
+  @override
+  String get unfavorite => '取消收藏';
+
+  @override
+  String get reload => '重新載入';
+
+  @override
+  String get exit => '結束';
+
+  @override
+  String get activitiesLoadFailed => '載入活動失敗';
 }

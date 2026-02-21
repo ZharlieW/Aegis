@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Quay lại",
+  "goForward": "Đi tới",
+  "favorite": "Yêu thích",
+  "unfavorite": "Bỏ khỏi yêu thích",
+  "reload": "Tải lại",
+  "exit": "Thoát",
+  "activitiesLoadFailed": "Không thể tải hoạt động",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

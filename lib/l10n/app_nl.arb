@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Terug",
+  "goForward": "Vooruit",
+  "favorite": "Favoriet",
+  "unfavorite": "Verwijderen uit favorieten",
+  "reload": "Vernieuwen",
+  "exit": "Afsluiten",
+  "activitiesLoadFailed": "Activiteiten laden mislukt",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

@@ -766,4 +766,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get continueButton => 'जारी रखें';
+
+  @override
+  String get goBack => 'वापस';
+
+  @override
+  String get goForward => 'आगे';
+
+  @override
+  String get favorite => 'पसंदीदा';
+
+  @override
+  String get unfavorite => 'पसंदीदा से हटाएं';
+
+  @override
+  String get reload => 'पुनः लोड करें';
+
+  @override
+  String get exit => 'बाहर निकलें';
+
+  @override
+  String get activitiesLoadFailed => 'गतिविधियां लोड नहीं हो सकीं';
 }

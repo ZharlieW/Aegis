@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "뒤로",
+  "goForward": "앞으로",
+  "favorite": "즐겨찾기",
+  "unfavorite": "즐겨찾기 제거",
+  "reload": "새로고침",
+  "exit": "나가기",
+  "activitiesLoadFailed": "활동을 불러오지 못했습니다",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

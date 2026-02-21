@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "戻る",
+  "goForward": "進む",
+  "favorite": "お気に入り",
+  "unfavorite": "お気に入りから削除",
+  "reload": "再読み込み",
+  "exit": "終了",
+  "activitiesLoadFailed": "アクティビティの読み込みに失敗しました",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

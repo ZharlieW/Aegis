@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Tagasi",
+  "goForward": "Edasi",
+  "favorite": "Lemmik",
+  "unfavorite": "Eemalda lemmikute seast",
+  "reload": "Laadi uuesti",
+  "exit": "Välju",
+  "activitiesLoadFailed": "Tegevuste laadimine ebaõnnestus",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

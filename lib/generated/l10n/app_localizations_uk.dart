@@ -766,4 +766,25 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get continueButton => 'Продовжити';
+
+  @override
+  String get goBack => 'Назад';
+
+  @override
+  String get goForward => 'Вперед';
+
+  @override
+  String get favorite => 'Обране';
+
+  @override
+  String get unfavorite => 'Видалити з обраного';
+
+  @override
+  String get reload => 'Оновити';
+
+  @override
+  String get exit => 'Вихід';
+
+  @override
+  String get activitiesLoadFailed => 'Не вдалося завантажити активності';
 }

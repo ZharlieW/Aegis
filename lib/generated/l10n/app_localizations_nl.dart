@@ -766,4 +766,25 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get continueButton => 'Doorgaan';
+
+  @override
+  String get goBack => 'Terug';
+
+  @override
+  String get goForward => 'Vooruit';
+
+  @override
+  String get favorite => 'Favoriet';
+
+  @override
+  String get unfavorite => 'Verwijderen uit favorieten';
+
+  @override
+  String get reload => 'Vernieuwen';
+
+  @override
+  String get exit => 'Afsluiten';
+
+  @override
+  String get activitiesLoadFailed => 'Activiteiten laden mislukt';
 }

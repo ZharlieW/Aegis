@@ -766,4 +766,25 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get continueButton => 'Turpināt';
+
+  @override
+  String get goBack => 'Atpakaļ';
+
+  @override
+  String get goForward => 'Uz priekšu';
+
+  @override
+  String get favorite => 'Favorīts';
+
+  @override
+  String get unfavorite => 'Noņemt no favorītiem';
+
+  @override
+  String get reload => 'Pārlādēt';
+
+  @override
+  String get exit => 'Iziet';
+
+  @override
+  String get activitiesLoadFailed => 'Neizdevās ielādēt aktivitātes';
 }

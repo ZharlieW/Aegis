@@ -766,4 +766,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get continueButton => '続ける';
+
+  @override
+  String get goBack => '戻る';
+
+  @override
+  String get goForward => '進む';
+
+  @override
+  String get favorite => 'お気に入り';
+
+  @override
+  String get unfavorite => 'お気に入りから削除';
+
+  @override
+  String get reload => '再読み込み';
+
+  @override
+  String get exit => '終了';
+
+  @override
+  String get activitiesLoadFailed => 'アクティビティの読み込みに失敗しました';
 }

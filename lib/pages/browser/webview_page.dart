@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/browser/nip07_handlers.dart';
 
 class WebViewPage extends StatefulWidget {
@@ -464,45 +465,45 @@ class _WebViewPageState extends State<WebViewPage> {
             ),
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Go Back button
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: _canGoBack ? _handleBackButton : null,
-              iconSize: 24,
-              tooltip: 'Go Back',
-            ),
-            // Go Forward button
-            IconButton(
-              icon: Icon(Icons.arrow_forward),
-              onPressed: _canGoForward ? _handleForwardButton : null,
-              iconSize: 24,
-              tooltip: 'Go Forward',
-            ),
-            // Bookmark button
-            IconButton(
-              icon: Icon(_isFavorite ? Icons.star : Icons.star_border),
-              onPressed: _toggleFavorite,
-              iconSize: 24,
-              tooltip: _isFavorite ? 'Unfavorite' : 'Favorite',
-            ),
-            // Reload button
-            IconButton(
-              icon: Icon(Icons.refresh),
-              onPressed: _reload,
-              iconSize: 24,
-              tooltip: 'Reload',
-            ),
-            // Exit button
-            IconButton(
-              icon: Icon(Icons.close),
-              onPressed: () => Navigator.of(context).pop(),
-              iconSize: 24,
-              tooltip: 'Exit',
-            ),
-          ],
+        child: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context)!;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: _canGoBack ? _handleBackButton : null,
+                  iconSize: 24,
+                  tooltip: l10n.goBack,
+                ),
+                IconButton(
+                  icon: Icon(Icons.arrow_forward),
+                  onPressed: _canGoForward ? _handleForwardButton : null,
+                  iconSize: 24,
+                  tooltip: l10n.goForward,
+                ),
+                IconButton(
+                  icon: Icon(_isFavorite ? Icons.star : Icons.star_border),
+                  onPressed: _toggleFavorite,
+                  iconSize: 24,
+                  tooltip: _isFavorite ? l10n.unfavorite : l10n.favorite,
+                ),
+                IconButton(
+                  icon: Icon(Icons.refresh),
+                  onPressed: _reload,
+                  iconSize: 24,
+                  tooltip: l10n.reload,
+                ),
+                IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                  iconSize: 24,
+                  tooltip: l10n.exit,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

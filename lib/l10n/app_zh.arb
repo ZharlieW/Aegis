@@ -317,5 +317,12 @@
   "noResultsFound": "未找到结果",
   "pleaseSelectApplication": "请选择一个应用",
   "orEnterCustomName": "或输入自定义名称",
-  "continueButton": "继续"
+  "continueButton": "继续",
+  "goBack": "后退",
+  "goForward": "前进",
+  "favorite": "收藏",
+  "unfavorite": "取消收藏",
+  "reload": "刷新",
+  "exit": "退出",
+  "activitiesLoadFailed": "加载活动失败"
 }

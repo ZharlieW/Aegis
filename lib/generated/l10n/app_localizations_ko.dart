@@ -766,4 +766,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get continueButton => '계속';
+
+  @override
+  String get goBack => '뒤로';
+
+  @override
+  String get goForward => '앞으로';
+
+  @override
+  String get favorite => '즐겨찾기';
+
+  @override
+  String get unfavorite => '즐겨찾기 제거';
+
+  @override
+  String get reload => '새로고침';
+
+  @override
+  String get exit => '나가기';
+
+  @override
+  String get activitiesLoadFailed => '활동을 불러오지 못했습니다';
 }

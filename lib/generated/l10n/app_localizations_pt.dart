@@ -766,4 +766,25 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get continueButton => 'Continuar';
+
+  @override
+  String get goBack => 'Voltar';
+
+  @override
+  String get goForward => 'Avançar';
+
+  @override
+  String get favorite => 'Favorito';
+
+  @override
+  String get unfavorite => 'Remover dos favoritos';
+
+  @override
+  String get reload => 'Recarregar';
+
+  @override
+  String get exit => 'Sair';
+
+  @override
+  String get activitiesLoadFailed => 'Falha ao carregar atividades';
 }

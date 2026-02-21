@@ -766,4 +766,25 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get continueButton => 'Devam';
+
+  @override
+  String get goBack => 'Geri';
+
+  @override
+  String get goForward => 'İleri';
+
+  @override
+  String get favorite => 'Favori';
+
+  @override
+  String get unfavorite => 'Favorilerden kaldır';
+
+  @override
+  String get reload => 'Yenile';
+
+  @override
+  String get exit => 'Çıkış';
+
+  @override
+  String get activitiesLoadFailed => 'Etkinlikler yüklenemedi';
 }

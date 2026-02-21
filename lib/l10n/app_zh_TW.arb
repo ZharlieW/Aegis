@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "返回",
+  "goForward": "前進",
+  "favorite": "收藏",
+  "unfavorite": "取消收藏",
+  "reload": "重新載入",
+  "exit": "結束",
+  "activitiesLoadFailed": "載入活動失敗",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

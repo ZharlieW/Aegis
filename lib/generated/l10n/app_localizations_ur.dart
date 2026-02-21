@@ -766,4 +766,25 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get continueButton => 'جاری رکھیں';
+
+  @override
+  String get goBack => 'واپس';
+
+  @override
+  String get goForward => 'آگے';
+
+  @override
+  String get favorite => 'پسندیدہ';
+
+  @override
+  String get unfavorite => 'پسندیدہ سے ہٹائیں';
+
+  @override
+  String get reload => 'دوبارہ لوڈ کریں';
+
+  @override
+  String get exit => 'باہر نکلیں';
+
+  @override
+  String get activitiesLoadFailed => 'سرگرمیاں لوڈ نہیں ہو سکیں';
 }

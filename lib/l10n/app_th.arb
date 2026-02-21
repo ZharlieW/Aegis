@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "กลับ",
+  "goForward": "ไปข้างหน้า",
+  "favorite": "รายการโปรด",
+  "unfavorite": "ลบออกจากรายการโปรด",
+  "reload": "โหลดใหม่",
+  "exit": "ออก",
+  "activitiesLoadFailed": "โหลดกิจกรรมไม่สำเร็จ",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

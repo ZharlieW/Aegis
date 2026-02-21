@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Geri",
+  "goForward": "İrəli",
+  "favorite": "Sevimli",
+  "unfavorite": "Sevimlilərdən çıx",
+  "reload": "Yenilə",
+  "exit": "Çıxış",
+  "activitiesLoadFailed": "Fəaliyyətlər yüklənə bilmədi",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

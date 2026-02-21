@@ -766,4 +766,25 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get continueButton => 'Продолжить';
+
+  @override
+  String get goBack => 'Назад';
+
+  @override
+  String get goForward => 'Вперёд';
+
+  @override
+  String get favorite => 'Избранное';
+
+  @override
+  String get unfavorite => 'Удалить из избранного';
+
+  @override
+  String get reload => 'Обновить';
+
+  @override
+  String get exit => 'Выход';
+
+  @override
+  String get activitiesLoadFailed => 'Не удалось загрузить активность';
 }

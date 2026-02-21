@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Vissza",
+  "goForward": "Előre",
+  "favorite": "Kedvenc",
+  "unfavorite": "Eltávolítás a kedvencekből",
+  "reload": "Újratöltés",
+  "exit": "Kilépés",
+  "activitiesLoadFailed": "A tevékenységek betöltése sikertelen",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

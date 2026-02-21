@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "بازگشت",
+  "goForward": "جلو",
+  "favorite": "مورد علاقه",
+  "unfavorite": "حذف از علاقه‌مندی‌ها",
+  "reload": "بارگذاری مجدد",
+  "exit": "خروج",
+  "activitiesLoadFailed": "بارگذاری فعالیت‌ها ناموفق بود",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

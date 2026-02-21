@@ -766,4 +766,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueButton => 'Continue';
+
+  @override
+  String get goBack => 'Go Back';
+
+  @override
+  String get goForward => 'Go Forward';
+
+  @override
+  String get favorite => 'Favorite';
+
+  @override
+  String get unfavorite => 'Unfavorite';
+
+  @override
+  String get reload => 'Reload';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String get activitiesLoadFailed => 'Failed to load activities';
 }

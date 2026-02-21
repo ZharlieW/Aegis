@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "Atpakaļ",
+  "goForward": "Uz priekšu",
+  "favorite": "Favorīts",
+  "unfavorite": "Noņemt no favorītiem",
+  "reload": "Pārlādēt",
+  "exit": "Iziet",
+  "activitiesLoadFailed": "Neizdevās ielādēt aktivitātes",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

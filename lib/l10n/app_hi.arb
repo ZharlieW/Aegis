@@ -341,6 +341,13 @@
   "unitGB": "GB",
   "unitKB": "KB",
   "unitMB": "MB",
+  "goBack": "वापस",
+  "goForward": "आगे",
+  "favorite": "पसंदीदा",
+  "unfavorite": "पसंदीदा से हटाएं",
+  "reload": "पुनः लोड करें",
+  "exit": "बाहर निकलें",
+  "activitiesLoadFailed": "गतिविधियां लोड नहीं हो सकीं",
   "@databaseExportedToIosHint": {
     "placeholders": {
       "path": {

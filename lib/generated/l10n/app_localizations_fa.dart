@@ -766,4 +766,25 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get continueButton => 'ادامه';
+
+  @override
+  String get goBack => 'بازگشت';
+
+  @override
+  String get goForward => 'جلو';
+
+  @override
+  String get favorite => 'مورد علاقه';
+
+  @override
+  String get unfavorite => 'حذف از علاقه‌مندی‌ها';
+
+  @override
+  String get reload => 'بارگذاری مجدد';
+
+  @override
+  String get exit => 'خروج';
+
+  @override
+  String get activitiesLoadFailed => 'بارگذاری فعالیت‌ها ناموفق بود';
 }

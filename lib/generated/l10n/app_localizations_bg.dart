@@ -766,4 +766,25 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get continueButton => 'Продължи';
+
+  @override
+  String get goBack => 'Назад';
+
+  @override
+  String get goForward => 'Напред';
+
+  @override
+  String get favorite => 'Любимо';
+
+  @override
+  String get unfavorite => 'Премахни от любими';
+
+  @override
+  String get reload => 'Презареди';
+
+  @override
+  String get exit => 'Изход';
+
+  @override
+  String get activitiesLoadFailed => 'Неуспешно зареждане на активности';
 }
