@@ -567,6 +567,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get noNappsFound => 'Додатки не знайдено';
 
   @override
+  String get nappListLoadFailed => 'Не вдалося завантажити список додатків';
+
+  @override
   String get favorites => 'Обране';
 
   @override

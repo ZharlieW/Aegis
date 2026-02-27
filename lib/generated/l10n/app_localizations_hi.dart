@@ -567,6 +567,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noNappsFound => 'कोई ऐप नहीं मिला';
 
   @override
+  String get nappListLoadFailed => 'ऐप सूची लोड करने में विफल';
+
+  @override
   String get favorites => 'पसंदीदा';
 
   @override

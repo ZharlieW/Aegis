@@ -567,6 +567,9 @@ class AppLocalizationsEt extends AppLocalizations {
   String get noNappsFound => 'Rakendusi ei leitud';
 
   @override
+  String get nappListLoadFailed => 'Rakenduste nimekirja laadimine ebaõnnestus';
+
+  @override
   String get favorites => 'Lemmikud';
 
   @override

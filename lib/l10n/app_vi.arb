@@ -241,6 +241,7 @@
   "appNameOptional": "Tên ứng dụng (tùy chọn)",
   "loading": "Đang tải...",
   "noNappsFound": "Không tìm thấy ứng dụng",
+  "nappListLoadFailed": "Không thể tải danh sách ứng dụng",
   "favorites": "Yêu thích",
   "allApps": "Tất cả ứng dụng",
   "addApp": "Thêm ứng dụng",

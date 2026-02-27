@@ -241,6 +241,7 @@
   "appNameOptional": "Appnaam (optioneel)",
   "loading": "Laden...",
   "noNappsFound": "Geen apps gevonden",
+  "nappListLoadFailed": "App-lijst laden mislukt",
   "favorites": "Favorieten",
   "allApps": "Alle apps",
   "addApp": "App toevoegen",

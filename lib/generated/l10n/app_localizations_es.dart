@@ -567,6 +567,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noNappsFound => 'No se encontraron aplicaciones';
 
   @override
+  String get nappListLoadFailed => 'Error al cargar la lista de aplicaciones';
+
+  @override
   String get favorites => 'Favoritos';
 
   @override

@@ -567,6 +567,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get noNappsFound => 'Nem található alkalmazás';
 
   @override
+  String get nappListLoadFailed => 'Az alkalmazáslista betöltése sikertelen';
+
+  @override
   String get favorites => 'Kedvencek';
 
   @override

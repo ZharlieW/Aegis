@@ -241,6 +241,7 @@
   "appNameOptional": "アプリ名（任意）",
   "loading": "読み込み中...",
   "noNappsFound": "アプリが見つかりません",
+  "nappListLoadFailed": "アプリリストの読み込みに失敗しました",
   "favorites": "お気に入り",
   "allApps": "すべてのアプリ",
   "addApp": "アプリを追加",

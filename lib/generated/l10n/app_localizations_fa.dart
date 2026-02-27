@@ -567,6 +567,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get noNappsFound => 'برنامه‌ای یافت نشد';
 
   @override
+  String get nappListLoadFailed => 'بارگذاری فهرست برنامه‌ها ناموفق بود';
+
+  @override
   String get favorites => 'موارد دلخواه';
 
   @override

@@ -567,6 +567,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noNappsFound => '未找到 NApps';
 
   @override
+  String get nappListLoadFailed => '加载应用列表失败';
+
+  @override
   String get favorites => '收藏';
 
   @override
@@ -1350,6 +1353,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get noNappsFound => '未找到 NApps';
+
+  @override
+  String get nappListLoadFailed => '載入應用列表失敗';
 
   @override
   String get favorites => '收藏';

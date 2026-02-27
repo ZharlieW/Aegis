@@ -241,6 +241,7 @@
   "appNameOptional": "Uygulama adı (isteğe bağlı)",
   "loading": "Yükleniyor...",
   "noNappsFound": "Uygulama bulunamadı",
+  "nappListLoadFailed": "Uygulama listesi yüklenemedi",
   "favorites": "Favoriler",
   "allApps": "Tüm uygulamalar",
   "addApp": "Uygulama ekle",

@@ -241,6 +241,7 @@
   "appNameOptional": "Lietotnes nosaukums (pēc izvēles)",
   "loading": "Ielādē...",
   "noNappsFound": "Lietotnes nav atrastas",
+  "nappListLoadFailed": "Neizdevās ielādēt lietotņu sarakstu",
   "favorites": "Favorīti",
   "allApps": "Visas lietotnes",
   "addApp": "Pievienot lietotni",

@@ -241,6 +241,7 @@
   "appNameOptional": "ऐप का नाम (वैकल्पिक)",
   "loading": "लोड हो रहा है...",
   "noNappsFound": "कोई ऐप नहीं मिला",
+  "nappListLoadFailed": "ऐप सूची लोड करने में विफल",
   "favorites": "पसंदीदा",
   "allApps": "सभी ऐप",
   "addApp": "ऐप जोड़ें",

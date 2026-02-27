@@ -567,6 +567,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get noNappsFound => 'Приложения не найдены';
 
   @override
+  String get nappListLoadFailed => 'Не удалось загрузить список приложений';
+
+  @override
   String get favorites => 'Избранное';
 
   @override

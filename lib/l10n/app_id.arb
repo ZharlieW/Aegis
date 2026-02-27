@@ -241,6 +241,7 @@
   "appNameOptional": "Nama Aplikasi (Opsional)",
   "loading": "Memuat...",
   "noNappsFound": "Tidak ada aplikasi ditemukan",
+  "nappListLoadFailed": "Gagal memuat daftar aplikasi",
   "favorites": "Favorit",
   "allApps": "Semua Aplikasi",
   "addApp": "Tambah Aplikasi",

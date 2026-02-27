@@ -567,6 +567,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get noNappsFound => 'No s\'han trobat aplicacions';
 
   @override
+  String get nappListLoadFailed => 'No s\'ha pogut carregar la llista d\'aplicacions';
+
+  @override
   String get favorites => 'Preferits';
 
   @override

@@ -241,6 +241,7 @@
   "appNameOptional": "App-navn (valgfrit)",
   "loading": "Indlæser...",
   "noNappsFound": "Ingen apps fundet",
+  "nappListLoadFailed": "Kunne ikke indlæse app-liste",
   "favorites": "Favoritter",
   "allApps": "Alle apps",
   "addApp": "Tilføj app",

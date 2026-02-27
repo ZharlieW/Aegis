@@ -225,6 +225,7 @@
   "appNameOptional": "应用名称（选填）",
   "loading": "加载中...",
   "noNappsFound": "未找到 NApps",
+  "nappListLoadFailed": "加载应用列表失败",
   "favorites": "收藏",
   "allApps": "全部应用",
   "addApp": "添加应用",

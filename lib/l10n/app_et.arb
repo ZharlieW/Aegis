@@ -241,6 +241,7 @@
   "appNameOptional": "Rakenduse nimi (valikuline)",
   "loading": "Laadimine...",
   "noNappsFound": "Rakendusi ei leitud",
+  "nappListLoadFailed": "Rakenduste nimekirja laadimine ebaõnnestus",
   "favorites": "Lemmikud",
   "allApps": "Kõik rakendused",
   "addApp": "Lisa rakendus",

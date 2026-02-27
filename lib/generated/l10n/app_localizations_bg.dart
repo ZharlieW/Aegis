@@ -567,6 +567,9 @@ class AppLocalizationsBg extends AppLocalizations {
   String get noNappsFound => 'Не са намерени приложения';
 
   @override
+  String get nappListLoadFailed => 'Неуспешно зареждане на списъка с приложения';
+
+  @override
   String get favorites => 'Любими';
 
   @override

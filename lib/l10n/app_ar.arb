@@ -241,6 +241,7 @@
   "appNameOptional": "اسم التطبيق (اختياري)",
   "loading": "جاري التحميل...",
   "noNappsFound": "لم يتم العثور على تطبيقات",
+  "nappListLoadFailed": "فشل تحميل قائمة التطبيقات",
   "favorites": "المفضلة",
   "allApps": "جميع التطبيقات",
   "addApp": "إضافة تطبيق",

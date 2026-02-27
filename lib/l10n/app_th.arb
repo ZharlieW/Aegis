@@ -241,6 +241,7 @@
   "appNameOptional": "ชื่อแอป (ไม่บังคับ)",
   "loading": "กำลังโหลด...",
   "noNappsFound": "ไม่พบแอป",
+  "nappListLoadFailed": "โหลดรายการแอปไม่สำเร็จ",
   "favorites": "รายการโปรด",
   "allApps": "แอปทั้งหมด",
   "addApp": "เพิ่มแอป",

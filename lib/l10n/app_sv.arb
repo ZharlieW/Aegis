@@ -241,6 +241,7 @@
   "appNameOptional": "Appnamn (valfritt)",
   "loading": "Laddar...",
   "noNappsFound": "Inga appar hittades",
+  "nappListLoadFailed": "Kunde inte ladda applistan",
   "favorites": "Favoriter",
   "allApps": "Alla appar",
   "addApp": "Lägg till app",

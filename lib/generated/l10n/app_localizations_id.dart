@@ -567,6 +567,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get noNappsFound => 'Tidak ada aplikasi ditemukan';
 
   @override
+  String get nappListLoadFailed => 'Gagal memuat daftar aplikasi';
+
+  @override
   String get favorites => 'Favorit';
 
   @override

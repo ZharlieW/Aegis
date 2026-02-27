@@ -241,6 +241,7 @@
   "appNameOptional": "Alkalmazás neve (opcionális)",
   "loading": "Betöltés...",
   "noNappsFound": "Nem található alkalmazás",
+  "nappListLoadFailed": "Az alkalmazáslista betöltése sikertelen",
   "favorites": "Kedvencek",
   "allApps": "Minden alkalmazás",
   "addApp": "Alkalmazás hozzáadása",

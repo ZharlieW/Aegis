@@ -241,6 +241,7 @@
   "appNameOptional": "Nom de l'aplicació (opcional)",
   "loading": "Carregant...",
   "noNappsFound": "No s'han trobat aplicacions",
+  "nappListLoadFailed": "No s'ha pogut carregar la llista d'aplicacions",
   "favorites": "Preferits",
   "allApps": "Totes les aplicacions",
   "addApp": "Afegir aplicació",

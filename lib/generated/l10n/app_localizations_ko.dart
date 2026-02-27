@@ -567,6 +567,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get noNappsFound => '앱을 찾을 수 없습니다';
 
   @override
+  String get nappListLoadFailed => '앱 목록을 불러오지 못했습니다';
+
+  @override
   String get favorites => '즐겨찾기';
 
   @override

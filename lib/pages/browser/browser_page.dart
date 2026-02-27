@@ -104,6 +104,7 @@ class _BrowserPageState extends State<BrowserPage> {
   String _searchQuery = '';
   Set<String> _favoriteIds = {};
   bool _isLoading = true;
+  bool _hasLoadError = false;
 
   @override
   void initState() {
@@ -114,8 +115,9 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Future<void> _loadNappList() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (mounted) setState(() => _hasLoadError = false);
     try {
-      // Check if preset apps have been imported
       final isImported = await UserAppDBISAR.isPresetAppsImported();
 
       if (!isImported) {
@@ -148,10 +150,13 @@ class _BrowserPageState extends State<BrowserPage> {
       }
     } catch (e) {
       AegisLogger.error('Failed to load apps: $e');
-      // Fallback to empty list
       _nappList = [];
       if (mounted) {
+        setState(() => _hasLoadError = true);
         _applyFilter();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.nappListLoadFailed)),
+        );
       }
     } finally {
       if (mounted) {
@@ -411,6 +416,29 @@ class _BrowserPageState extends State<BrowserPage> {
         ),
       );
     }
+    if (_hasLoadError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.nappListLoadFailed,
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _loadNappList,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retry),
+            ),
+          ],
+        ),
+      );
+    }
     if (_filteredNappList.isEmpty) {
       return Center(
         child: Text(
@@ -614,10 +642,10 @@ class _BrowserPageState extends State<BrowserPage> {
                       color: Theme.of(context).colorScheme.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.push_pin,
                       size: 12,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),

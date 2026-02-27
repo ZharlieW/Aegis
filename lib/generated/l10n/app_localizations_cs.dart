@@ -567,6 +567,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get noNappsFound => 'Žádné aplikace nenalezeny';
 
   @override
+  String get nappListLoadFailed => 'Nepodařilo se načíst seznam aplikací';
+
+  @override
   String get favorites => 'Oblíbené';
 
   @override

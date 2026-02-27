@@ -241,6 +241,7 @@
   "appNameOptional": "ایپ کا نام (اختیاری)",
   "loading": "لوڈ ہو رہا ہے...",
   "noNappsFound": "کوئی ایپ نہیں ملی",
+  "nappListLoadFailed": "ایپ کی فہرست لوڈ نہیں ہو سکی",
   "favorites": "پسندیدہ",
   "allApps": "تمام ایپس",
   "addApp": "ایپ شامل کریں",

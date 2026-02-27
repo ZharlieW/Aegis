@@ -567,6 +567,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get noNappsFound => 'Δεν βρέθηκαν εφαρμογές';
 
   @override
+  String get nappListLoadFailed => 'Αποτυχία φόρτωσης λίστας εφαρμογών';
+
+  @override
   String get favorites => 'Αγαπημένα';
 
   @override

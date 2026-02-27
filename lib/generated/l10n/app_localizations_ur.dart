@@ -567,6 +567,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get noNappsFound => 'کوئی ایپ نہیں ملی';
 
   @override
+  String get nappListLoadFailed => 'ایپ کی فہرست لوڈ نہیں ہو سکی';
+
+  @override
   String get favorites => 'پسندیدہ';
 
   @override

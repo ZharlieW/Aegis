@@ -567,6 +567,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get noNappsFound => 'Ingen apps fundet';
 
   @override
+  String get nappListLoadFailed => 'Kunne ikke indlæse app-liste';
+
+  @override
   String get favorites => 'Favoritter';
 
   @override

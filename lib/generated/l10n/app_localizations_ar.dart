@@ -567,6 +567,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noNappsFound => 'لم يتم العثور على تطبيقات';
 
   @override
+  String get nappListLoadFailed => 'فشل تحميل قائمة التطبيقات';
+
+  @override
   String get favorites => 'المفضلة';
 
   @override

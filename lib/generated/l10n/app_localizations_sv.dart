@@ -567,6 +567,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get noNappsFound => 'Inga appar hittades';
 
   @override
+  String get nappListLoadFailed => 'Kunde inte ladda applistan';
+
+  @override
   String get favorites => 'Favoriter';
 
   @override

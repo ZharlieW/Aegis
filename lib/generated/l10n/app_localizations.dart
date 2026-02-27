@@ -1234,6 +1234,12 @@ abstract class AppLocalizations {
   /// **'No NApps found'**
   String get noNappsFound;
 
+  /// No description provided for @nappListLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load app list'**
+  String get nappListLoadFailed;
+
   /// No description provided for @favorites.
   ///
   /// In en, this message translates to:

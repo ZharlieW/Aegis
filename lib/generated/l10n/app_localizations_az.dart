@@ -567,6 +567,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get noNappsFound => 'NApps tapılmadı';
 
   @override
+  String get nappListLoadFailed => 'Tətbiq siyahısı yüklənə bilmədi';
+
+  @override
   String get favorites => 'Sevimlilər';
 
   @override

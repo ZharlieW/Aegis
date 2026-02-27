@@ -567,6 +567,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get noNappsFound => 'ไม่พบแอป';
 
   @override
+  String get nappListLoadFailed => 'โหลดรายการแอปไม่สำเร็จ';
+
+  @override
   String get favorites => 'รายการโปรด';
 
   @override

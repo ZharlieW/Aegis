@@ -241,6 +241,7 @@
   "appNameOptional": "Název aplikace (volitelné)",
   "loading": "Načítání...",
   "noNappsFound": "Žádné aplikace nenalezeny",
+  "nappListLoadFailed": "Nepodařilo se načíst seznam aplikací",
   "favorites": "Oblíbené",
   "allApps": "Všechny aplikace",
   "addApp": "Přidat aplikaci",

@@ -241,6 +241,7 @@
   "appNameOptional": "Nazwa aplikacji (opcjonalnie)",
   "loading": "Ładowanie...",
   "noNappsFound": "Nie znaleziono aplikacji",
+  "nappListLoadFailed": "Nie udało się załadować listy aplikacji",
   "favorites": "Ulubione",
   "allApps": "Wszystkie aplikacje",
   "addApp": "Dodaj aplikację",

@@ -241,6 +241,7 @@
   "appNameOptional": "Tətbiq adı (İstəyə bağlı)",
   "loading": "Yüklənir...",
   "noNappsFound": "NApps tapılmadı",
+  "nappListLoadFailed": "Tətbiq siyahısı yüklənə bilmədi",
   "favorites": "Sevimlilər",
   "allApps": "Bütün tətbiqlər",
   "addApp": "Tətbiq əlavə et",

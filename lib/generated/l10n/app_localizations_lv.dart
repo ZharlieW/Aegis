@@ -567,6 +567,9 @@ class AppLocalizationsLv extends AppLocalizations {
   String get noNappsFound => 'Lietotnes nav atrastas';
 
   @override
+  String get nappListLoadFailed => 'Neizdevās ielādēt lietotņu sarakstu';
+
+  @override
   String get favorites => 'Favorīti';
 
   @override

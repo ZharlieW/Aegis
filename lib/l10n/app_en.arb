@@ -225,6 +225,7 @@
   "appNameOptional": "App Name (Optional)",
   "loading": "Loading...",
   "noNappsFound": "No NApps found",
+  "nappListLoadFailed": "Failed to load app list",
   "favorites": "Favorites",
   "allApps": "All Apps",
   "addApp": "Add App",

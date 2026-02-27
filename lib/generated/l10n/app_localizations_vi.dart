@@ -567,6 +567,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get noNappsFound => 'Không tìm thấy ứng dụng';
 
   @override
+  String get nappListLoadFailed => 'Không thể tải danh sách ứng dụng';
+
+  @override
   String get favorites => 'Yêu thích';
 
   @override

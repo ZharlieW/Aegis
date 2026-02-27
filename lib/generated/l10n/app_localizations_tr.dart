@@ -567,6 +567,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noNappsFound => 'Uygulama bulunamadı';
 
   @override
+  String get nappListLoadFailed => 'Uygulama listesi yüklenemedi';
+
+  @override
   String get favorites => 'Favoriler';
 
   @override
