@@ -41,7 +41,7 @@ cd macos && pod install && cd .. && flutter run -d macos
 - **[NIP-55](https://github.com/nostr-protocol/nips/blob/master/55.md)** – Act as a signer for other apps via Android Content Provider / Intent and `nostrsigner://` URL scheme (sign, encrypt, decrypt).
 - **[NIP-46](https://github.com/nostr-protocol/nips/blob/master/46.md)** – Nostr Connect remote signing (bunker protocol); supports `bunker://` and Nostr Connect URI.
 - **[NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md)** – Inject `window.nostr` in the in-app browser so web Nostr apps can use Aegis as the signer.
-- **Local Relay** – Connect via a local relay (iOS: `wss://127.0.0.1:28443`, other platforms: `ws://127.0.0.1:8081`) for on-device communication with Nostr apps.
+- **Local Relay** – Connect via a local relay (wss: `wss://127.0.0.1:28443`, ws: `ws://127.0.0.1:8081`) for on-device communication with Nostr apps.
 - **Nostr Apps** – Integrate with Nostr clients and web apps via NIP-46 (including local relay), NIP-07 in the built-in browser, and NIP-55 on Android.
 
 ## Supported Connection Methods
