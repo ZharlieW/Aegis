@@ -318,30 +318,31 @@ class _BrowserPageState extends State<BrowserPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.browser),
+        title: Text(l10n.browser),
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _showAddAppDialog,
-            tooltip: AppLocalizations.of(context)!.addWebApp,
+            tooltip: l10n.addWebApp,
           ),
         ],
       ),
       body: Column(
         children: [
-          _buildSearchBar(),
+          _buildSearchBar(context, l10n),
           Expanded(
-            child: _buildNappGrid(),
+            child: _buildNappGrid(context, l10n),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context, AppLocalizations l10n) {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 16,
@@ -370,7 +371,7 @@ class _BrowserPageState extends State<BrowserPage> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                hintText: AppLocalizations.of(context)!.searchNostrApps,
+                hintText: l10n.searchNostrApps,
                 hintStyle: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 15,
@@ -389,8 +390,7 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildNappGrid() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildNappGrid(BuildContext context, AppLocalizations l10n) {
     if (_isLoading) {
       return Center(
         child: Column(
@@ -466,12 +466,12 @@ class _BrowserPageState extends State<BrowserPage> {
         children: [
           // FAVORITES section
           if (favorites.isNotEmpty) ...[
-            _buildSectionHeader(AppLocalizations.of(context)!.favorites, Icons.push_pin),
-            _buildAppGrid(favorites),
+            _buildSectionHeader(l10n.favorites, Icons.push_pin),
+            _buildAppGrid(context, favorites, l10n),
           ],
           // ALL APPS section (always show so that "Add App" tile is visible when list is empty)
-          _buildSectionHeader(AppLocalizations.of(context)!.allApps, null, topPadding: favorites.isNotEmpty ? 4 : null),
-          _buildAppGrid(allApps, showAddButton: true),
+          _buildSectionHeader(l10n.allApps, null, topPadding: favorites.isNotEmpty ? 4 : null),
+          _buildAppGrid(context, allApps, l10n, showAddButton: true),
           const SizedBox(height: 16),
         ],
       ),
@@ -508,7 +508,7 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildAppGrid(List<NAppModel> apps, {bool showAddButton = false}) {
+  Widget _buildAppGrid(BuildContext context, List<NAppModel> apps, AppLocalizations l10n, {bool showAddButton = false}) {
     if (apps.isEmpty && !showAddButton) {
       return const SizedBox.shrink();
     }
@@ -529,7 +529,7 @@ class _BrowserPageState extends State<BrowserPage> {
         itemCount: itemCount,
         itemBuilder: (context, index) {
           if (showAddButton && index == apps.length) {
-            return _buildAddButtonItem();
+            return _buildAddButtonItem(context, l10n);
           }
           return _buildNappGridItem(apps[index]);
         },
@@ -537,7 +537,7 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildAddButtonItem() {
+  Widget _buildAddButtonItem(BuildContext context, AppLocalizations l10n) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: _showAddAppDialog,
@@ -563,7 +563,7 @@ class _BrowserPageState extends State<BrowserPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)!.addApp,
+            l10n.addApp,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.primary,
@@ -574,7 +574,7 @@ class _BrowserPageState extends State<BrowserPage> {
           ),
           const SizedBox(height: 2),
           Text(
-            AppLocalizations.of(context)!.tapToAdd,
+            l10n.tapToAdd,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 11,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -929,22 +929,23 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Future<void> _showDeleteDialog(NAppModel napp) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteApp),
-        content: Text(AppLocalizations.of(context)!.deleteAppConfirm(napp.name)),
+        title: Text(l10n.deleteApp),
+        content: Text(l10n.deleteAppConfirm(napp.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: Text(AppLocalizations.of(context)!.delete),
+            child: Text(l10n.delete),
           ),
         ],
       ),
