@@ -4,6 +4,38 @@
 
 **Aegis** is a simple and cross-platform Nostr signer that supports multiple connection methods. 
 
+## Development
+
+### Prerequisites
+
+- **Flutter** – SDK `>=3.3.4 <4.0.0` ([install](https://docs.flutter.dev/get-started/install))
+- **Rust** – for the `nostr_rust` plugin ([rustup](https://rustup.rs)); add targets as needed:
+  - iOS: `rustup target add aarch64-apple-ios x86_64-apple-ios`
+  - Android: `rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android`
+  - macOS: `rustup target add aarch64-apple-darwin x86_64-apple-darwin`
+- **iOS** – Xcode, CocoaPods (`sudo gem install cocoapods`)
+- **Android** – Android Studio / SDK and NDK
+- **macOS (desktop)** – Xcode, CocoaPods
+
+### Run locally
+
+```bash
+# Clone and enter project
+git clone https://github.com/ZharlieW/Aegis.git && cd Aegis
+
+# Install dependencies
+flutter pub get
+
+# iOS: install pods then run
+cd ios && pod install && cd .. && flutter run
+
+# Android
+flutter run
+
+# macOS (desktop)
+cd macos && pod install && cd .. && flutter run -d macos
+```
+
 ## Features
 
 - **[NIP-55](https://github.com/nostr-protocol/nips/blob/master/55.md)** – Act as a signer for other apps via Android Content Provider / Intent and `nostrsigner://` URL scheme (sign, encrypt, decrypt).
