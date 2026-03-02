@@ -111,6 +111,7 @@ flutter:
     - assets/images/
     - assets/images/app_icons/
     - assets/audio/
+    - assets/certs/
     - lib/assets/preset_apps.json
     - lib/assets/napp_list.json
     - lib/assets/napp_updates/
