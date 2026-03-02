@@ -3,6 +3,43 @@ import 'package:flutter/material.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/utils/locale_manager.dart';
 
+/// Native display names for each locale (not translated), so users can always
+/// find their language after switching to another locale.
+final Map<Locale, String> _localeNativeNames = {
+  const Locale('en'): 'English',
+  const Locale('zh'): '简体中文',
+  const Locale('zh', 'TW'): '繁體中文',
+  const Locale('ja'): '日本語',
+  const Locale('ko'): '한국어',
+  const Locale('es'): 'Español',
+  const Locale('fr'): 'Français',
+  const Locale('de'): 'Deutsch',
+  const Locale('pt'): 'Português',
+  const Locale('ru'): 'Русский',
+  const Locale('ar'): 'العربية',
+  const Locale('az'): 'Azərbaycan',
+  const Locale('bg'): 'Български',
+  const Locale('ca'): 'Català',
+  const Locale('cs'): 'Čeština',
+  const Locale('da'): 'Dansk',
+  const Locale('el'): 'Ελληνικά',
+  const Locale('et'): 'Eesti',
+  const Locale('fa'): 'فارسی',
+  const Locale('hi'): 'हिन्दी',
+  const Locale('hu'): 'Magyar',
+  const Locale('id'): 'Bahasa Indonesia',
+  const Locale('it'): 'Italiano',
+  const Locale('lv'): 'Latviešu',
+  const Locale('nl'): 'Nederlands',
+  const Locale('pl'): 'Polski',
+  const Locale('sv'): 'Svenska',
+  const Locale('th'): 'ไทย',
+  const Locale('tr'): 'Türkçe',
+  const Locale('uk'): 'Українська',
+  const Locale('ur'): 'اردو',
+  const Locale('vi'): 'Tiếng Việt',
+};
+
 /// Full-page language selection. Replaces the language dialog.
 class LanguagePage extends StatelessWidget {
   const LanguagePage({super.key});
@@ -12,40 +49,8 @@ class LanguagePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final current = LocaleManager.currentLocale;
 
-    final items = [
-      (l10n.english, const Locale('en')),
-      (l10n.simplifiedChinese, const Locale('zh')),
-      (l10n.traditionalChinese, const Locale('zh', 'TW')),
-      (l10n.japanese, const Locale('ja')),
-      (l10n.korean, const Locale('ko')),
-      (l10n.spanish, const Locale('es')),
-      (l10n.french, const Locale('fr')),
-      (l10n.german, const Locale('de')),
-      (l10n.portuguese, const Locale('pt')),
-      (l10n.russian, const Locale('ru')),
-      (l10n.arabic, const Locale('ar')),
-      (l10n.azerbaijani, const Locale('az')),
-      (l10n.bulgarian, const Locale('bg')),
-      (l10n.catalan, const Locale('ca')),
-      (l10n.czech, const Locale('cs')),
-      (l10n.danish, const Locale('da')),
-      (l10n.greek, const Locale('el')),
-      (l10n.estonian, const Locale('et')),
-      (l10n.farsi, const Locale('fa')),
-      (l10n.hindi, const Locale('hi')),
-      (l10n.hungarian, const Locale('hu')),
-      (l10n.indonesian, const Locale('id')),
-      (l10n.italian, const Locale('it')),
-      (l10n.latvian, const Locale('lv')),
-      (l10n.dutch, const Locale('nl')),
-      (l10n.polish, const Locale('pl')),
-      (l10n.swedish, const Locale('sv')),
-      (l10n.thai, const Locale('th')),
-      (l10n.turkish, const Locale('tr')),
-      (l10n.ukrainian, const Locale('uk')),
-      (l10n.urdu, const Locale('ur')),
-      (l10n.vietnamese, const Locale('vi')),
-    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    final items = _localeNativeNames.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
 
     return Scaffold(
       appBar: AppBar(
@@ -53,8 +58,8 @@ class LanguagePage extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          for (final item in items)
-            _languageTile(context, item.$1, item.$2, current),
+          for (final entry in items)
+            _languageTile(context, entry.value, entry.key, current),
         ],
       ),
     );
