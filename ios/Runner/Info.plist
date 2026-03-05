@@ -56,6 +56,8 @@
 	</dict>
 	<key>NSApplicationSupportsSecureRestorableState</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to scan QR codes for login and connections.</string>
 	<key>NSDocumentsDirectoryUsageDescription</key>
 	<string>We need access to the documents directory.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

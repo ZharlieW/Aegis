@@ -7,6 +7,7 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/common/common_appbar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/pages/scan/scan_qr_login_page.dart';
 
 class AddApplication extends StatefulWidget {
   const AddApplication({super.key});
@@ -65,6 +66,17 @@ class AddApplicationState extends State<AddApplication> {
                         },
                         iconName: 'clipboard_icon.png',
                         title: AppLocalizations.of(context)!.loginUsingUrlScheme,
+                        content: '',
+                      ),
+                      _cardWidget(
+                        onTap: () {
+                          AegisNavigator.pushPage(
+                            context,
+                            (context) => const ScanQrLoginPage(),
+                          );
+                        },
+                        iconName: 'scan_icon.png',
+                        title: 'Scan QR for URL Scheme login',
                         content: '',
                       ),
                     ],
