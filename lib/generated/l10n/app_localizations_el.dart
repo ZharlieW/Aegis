@@ -489,6 +489,18 @@ class AppLocalizationsEl extends AppLocalizations {
   String get loginUsingUrlScheme => 'Σύνδεση με σχήμα URL';
 
   @override
+  String get loginByScanningQr => 'Σύνδεση με σάρωση QR';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Μπορείτε να επιλέξετε οποιαδήποτε από αυτές τις μεθόδους για σύνδεση με το Aegis!';
 
   @override

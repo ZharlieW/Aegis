@@ -489,6 +489,18 @@ class AppLocalizationsUr extends AppLocalizations {
   String get loginUsingUrlScheme => 'URL سکیم سے لاگ ان';
 
   @override
+  String get loginByScanningQr => 'QR سکین کرکے لاگ ان';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Aegis سے جوڑنے کے لیے ان میں سے کوئی طریقہ منتخب کر سکتے ہیں!';
 
   @override

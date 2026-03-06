@@ -489,6 +489,18 @@ class AppLocalizationsDa extends AppLocalizations {
   String get loginUsingUrlScheme => 'Log ind med URL-skema';
 
   @override
+  String get loginByScanningQr => 'Log ind ved at scanne QR';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Du kan vælge en af disse metoder til at forbinde med Aegis!';
 
   @override

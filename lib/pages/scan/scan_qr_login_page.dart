@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -7,6 +8,7 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/remote_relay_nip46_session.dart';
+import 'package:aegis/widgets/scan_frame_overlay.dart';
 
 class ScanQrLoginPage extends StatefulWidget {
   const ScanQrLoginPage({super.key});
@@ -17,21 +19,58 @@ class ScanQrLoginPage extends StatefulWidget {
 
 class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
   bool _isProcessing = false;
+  final MobileScannerController _controller = MobileScannerController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImageFromAlbum() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty || !mounted) return;
+    final path = result.files.single.path;
+    if (path == null || path.isEmpty) return;
+    setState(() => _isProcessing = true);
+    try {
+      final capture = await _controller.analyzeImage(path);
+      if (!mounted) return;
+      final barcodes = capture?.barcodes ?? [];
+      final raw = barcodes.isNotEmpty ? barcodes.first.rawValue : null;
+      if (raw != null && raw.isNotEmpty) {
+        await _handleScan(raw);
+      } else {
+        _onError('No QR code found in the image.');
+      }
+    } catch (e) {
+      AegisLogger.error('analyzeImage failed', e);
+      if (mounted) _onError('Failed to read QR from image.');
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: Column(
-        children: [
+      body: CustomScrollView(
+        slivers: [
           CommonAppBar(
-            title: l10n.loginUsingUrlScheme,
+            title: l10n.scanQrTitle,
           ),
-          Expanded(
+          SliverFillRemaining(
+            hasScrollBody: false,
             child: Stack(
+              fit: StackFit.expand,
               children: [
                 MobileScanner(
+                  controller: _controller,
                   onDetect: (capture) {
                     if (_isProcessing) return;
                     final barcodes = capture.barcodes;
@@ -42,16 +81,60 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
                     _handleScan(raw);
                   },
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Point the camera at the QR code from the web page.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
+                const Positioned.fill(
+                  child: ScanFrameOverlay(scanAreaSize: 260),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Theme.of(context)
+                                .colorScheme
+                                .surface
+                                .withValues(alpha: 0.85),
+                          ],
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.scanQrHint,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.9),
+                                ),
+                            textAlign: TextAlign.center,
                           ),
-                      textAlign: TextAlign.center,
+                          const SizedBox(height: 20),
+                          OutlinedButton.icon(
+                            onPressed: _isProcessing ? null : _pickImageFromAlbum,
+                            icon: const Icon(Icons.photo_library_outlined, size: 22),
+                            label: Text(l10n.chooseFromAlbum),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

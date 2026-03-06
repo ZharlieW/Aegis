@@ -489,6 +489,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginUsingUrlScheme => '通过 URL Scheme 登录';
 
   @override
+  String get loginByScanningQr => '扫码登入';
+
+  @override
+  String get scanQrTitle => '扫一扫';
+
+  @override
+  String get scanQrHint => '将二维码放入框内';
+
+  @override
+  String get chooseFromAlbum => '从相册选择';
+
+  @override
   String get addApplicationMethodsHint => '您可以选择以下任一方式与 Aegis 连接！';
 
   @override
@@ -1275,6 +1287,18 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get loginUsingUrlScheme => '透過 URL Scheme 登入';
+
+  @override
+  String get loginByScanningQr => '掃碼登入';
+
+  @override
+  String get scanQrTitle => '掃一掃';
+
+  @override
+  String get scanQrHint => '將 QR 碼放入框內';
+
+  @override
+  String get chooseFromAlbum => '從相簿選擇';
 
   @override
   String get addApplicationMethodsHint => '您可選擇以下任一方式與 Aegis 連線！';

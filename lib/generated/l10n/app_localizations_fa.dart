@@ -489,6 +489,18 @@ class AppLocalizationsFa extends AppLocalizations {
   String get loginUsingUrlScheme => 'ورود با طرح URL';
 
   @override
+  String get loginByScanningQr => 'ورود با اسکن QR';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'می‌توانید هر یک از این روش‌ها را برای اتصال به Aegis انتخاب کنید!';
 
   @override

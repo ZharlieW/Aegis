@@ -489,6 +489,18 @@ class AppLocalizationsHu extends AppLocalizations {
   String get loginUsingUrlScheme => 'Bejelentkezés URL séma használatával';
 
   @override
+  String get loginByScanningQr => 'Bejelentkezés QR-szkenneléssel';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Ezen módszerek bármelyikével csatlakozhat az Aegishez!';
 
   @override

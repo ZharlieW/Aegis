@@ -489,6 +489,18 @@ class AppLocalizationsEt extends AppLocalizations {
   String get loginUsingUrlScheme => 'Logi sisse URL skeemiga';
 
   @override
+  String get loginByScanningQr => 'Logi sisse QR-koodi skaneerides';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Võid valida ühe neist meetoditest Aegisega ühendamiseks!';
 
   @override

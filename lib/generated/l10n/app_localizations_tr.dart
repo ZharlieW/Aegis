@@ -489,6 +489,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get loginUsingUrlScheme => 'URL Scheme ile giriş yap';
 
   @override
+  String get loginByScanningQr => 'QR kod tarayarak giriş yap';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Aegis\'e bağlanmak için bu yöntemlerden birini seçebilirsin!';
 
   @override

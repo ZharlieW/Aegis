@@ -489,6 +489,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginUsingUrlScheme => 'URL スキームでログイン';
 
   @override
+  String get loginByScanningQr => 'QRコードでログイン';
+
+  @override
+  String get scanQrTitle => 'スキャン';
+
+  @override
+  String get scanQrHint => '枠内にQRコードを入れてください';
+
+  @override
+  String get chooseFromAlbum => 'アルバムから選択';
+
+  @override
   String get addApplicationMethodsHint => '以下のいずれかの方法で Aegis に接続できます！';
 
   @override

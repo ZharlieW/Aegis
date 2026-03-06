@@ -489,6 +489,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginUsingUrlScheme => 'URL 스킴으로 로그인';
 
   @override
+  String get loginByScanningQr => 'QR 코드 스캔으로 로그인';
+
+  @override
+  String get scanQrTitle => '스캔';
+
+  @override
+  String get scanQrHint => 'QR 코드를 프레임 안에 맞춰 주세요';
+
+  @override
+  String get chooseFromAlbum => '앨범에서 선택';
+
+  @override
   String get addApplicationMethodsHint => '다음 방법 중 하나로 Aegis에 연결할 수 있습니다!';
 
   @override

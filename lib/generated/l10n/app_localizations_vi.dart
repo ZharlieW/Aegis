@@ -489,6 +489,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get loginUsingUrlScheme => 'Đăng nhập bằng URL Scheme';
 
   @override
+  String get loginByScanningQr => 'Đăng nhập bằng quét mã QR';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Bạn có thể chọn một trong các cách sau để kết nối Aegis!';
 
   @override

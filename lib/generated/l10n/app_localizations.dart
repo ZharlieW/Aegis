@@ -1078,6 +1078,30 @@ abstract class AppLocalizations {
   /// **'Login using URL Scheme'**
   String get loginUsingUrlScheme;
 
+  /// No description provided for @loginByScanningQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Login by scanning QR'**
+  String get loginByScanningQr;
+
+  /// No description provided for @scanQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get scanQrTitle;
+
+  /// No description provided for @scanQrHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Position the QR code within the frame'**
+  String get scanQrHint;
+
+  /// No description provided for @chooseFromAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from album'**
+  String get chooseFromAlbum;
+
   /// No description provided for @addApplicationMethodsHint.
   ///
   /// In en, this message translates to:

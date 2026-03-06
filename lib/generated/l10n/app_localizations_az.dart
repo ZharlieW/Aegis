@@ -489,6 +489,18 @@ class AppLocalizationsAz extends AppLocalizations {
   String get loginUsingUrlScheme => 'URL sxemi ilə daxil ol';
 
   @override
+  String get loginByScanningQr => 'QR skan etməklə daxil ol';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Aegisə qoşulmaq üçün bu üsullardan hər hansı birini seçə bilərsiniz!';
 
   @override

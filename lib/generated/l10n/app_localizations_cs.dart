@@ -489,6 +489,18 @@ class AppLocalizationsCs extends AppLocalizations {
   String get loginUsingUrlScheme => 'Přihlásit se pomocí URL schématu';
 
   @override
+  String get loginByScanningQr => 'Přihlásit se naskenováním QR';
+
+  @override
+  String get scanQrTitle => 'Scan';
+
+  @override
+  String get scanQrHint => 'Position the QR code within the frame';
+
+  @override
+  String get chooseFromAlbum => 'Choose from album';
+
+  @override
   String get addApplicationMethodsHint => 'Můžete zvolit kteroukoli z těchto metod pro připojení k Aegis!';
 
   @override
