@@ -6,6 +6,7 @@ import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/remote_relay_nip46_session.dart';
 
 class ScanQrLoginPage extends StatefulWidget {
   const ScanQrLoginPage({super.key});
@@ -100,18 +101,17 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
 
   Future<void> _handleNostrConnect(String url) async {
     try {
-      // Reuse existing NostrConnect URI flow by delegating to LaunchSchemeUtils.
-      // Wrap the nostrconnect:// URL into a synthetic aegis:// scheme,
-      // so UrlSchemeHandler can process it as if it came from a URL scheme.
-      final encoded = Uri.encodeComponent(url);
-      final synthetic =
-          'aegis://x-callback-url/auth/nip46?method=connect&nostrconnect=$encoded';
-
-      await LaunchSchemeUtils.handleSchemeData(synthetic);
+      // Start one-time remote relay NIP-46 session: connect to relay from QR,
+      // subscribe for kind 24133 (p = current user), handle connect/get_public_key.
+      final started = await RemoteRelayNip46Session.startFromNostrConnectUri(url);
       if (!mounted) return;
+      if (!started) {
+        _onError('Could not start remote login session. Check relay URL and login.');
+        return;
+      }
       CommonTips.success(
         context,
-        'Nostr Connect login request sent.',
+        'Waiting for web app to complete login on remote relay. You can close this page.',
       );
       Navigator.of(context).pop();
     } catch (e) {
