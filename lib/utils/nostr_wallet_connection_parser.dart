@@ -23,6 +23,10 @@ class NostrWalletConnectionParserHandler {
       var secret = queryParams['secret']?.first ?? '';
       var lud16 = queryParams['lud16']?.first;
       var scheme = queryParams['scheme']?.first ?? '';
+      var urlParam = queryParams['url']?.first ?? '';
+      if (scheme.isEmpty && urlParam.isNotEmpty) {
+        scheme = urlParam.startsWith('http') ? urlParam : 'https://$urlParam';
+      }
       var image = queryParams['image']?.first ?? '';
       var name = queryParams['name']?.first ?? '';
 
@@ -34,6 +38,8 @@ class NostrWalletConnectionParserHandler {
       print('🔑 clientPubkey: $clientPubkey');
       print('⏫ scheme: $scheme');
       print('🌲 lud16: $lud16');
+
+      if (relays.isEmpty) return null;
 
       int timestamp = DateTime.now().millisecondsSinceEpoch;
 

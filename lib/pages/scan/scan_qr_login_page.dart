@@ -209,6 +209,7 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
     if (uri.scheme == 'aegis' || uri.scheme == 'nostrsigner') {
       await _handleSchemeUrl(url);
     } else if (uri.scheme == 'nostrconnect') {
+      // Supports format: nostrconnect://<client_pubkey>?relay=wss://...&secret=...&name=...&url=...&image=...
       await _handleNostrConnect(url);
     } else {
       _onError('Unsupported QR code, expected Aegis or Nostr Connect URL.');
