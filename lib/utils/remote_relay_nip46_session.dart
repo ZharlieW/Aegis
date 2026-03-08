@@ -37,20 +37,27 @@ class RemoteRelayNip46Session {
       _subscriptionId != null &&
       !_closed;
 
+  /// Last failure reason when [startFromNostrConnectUri] returns false (for UI message).
+  static String? lastFailureReason;
+
   /// Start a one-time remote signer session from a nostrconnect URI.
   /// Parses relay and client pubkey, saves app to DB, connects to relay,
   /// subscribes for kind 24133 (p = current user), and starts TTL timer.
   /// Returns true if session was started; false if already active or parse/login failed.
+  /// On false, [lastFailureReason] may be set for display.
   static Future<bool> startFromNostrConnectUri(String nostrConnectUri) async {
+    lastFailureReason = null;
     final account = Account.sharedInstance;
     if (account.currentPubkey.isEmpty || account.currentPrivkey.isEmpty) {
       AegisLogger.warning('RemoteRelayNip46Session: not logged in');
+      lastFailureReason = 'not_logged_in';
       return false;
     }
 
     final parsed = NostrWalletConnectionParserHandler.parseUri(nostrConnectUri);
     if (parsed == null) {
       AegisLogger.warning('RemoteRelayNip46Session: failed to parse nostrconnect URI');
+      lastFailureReason = 'parse_failed';
       return false;
     }
 
@@ -62,6 +69,7 @@ class RemoteRelayNip46Session {
         !relayUrl.startsWith('ws')) {
       AegisLogger.warning(
           'RemoteRelayNip46Session: invalid relay or clientPubkey from URI');
+      lastFailureReason = 'invalid_relay_or_client';
       return false;
     }
 
@@ -90,6 +98,7 @@ class RemoteRelayNip46Session {
       AegisLogger.error('RemoteRelayNip46Session: failed to save app', e);
       _relayUrl = null;
       _clientPubkey = null;
+      lastFailureReason = 'save_or_connect_failed';
       return false;
     }
 

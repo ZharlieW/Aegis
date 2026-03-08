@@ -76,7 +76,7 @@ class AddApplicationState extends State<AddApplication> {
                           );
                         },
                         iconName: 'scan_icon.png',
-                        title: 'Scan QR for URL Scheme login',
+                        title: AppLocalizations.of(context)!.loginByScanningQr,
                         content: '',
                       ),
                     ],

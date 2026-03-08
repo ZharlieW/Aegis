@@ -492,6 +492,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get loginByScanningQr => 'Logga in genom att skanna QR';
 
   @override
+  String get loginByScanningQrHint => 'For web login: log in on this device first, then scan the QR on the webpage.';
+
+  @override
+  String get goToLogin => 'Go to login';
+
+  @override
   String get scanQrTitle => 'Scan';
 
   @override
@@ -499,6 +505,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get chooseFromAlbum => 'Choose from album';
+
+  @override
+  String get nostrConnectLoginFirst => 'Please log in to Aegis first (use private key or create account), then scan the QR code again.';
+
+  @override
+  String get nostrConnectStartFailed => 'Could not start remote login session. Check relay URL or try again later.';
 
   @override
   String get addApplicationMethodsHint => 'Du kan välja någon av dessa metoder för att ansluta till Aegis!';

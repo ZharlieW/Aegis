@@ -6,7 +6,6 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/pages/login/create_nostr_account.dart';
 import 'package:aegis/pages/login/login_private_key.dart';
-import 'package:aegis/pages/scan/scan_qr_login_page.dart';
 
 class Login extends StatefulWidget {
   final bool isLaunchLogin;
@@ -59,7 +58,7 @@ class LoginState extends State<Login> {
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor:
-                      Theme.of(context).colorScheme.secondaryContainer, // 背景色
+                      Theme.of(context).colorScheme.secondaryContainer, 
                 ),
                 child: Container(
                   width: double.infinity,
@@ -82,7 +81,7 @@ class LoginState extends State<Login> {
                       context, (context) => CreateNostrAccount());
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary, // 背景色
+                  backgroundColor: Theme.of(context).colorScheme.primary, 
                 ),
                 child: Container(
                   width: double.infinity,
@@ -92,30 +91,6 @@ class LoginState extends State<Login> {
                     AppLocalizations.of(context)!.createNewNostrAccount,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                ),
-              ).setPaddingOnly(top: 20.0),
-              FilledButton.tonal(
-                onPressed: () {
-                  AegisNavigator.pushPage(
-                      context, (context) => const ScanQrLoginPage());
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.tertiaryContainer,
-                ),
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(vertical: 16),
-                  alignment: Alignment.center,
-                  child: Text(
-                    AppLocalizations.of(context)!.loginByScanningQr,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onTertiaryContainer,
                           fontWeight: FontWeight.w500,
                         ),
                   ),

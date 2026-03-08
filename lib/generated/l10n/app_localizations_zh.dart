@@ -492,6 +492,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginByScanningQr => '扫码登入';
 
   @override
+  String get loginByScanningQrHint => '用于在网页端登录：请先在本机完成登录，再扫描网页上的二维码。';
+
+  @override
+  String get goToLogin => '去登录';
+
+  @override
   String get scanQrTitle => '扫一扫';
 
   @override
@@ -499,6 +505,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chooseFromAlbum => '从相册选择';
+
+  @override
+  String get nostrConnectLoginFirst => '请先在 Aegis 内登录（使用私钥或创建账号），再重新扫描二维码。';
+
+  @override
+  String get nostrConnectStartFailed => '无法启动远程登入会话，请检查 relay 地址或稍后重试。';
 
   @override
   String get addApplicationMethodsHint => '您可以选择以下任一方式与 Aegis 连接！';
@@ -1292,6 +1304,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get loginByScanningQr => '掃碼登入';
 
   @override
+  String get loginByScanningQrHint => '用於網頁端登入：請先在本機完成登入，再掃描網頁上的 QR 碼。';
+
+  @override
+  String get goToLogin => '前往登入';
+
+  @override
   String get scanQrTitle => '掃一掃';
 
   @override
@@ -1299,6 +1317,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get chooseFromAlbum => '從相簿選擇';
+
+  @override
+  String get nostrConnectLoginFirst => '請先在 Aegis 內登入（使用私鑰或建立帳號），再重新掃描 QR 碼。';
+
+  @override
+  String get nostrConnectStartFailed => '無法啟動遠端登入工作階段，請檢查 relay 網址或稍後重試。';
 
   @override
   String get addApplicationMethodsHint => '您可選擇以下任一方式與 Aegis 連線！';

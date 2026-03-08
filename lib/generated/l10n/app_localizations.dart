@@ -1084,6 +1084,18 @@ abstract class AppLocalizations {
   /// **'Login by scanning QR'**
   String get loginByScanningQr;
 
+  /// No description provided for @loginByScanningQrHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For web login: log in on this device first, then scan the QR on the webpage.'**
+  String get loginByScanningQrHint;
+
+  /// No description provided for @goToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to login'**
+  String get goToLogin;
+
   /// No description provided for @scanQrTitle.
   ///
   /// In en, this message translates to:
@@ -1101,6 +1113,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose from album'**
   String get chooseFromAlbum;
+
+  /// No description provided for @nostrConnectLoginFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to Aegis first (use private key or create account), then scan the QR code again.'**
+  String get nostrConnectLoginFirst;
+
+  /// No description provided for @nostrConnectStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start remote login session. Check relay URL or try again later.'**
+  String get nostrConnectStartFailed;
 
   /// No description provided for @addApplicationMethodsHint.
   ///

@@ -238,7 +238,15 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
       final started = await RemoteRelayNip46Session.startFromNostrConnectUri(url);
       if (!mounted) return;
       if (!started) {
-        _onError('Could not start remote login session. Check relay URL and login.');
+        final reason = RemoteRelayNip46Session.lastFailureReason;
+        final message = reason == 'not_logged_in'
+            ? AppLocalizations.of(context)!.nostrConnectLoginFirst
+            : AppLocalizations.of(context)!.nostrConnectStartFailed;
+        if (reason == 'not_logged_in') {
+          _showNotLoggedInDialog(message);
+        } else {
+          _onError(message);
+        }
         return;
       }
       CommonTips.success(
@@ -258,6 +266,34 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
     setState(() {
       _isProcessing = false;
     });
+  }
+
+  /// Show dialog when scan fails because user is not logged in; offer "Go to login" to return to login page.
+  void _showNotLoggedInDialog(String message) {
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
+    final l10n = AppLocalizations.of(context)!;
+    final navigator = Navigator.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.scanQrTitle),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              navigator.pop(); // Return to login page
+            },
+            child: Text(l10n.goToLogin),
+          ),
+        ],
+      ),
+    );
   }
 }
 
