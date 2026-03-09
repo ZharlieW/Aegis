@@ -26,9 +26,11 @@ class RemoteRelayNip46Session {
 
   String? _relayUrl;
   String? _clientPubkey;
+  String? _secret;
   String? _subscriptionId;
   Timer? _ttlTimer;
   bool _closed = false;
+  bool _sessionReadySent = false;
 
   /// Whether a session is currently active (connected and listening).
   bool get isActive =>
@@ -88,6 +90,7 @@ class RemoteRelayNip46Session {
   }) async {
     _relayUrl = relayUrl;
     _clientPubkey = clientPubkey;
+    _secret = app.secret;
     _closed = false;
 
     AccountManager.sharedInstance.addApplicationMap(app);
@@ -108,7 +111,10 @@ class RemoteRelayNip46Session {
 
     // If relay was already connected, we won't get status callback; subscribe now.
     final socket = connect.webSockets[relayUrl];
-    if (socket?.connectStatus == 1) _subscribe();
+    if (socket?.connectStatus == 1) {
+      _subscribe();
+      _sendSessionReady();
+    }
 
     _ttlTimer = Timer(Duration(minutes: _ttlMinutes), () {
       AegisLogger.info('RemoteRelayNip46Session: TTL expired');
@@ -125,6 +131,53 @@ class RemoteRelayNip46Session {
         status != 1 ||
         !relayKinds.contains(RelayKind.remoteSigner)) return;
     _subscribe();
+    _sendSessionReady();
+  }
+
+  void _sendSessionReady() {
+    if (_sessionReadySent) return;
+    final relayUrl = _relayUrl;
+    final clientPubkey = _clientPubkey;
+    final secret = _secret;
+    if (relayUrl == null ||
+        clientPubkey == null ||
+        secret == null ||
+        secret.isEmpty ||
+        _closed) return;
+    _sessionReadySent = true;
+
+    final userPubkey = Account.sharedInstance.currentPubkey;
+    final serverPrivate = Account.sharedInstance.currentPrivkey;
+    if (serverPrivate.isEmpty) return;
+
+    Future<void>.delayed(const Duration(milliseconds: 400), () async {
+      if (_closed || _relayUrl != relayUrl) return;
+      try {
+        final payload = jsonEncode({'id': secret, 'result': secret});
+        final encrypted = await LocalNostrSigner.instance.nip44Encrypt(
+          serverPrivate,
+          payload,
+          clientPubkey,
+        );
+        if (encrypted == null || _closed) return;
+        final ev = Event.from(
+          kind: 24133,
+          tags: [['p', clientPubkey]],
+          content: encrypted,
+          pubkey: userPubkey,
+          privkey: serverPrivate,
+        );
+        Connect.sharedInstance.sendEvent(
+          ev,
+          toRelays: [relayUrl],
+          relayKinds: [RelayKind.remoteSigner],
+        );
+        AegisLogger.info(
+            'RemoteRelayNip46Session: sent session_ready (result=secret) for client=${clientPubkey.substring(0, 8)}...');
+      } catch (e) {
+        AegisLogger.error('RemoteRelayNip46Session: sendSessionReady failed', e);
+      }
+    });
   }
 
   void _subscribe() {
@@ -189,7 +242,6 @@ class RemoteRelayNip46Session {
     }
 
     final oneTimeDone = req.method == 'get_public_key' || req.method == 'connect';
-    if (oneTimeDone) close();
 
     String? encrypted;
     try {
@@ -217,8 +269,15 @@ class RemoteRelayNip46Session {
         toRelays: [relayUrl],
         relayKinds: [RelayKind.remoteSigner],
       );
+      if (oneTimeDone) {
+        // Delay close so relay can receive our event and return OK before we disconnect
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (!_closed) close();
+        });
+      }
     } catch (e) {
       AegisLogger.error('RemoteRelayNip46Session: send response failed', e);
+      if (oneTimeDone) close();
     }
   }
 
@@ -315,7 +374,9 @@ class RemoteRelayNip46Session {
     final subId = _subscriptionId;
     _relayUrl = null;
     _clientPubkey = null;
+    _secret = null;
     _subscriptionId = null;
+    _sessionReadySent = false;
 
     if (relayUrl != null && subId != null && subId.isNotEmpty) {
       try {
