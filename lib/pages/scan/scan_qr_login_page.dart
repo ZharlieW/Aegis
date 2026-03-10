@@ -134,60 +134,6 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
             const Positioned.fill(
               child: ScanFrameOverlay(scanAreaSize: 260),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(
-                top: false,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Theme.of(context)
-                            .colorScheme
-                            .surface
-                            .withValues(alpha: 0.85),
-                      ],
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.scanQrHint,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.9),
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      OutlinedButton.icon(
-                        onPressed: _isProcessing ? null : _pickImageFromAlbum,
-                        icon: const Icon(Icons.photo_library_outlined, size: 22),
-                        label: Text(l10n.chooseFromAlbum),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -251,7 +197,7 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
       }
       CommonTips.success(
         context,
-        'Waiting for web app to complete login on remote relay. You can close this page.',
+        'Waiting for the app to finish login via remote relay. You can close this page.',
       );
       Navigator.of(context).pop();
     } catch (e) {
