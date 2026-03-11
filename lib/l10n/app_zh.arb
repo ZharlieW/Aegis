@@ -333,5 +333,11 @@
   "unfavorite": "取消收藏",
   "reload": "刷新",
   "exit": "退出",
-  "activitiesLoadFailed": "加载活动失败"
+  "activitiesLoadFailed": "加载活动失败",
+  "authorizationModeTitle": "授权模式",
+  "authorizationModeDescription": "新应用请求权限时的默认策略。",
+  "authorizationModeFull": "全授权",
+  "authorizationModeFullDescription": "自动授予应用对你 Nostr 账号的全部权限。仅在首次连接时显示一次确认。推荐给信任的应用。",
+  "authorizationModeSelective": "选择性授权",
+  "authorizationModeSelectiveDescription": "每次有新应用连接时，逐项选择它可以使用的功能。"
 }

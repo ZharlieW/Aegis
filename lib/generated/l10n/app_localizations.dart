@@ -1707,6 +1707,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load activities'**
   String get activitiesLoadFailed;
+
+  /// No description provided for @authorizationModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization mode'**
+  String get authorizationModeTitle;
+
+  /// No description provided for @authorizationModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Default policy when a new app requests permissions.'**
+  String get authorizationModeDescription;
+
+  /// No description provided for @authorizationModeFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full access'**
+  String get authorizationModeFull;
+
+  /// No description provided for @authorizationModeFullDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant all permissions at once. One confirmation on first connect. Recommended for trusted apps.'**
+  String get authorizationModeFullDescription;
+
+  /// No description provided for @authorizationModeSelective.
+  ///
+  /// In en, this message translates to:
+  /// **'Selective'**
+  String get authorizationModeSelective;
+
+  /// No description provided for @authorizationModeSelectiveDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which permissions to grant each time an app connects.'**
+  String get authorizationModeSelectiveDescription;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

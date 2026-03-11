@@ -333,5 +333,11 @@
   "unfavorite": "Unfavorite",
   "reload": "Reload",
   "exit": "Exit",
-  "activitiesLoadFailed": "Failed to load activities"
+  "activitiesLoadFailed": "Failed to load activities",
+  "authorizationModeTitle": "Authorization mode",
+  "authorizationModeDescription": "Default policy when a new app requests permissions.",
+  "authorizationModeFull": "Full access",
+  "authorizationModeFullDescription": "Grant all permissions at once. One confirmation on first connect. Recommended for trusted apps.",
+  "authorizationModeSelective": "Selective",
+  "authorizationModeSelectiveDescription": "Choose which permissions to grant each time an app connects."
 }

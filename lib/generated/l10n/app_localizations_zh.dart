@@ -814,6 +814,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get activitiesLoadFailed => '加载活动失败';
+
+  @override
+  String get authorizationModeTitle => '授权模式';
+
+  @override
+  String get authorizationModeDescription => '新应用请求权限时的默认策略。';
+
+  @override
+  String get authorizationModeFull => '全授权';
+
+  @override
+  String get authorizationModeFullDescription => '自动授予应用对你 Nostr 账号的全部权限。仅在首次连接时显示一次确认。推荐给信任的应用。';
+
+  @override
+  String get authorizationModeSelective => '选择性授权';
+
+  @override
+  String get authorizationModeSelectiveDescription => '每次有新应用连接时，逐项选择它可以使用的功能。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

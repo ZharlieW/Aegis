@@ -8,6 +8,8 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/authorization_mode.dart';
+import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
@@ -128,6 +130,7 @@ class Settings extends StatefulWidget {
 
 class SettingsState extends State<Settings> with AccountObservers {
   Map<String,UserDBISAR> accountMap = {};
+  AuthorizationMode _authorizationMode = AuthorizationMode.full;
 
   String get _getKeyToStr {
     Account instance = Account.sharedInstance;
@@ -145,10 +148,16 @@ class SettingsState extends State<Settings> with AccountObservers {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Account.sharedInstance.addObserver(this);
     getAccountList();
+    _loadAuthorizationMode();
+  }
+
+  Future<void> _loadAuthorizationMode() async {
+    await LocalStorage.init();
+    if (!mounted) return;
+    setState(() => _authorizationMode = getAuthorizationMode());
   }
 
   void getAccountList() async {
@@ -174,7 +183,9 @@ class SettingsState extends State<Settings> with AccountObservers {
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildAuthorizationModeSection(),
                     _accountView(),
                     ...accountMap.values.toList().map((account) {
                       if(Account.sharedInstance.currentPubkey == account.pubkey){
@@ -230,6 +241,78 @@ class SettingsState extends State<Settings> with AccountObservers {
 
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAuthorizationModeSection() {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.authorizationModeTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.authorizationModeDescription,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          RadioListTile<AuthorizationMode>(
+            title: Text(
+              l10n.authorizationModeFull,
+              style: theme.textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              l10n.authorizationModeFullDescription,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            value: AuthorizationMode.full,
+            groupValue: _authorizationMode,
+            onChanged: (AuthorizationMode? value) {
+              if (value == null) return;
+              setState(() => _authorizationMode = value);
+              setAuthorizationMode(value);
+            },
+          ),
+          RadioListTile<AuthorizationMode>(
+            title: Text(
+              l10n.authorizationModeSelective,
+              style: theme.textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              l10n.authorizationModeSelectiveDescription,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            value: AuthorizationMode.selective,
+            groupValue: _authorizationMode,
+            onChanged: (AuthorizationMode? value) {
+              if (value == null) return;
+              setState(() => _authorizationMode = value);
+              setAuthorizationMode(value);
+            },
+          ),
+        ],
       ),
     );
   }

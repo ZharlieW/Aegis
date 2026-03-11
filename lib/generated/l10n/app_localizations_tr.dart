@@ -814,4 +814,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get activitiesLoadFailed => 'Etkinlikler yüklenemedi';
+
+  @override
+  String get authorizationModeTitle => 'Authorization mode';
+
+  @override
+  String get authorizationModeDescription => 'Default policy when a new app requests permissions.';
+
+  @override
+  String get authorizationModeFull => 'Full access';
+
+  @override
+  String get authorizationModeFullDescription => 'Grant all permissions at once. One confirmation on first connect. Recommended for trusted apps.';
+
+  @override
+  String get authorizationModeSelective => 'Selective';
+
+  @override
+  String get authorizationModeSelectiveDescription => 'Choose which permissions to grant each time an app connects.';
 }
