@@ -15,14 +15,14 @@ import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
 /// One-time NIP-46 signer session on a **remote** relay (e.g. from scanned QR).
 /// Connects to the given relay, subscribes for kind 24133 with p = current user,
-/// and handles connect/get_public_key (and optionally sign_event) from the given client.
-/// Session is closed after first successful get_public_key or on TTL timeout.
+/// and handles connect/get_public_key/sign_event from the client. Session stays open
+/// until TTL or next scan so web apps can keep requesting signatures (e.g. posting).
 class RemoteRelayNip46Session {
   RemoteRelayNip46Session._();
 
   static final RemoteRelayNip46Session instance = RemoteRelayNip46Session._();
 
-  static const int _ttlMinutes = 10;
+  static const int _ttlMinutes = 60;
 
   String? _relayUrl;
   String? _clientPubkey;
@@ -241,7 +241,7 @@ class RemoteRelayNip46Session {
       responseJson = {'id': req.id, 'result': '', 'error': e.toString()};
     }
 
-    final oneTimeDone = req.method == 'get_public_key' || req.method == 'connect';
+    // Keep session open so client can send sign_event (e.g. posting); close only on TTL or manual close.
 
     String? encrypted;
     try {
@@ -269,15 +269,9 @@ class RemoteRelayNip46Session {
         toRelays: [relayUrl],
         relayKinds: [RelayKind.remoteSigner],
       );
-      if (oneTimeDone) {
-        // Delay close so relay can receive our event and return OK before we disconnect
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (!_closed) close();
-        });
-      }
+      // Keep session open for sign_event (e.g. posting); close only on TTL or manual close.
     } catch (e) {
       AegisLogger.error('RemoteRelayNip46Session: send response failed', e);
-      if (oneTimeDone) close();
     }
   }
 
@@ -321,8 +315,10 @@ class RemoteRelayNip46Session {
           return {'id': req.id, 'result': '', 'error': 'missing event json'};
         }
         try {
+          // Some clients (e.g. Jumble) send event JSON without pubkey; Rust signEvent expects it.
+          final eventJsonWithPubkey = _ensureEventJsonHasPubkey(contentStr, userPubkey);
           final signed = await rust_api.signEvent(
-            eventJson: contentStr,
+            eventJson: eventJsonWithPubkey,
             privateKey: serverPrivate,
           );
           await _recordSignedEvent(
@@ -339,6 +335,19 @@ class RemoteRelayNip46Session {
 
       default:
         return {'id': req.id, 'result': '', 'error': 'no ${req.method} method'};
+    }
+  }
+
+  /// If event JSON has no pubkey field, add current user pubkey so Rust signEvent can parse it.
+  static String _ensureEventJsonHasPubkey(String eventJson, String userPubkeyHex) {
+    try {
+      final map = jsonDecode(eventJson);
+      if (map is! Map<String, dynamic>) return eventJson;
+      if (map.containsKey('pubkey') && map['pubkey'] != null) return eventJson;
+      map['pubkey'] = userPubkeyHex;
+      return jsonEncode(map);
+    } catch (_) {
+      return eventJson;
     }
   }
 

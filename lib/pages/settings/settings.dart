@@ -185,7 +185,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAuthorizationModeSection(),
+                    // _buildAuthorizationModeSection(),
                     _accountView(),
                     ...accountMap.values.toList().map((account) {
                       if(Account.sharedInstance.currentPubkey == account.pubkey){
