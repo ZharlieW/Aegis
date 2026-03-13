@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
-import 'package:aegis/nostr/nostr.dart' show Event, Filter;
+import 'package:aegis/nostr/nostr.dart' show Event, Filter, OKEvent;
 import 'package:aegis/nostr/nips/nip46/nostr_remote_request.dart';
 import 'package:aegis/nostr/signer/local_nostr_signer.dart';
 import 'package:aegis/utils/account.dart';
@@ -13,10 +13,10 @@ import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
-/// One-time NIP-46 signer session on a **remote** relay (e.g. from scanned QR).
-/// Connects to the given relay, subscribes for kind 24133 with p = current user,
-/// and handles connect/get_public_key/sign_event from the client. Session stays open
-/// until TTL or next scan so web apps can keep requesting signatures (e.g. posting).
+/// One-time NIP-46 signer session on **remote** relay(s) (e.g. from scanned QR).
+/// Connects to every relay in the URI, subscribes for kind 24133 with p = current user,
+/// and broadcasts session_ready and NIP-46 responses to all relays so the client
+/// (e.g. Flotilla) can receive regardless of which relay it listens on.
 class RemoteRelayNip46Session {
   RemoteRelayNip46Session._();
 
@@ -24,17 +24,19 @@ class RemoteRelayNip46Session {
 
   static const int _ttlMinutes = 60;
 
-  String? _relayUrl;
+  List<String>? _relayUrls;
   String? _clientPubkey;
   String? _secret;
   String? _subscriptionId;
   Timer? _ttlTimer;
   bool _closed = false;
   bool _sessionReadySent = false;
+  bool _sessionReadyRetried = false;
 
   /// Whether a session is currently active (connected and listening).
   bool get isActive =>
-      _relayUrl != null &&
+      _relayUrls != null &&
+      _relayUrls!.isNotEmpty &&
       _clientPubkey != null &&
       _subscriptionId != null &&
       !_closed;
@@ -43,8 +45,8 @@ class RemoteRelayNip46Session {
   static String? lastFailureReason;
 
   /// Start a one-time remote signer session from a nostrconnect URI.
-  /// Parses relay and client pubkey, saves app to DB, connects to relay,
-  /// subscribes for kind 24133 (p = current user), and starts TTL timer.
+  /// Parses relays and client pubkey, saves app to DB, connects to every relay,
+  /// subscribes for kind 24133 (p = current user), and broadcasts session_ready to all.
   /// Returns true if session was started; false if already active or parse/login failed.
   /// On false, [lastFailureReason] may be set for display.
   static Future<bool> startFromNostrConnectUri(String nostrConnectUri) async {
@@ -63,12 +65,10 @@ class RemoteRelayNip46Session {
       return false;
     }
 
-    final relayUrl = parsed.relay;
     final clientPubkey = parsed.clientPubkey;
-    if (relayUrl == null ||
-        relayUrl.isEmpty ||
-        clientPubkey.isEmpty ||
-        !relayUrl.startsWith('ws')) {
+    final relayUrls = parsed.allRelays ?? (parsed.relay != null ? [parsed.relay!] : <String>[]);
+    final validRelays = relayUrls.where((r) => r.isNotEmpty && r.startsWith('ws')).toList();
+    if (validRelays.isEmpty || clientPubkey.isEmpty) {
       AegisLogger.warning(
           'RemoteRelayNip46Session: invalid relay or clientPubkey from URI');
       lastFailureReason = 'invalid_relay_or_client';
@@ -80,15 +80,15 @@ class RemoteRelayNip46Session {
       await instance.close();
     }
 
-    return instance._start(relayUrl: relayUrl, clientPubkey: clientPubkey, app: parsed);
+    return instance._start(relayUrls: validRelays, clientPubkey: clientPubkey, app: parsed);
   }
 
   Future<bool> _start({
-    required String relayUrl,
+    required List<String> relayUrls,
     required String clientPubkey,
     required ClientAuthDBISAR app,
   }) async {
-    _relayUrl = relayUrl;
+    _relayUrls = List.from(relayUrls);
     _clientPubkey = clientPubkey;
     _secret = app.secret;
     _closed = false;
@@ -99,7 +99,7 @@ class RemoteRelayNip46Session {
       await ClientAuthDBISAR.saveFromDB(app);
     } catch (e) {
       AegisLogger.error('RemoteRelayNip46Session: failed to save app', e);
-      _relayUrl = null;
+      _relayUrls = null;
       _clientPubkey = null;
       lastFailureReason = 'save_or_connect_failed';
       return false;
@@ -107,11 +107,15 @@ class RemoteRelayNip46Session {
 
     final connect = Connect.sharedInstance;
     connect.addConnectStatusListener(_onConnectStatus);
-    await connect.connect(relayUrl, relayKind: RelayKind.remoteSigner);
+    // Start connecting to all relays without awaiting so the caller (scan page) can return immediately
+    // and give user feedback. When each relay connects, _onConnectStatus will _subscribe and _sendSessionReady.
+    for (final r in _relayUrls!) {
+      connect.connect(r, relayKind: RelayKind.remoteSigner);
+    }
 
-    // If relay was already connected, we won't get status callback; subscribe now.
-    final socket = connect.webSockets[relayUrl];
-    if (socket?.connectStatus == 1) {
+    // If any relay was already connected, we may not get status callback; subscribe now if at least one is up.
+    final anyConnected = _relayUrls!.any((r) => connect.webSockets[r]?.connectStatus == 1);
+    if (anyConnected) {
       _subscribe();
       _sendSessionReady();
     }
@@ -122,12 +126,12 @@ class RemoteRelayNip46Session {
     });
 
     AegisLogger.info(
-        'RemoteRelayNip46Session: started for relay=$relayUrl client=${clientPubkey.substring(0, 8)}...');
+        'RemoteRelayNip46Session: started for relays=${_relayUrls!.length} client=${clientPubkey.substring(0, 8)}...');
     return true;
   }
 
   void _onConnectStatus(String relay, int status, List<RelayKind> relayKinds) {
-    if (relay != _relayUrl ||
+    if (_relayUrls == null || !_relayUrls!.contains(relay) ||
         status != 1 ||
         !relayKinds.contains(RelayKind.remoteSigner)) return;
     _subscribe();
@@ -136,10 +140,10 @@ class RemoteRelayNip46Session {
 
   void _sendSessionReady() {
     if (_sessionReadySent) return;
-    final relayUrl = _relayUrl;
+    final relayUrls = _relayUrls;
     final clientPubkey = _clientPubkey;
     final secret = _secret;
-    if (relayUrl == null ||
+    if (relayUrls == null || relayUrls.isEmpty ||
         clientPubkey == null ||
         secret == null ||
         secret.isEmpty ||
@@ -150,8 +154,9 @@ class RemoteRelayNip46Session {
     final serverPrivate = Account.sharedInstance.currentPrivkey;
     if (serverPrivate.isEmpty) return;
 
-    Future<void>.delayed(const Duration(milliseconds: 400), () async {
-      if (_closed || _relayUrl != relayUrl) return;
+    final delayMs = _sessionReadyRetried ? 500 : 100;
+    Future<void>.delayed(Duration(milliseconds: delayMs), () async {
+      if (_closed || _relayUrls != relayUrls) return;
       try {
         final payload = jsonEncode({'id': secret, 'result': secret});
         final encrypted = await LocalNostrSigner.instance.nip44Encrypt(
@@ -160,7 +165,10 @@ class RemoteRelayNip46Session {
           clientPubkey,
         );
         if (encrypted == null || _closed) return;
+        // Use fresh timestamp so relays do not reject (NIP-22 / policy)
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         final ev = Event.from(
+          createdAt: now,
           kind: 24133,
           tags: [['p', clientPubkey]],
           content: encrypted,
@@ -169,11 +177,21 @@ class RemoteRelayNip46Session {
         );
         Connect.sharedInstance.sendEvent(
           ev,
-          toRelays: [relayUrl],
+          toRelays: List.from(relayUrls),
           relayKinds: [RelayKind.remoteSigner],
+          sendCallBack: (OKEvent ok, String _) {
+            if (_closed) return;
+            if (!ok.status && ok.message.contains('Time Out') && !_sessionReadyRetried) {
+              _sessionReadyRetried = true;
+              _sessionReadySent = false;
+              AegisLogger.info(
+                  'RemoteRelayNip46Session: session_ready rejected (Time Out), retrying once...');
+              _sendSessionReady();
+            }
+          },
         );
         AegisLogger.info(
-            'RemoteRelayNip46Session: sent session_ready (result=secret) for client=${clientPubkey.substring(0, 8)}...');
+            'RemoteRelayNip46Session: sent session_ready (result=secret) to ${relayUrls.length} relay(s) for client=${clientPubkey.substring(0, 8)}...');
       } catch (e) {
         AegisLogger.error('RemoteRelayNip46Session: sendSessionReady failed', e);
       }
@@ -181,39 +199,39 @@ class RemoteRelayNip46Session {
   }
 
   void _subscribe() {
-    final relayUrl = _relayUrl;
+    final relayUrls = _relayUrls;
     final clientPubkey = _clientPubkey;
-    if (relayUrl == null || clientPubkey == null || _closed) return;
+    if (relayUrls == null || relayUrls.isEmpty || clientPubkey == null || _closed) return;
 
     final userPubkey = Account.sharedInstance.currentPubkey;
     if (userPubkey.isEmpty) return;
 
     if (_subscriptionId != null && _subscriptionId!.isNotEmpty) {
-      Connect.sharedInstance.closeRequests(_subscriptionId!, relay: relayUrl);
+      Connect.sharedInstance.closeRequests(_subscriptionId!);
     }
 
     final filter = Filter(kinds: [24133], p: [userPubkey]);
     _subscriptionId = Connect.sharedInstance.addSubscription(
       [filter],
-      relays: [relayUrl],
+      relays: List.from(relayUrls),
       relayKinds: [RelayKind.remoteSigner],
       eventCallBack: _onEvent,
       closeSubscription: false,
     );
-    AegisLogger.info('RemoteRelayNip46Session: subscribed on $relayUrl');
+    AegisLogger.info('RemoteRelayNip46Session: subscribed on ${relayUrls.length} relay(s)');
   }
 
   void _onEvent(Event event, String relay) {
-    if (_closed || relay != _relayUrl) return;
+    if (_closed || _relayUrls == null || !_relayUrls!.contains(relay)) return;
     if (event.pubkey != _clientPubkey) return;
 
     _handleEvent(event);
   }
 
   Future<void> _handleEvent(Event event) async {
-    final relayUrl = _relayUrl;
+    final relayUrls = _relayUrls;
     final clientPubkey = _clientPubkey;
-    if (relayUrl == null || clientPubkey == null || _closed) return;
+    if (relayUrls == null || relayUrls.isEmpty || clientPubkey == null || _closed) return;
 
     final userPubkey = Account.sharedInstance.currentPubkey;
     final serverPrivate = Account.sharedInstance.currentPrivkey;
@@ -255,7 +273,9 @@ class RemoteRelayNip46Session {
       return;
     }
 
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final responseEvent = Event.from(
+      createdAt: now,
       kind: event.kind,
       tags: [['p', event.pubkey]],
       content: encrypted ?? '',
@@ -266,7 +286,7 @@ class RemoteRelayNip46Session {
     try {
       Connect.sharedInstance.sendEvent(
         responseEvent,
-        toRelays: [relayUrl],
+        toRelays: List.from(relayUrls),
         relayKinds: [RelayKind.remoteSigner],
       );
       // Keep session open for sign_event (e.g. posting); close only on TTL or manual close.
@@ -372,32 +392,33 @@ class RemoteRelayNip46Session {
     }
   }
 
-  /// Close the session: unsubscribe and close the relay connection for remoteSigner.
+  /// Close the session: unsubscribe and close all relay connections for remoteSigner.
   Future<void> close() async {
     if (_closed) return;
     _closed = true;
     _ttlTimer?.cancel();
     _ttlTimer = null;
 
-    final relayUrl = _relayUrl;
+    final relayUrls = _relayUrls;
     final subId = _subscriptionId;
-    _relayUrl = null;
+    _relayUrls = null;
     _clientPubkey = null;
     _secret = null;
     _subscriptionId = null;
     _sessionReadySent = false;
+    _sessionReadyRetried = false;
 
-    if (relayUrl != null && subId != null && subId.isNotEmpty) {
+    if (subId != null && subId.isNotEmpty) {
       try {
-        Connect.sharedInstance.closeRequests(subId, relay: relayUrl);
+        Connect.sharedInstance.closeRequests(subId);
       } catch (e) {
         AegisLogger.error('RemoteRelayNip46Session: closeRequests failed', e);
       }
     }
-    if (relayUrl != null) {
+    if (relayUrls != null && relayUrls.isNotEmpty) {
       try {
         await Connect.sharedInstance.closeConnects(
-          [relayUrl],
+          List.from(relayUrls),
           RelayKind.remoteSigner,
         );
       } catch (e) {

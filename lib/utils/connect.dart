@@ -334,8 +334,9 @@ class Connect {
 
   String addSubscriptions(Map<String, List<Filter>> filters,
       {EventCallBack? eventCallBack, EOSECallBack? eoseCallBack, bool closeSubscription = true}) {
-    /// Create a subscription message request with one or many filters
-    String requestsId = generate64RandomHexChars();
+    /// Create a subscription message request with one or many filters.
+    /// Use short id (16 hex chars) so relays that reject "too long subscription id" (e.g. ephemeral.snowflare.cc) accept it.
+    String requestsId = generate16RandomHexChars();
     for (String relay in filters.keys) {
       Request requestWithFilter = Request(requestsId, filters[relay]!);
       String subscriptionString = requestWithFilter.serialize();

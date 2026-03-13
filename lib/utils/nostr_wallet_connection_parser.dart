@@ -39,21 +39,22 @@ class NostrWalletConnectionParserHandler {
       print('⏫ scheme: $scheme');
       print('🌲 lud16: $lud16');
 
-      if (relays.isEmpty) return null;
+      final relayList = relays.cast<String>().where((r) => r.startsWith('ws')).toList();
+      if (relayList.isEmpty) return null;
 
       int timestamp = DateTime.now().millisecondsSinceEpoch;
-
       return ClientAuthDBISAR(
         clientPubkey: clientPubkey,
         image: image,
         name: name,
-        relay: relays[0],
+        relay: relayList[0],
         createTimestamp: timestamp,
         server: server,
         secret: secret,
         pubkey: Account.sharedInstance.currentPubkey,
         scheme: scheme,
         connectionType: EConnectionType.nostrconnect.toInt,
+        allRelays: relayList,
       );
     } catch (e) {
       print('Error parsing URI: $e');

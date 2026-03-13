@@ -74,6 +74,10 @@ class ClientAuthDBISAR {
   @ignore
   int? socketHashCode;
 
+  /// All relay URLs from nostrconnect URI (not persisted). Used at scan time to broadcast session_ready to every relay.
+  @ignore
+  List<String>? allRelays;
+
   ClientAuthDBISAR({
     this.image,
     this.name,
@@ -89,6 +93,7 @@ class ClientAuthDBISAR {
     required this.connectionType,
     this.remoteSignerPubkey,
     this.remoteSignerPrivateKey,
+    this.allRelays,
   });
 
   static Future<ClientAuthDBISAR?> searchFromDB(String pubkey, String clientPubkey) async {

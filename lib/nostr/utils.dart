@@ -7,10 +7,18 @@ import 'package:pointycastle/block/aes.dart';
 import 'package:pointycastle/key_derivators/api.dart';
 import 'package:pointycastle/key_derivators/scrypt.dart';
 
-/// generates 32 random bytes converted in hex
+/// Generates 32 random bytes as 64 hex chars.
 String generate64RandomHexChars() {
   final random = Random.secure();
   final randomBytes = List<int>.generate(32, (i) => random.nextInt(256));
+  return hex.encode(randomBytes);
+}
+
+/// Generates 8 random bytes as 16 hex chars. Use for subscription IDs when relays
+/// reject "too long subscription id" (e.g. ephemeral.snowflare.cc).
+String generate16RandomHexChars() {
+  final random = Random.secure();
+  final randomBytes = List<int>.generate(8, (i) => random.nextInt(256));
   return hex.encode(randomBytes);
 }
 
