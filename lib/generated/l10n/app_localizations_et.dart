@@ -528,6 +528,12 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activities => 'Tegevused';
 
   @override
+  String get viewPermissions => 'View Permissions';
+
+  @override
+  String get permissionsPageDescription => 'This application can use the following capabilities with your Nostr account.';
+
+  @override
   String get clientPubkey => 'Kliendi avalik võti';
 
   @override

@@ -528,6 +528,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get activities => '활동';
 
   @override
+  String get viewPermissions => 'View Permissions';
+
+  @override
+  String get permissionsPageDescription => 'This application can use the following capabilities with your Nostr account.';
+
+  @override
   String get clientPubkey => '클라이언트 공개 키';
 
   @override

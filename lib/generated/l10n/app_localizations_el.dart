@@ -528,6 +528,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activities => 'Δραστηριότητες';
 
   @override
+  String get viewPermissions => 'View Permissions';
+
+  @override
+  String get permissionsPageDescription => 'This application can use the following capabilities with your Nostr account.';
+
+  @override
   String get clientPubkey => 'Δημόσιο κλειδί πελάτη';
 
   @override

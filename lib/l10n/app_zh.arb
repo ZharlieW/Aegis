@@ -212,6 +212,8 @@
   "name": "名称",
   "applicationInfo": "应用信息",
   "activities": "动态",
+  "viewPermissions": "查看权限",
+  "permissionsPageDescription": "此应用已获得以下与您 Nostr 账号相关的能力。",
   "clientPubkey": "客户端公钥",
   "remove": "移除",
   "removeAppConfirm": "确定要移除此应用的所有权限吗？",

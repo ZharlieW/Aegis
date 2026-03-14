@@ -528,6 +528,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activities => 'Tevékenységek';
 
   @override
+  String get viewPermissions => 'View Permissions';
+
+  @override
+  String get permissionsPageDescription => 'This application can use the following capabilities with your Nostr account.';
+
+  @override
   String get clientPubkey => 'Kliens nyilvános kulcs';
 
   @override

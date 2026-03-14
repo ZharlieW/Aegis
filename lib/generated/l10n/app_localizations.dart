@@ -1156,6 +1156,18 @@ abstract class AppLocalizations {
   /// **'Activities'**
   String get activities;
 
+  /// No description provided for @viewPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'View Permissions'**
+  String get viewPermissions;
+
+  /// No description provided for @permissionsPageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This application can use the following capabilities with your Nostr account.'**
+  String get permissionsPageDescription;
+
   /// No description provided for @clientPubkey.
   ///
   /// In en, this message translates to:

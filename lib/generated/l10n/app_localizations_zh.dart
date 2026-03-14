@@ -528,6 +528,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activities => '动态';
 
   @override
+  String get viewPermissions => '查看权限';
+
+  @override
+  String get permissionsPageDescription => '此应用已获得以下与您 Nostr 账号相关的能力。';
+
+  @override
   String get clientPubkey => '客户端公钥';
 
   @override

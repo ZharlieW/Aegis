@@ -212,6 +212,8 @@
   "name": "Name",
   "applicationInfo": "Application Info",
   "activities": "Activities",
+  "viewPermissions": "View Permissions",
+  "permissionsPageDescription": "This application can use the following capabilities with your Nostr account.",
   "clientPubkey": "Client pubkey",
   "remove": "Remove",
   "removeAppConfirm": "Are you sure you want to remove all permissions from this application?",

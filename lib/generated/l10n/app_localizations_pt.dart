@@ -528,6 +528,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activities => 'Atividade';
 
   @override
+  String get viewPermissions => 'View Permissions';
+
+  @override
+  String get permissionsPageDescription => 'This application can use the following capabilities with your Nostr account.';
+
+  @override
   String get clientPubkey => 'Chave pública do cliente';
 
   @override

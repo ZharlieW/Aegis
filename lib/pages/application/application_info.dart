@@ -14,6 +14,7 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/activities/activities.dart';
+import 'package:aegis/pages/application/application_permissions_page.dart';
 import 'package:aegis/pages/application/edit_bunker_socket_info.dart';
 
 class ApplicationInfo extends StatefulWidget {
@@ -167,6 +168,19 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                   AegisNavigator.pushPage(
                     context,
                     (context) => EditApplicationInfo(
+                      clientAuthDBISAR: client,
+                    ),
+                  );
+                },
+              ),
+              _optionItemWidget(
+                title: AppLocalizations.of(context)!.viewPermissions,
+                content: '',
+                iconName: 'edit_icon.png',
+                onTap: () {
+                  AegisNavigator.pushPage(
+                    context,
+                    (context) => ApplicationPermissionsPage(
                       clientAuthDBISAR: client,
                     ),
                   );
