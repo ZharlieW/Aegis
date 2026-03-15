@@ -6,6 +6,7 @@ import 'package:aegis/nostr/nostr.dart' show Event;
 import 'package:aegis/nostr/signer/local_nostr_signer.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/connect.dart';
+import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/url_scheme_handler.dart';
 import 'package:aegis/utils/logger.dart';
 
@@ -29,6 +30,9 @@ class NostrWalletConnectionParserHandler {
       }
       var image = queryParams['image']?.first ?? '';
       var name = queryParams['name']?.first ?? '';
+
+      // Parse perms from query param and/or metadata JSON (Amber-style). Comma-separated: "get_public_key,sign_event:0,..."
+      List<String> allowedMethods = _parsePermsFromUri(queryParams, decodedUri);
 
       var clientPubkey = decodedUri.authority;
 
@@ -55,11 +59,47 @@ class NostrWalletConnectionParserHandler {
         scheme: scheme,
         connectionType: EConnectionType.nostrconnect.toInt,
         allRelays: relayList,
+        allowedMethodsParam: allowedMethods,
       );
     } catch (e) {
       print('Error parsing URI: $e');
       return null;
     }
+  }
+
+  /// Parses perms from Nostr Connect URI (query param "perms" and/or "metadata" JSON).
+  /// Returns list of allowed methods (e.g. get_public_key, sign_event:0).
+  /// If client does not declare perms, returns empty list so permission page shows "will request as needed"; used methods are added at runtime via _addUsedMethodToApp.
+  static List<String> _parsePermsFromUri(
+    Map<String, List<String>> queryParamsAll,
+    Uri decodedUri,
+  ) {
+    final supported = ServerNIP46Signer.supportedNip46Methods;
+    final Set<String> collected = {};
+
+    void addPerms(String? raw) {
+      if (raw == null || raw.isEmpty) return;
+      for (final p in raw.split(',')) {
+        final s = p.trim();
+        if (s.isEmpty) continue;
+        if (supported.contains(s)) {
+          collected.add(s);
+        }
+      }
+    }
+
+    addPerms(queryParamsAll['perms']?.first);
+    final metadataStr = queryParamsAll['metadata']?.first;
+    if (metadataStr != null && metadataStr.isNotEmpty) {
+      try {
+        final map = jsonDecode(metadataStr) as Map<String, dynamic>?;
+        final perms = map?['perms'];
+        if (perms is String) addPerms(perms);
+      } catch (_) {}
+    }
+
+    if (collected.isEmpty) return [];
+    return collected.toList()..sort((a, b) => supported.indexOf(a).compareTo(supported.indexOf(b)));
   }
 
   static Future<String?> signAndEncrypt(

@@ -1168,6 +1168,12 @@ abstract class AppLocalizations {
   /// **'This application can use the following capabilities with your Nostr account.'**
   String get permissionsPageDescription;
 
+  /// No description provided for @permissionsPageNoDeclaredPerms.
+  ///
+  /// In en, this message translates to:
+  /// **'This app did not declare specific permissions when connecting; it will request signatures as needed when you use it.'**
+  String get permissionsPageNoDeclaredPerms;
+
   /// No description provided for @clientPubkey.
   ///
   /// In en, this message translates to:
@@ -1465,7 +1471,7 @@ abstract class AppLocalizations {
   /// No description provided for @permissionAccessPubkey.
   ///
   /// In en, this message translates to:
-  /// **'Access your Nostr public key'**
+  /// **'Read your public key'**
   String get permissionAccessPubkey;
 
   /// No description provided for @permissionSignEvents.
@@ -1479,6 +1485,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Encrypt and decrypt events (NIP-04 & NIP-44)'**
   String get permissionEncryptDecrypt;
+
+  /// No description provided for @permissionNip04Encrypt.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypt data using NIP-04'**
+  String get permissionNip04Encrypt;
+
+  /// No description provided for @permissionNip04Decrypt.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrypt data using NIP-04'**
+  String get permissionNip04Decrypt;
+
+  /// No description provided for @permissionNip44Encrypt.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypt data using NIP-44'**
+  String get permissionNip44Encrypt;
+
+  /// No description provided for @permissionNip44Decrypt.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrypt data using NIP-44'**
+  String get permissionNip44Decrypt;
+
+  /// No description provided for @permissionDecryptZapEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrypt private zaps'**
+  String get permissionDecryptZapEvent;
+
+  /// No description provided for @permissionSignEventKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign event (kind {kind})'**
+  String permissionSignEventKind(String kind);
+
+  /// No description provided for @permissionSignKind0.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign metadata'**
+  String get permissionSignKind0;
+
+  /// No description provided for @permissionSignKind1.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign short text note'**
+  String get permissionSignKind1;
+
+  /// No description provided for @permissionSignKind3.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign follows'**
+  String get permissionSignKind3;
+
+  /// No description provided for @permissionSignKind4.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign encrypted direct messages'**
+  String get permissionSignKind4;
+
+  /// No description provided for @permissionSignKind5.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign event deletion request'**
+  String get permissionSignKind5;
+
+  /// No description provided for @permissionSignKind6.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign repost'**
+  String get permissionSignKind6;
+
+  /// No description provided for @permissionSignKind7.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign reaction'**
+  String get permissionSignKind7;
+
+  /// No description provided for @permissionSignKind9734.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign zap request'**
+  String get permissionSignKind9734;
+
+  /// No description provided for @permissionSignKind9735.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign zap'**
+  String get permissionSignKind9735;
+
+  /// No description provided for @permissionSignKind10000.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign mute list'**
+  String get permissionSignKind10000;
+
+  /// No description provided for @permissionSignKind10002.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign relay list metadata'**
+  String get permissionSignKind10002;
+
+  /// No description provided for @permissionSignKind10003.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign bookmark list'**
+  String get permissionSignKind10003;
+
+  /// No description provided for @permissionSignKind10013.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign private outbox relay list'**
+  String get permissionSignKind10013;
+
+  /// No description provided for @permissionSignKind31234.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign generic draft event'**
+  String get permissionSignKind31234;
+
+  /// No description provided for @permissionSignKind30078.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign application-specific data'**
+  String get permissionSignKind30078;
+
+  /// No description provided for @permissionSignKind22242.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign client authentication'**
+  String get permissionSignKind22242;
+
+  /// No description provided for @permissionSignKind27235.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign HTTP auth'**
+  String get permissionSignKind27235;
+
+  /// No description provided for @permissionSignKind30023.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign long-form content'**
+  String get permissionSignKind30023;
 
   /// No description provided for @tips.
   ///

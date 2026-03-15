@@ -6,8 +6,8 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 
-/// Page that shows the permissions/capabilities granted to a connected application
-/// (NIP-46 / Nostr Connect: get_public_key, sign_event, encrypt/decrypt).
+/// Page that shows only the permissions this app declared at connect (URI perms).
+/// If [ClientAuthDBISAR.allowedMethods] is empty, shows a short message instead of listing all possible capabilities.
 class ApplicationPermissionsPage extends StatelessWidget {
   final ClientAuthDBISAR clientAuthDBISAR;
 
@@ -62,24 +62,20 @@ class ApplicationPermissionsPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                l10n.permissionsPageDescription,
+                _effectiveMethods(clientAuthDBISAR).isEmpty
+                    ? l10n.permissionsPageNoDeclaredPerms
+                    : l10n.permissionsPageDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 28),
-              _PermissionItem(
-                icon: Icons.vpn_key_outlined,
-                title: l10n.permissionAccessPubkey,
-              ),
-              _PermissionItem(
-                icon: Icons.draw_outlined,
-                title: l10n.permissionSignEvents,
-              ),
-              _PermissionItem(
-                icon: Icons.lock_outline,
-                title: l10n.permissionEncryptDecrypt,
+              ..._effectiveMethods(clientAuthDBISAR).map(
+                (method) => _PermissionItem(
+                  icon: _iconForMethod(method),
+                  title: _titleForMethod(l10n, method),
+                ),
               ),
               const SizedBox(height: 40),
             ],
@@ -87,6 +83,102 @@ class ApplicationPermissionsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Only show permissions the app declared at connect (URI perms). Empty = none declared.
+  static List<String> _effectiveMethods(ClientAuthDBISAR app) {
+    return app.allowedMethods;
+  }
+
+  static IconData _iconForMethod(String method) {
+    final base = method.contains(':') ? method.split(':').first : method;
+    switch (base) {
+      case 'get_public_key':
+        return Icons.vpn_key_outlined;
+      case 'sign_event':
+        return Icons.draw_outlined;
+      case 'nip04_encrypt':
+      case 'nip44_encrypt':
+        return Icons.lock_outlined;
+      case 'nip04_decrypt':
+      case 'nip44_decrypt':
+        return Icons.lock_open_outlined;
+      case 'decrypt_zap_event':
+        return Icons.lock_open_outlined;
+      default:
+        return Icons.lock_outline;
+    }
+  }
+
+  static String _titleForMethod(AppLocalizations l10n, String method) {
+    if (method.contains(':')) {
+      final parts = method.split(':');
+      final base = parts.first;
+      final kind = parts.length > 1 ? parts[1] : '';
+      if (base == 'sign_event' && kind.isNotEmpty) {
+        return _titleForSignEventKind(l10n, kind);
+      }
+    }
+    switch (method) {
+      case 'get_public_key':
+        return l10n.permissionAccessPubkey;
+      case 'nip04_encrypt':
+        return l10n.permissionNip04Encrypt;
+      case 'nip04_decrypt':
+        return l10n.permissionNip04Decrypt;
+      case 'nip44_encrypt':
+        return l10n.permissionNip44Encrypt;
+      case 'nip44_decrypt':
+        return l10n.permissionNip44Decrypt;
+      case 'decrypt_zap_event':
+        return l10n.permissionDecryptZapEvent;
+      default:
+        return method;
+    }
+  }
+
+  /// Human-readable title for sign_event by kind (matches Amber-style labels).
+  static String _titleForSignEventKind(AppLocalizations l10n, String kind) {
+    switch (kind) {
+      case '0':
+        return l10n.permissionSignKind0;
+      case '1':
+        return l10n.permissionSignKind1;
+      case '3':
+        return l10n.permissionSignKind3;
+      case '4':
+        return l10n.permissionSignKind4;
+      case '5':
+        return l10n.permissionSignKind5;
+      case '6':
+        return l10n.permissionSignKind6;
+      case '7':
+        return l10n.permissionSignKind7;
+      case '9734':
+        return l10n.permissionSignKind9734;
+      case '9735':
+        return l10n.permissionSignKind9735;
+      case '10000':
+        return l10n.permissionSignKind10000;
+      case '10002':
+        return l10n.permissionSignKind10002;
+      case '10003':
+        return l10n.permissionSignKind10003;
+      case '10013':
+        return l10n.permissionSignKind10013;
+      case '31234':
+        return l10n.permissionSignKind31234;
+      case '30078':
+        return l10n.permissionSignKind30078;
+      case '22242':
+        return l10n.permissionSignKind22242;
+      case '27235':
+        return l10n.permissionSignKind27235;
+      case '30023':
+        return l10n.permissionSignKind30023;
+      default:
+        return l10n.permissionSignEventKind(kind);
+    }
   }
 }
 

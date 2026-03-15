@@ -534,6 +534,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get permissionsPageDescription => 'This application can use the following capabilities with your Nostr account.';
 
   @override
+  String get permissionsPageNoDeclaredPerms => 'This app did not declare specific permissions when connecting; it will request signatures as needed when you use it.';
+
+  @override
   String get clientPubkey => 'Client pubkey';
 
   @override
@@ -691,13 +694,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fullAccessHint => 'This application will have full access to your Nostr account, including:';
 
   @override
-  String get permissionAccessPubkey => 'Access your Nostr public key';
+  String get permissionAccessPubkey => 'Read your public key';
 
   @override
   String get permissionSignEvents => 'Sign Nostr events';
 
   @override
   String get permissionEncryptDecrypt => 'Encrypt and decrypt events (NIP-04 & NIP-44)';
+
+  @override
+  String get permissionNip04Encrypt => 'Encrypt data using NIP-04';
+
+  @override
+  String get permissionNip04Decrypt => 'Decrypt data using NIP-04';
+
+  @override
+  String get permissionNip44Encrypt => 'Encrypt data using NIP-44';
+
+  @override
+  String get permissionNip44Decrypt => 'Decrypt data using NIP-44';
+
+  @override
+  String get permissionDecryptZapEvent => 'Decrypt private zaps';
+
+  @override
+  String permissionSignEventKind(String kind) {
+    return 'Sign event (kind $kind)';
+  }
+
+  @override
+  String get permissionSignKind0 => 'Sign metadata';
+
+  @override
+  String get permissionSignKind1 => 'Sign short text note';
+
+  @override
+  String get permissionSignKind3 => 'Sign follows';
+
+  @override
+  String get permissionSignKind4 => 'Sign encrypted direct messages';
+
+  @override
+  String get permissionSignKind5 => 'Sign event deletion request';
+
+  @override
+  String get permissionSignKind6 => 'Sign repost';
+
+  @override
+  String get permissionSignKind7 => 'Sign reaction';
+
+  @override
+  String get permissionSignKind9734 => 'Sign zap request';
+
+  @override
+  String get permissionSignKind9735 => 'Sign zap';
+
+  @override
+  String get permissionSignKind10000 => 'Sign mute list';
+
+  @override
+  String get permissionSignKind10002 => 'Sign relay list metadata';
+
+  @override
+  String get permissionSignKind10003 => 'Sign bookmark list';
+
+  @override
+  String get permissionSignKind10013 => 'Sign private outbox relay list';
+
+  @override
+  String get permissionSignKind31234 => 'Sign generic draft event';
+
+  @override
+  String get permissionSignKind30078 => 'Sign application-specific data';
+
+  @override
+  String get permissionSignKind22242 => 'Sign client authentication';
+
+  @override
+  String get permissionSignKind27235 => 'Sign HTTP auth';
+
+  @override
+  String get permissionSignKind30023 => 'Sign long-form content';
 
   @override
   String get tips => 'Tips';

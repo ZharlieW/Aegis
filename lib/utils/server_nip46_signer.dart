@@ -43,6 +43,36 @@ class ServerNIP46Signer {
   factory ServerNIP46Signer() => instance;
   ServerNIP46Signer._internal();
 
+  /// Ordered list of NIP-46 capabilities for UI (e.g. permissions page). Matches Amber-style
+  /// basicPermissions: get_public_key, nip04/nip44 encrypt/decrypt, decrypt_zap_event, sign_event by kind.
+  /// Use "method" or "method:kind" (e.g. sign_event:0). Keep in sync with [handleClientRequest].
+  static const List<String> supportedNip46Methods = [
+    'get_public_key',
+    'nip04_encrypt',
+    'nip04_decrypt',
+    'nip44_decrypt',
+    'nip44_encrypt',
+    'decrypt_zap_event',
+    'sign_event:0',
+    'sign_event:1',
+    'sign_event:3',
+    'sign_event:4',
+    'sign_event:5',
+    'sign_event:6',
+    'sign_event:7',
+    'sign_event:9734',
+    'sign_event:9735',
+    'sign_event:10000',
+    'sign_event:10002',
+    'sign_event:10003',
+    'sign_event:10013',
+    'sign_event:31234',
+    'sign_event:30078',
+    'sign_event:22242',
+    'sign_event:27235',
+    'sign_event:30023',
+  ];
+
   String _subscriptionId = 'nip46-sub-${DateTime.now().millisecondsSinceEpoch}';
   String port = '8080';
 
@@ -325,6 +355,30 @@ class ServerNIP46Signer {
     return name;
   }
 
+  /// When a method is successfully used, add it to the app's allowedMethods so the permissions page shows it.
+  Future<void> _addUsedMethodToApp(String clientPubkey, String method) async {
+    if (method.isEmpty) return;
+    if (!ServerNIP46Signer.supportedNip46Methods.contains(method)) return;
+    try {
+      final account = Account.sharedInstance;
+      final manager = AccountManager.sharedInstance;
+      ClientAuthDBISAR? app = account.authToNostrConnectInfo[clientPubkey] ??
+          manager.applicationMap[clientPubkey]?.value;
+      if (app == null) return;
+      if (app.allowedMethods.contains(method)) return;
+      final updated = await ClientAuthDBISAR.searchFromDB(app.pubkey, app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey);
+      if (updated == null) return;
+      if (updated.allowedMethods.contains(method)) return;
+      updated.allowedMethods = List<String>.from(updated.allowedMethods)..add(method);
+      updated.allowedMethods.sort((a, b) =>
+          ServerNIP46Signer.supportedNip46Methods.indexOf(a).compareTo(ServerNIP46Signer.supportedNip46Methods.indexOf(b)));
+      await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
+      AccountManager.sharedInstance.updateApplicationMap(updated);
+    } catch (e) {
+      AegisLogger.warning('Failed to add used method to app: $e');
+    }
+  }
+
   /// Record signed event with application info
   Future<void> _recordSignedEvent({
     required String eventId,
@@ -412,6 +466,7 @@ class ServerNIP46Signer {
 
         if (client != null) {
           // Application already exists, return user pubkey
+          await _addUsedMethodToApp(event.pubkey, 'get_public_key');
           responseJson = {
             "id": remoteRequest.id,
             "result": userPubkey,
@@ -454,7 +509,8 @@ class ServerNIP46Signer {
           if (oldKey.isNotEmpty && AccountManager.sharedInstance.applicationMap.containsKey(oldKey)) {
             AccountManager.sharedInstance.removeApplicationMap(oldKey);
           }
-          
+          // Reset permissions so reconnection starts fresh; methods will be added by _addUsedMethodToApp
+          unusedApp.allowedMethods = [];
           unusedApp.clientPubkey = event.pubkey;
           AccountManager.sharedInstance.addApplicationMap(unusedApp);
           try {
@@ -468,6 +524,7 @@ class ServerNIP46Signer {
               pubkey: event.pubkey,
               customAppName: unusedApp.name,
             );
+            await _addUsedMethodToApp(event.pubkey, 'get_public_key');
 
             responseJson = {
               "id": remoteRequest.id,
@@ -498,7 +555,8 @@ class ServerNIP46Signer {
             if (oldKey.isNotEmpty && AccountManager.sharedInstance.applicationMap.containsKey(oldKey)) {
               AccountManager.sharedInstance.removeApplicationMap(oldKey);
             }
-            
+            // New bunker app already has allowedMethods = []; ensure clean state when binding
+            newApp.allowedMethods = [];
             newApp.clientPubkey = event.pubkey;
             AccountManager.sharedInstance.addApplicationMap(newApp);
             
@@ -513,6 +571,7 @@ class ServerNIP46Signer {
                 pubkey: event.pubkey,
                 customAppName: newApp.name,
               );
+              await _addUsedMethodToApp(event.pubkey, 'get_public_key');
 
               responseJson = {
                 "id": remoteRequest.id,
@@ -577,6 +636,7 @@ class ServerNIP46Signer {
               pubkey: event.pubkey,
               metadata: contentStr,
             );
+            await _addUsedMethodToApp(event.pubkey, 'sign_event:$eventKind');
           } catch (e) {
             AegisLogger.error('Failed to record signed event', e);
           }
@@ -601,6 +661,7 @@ class ServerNIP46Signer {
             eventContent: 'NIP-04 Encrypted Data',
             pubkey: event.pubkey,
           );
+          await _addUsedMethodToApp(event.pubkey, 'nip04_encrypt');
         }
 
         responseJson = {
@@ -622,6 +683,7 @@ class ServerNIP46Signer {
             eventContent: 'NIP-04 Decrypted Data',
             pubkey: event.pubkey,
           );
+          await _addUsedMethodToApp(event.pubkey, 'nip04_decrypt');
         }
 
         responseJson = {
@@ -646,6 +708,7 @@ class ServerNIP46Signer {
             eventContent: 'NIP-44 Decrypted Data',
             pubkey: event.pubkey,
           );
+          await _addUsedMethodToApp(event.pubkey, 'nip44_decrypt');
         }
 
         responseJson = {
@@ -671,6 +734,7 @@ class ServerNIP46Signer {
             eventContent: 'NIP-44 Encrypted Data',
             pubkey: event.pubkey,
           );
+          await _addUsedMethodToApp(event.pubkey, 'nip44_encrypt');
         }
 
         responseJson = {
@@ -770,6 +834,7 @@ class ServerNIP46Signer {
         scheme: newClient.scheme,
         createTimestamp: newClient.createTimestamp,
         updateTimestamp: newClient.updateTimestamp,
+        allowedMethodsParam: newClient.allowedMethods,
       );
       AccountManager.sharedInstance.addApplicationMap(tempApp);
 
@@ -835,6 +900,7 @@ class ServerNIP46Signer {
               scheme: app.scheme,
               createTimestamp: app.createTimestamp,
               updateTimestamp: app.updateTimestamp,
+              allowedMethodsParam: app.allowedMethods,
             );
             AccountManager.sharedInstance.addApplicationMap(tempApp);
           }

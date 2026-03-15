@@ -534,6 +534,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get permissionsPageDescription => '此应用已获得以下与您 Nostr 账号相关的能力。';
 
   @override
+  String get permissionsPageNoDeclaredPerms => '此应用在连接时未声明具体权限，将在使用时按需请求签名。';
+
+  @override
   String get clientPubkey => '客户端公钥';
 
   @override
@@ -691,13 +694,87 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fullAccessHint => '此应用将拥有您 Nostr 账号的完整访问权限，包括：';
 
   @override
-  String get permissionAccessPubkey => '访问您的 Nostr 公钥';
+  String get permissionAccessPubkey => '读取公钥';
 
   @override
   String get permissionSignEvents => '签名 Nostr 事件';
 
   @override
   String get permissionEncryptDecrypt => '加密与解密事件（NIP-04 与 NIP-44）';
+
+  @override
+  String get permissionNip04Encrypt => '使用 NIP-04 加密数据';
+
+  @override
+  String get permissionNip04Decrypt => '使用 NIP-04 解密数据';
+
+  @override
+  String get permissionNip44Encrypt => '使用 NIP-44 加密数据';
+
+  @override
+  String get permissionNip44Decrypt => '使用 NIP-44 解密数据';
+
+  @override
+  String get permissionDecryptZapEvent => '解密私密打闪';
+
+  @override
+  String permissionSignEventKind(String kind) {
+    return '签名事件（kind $kind）';
+  }
+
+  @override
+  String get permissionSignKind0 => '签署 元数据';
+
+  @override
+  String get permissionSignKind1 => '签署 短文笔记';
+
+  @override
+  String get permissionSignKind3 => '签署 关注';
+
+  @override
+  String get permissionSignKind4 => '签署 加密私信';
+
+  @override
+  String get permissionSignKind5 => '签署 删除事件';
+
+  @override
+  String get permissionSignKind6 => '签署 转发';
+
+  @override
+  String get permissionSignKind7 => '签署 回应';
+
+  @override
+  String get permissionSignKind9734 => '签署 打闪请求';
+
+  @override
+  String get permissionSignKind9735 => '签署 打闪';
+
+  @override
+  String get permissionSignKind10000 => '签署 静音列表';
+
+  @override
+  String get permissionSignKind10002 => '签署 中继列表元数据';
+
+  @override
+  String get permissionSignKind10003 => '签署 书签列表';
+
+  @override
+  String get permissionSignKind10013 => '签署 私人发件箱中继列表';
+
+  @override
+  String get permissionSignKind31234 => '签署 通用草稿事件';
+
+  @override
+  String get permissionSignKind30078 => '签署 特定应用数据';
+
+  @override
+  String get permissionSignKind22242 => '签署 客户端验证';
+
+  @override
+  String get permissionSignKind27235 => '签署 HTTP 认证';
+
+  @override
+  String get permissionSignKind30023 => '签署 长篇内容';
 
   @override
   String get tips => '提示';

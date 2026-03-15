@@ -71,6 +71,10 @@ class ClientAuthDBISAR {
   //  1 : nostrconnect://
   late int connectionType;
 
+  /// NIP-46 permissions granted at connect time (e.g. from URI perms or default full list).
+  /// Empty means use signer default; non-empty is the list to show on permissions page (Amber-style).
+  List<String> allowedMethods = [];
+
   @ignore
   int? socketHashCode;
 
@@ -88,13 +92,14 @@ class ClientAuthDBISAR {
     this.socketHashCode,
     this.createTimestamp,
     this.updateTimestamp,
+    List<String> allowedMethodsParam = const [],
     required this.pubkey,
     required this.clientPubkey,
     required this.connectionType,
     this.remoteSignerPubkey,
     this.remoteSignerPrivateKey,
     this.allRelays,
-  });
+  }) : allowedMethods = allowedMethodsParam;
 
   static Future<ClientAuthDBISAR?> searchFromDB(String pubkey, String clientPubkey) async {
     final isar = await DBISAR.sharedInstance.open(pubkey);
