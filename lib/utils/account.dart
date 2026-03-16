@@ -19,6 +19,7 @@ import 'package:aegis/nostr/nips/nip19/nip19.dart';
 import 'package:aegis/nostr/signer/local_nostr_signer.dart';
 import 'package:aegis/nostr/utils.dart';
 import 'package:aegis/pages/login/login.dart';
+import 'package:aegis/pages/request/request_permission.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/key_manager.dart';
 
@@ -245,17 +246,22 @@ class Account {
     }
   }
 
+  /// Shows the permission request dialog when a client requests e.g. get_public_key (new connection).
+  /// Returns true if user grants, false if user rejects or dialog cannot be shown.
   static Future<bool> authToClient() async {
-    AegisLogger.info('🔓 Auto-authorizing client request (permission dialog disabled)');
-    return true;
-    
-    // final status = await AegisNavigator.presentPage<bool>(
-    //   AegisNavigator.navigatorKey.currentContext,
-    //       (context) => const RequestPermission(),
-    //   fullscreenDialog: false,
-    //   screenDialogHeight: 0.75,
-    // );
-    // return status == true;
+    final context = AegisNavigator.navigatorKey.currentContext;
+    if (context == null || !context.mounted) {
+      AegisLogger.warning('No context for permission dialog, denying request');
+      return false;
+    }
+    final status = await AegisNavigator.presentPage<bool>(
+      context,
+      (_) => const RequestPermission(),
+      fullscreenDialog: true,
+    );
+    final granted = status == true;
+    AegisLogger.info(granted ? 'User granted client permission' : 'User rejected client permission');
+    return granted;
   }
 
   Future<Uint8List> decryptPrivkey(UserDBISAR user) async {

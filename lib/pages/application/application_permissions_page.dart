@@ -85,9 +85,14 @@ class ApplicationPermissionsPage extends StatelessWidget {
     );
   }
 
-  /// Only show permissions the app declared at connect (URI perms). Empty = none declared.
+  /// Permissions to show: declared/used methods, always including get_public_key for connected apps
+  /// (clients always request get_public_key when connecting).
   static List<String> _effectiveMethods(ClientAuthDBISAR app) {
-    return app.allowedMethods;
+    final list = List<String>.from(app.allowedMethods);
+    if (!list.contains('get_public_key')) {
+      list.insert(0, 'get_public_key');
+    }
+    return list;
   }
 
   static IconData _iconForMethod(String method) {
