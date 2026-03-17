@@ -23,6 +23,20 @@ import 'package:aegis/pages/request/request_permission.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/key_manager.dart';
 
+/// Result of the permission dialog: granted or not, and when granted whether to fully trust the app.
+class AuthResult {
+  final bool granted;
+  final bool fullTrust;
+  /// Optional method key that should be auto-approved in the future (per permission type).
+  final String? rememberedMethodKey;
+
+  const AuthResult({
+    required this.granted,
+    required this.fullTrust,
+    this.rememberedMethodKey,
+  });
+}
+
 abstract mixin class AccountObservers {
   void didLoginSuccess();
   void didSwitchUser();
@@ -246,22 +260,35 @@ class Account {
     }
   }
 
-  /// Shows the permission request dialog when a client requests e.g. get_public_key (new connection).
-  /// Returns true if user grants, false if user rejects or dialog cannot be shown.
-  static Future<bool> authToClient() async {
+  /// Shows the permission request dialog. When [isInitialConnect] is true (e.g. get_public_key),
+  /// user chooses "fully trust" or "approve each manually"; when false, only allow/reject is shown.
+  /// [permissionDescription] is an optional extra line describing the current action in detail.
+  /// Returns null if rejected or no context; otherwise AuthResult with granted and fullTrust.
+  static Future<AuthResult?> authToClient({
+    bool isInitialConnect = true,
+    String? permissionDescription,
+  }) async {
     final context = AegisNavigator.navigatorKey.currentContext;
     if (context == null || !context.mounted) {
       AegisLogger.warning('No context for permission dialog, denying request');
-      return false;
+      return null;
     }
-    final status = await AegisNavigator.presentPage<bool>(
+    final result = await AegisNavigator.presentPage<AuthResult?>(
       context,
-      (_) => const RequestPermission(),
+      (_) => RequestPermission(
+        isInitialConnect: isInitialConnect,
+        permissionDescription: permissionDescription,
+      ),
       fullscreenDialog: true,
     );
-    final granted = status == true;
-    AegisLogger.info(granted ? 'User granted client permission' : 'User rejected client permission');
-    return granted;
+    if (result == null) {
+      AegisLogger.info('User rejected client permission');
+      return null;
+    }
+    AegisLogger.info(result.granted
+        ? 'User granted (fullTrust: ${result.fullTrust})'
+        : 'User rejected client permission');
+    return result;
   }
 
   Future<Uint8List> decryptPrivkey(UserDBISAR user) async {

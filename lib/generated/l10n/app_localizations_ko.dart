@@ -694,6 +694,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fullAccessHint => '이 앱은 Nostr 계정에 대한 전체 액세스 권한을 가지며, 다음을 포함합니다:';
 
   @override
+  String get authTrustFully => 'Fully trust this app';
+
+  @override
+  String get authTrustFullyHint => 'All future requests will be approved automatically';
+
+  @override
+  String get authManualEach => 'Approve each request manually';
+
+  @override
+  String get authManualEachHint => 'You will be asked to approve every new action';
+
+  @override
+  String get approveActionRequest => 'This app is requesting an action. Allow?';
+
+  @override
   String get permissionAccessPubkey => 'Nostr 공개 키 액세스';
 
   @override
@@ -716,6 +731,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get permissionDecryptZapEvent => 'Decrypt private zaps';
+
+  @override
+  String get alwaysAllowThisPermission => 'Always approve this permission';
 
   @override
   String permissionSignEventKind(String kind) {

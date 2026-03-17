@@ -379,6 +379,37 @@ class ServerNIP46Signer {
     }
   }
 
+  /// For manual authMode (1), prompts user; for full trust (2), returns true. Returns false if denied or no app.
+  /// [description] is an optional human-readable explanation of the current action.
+  /// When user chooses "always allow this permission", we remember [description] in allowedMethods
+  /// and future requests with the same [description] will be auto-approved without a dialog.
+  Future<bool> _requireApprovalForApp(String clientPubkey, {String? description}) async {
+    final app = Account.sharedInstance.authToNostrConnectInfo[clientPubkey] ??
+        AccountManager.sharedInstance.applicationMap[clientPubkey]?.value;
+    if (app == null) return false;
+    if (app.authMode == 2) return true; // full trust
+    if (description != null && app.allowedMethods.contains(description)) {
+      return true;
+    }
+    final result = await Account.authToClient(
+      isInitialConnect: false,
+      permissionDescription: description,
+    );
+    if (result == null || !result.granted) return false;
+
+    if (description != null && result.rememberedMethodKey == description) {
+      // Persist this description as auto-approved for this app
+      app.allowedMethods = (app.allowedMethods..add(description));
+      try {
+        await ClientAuthDBISAR.saveFromDB(app, isUpdate: true);
+        AccountManager.sharedInstance.updateApplicationMap(app);
+      } catch (e) {
+        AegisLogger.warning('Failed to save always-allow permission for $description', e);
+      }
+    }
+    return true;
+  }
+
   /// Record signed event with application info
   Future<void> _recordSignedEvent({
     required String eventId,
@@ -475,9 +506,9 @@ class ServerNIP46Signer {
           break;
         }
 
-        // Check authorization
-        final isSuccess = await Account.authToClient();
-        if (!isSuccess) {
+        // Check authorization and get trust mode (fully trust vs approve each)
+        final authResult = await Account.authToClient(isInitialConnect: true);
+        if (authResult == null || !authResult.granted) {
           responseJson = {
             "id": remoteRequest.id,
             "result": "",
@@ -485,6 +516,7 @@ class ServerNIP46Signer {
           };
           break;
         }
+        final authMode = authResult.fullTrust ? 2 : 1;
 
         // Find unused application by remote signer pubkey (from event p tag)
         // The remote signer pubkey should be in the event's p tag
@@ -511,6 +543,7 @@ class ServerNIP46Signer {
           }
           // Reset permissions so reconnection starts fresh; methods will be added by _addUsedMethodToApp
           unusedApp.allowedMethods = [];
+          unusedApp.authMode = authMode;
           unusedApp.clientPubkey = event.pubkey;
           AccountManager.sharedInstance.addApplicationMap(unusedApp);
           try {
@@ -557,6 +590,7 @@ class ServerNIP46Signer {
             }
             // New bunker app already has allowedMethods = []; ensure clean state when binding
             newApp.allowedMethods = [];
+            newApp.authMode = authMode;
             newApp.clientPubkey = event.pubkey;
             AccountManager.sharedInstance.addApplicationMap(newApp);
             
@@ -599,6 +633,17 @@ class ServerNIP46Signer {
         break;
 
       case "sign_event":
+        // Describe this request as signing a Nostr event
+        String? signDescription;
+        try {
+          final ctx = AegisNavigator.navigatorKey.currentContext;
+          final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
+          signDescription = l10n?.permissionSignEvents;
+        } catch (_) {}
+        if (!await _requireApprovalForApp(event.pubkey, description: signDescription)) {
+          responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null && serverPrivate.isNotEmpty) {
           // For signing, we need user's private key, not remote signer private key
@@ -650,6 +695,16 @@ class ServerNIP46Signer {
         break;
 
       case "nip04_encrypt":
+        String? descNip04Enc;
+        try {
+          final ctx = AegisNavigator.navigatorKey.currentContext;
+          final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
+          descNip04Enc = l10n?.permissionNip04Encrypt;
+        } catch (_) {}
+        if (!await _requireApprovalForApp(event.pubkey, description: descNip04Enc)) {
+          responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
         String? result = await LocalNostrSigner.instance
             .encrypt(remoteRequest.params[0], remoteRequest.params[1]);
 
@@ -672,6 +727,16 @@ class ServerNIP46Signer {
         break;
 
       case "nip04_decrypt":
+        String? descNip04Dec;
+        try {
+          final ctx = AegisNavigator.navigatorKey.currentContext;
+          final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
+          descNip04Dec = l10n?.permissionNip04Decrypt;
+        } catch (_) {}
+        if (!await _requireApprovalForApp(event.pubkey, description: descNip04Dec)) {
+          responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
         String? result = await LocalNostrSigner.instance
             .decrypt(remoteRequest.params[0], remoteRequest.params[1]);
 
@@ -694,6 +759,16 @@ class ServerNIP46Signer {
         break;
 
       case "nip44_decrypt":
+        String? descNip44Dec;
+        try {
+          final ctx = AegisNavigator.navigatorKey.currentContext;
+          final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
+          descNip44Dec = l10n?.permissionNip44Decrypt;
+        } catch (_) {}
+        if (!await _requireApprovalForApp(event.pubkey, description: descNip44Dec)) {
+          responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
         if (serverPrivate.isEmpty ||
             remoteRequest.params[1] is! String ||
             remoteRequest.params[0] is! String) break;
@@ -719,6 +794,16 @@ class ServerNIP46Signer {
         break;
 
       case "nip44_encrypt":
+        String? descNip44Enc;
+        try {
+          final ctx = AegisNavigator.navigatorKey.currentContext;
+          final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
+          descNip44Enc = l10n?.permissionNip44Encrypt;
+        } catch (_) {}
+        if (!await _requireApprovalForApp(event.pubkey, description: descNip44Enc)) {
+          responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
         if (serverPrivate.isEmpty ||
             remoteRequest.params[1] is! String ||
             remoteRequest.params[0] is! String) break;

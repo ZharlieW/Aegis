@@ -75,6 +75,9 @@ class ClientAuthDBISAR {
   /// Empty means use signer default; non-empty is the list to show on permissions page (Amber-style).
   List<String> allowedMethods = [];
 
+  /// Auth mode: 1 = manual (approve each request), 2 = full trust (no further prompts).
+  int authMode = 1;
+
   @ignore
   int? socketHashCode;
 
@@ -93,6 +96,7 @@ class ClientAuthDBISAR {
     this.createTimestamp,
     this.updateTimestamp,
     List<String> allowedMethodsParam = const [],
+    this.authMode = 1,
     required this.pubkey,
     required this.clientPubkey,
     required this.connectionType,

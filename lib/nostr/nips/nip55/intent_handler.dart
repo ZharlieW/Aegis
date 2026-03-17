@@ -165,15 +165,15 @@ class IntentHandler {
         AegisLogger.info('📱 First time authorization required for package: $packageName');
         
         // Show authorization dialog using the same component as NIP46
-        final isAuthorized = await Account.authToClient();
-        if (!isAuthorized) {
+        final authResult = await Account.authToClient(isInitialConnect: true);
+        if (authResult == null || !authResult.granted) {
           AegisLogger.info('📱 User rejected authorization for package: $packageName');
           await _sendAuthorizationRejectedResult(packageName, extras['id'] as String?);
           return;
         }
-        
+        final authMode = authResult.fullTrust ? 2 : 1;
         // Add to authorized applications using AccountManager (same as NIP46)
-        await _addAuthorizedApplication(packageName, appName);
+        await _addAuthorizedApplication(packageName, appName, authMode: authMode);
         AegisLogger.info('📱 Authorization granted for package: $packageName');
       }
       
@@ -318,7 +318,7 @@ class IntentHandler {
   }
   
   /// Add application to authorized list using AccountManager (same as NIP46)
-  static Future<void> _addAuthorizedApplication(String packageName, String? appName) async {
+  static Future<void> _addAuthorizedApplication(String packageName, String? appName, {int authMode = 1}) async {
     try {
       // Create a ClientAuthDBISAR entry for the intent-based application
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -333,6 +333,7 @@ class IntentHandler {
         pubkey: Account.sharedInstance.currentPubkey,
         scheme: 'nostrsigner', // Use nostrsigner scheme
         connectionType: EConnectionType.nip55.toInt, // Use NIP55 connection type for intents
+        authMode: authMode,
       );
       
       // Add to AccountManager (same as NIP46)

@@ -153,11 +153,12 @@ class UrlSchemeHandler {
 
     final hasClient = accountManagerInstance.applicationMap[clientPubkey]?.value;
     if (hasClient == null) {
-      final isSuccess = await Account.authToClient();
-      if (!isSuccess) {
+      final authResult = await Account.authToClient(isInitialConnect: true);
+      if (authResult == null || !authResult.granted) {
         openError(errorCallback, _errCancel, 'User cancelled authorization');
         return;
       }
+      result.authMode = authResult.fullTrust ? 2 : 1;
     }
 
     accountManagerInstance.addApplicationMap(result);

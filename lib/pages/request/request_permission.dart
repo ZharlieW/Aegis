@@ -1,4 +1,5 @@
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/widget_tool.dart';
 import 'package:flutter/material.dart';
 
@@ -6,19 +7,54 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 
 class RequestPermission extends StatefulWidget {
-  const RequestPermission({super.key});
+  /// When true (e.g. first-time connect), show "fully trust" vs "approve each" and return both granted and fullTrust.
+  /// When false (manual approval for one action), show only allow/reject.
+  final bool isInitialConnect;
+
+  /// Optional description for the specific action being requested (used when isInitialConnect is false).
+  final String? permissionDescription;
+
+  const RequestPermission({
+    super.key,
+    this.isInitialConnect = true,
+    this.permissionDescription,
+  });
 
   @override
   RequestPermissionState createState() => RequestPermissionState();
 }
 
 class RequestPermissionState extends State<RequestPermission> {
+  /// Selected trust mode when isInitialConnect: true = fully trust, false = approve each manually.
+  bool _fullTrust = true;
+  /// Whether user wants to always allow this specific permission type in the future.
+  bool _alwaysAllowThisPermission = false;
+
+  void _popReject() {
+    AegisNavigator.pop(context, null);
+  }
+
+  void _popGrant() {
+    AegisNavigator.pop(
+      context,
+      AuthResult(
+        granted: true,
+        fullTrust: widget.isInitialConnect ? _fullTrust : false,
+        rememberedMethodKey: (!widget.isInitialConnect &&
+                widget.permissionDescription != null &&
+                _alwaysAllowThisPermission)
+            ? widget.permissionDescription
+            : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
-          onTap: () => AegisNavigator.pop(context),
+          onTap: _popReject,
           child: Center(
             child: CommonImage(
               iconName: 'title_close_icon.png',
@@ -53,18 +89,44 @@ class RequestPermissionState extends State<RequestPermission> {
                     ),
                   ),
                   Text(
-                    AppLocalizations.of(context)!.permissionRequestContent,
+                    widget.isInitialConnect
+                        ? AppLocalizations.of(context)!.permissionRequestContent
+                        : AppLocalizations.of(context)!.approveActionRequest,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                   ).setPadding(const EdgeInsets.symmetric(vertical: 20)),
-                  _permissionInfoWidget(),
-                  const SizedBox(height: 32),
+                  if (!widget.isInitialConnect &&
+                      widget.permissionDescription != null &&
+                      widget.permissionDescription!.isNotEmpty)
+                    Text(
+                      widget.permissionDescription!,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
+                    ).setPadding(const EdgeInsets.only(bottom: 12)),
+                  if (!widget.isInitialConnect)
+                    SwitchListTile(
+                      value: _alwaysAllowThisPermission,
+                      onChanged: (v) =>
+                          setState(() => _alwaysAllowThisPermission = v),
+                      title: Text(
+                        AppLocalizations.of(context)!
+                            .alwaysAllowThisPermission,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                    ).setPadding(const EdgeInsets.only(bottom: 16)),
+                  if (widget.isInitialConnect) _trustModeOptions() else const SizedBox.shrink(),
+                  if (widget.isInitialConnect) const SizedBox(height: 16) else const SizedBox.shrink(),
+                  if (widget.isInitialConnect) _permissionInfoWidget() else const SizedBox.shrink(),
+                  if (widget.isInitialConnect) const SizedBox(height: 32) else const SizedBox(height: 24),
                   FilledButton.tonal(
-                    onPressed: () {
-                      AegisNavigator.pop(context, true);
-                    },
+                    onPressed: _popGrant,
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
@@ -85,9 +147,7 @@ class RequestPermissionState extends State<RequestPermission> {
                   ),
                   const SizedBox(height: 12),
                   FilledButton.tonal(
-                    onPressed: () {
-                      AegisNavigator.pop(context, false);
-                    },
+                    onPressed: _popReject,
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                     ),
@@ -113,7 +173,68 @@ class RequestPermissionState extends State<RequestPermission> {
     );
   }
 
+  Widget _trustModeOptions() {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RadioListTile<bool>(
+            value: true,
+            groupValue: _fullTrust,
+            onChanged: (v) => setState(() => _fullTrust = true),
+            title: Text(
+              l10n.authTrustFully,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            subtitle: Text(
+              l10n.authTrustFullyHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+          RadioListTile<bool>(
+            value: false,
+            groupValue: _fullTrust,
+            onChanged: (v) => setState(() => _fullTrust = false),
+            title: Text(
+              l10n.authManualEach,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            subtitle: Text(
+              l10n.authManualEachHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _permissionInfoWidget() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -136,7 +257,7 @@ class RequestPermissionState extends State<RequestPermission> {
               ),
               const SizedBox(width: 12),
               Text(
-                AppLocalizations.of(context)!.fullAccessGranted,
+                _fullTrust ? l10n.fullAccessGranted : l10n.authManualEach,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.primary,
@@ -146,15 +267,15 @@ class RequestPermissionState extends State<RequestPermission> {
           ),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context)!.fullAccessHint,
+            _fullTrust ? l10n.fullAccessHint : l10n.authManualEachHint,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
-          _permissionItem(AppLocalizations.of(context)!.permissionAccessPubkey),
-          _permissionItem(AppLocalizations.of(context)!.permissionSignEvents),
-          _permissionItem(AppLocalizations.of(context)!.permissionEncryptDecrypt),
+          _permissionItem(l10n.permissionAccessPubkey),
+          _permissionItem(l10n.permissionSignEvents),
+          _permissionItem(l10n.permissionEncryptDecrypt),
         ],
       ),
     );

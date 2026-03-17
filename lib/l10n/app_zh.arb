@@ -289,6 +289,11 @@
   "reject": "拒绝",
   "fullAccessGranted": "已授予完整访问权限",
   "fullAccessHint": "此应用将拥有您 Nostr 账号的完整访问权限，包括：",
+  "authTrustFully": "完全信任该应用",
+  "authTrustFullyHint": "之后该应用的所有请求将自动通过",
+  "authManualEach": "每一项都需要手动批复",
+  "authManualEachHint": "每次新类型的操作都会弹窗请您确认",
+  "approveActionRequest": "此应用正在请求执行操作，是否允许？",
   "permissionAccessPubkey": "读取公钥",
   "permissionSignEvents": "签名 Nostr 事件",
   "permissionEncryptDecrypt": "加密与解密事件（NIP-04 与 NIP-44）",
@@ -297,6 +302,7 @@
   "permissionNip44Encrypt": "使用 NIP-44 加密数据",
   "permissionNip44Decrypt": "使用 NIP-44 解密数据",
   "permissionDecryptZapEvent": "解密私密打闪",
+  "alwaysAllowThisPermission": "总是批准这类请求",
   "permissionSignEventKind": "签名事件（kind {kind}）",
   "@permissionSignEventKind": {
     "placeholders": {

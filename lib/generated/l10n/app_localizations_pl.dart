@@ -694,6 +694,21 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fullAccessHint => 'Ta aplikacja będzie miała pełny dostęp do Twojego konta Nostr, w tym:';
 
   @override
+  String get authTrustFully => 'Fully trust this app';
+
+  @override
+  String get authTrustFullyHint => 'All future requests will be approved automatically';
+
+  @override
+  String get authManualEach => 'Approve each request manually';
+
+  @override
+  String get authManualEachHint => 'You will be asked to approve every new action';
+
+  @override
+  String get approveActionRequest => 'This app is requesting an action. Allow?';
+
+  @override
   String get permissionAccessPubkey => 'Dostęp do publicznego klucza Nostr';
 
   @override
@@ -716,6 +731,9 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get permissionDecryptZapEvent => 'Decrypt private zaps';
+
+  @override
+  String get alwaysAllowThisPermission => 'Always approve this permission';
 
   @override
   String permissionSignEventKind(String kind) {

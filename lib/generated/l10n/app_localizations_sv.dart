@@ -694,6 +694,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get fullAccessHint => 'Denna applikation får full åtkomst till ditt Nostr-konto, inklusive:';
 
   @override
+  String get authTrustFully => 'Fully trust this app';
+
+  @override
+  String get authTrustFullyHint => 'All future requests will be approved automatically';
+
+  @override
+  String get authManualEach => 'Approve each request manually';
+
+  @override
+  String get authManualEachHint => 'You will be asked to approve every new action';
+
+  @override
+  String get approveActionRequest => 'This app is requesting an action. Allow?';
+
+  @override
   String get permissionAccessPubkey => 'Åtkomst till din Nostr-offentliga nyckel';
 
   @override
@@ -716,6 +731,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get permissionDecryptZapEvent => 'Decrypt private zaps';
+
+  @override
+  String get alwaysAllowThisPermission => 'Always approve this permission';
 
   @override
   String permissionSignEventKind(String kind) {

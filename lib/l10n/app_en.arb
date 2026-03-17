@@ -289,6 +289,11 @@
   "reject": "Reject",
   "fullAccessGranted": "Full Access Granted",
   "fullAccessHint": "This application will have full access to your Nostr account, including:",
+  "authTrustFully": "Fully trust this app",
+  "authTrustFullyHint": "All future requests will be approved automatically",
+  "authManualEach": "Approve each request manually",
+  "authManualEachHint": "You will be asked to approve every new action",
+  "approveActionRequest": "This app is requesting an action. Allow?",
   "permissionAccessPubkey": "Read your public key",
   "permissionSignEvents": "Sign Nostr events",
   "permissionEncryptDecrypt": "Encrypt and decrypt events (NIP-04 & NIP-44)",
@@ -297,6 +302,7 @@
   "permissionNip44Encrypt": "Encrypt data using NIP-44",
   "permissionNip44Decrypt": "Decrypt data using NIP-44",
   "permissionDecryptZapEvent": "Decrypt private zaps",
+  "alwaysAllowThisPermission": "Always approve this permission",
   "permissionSignEventKind": "Sign event (kind {kind})",
   "@permissionSignEventKind": {
     "placeholders": {

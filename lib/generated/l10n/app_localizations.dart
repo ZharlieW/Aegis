@@ -1468,6 +1468,36 @@ abstract class AppLocalizations {
   /// **'This application will have full access to your Nostr account, including:'**
   String get fullAccessHint;
 
+  /// No description provided for @authTrustFully.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully trust this app'**
+  String get authTrustFully;
+
+  /// No description provided for @authTrustFullyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'All future requests will be approved automatically'**
+  String get authTrustFullyHint;
+
+  /// No description provided for @authManualEach.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve each request manually'**
+  String get authManualEach;
+
+  /// No description provided for @authManualEachHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be asked to approve every new action'**
+  String get authManualEachHint;
+
+  /// No description provided for @approveActionRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is requesting an action. Allow?'**
+  String get approveActionRequest;
+
   /// No description provided for @permissionAccessPubkey.
   ///
   /// In en, this message translates to:
@@ -1515,6 +1545,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Decrypt private zaps'**
   String get permissionDecryptZapEvent;
+
+  /// No description provided for @alwaysAllowThisPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Always approve this permission'**
+  String get alwaysAllowThisPermission;
 
   /// No description provided for @permissionSignEventKind.
   ///

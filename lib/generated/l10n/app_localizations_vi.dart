@@ -694,6 +694,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String get fullAccessHint => 'Ứng dụng này sẽ có quyền truy cập đầy đủ tài khoản Nostr của bạn, bao gồm:';
 
   @override
+  String get authTrustFully => 'Fully trust this app';
+
+  @override
+  String get authTrustFullyHint => 'All future requests will be approved automatically';
+
+  @override
+  String get authManualEach => 'Approve each request manually';
+
+  @override
+  String get authManualEachHint => 'You will be asked to approve every new action';
+
+  @override
+  String get approveActionRequest => 'This app is requesting an action. Allow?';
+
+  @override
   String get permissionAccessPubkey => 'Truy cập khóa công khai Nostr';
 
   @override
@@ -716,6 +731,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get permissionDecryptZapEvent => 'Decrypt private zaps';
+
+  @override
+  String get alwaysAllowThisPermission => 'Always approve this permission';
 
   @override
   String permissionSignEventKind(String kind) {

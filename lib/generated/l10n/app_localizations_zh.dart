@@ -694,6 +694,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fullAccessHint => '此应用将拥有您 Nostr 账号的完整访问权限，包括：';
 
   @override
+  String get authTrustFully => '完全信任该应用';
+
+  @override
+  String get authTrustFullyHint => '之后该应用的所有请求将自动通过';
+
+  @override
+  String get authManualEach => '每一项都需要手动批复';
+
+  @override
+  String get authManualEachHint => '每次新类型的操作都会弹窗请您确认';
+
+  @override
+  String get approveActionRequest => '此应用正在请求执行操作，是否允许？';
+
+  @override
   String get permissionAccessPubkey => '读取公钥';
 
   @override
@@ -716,6 +731,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permissionDecryptZapEvent => '解密私密打闪';
+
+  @override
+  String get alwaysAllowThisPermission => '总是批准这类请求';
 
   @override
   String permissionSignEventKind(String kind) {
