@@ -5,10 +5,11 @@ import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
+import 'package:aegis/utils/account_manager.dart';
 
 /// Page that shows only the permissions this app declared at connect (URI perms).
 /// If [ClientAuthDBISAR.allowedMethods] is empty, shows a short message instead of listing all possible capabilities.
-class ApplicationPermissionsPage extends StatelessWidget {
+class ApplicationPermissionsPage extends StatefulWidget {
   final ClientAuthDBISAR clientAuthDBISAR;
 
   const ApplicationPermissionsPage({
@@ -17,9 +18,16 @@ class ApplicationPermissionsPage extends StatelessWidget {
   });
 
   @override
+  State<ApplicationPermissionsPage> createState() => _ApplicationPermissionsPageState();
+}
+
+class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage> {
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final app = widget.clientAuthDBISAR;
+    final isManualEach = app.authMode == 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -43,8 +51,8 @@ class ApplicationPermissionsPage extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               AppIconLoader.buildIcon(
-                imageUrl: clientAuthDBISAR.image,
-                appName: clientAuthDBISAR.name ?? '?',
+                imageUrl: app.image,
+                appName: app.name ?? '?',
                 size: 56,
                 fallback: CommonImage(
                   iconName: 'default_app_icon.png',
@@ -55,14 +63,35 @@ class ApplicationPermissionsPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                clientAuthDBISAR.name ?? '--',
+                app.name ?? '--',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              const SizedBox(height: 20),
+              SwitchListTile(
+                value: isManualEach,
+                onChanged: (v) async {
+                  final updated = widget.clientAuthDBISAR;
+                  updated.authMode = v ? 1 : 2;
+                  await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
+                  AccountManager.sharedInstance.updateApplicationMap(updated);
+                  if (mounted) setState(() {});
+                },
+                title: Text(
+                  isManualEach ? l10n.authManualEach : l10n.authTrustFully,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                subtitle: Text(
+                  isManualEach ? l10n.authManualEachHint : l10n.authTrustFullyHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               Text(
-                _effectiveMethods(clientAuthDBISAR).isEmpty
+                _effectiveMethods(app).isEmpty
                     ? l10n.permissionsPageNoDeclaredPerms
                     : l10n.permissionsPageDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -71,7 +100,7 @@ class ApplicationPermissionsPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 28),
-              ..._effectiveMethods(clientAuthDBISAR).map(
+              ..._effectiveMethods(app).map(
                 (method) => _PermissionItem(
                   icon: _iconForMethod(method),
                   title: _titleForMethod(l10n, method),

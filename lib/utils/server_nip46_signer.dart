@@ -506,17 +506,9 @@ class ServerNIP46Signer {
           break;
         }
 
-        // Check authorization and get trust mode (fully trust vs approve each)
-        final authResult = await Account.authToClient(isInitialConnect: true);
-        if (authResult == null || !authResult.granted) {
-          responseJson = {
-            "id": remoteRequest.id,
-            "result": "",
-            "error": "unauthorized",
-          };
-          break;
-        }
-        final authMode = authResult.fullTrust ? 2 : 1;
+        // Default to full trust: no initial connect authorization popup.
+        // Users can still enable manual approvals from the permissions page.
+        final authMode = 2;
 
         // Find unused application by remote signer pubkey (from event p tag)
         // The remote signer pubkey should be in the event's p tag

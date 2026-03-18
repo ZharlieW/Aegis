@@ -153,12 +153,9 @@ class UrlSchemeHandler {
 
     final hasClient = accountManagerInstance.applicationMap[clientPubkey]?.value;
     if (hasClient == null) {
-      final authResult = await Account.authToClient(isInitialConnect: true);
-      if (authResult == null || !authResult.granted) {
-        openError(errorCallback, _errCancel, 'User cancelled authorization');
-        return;
-      }
-      result.authMode = authResult.fullTrust ? 2 : 1;
+      // Default to full trust: no initial connect authorization popup.
+      // Users can still enable manual approvals from the permissions page.
+      result.authMode = 2;
     }
 
     accountManagerInstance.addApplicationMap(result);

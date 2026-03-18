@@ -163,15 +163,11 @@ class IntentHandler {
       
       if (packageName != null && !await _isApplicationAuthorized(packageName)) {
         AegisLogger.info('📱 First time authorization required for package: $packageName');
-        
-        // Show authorization dialog using the same component as NIP46
-        final authResult = await Account.authToClient(isInitialConnect: true);
-        if (authResult == null || !authResult.granted) {
-          AegisLogger.info('📱 User rejected authorization for package: $packageName');
-          await _sendAuthorizationRejectedResult(packageName, extras['id'] as String?);
-          return;
-        }
-        final authMode = authResult.fullTrust ? 2 : 1;
+
+        // Default to full trust: no initial connect authorization popup.
+        // Users can still enable manual approvals from the permissions page.
+        final authMode = 2;
+
         // Add to authorized applications using AccountManager (same as NIP46)
         await _addAuthorizedApplication(packageName, appName, authMode: authMode);
         AegisLogger.info('📱 Authorization granted for package: $packageName');
@@ -348,23 +344,6 @@ class IntentHandler {
     }
   }
   
-  
-  /// Send authorization rejected result to Android
-  static Future<void> _sendAuthorizationRejectedResult(String packageName, String? requestId) async {
-    try {
-      final resultData = {
-        'error': 'User rejected authorization',
-        'package': packageName,
-        'id': requestId,
-      };
-      
-      AegisLogger.info('📱 Sending authorization rejected result to Android');
-      
-      await _channel.invokeMethod('setSignResult', resultData);
-    } catch (e) {
-      AegisLogger.error('❌ Error sending authorization rejected result: $e');
-    }
-  }
   
   /// Send signing result back to Android (following NIP-55 protocol)
   static Future<void> _sendSignResultToAndroid(String signature, String eventId, String signedEvent) async {
