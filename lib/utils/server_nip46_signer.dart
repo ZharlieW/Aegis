@@ -25,6 +25,7 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/application/bunker_application_name_page.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
+import 'package:aegis/utils/permission_approval_batcher.dart';
 
 class ClientRequest {
   final String method;
@@ -379,35 +380,28 @@ class ServerNIP46Signer {
     }
   }
 
-  /// For manual authMode (1), prompts user; for full trust (2), returns true. Returns false if denied or no app.
-  /// [description] is an optional human-readable explanation of the current action.
-  /// When user chooses "always allow this permission", we remember [description] in allowedMethods
-  /// and future requests with the same [description] will be auto-approved without a dialog.
-  Future<bool> _requireApprovalForApp(String clientPubkey, {String? description}) async {
+  /// For manual authMode (1), shows a batch dialog; for full trust (2), returns true.
+  /// Returns false if denied or no app.
+  ///
+  /// [methodKey] is a stable key stored into [ClientAuthDBISAR.allowedMethods]
+  /// (e.g. `sign_event:0`, `nip04_encrypt`).
+  /// [description] is used only for UI text.
+  Future<bool> _requireApprovalForApp(
+    String clientPubkey, {
+    required String methodKey,
+    String? description,
+  }) async {
     final app = Account.sharedInstance.authToNostrConnectInfo[clientPubkey] ??
         AccountManager.sharedInstance.applicationMap[clientPubkey]?.value;
     if (app == null) return false;
     if (app.authMode == 2) return true; // full trust
-    if (description != null && app.allowedMethods.contains(description)) {
-      return true;
-    }
-    final result = await Account.authToClient(
-      isInitialConnect: false,
-      permissionDescription: description,
-    );
-    if (result == null || !result.granted) return false;
+    if (app.allowedMethods.contains(methodKey)) return true;
 
-    if (description != null && result.rememberedMethodKey == description) {
-      // Persist this description as auto-approved for this app
-      app.allowedMethods = (app.allowedMethods..add(description));
-      try {
-        await ClientAuthDBISAR.saveFromDB(app, isUpdate: true);
-        AccountManager.sharedInstance.updateApplicationMap(app);
-      } catch (e) {
-        AegisLogger.warning('Failed to save always-allow permission for $description', e);
-      }
-    }
-    return true;
+    return PermissionApprovalBatcher.instance.requestApproval(
+      clientPubkey: clientPubkey,
+      methodKey: methodKey,
+      description: description ?? methodKey,
+    );
   }
 
   /// Record signed event with application info
@@ -625,14 +619,47 @@ class ServerNIP46Signer {
         break;
 
       case "sign_event":
-        // Describe this request as signing a Nostr event
+        // Describe this request as signing a Nostr event.
+        // Extract kind from event JSON to build a stable methodKey like `sign_event:<kind>`.
         String? signDescription;
+        int? eventKind;
+        final contentStrForKind = remoteRequest.params.isNotEmpty
+            ? remoteRequest.params[0]
+            : null;
+
+        try {
+          if (contentStrForKind is String) {
+            final decoded = jsonDecode(contentStrForKind);
+            if (decoded is Map) {
+              final kindVal = decoded['kind'];
+              if (kindVal is int) {
+                eventKind = kindVal;
+              } else if (kindVal is num) {
+                eventKind = kindVal.toInt();
+              }
+            }
+          }
+        } catch (_) {}
+
         try {
           final ctx = AegisNavigator.navigatorKey.currentContext;
           final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
-          signDescription = l10n?.permissionSignEvents;
+          if (eventKind != null) {
+            signDescription = l10n?.permissionSignEventKind(eventKind.toString());
+          } else {
+            signDescription = l10n?.permissionSignEvents;
+          }
         } catch (_) {}
-        if (!await _requireApprovalForApp(event.pubkey, description: signDescription)) {
+
+        final methodKey = eventKind != null
+            ? 'sign_event:${eventKind.toString()}'
+            : 'sign_event';
+
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: methodKey,
+          description: signDescription,
+        )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
           break;
         }
@@ -693,7 +720,11 @@ class ServerNIP46Signer {
           final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
           descNip04Enc = l10n?.permissionNip04Encrypt;
         } catch (_) {}
-        if (!await _requireApprovalForApp(event.pubkey, description: descNip04Enc)) {
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: 'nip04_encrypt',
+          description: descNip04Enc,
+        )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
           break;
         }
@@ -725,7 +756,11 @@ class ServerNIP46Signer {
           final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
           descNip04Dec = l10n?.permissionNip04Decrypt;
         } catch (_) {}
-        if (!await _requireApprovalForApp(event.pubkey, description: descNip04Dec)) {
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: 'nip04_decrypt',
+          description: descNip04Dec,
+        )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
           break;
         }
@@ -757,7 +792,11 @@ class ServerNIP46Signer {
           final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
           descNip44Dec = l10n?.permissionNip44Decrypt;
         } catch (_) {}
-        if (!await _requireApprovalForApp(event.pubkey, description: descNip44Dec)) {
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: 'nip44_decrypt',
+          description: descNip44Dec,
+        )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
           break;
         }
@@ -792,7 +831,11 @@ class ServerNIP46Signer {
           final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
           descNip44Enc = l10n?.permissionNip44Encrypt;
         } catch (_) {}
-        if (!await _requireApprovalForApp(event.pubkey, description: descNip44Enc)) {
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: 'nip44_encrypt',
+          description: descNip44Enc,
+        )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
           break;
         }
