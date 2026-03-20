@@ -736,6 +736,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get alwaysAllowThisPermission => '总是批准这类请求';
 
   @override
+  String batchPermissionRequestsCount(int count) {
+    return '需要授权 $count 个请求';
+  }
+
+  @override
   String permissionSignEventKind(String kind) {
     return '签名事件（kind $kind）';
   }

@@ -42,19 +42,21 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (!widget.allowDismiss) {
+    return PopScope(
+      canPop: widget.allowDismiss,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (!didPop && !widget.allowDismiss) {
           await widget.onRejectAll();
+          if (!mounted) return;
           AegisNavigator.pop(context);
         }
-        return widget.allowDismiss;
       },
       child: Scaffold(
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () async {
               await widget.onRejectAll();
+              if (!mounted) return;
               AegisNavigator.pop(context);
             },
             child: Center(
@@ -91,7 +93,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                         return Column(
                           children: [
                             Text(
-                              '需要授权 $totalRequests 个请求',
+                              l10n.batchPermissionRequestsCount(totalRequests),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
@@ -124,6 +126,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                     FilledButton.tonal(
                       onPressed: () async {
                         await widget.onApproveSelected();
+                        if (!mounted) return;
                         AegisNavigator.pop(context);
                       },
                       style: FilledButton.styleFrom(
@@ -146,6 +149,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                     FilledButton.tonal(
                       onPressed: () async {
                         await widget.onRejectAll();
+                        if (!mounted) return;
                         AegisNavigator.pop(context);
                       },
                       style: FilledButton.styleFrom(

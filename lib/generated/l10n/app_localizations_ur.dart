@@ -736,6 +736,11 @@ class AppLocalizationsUr extends AppLocalizations {
   String get alwaysAllowThisPermission => 'Always approve this permission';
 
   @override
+  String batchPermissionRequestsCount(int count) {
+    return '$count requests require approval';
+  }
+
+  @override
   String permissionSignEventKind(String kind) {
     return 'Sign event (kind $kind)';
   }

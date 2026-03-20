@@ -303,6 +303,12 @@
   "permissionNip44Decrypt": "Decrypt data using NIP-44",
   "permissionDecryptZapEvent": "Decrypt private zaps",
   "alwaysAllowThisPermission": "Always approve this permission",
+  "batchPermissionRequestsCount": "{count} requests require approval",
+  "@batchPermissionRequestsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "permissionSignEventKind": "Sign event (kind {kind})",
   "@permissionSignEventKind": {
     "placeholders": {

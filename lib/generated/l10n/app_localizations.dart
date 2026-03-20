@@ -1552,6 +1552,12 @@ abstract class AppLocalizations {
   /// **'Always approve this permission'**
   String get alwaysAllowThisPermission;
 
+  /// No description provided for @batchPermissionRequestsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} requests require approval'**
+  String batchPermissionRequestsCount(int count);
+
   /// No description provided for @permissionSignEventKind.
   ///
   /// In en, this message translates to:

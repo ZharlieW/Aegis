@@ -303,6 +303,12 @@
   "permissionNip44Decrypt": "使用 NIP-44 解密数据",
   "permissionDecryptZapEvent": "解密私密打闪",
   "alwaysAllowThisPermission": "总是批准这类请求",
+  "batchPermissionRequestsCount": "需要授权 {count} 个请求",
+  "@batchPermissionRequestsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "permissionSignEventKind": "签名事件（kind {kind}）",
   "@permissionSignEventKind": {
     "placeholders": {

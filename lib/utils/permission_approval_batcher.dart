@@ -27,6 +27,7 @@ class _PendingPermissionGroup {
 
 class _ClientQueueState {
   final String clientPubkey;
+  final void Function(String clientPubkey) onQueueBecameIdle;
 
   final ValueNotifier<List<BatchPermissionGroupView>> groupsNotifier =
       ValueNotifier<List<BatchPermissionGroupView>>(<BatchPermissionGroupView>[]);
@@ -37,7 +38,9 @@ class _ClientQueueState {
   Timer? _scheduledTimer;
   int _dialogVersion = 0;
 
-  _ClientQueueState(this.clientPubkey);
+  _ClientQueueState(this.clientPubkey, {required this.onQueueBecameIdle});
+
+  bool get _isIdle => !_dialogShowing && _scheduledTimer == null && _groups.isEmpty;
 
   List<BatchPermissionGroupView> _buildViews() {
     return _groups.values
@@ -53,6 +56,12 @@ class _ClientQueueState {
 
   void _notify() {
     groupsNotifier.value = _buildViews();
+  }
+
+  void dispose() {
+    _scheduledTimer?.cancel();
+    _scheduledTimer = null;
+    groupsNotifier.dispose();
   }
 
   void setGroupSelected(String methodKey, bool selected) {
@@ -120,6 +129,7 @@ class _ClientQueueState {
     // Clear internal state and notify UI.
     _groups.clear();
     _notify();
+    _tryCleanupQueue();
   }
 
   Future<bool> enqueueApproval({
@@ -147,7 +157,11 @@ class _ClientQueueState {
       _scheduledTimer?.cancel();
       _scheduledTimer = Timer(const Duration(milliseconds: 200), () async {
         // Double-check queue wasn't cleared while waiting.
-        if (_groups.isEmpty) return;
+        if (_groups.isEmpty) {
+          _scheduledTimer = null;
+          _tryCleanupQueue();
+          return;
+        }
         await _showDialog();
       });
     }
@@ -198,10 +212,21 @@ class _ClientQueueState {
           _scheduledTimer = Timer(const Duration(milliseconds: 50), () async {
             if (_groups.isNotEmpty) {
               await _showDialog();
+            } else {
+              _scheduledTimer = null;
+              _tryCleanupQueue();
             }
           });
+        } else {
+          _tryCleanupQueue();
         }
       }
+    }
+  }
+
+  void _tryCleanupQueue() {
+    if (_isIdle) {
+      onQueueBecameIdle(clientPubkey);
     }
   }
 }
@@ -215,10 +240,18 @@ class PermissionApprovalBatcher {
 
   final Map<String, _ClientQueueState> _queues = {};
 
+  void _onQueueBecameIdle(String clientPubkey) {
+    final queue = _queues.remove(clientPubkey);
+    queue?.dispose();
+  }
+
   _ClientQueueState _getQueue(String clientPubkey) {
     return _queues.putIfAbsent(
       clientPubkey,
-      () => _ClientQueueState(clientPubkey),
+      () => _ClientQueueState(
+        clientPubkey,
+        onQueueBecameIdle: _onQueueBecameIdle,
+      ),
     );
   }
 
