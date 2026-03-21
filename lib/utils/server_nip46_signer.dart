@@ -7,8 +7,6 @@ import 'package:aegis/utils/thread_pool_manager.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:aegis/navigator/navigator.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/nostr/nostr.dart' show Event, Filter;
@@ -22,7 +20,6 @@ import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/android_service_manager.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
-import 'package:aegis/pages/application/bunker_application_name_page.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
@@ -45,7 +42,7 @@ class ServerNIP46Signer {
   ServerNIP46Signer._internal();
 
   /// Ordered list of NIP-46 capabilities for UI (e.g. permissions page). Matches Amber-style
-  /// basicPermissions: get_public_key, nip04/nip44 encrypt/decrypt, decrypt_zap_event, sign_event by kind.
+  /// basicPermissions: get_public_key, nip04/nip44 encrypt/decrypt, sign_event by kind.
   /// Use "method" or "method:kind" (e.g. sign_event:0). Keep in sync with [handleClientRequest].
   static const List<String> supportedNip46Methods = [
     'get_public_key',
@@ -53,7 +50,6 @@ class ServerNIP46Signer {
     'nip04_decrypt',
     'nip44_decrypt',
     'nip44_encrypt',
-    'decrypt_zap_event',
     'sign_event:0',
     'sign_event:1',
     'sign_event:3',
@@ -1157,59 +1153,4 @@ class ServerNIP46Signer {
     AegisLogger.info('✅ ServerNIP46Signer disposed');
   }
 
-  /// Show dialog when new connection request arrives but no unused application is available
-  void _showNewConnectionRequestDialog() {
-    // Use addPostFrameCallback to ensure this runs on the UI thread after the current frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final context = AegisNavigator.navigatorKey.currentContext;
-      if (context == null) {
-        return;
-      }
-
-      try {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext dialogContext) {
-            final l10n = AppLocalizations.of(dialogContext)!;
-            return AlertDialog(
-              title: Text(l10n.newConnectionRequest),
-              content: Text(l10n.newConnectionNoSlotHint),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => AegisNavigator.pop(dialogContext),
-                  child: Text(l10n.cancel),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    AegisNavigator.pop(dialogContext);
-                    AegisNavigator.pushPage(
-                      context,
-                      (context) => const BunkerApplicationNamePage(),
-                    );
-                  },
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(
-                      Theme.of(dialogContext).colorScheme.primary,
-                    ),
-                  ),
-                  child: Text(
-                    l10n.createApplication,
-                    style: TextStyle(
-                      color: Theme.of(dialogContext).colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      } catch (e) {
-        AegisLogger.error('Failed to show dialog', e);
-      }
-    });
-  }
 }

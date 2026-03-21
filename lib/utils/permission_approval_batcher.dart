@@ -78,15 +78,24 @@ class _ClientQueueState {
     _notify();
   }
 
-  Future<void> _persistAlwaysAllowIfNeeded(ClientAuthDBISAR app) async {
-    // Persist always-allow method keys for this app.
-    // Only persist for groups that are currently selected.
+  List<String> _collectAlwaysAllowKeys(
+    Iterable<_PendingPermissionGroup> groups,
+  ) {
     final toPersist = <String>[];
-    for (final g in _groups.values) {
+    for (final g in groups) {
       if (g.selected && g.alwaysAllow) {
         toPersist.add(g.methodKey);
       }
     }
+    return toPersist;
+  }
+
+  Future<void> _persistAlwaysAllowIfNeeded(
+    ClientAuthDBISAR app,
+    List<String> toPersist,
+  ) async {
+    // Persist always-allow method keys for this app.
+    // Only persist for groups selected in this confirmed batch.
 
     if (toPersist.isEmpty) return;
 
@@ -108,8 +117,13 @@ class _ClientQueueState {
         AccountManager.sharedInstance.applicationMap[clientPubkey]?.value;
     final hasApp = app != null;
 
-    // Complete completers first to unblock server request handling promptly.
+    // Snapshot and detach current batch first so new incoming requests are not
+    // accidentally completed/cleared by this cycle.
     final groupsSnapshot = _groups.values.toList();
+    _groups.clear();
+    _notify();
+
+    // Complete completers first to unblock server request handling promptly.
     for (final g in groupsSnapshot) {
       final grant = approveSelected ? g.selected : false;
       for (final c in g.completers) {
@@ -120,15 +134,12 @@ class _ClientQueueState {
     // Persist "always allow" after user confirms.
     if (approveSelected && hasApp) {
       try {
-        await _persistAlwaysAllowIfNeeded(app);
+        final toPersist = _collectAlwaysAllowKeys(groupsSnapshot);
+        await _persistAlwaysAllowIfNeeded(app, toPersist);
       } catch (e) {
         AegisLogger.warning('Failed to persist always-allow batch permission', e);
       }
     }
-
-    // Clear internal state and notify UI.
-    _groups.clear();
-    _notify();
     _tryCleanupQueue();
   }
 
