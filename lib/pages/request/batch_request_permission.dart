@@ -123,27 +123,41 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                         );
                       },
                     ),
-                    FilledButton.tonal(
-                      onPressed: () async {
-                        await widget.onApproveSelected();
-                        if (!mounted) return;
-                        AegisNavigator.pop(context);
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.symmetric(vertical: 16),
-                        alignment: Alignment.center,
-                        child: Text(
-                          l10n.grantPermissions,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
+                    // Disable grant when no permission group is selected (checkbox unchecked).
+                    ValueListenableBuilder<List<BatchPermissionGroupView>>(
+                      valueListenable: widget.groupsNotifier,
+                      builder: (context, groups, _) {
+                        final hasGrantSelection =
+                            groups.any((g) => g.selected);
+                        return FilledButton.tonal(
+                          onPressed: !hasGrantSelection
+                              ? null
+                              : () async {
+                                  await widget.onApproveSelected();
+                                  if (!mounted) return;
+                                  AegisNavigator.pop(context);
+                                },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            disabledBackgroundColor:
+                                theme.colorScheme.surfaceContainerHighest,
                           ),
-                        ),
-                      ),
+                          child: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(vertical: 16),
+                            alignment: Alignment.center,
+                            child: Text(
+                              l10n.grantPermissions,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: hasGrantSelection
+                                    ? Colors.white
+                                    : theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
                     FilledButton.tonal(
