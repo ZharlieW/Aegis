@@ -37,6 +37,13 @@ class BatchRequestPermission extends StatefulWidget {
 }
 
 class _BatchRequestPermissionState extends State<BatchRequestPermission> {
+  void _setAllSelected(bool selected) {
+    final groups = widget.groupsNotifier.value;
+    for (final group in groups) {
+      widget.onSetSelected(group.methodKey, selected);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -113,6 +120,22 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                         }
                         return Column(
                           children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () => _setAllSelected(true),
+                                  icon: const Icon(Icons.select_all, size: 18),
+                                  label: const Text('All'),
+                                ),
+                                const SizedBox(width: 8),
+                                TextButton.icon(
+                                  onPressed: () => _setAllSelected(false),
+                                  icon: const Icon(Icons.deselect, size: 18),
+                                  label: const Text('None'),
+                                ),
+                              ],
+                            ),
                             ...groups.map((g) => _PermissionTypeRow(
                                   group: g,
                                   onSetSelected: widget.onSetSelected,
@@ -127,8 +150,12 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                     ValueListenableBuilder<List<BatchPermissionGroupView>>(
                       valueListenable: widget.groupsNotifier,
                       builder: (context, groups, _) {
-                        final hasGrantSelection =
-                            groups.any((g) => g.selected);
+                        final selectedGroups =
+                            groups.where((g) => g.selected).length;
+                        final selectedRequests = groups
+                            .where((g) => g.selected)
+                            .fold<int>(0, (sum, g) => sum + g.count);
+                        final hasGrantSelection = selectedGroups > 0;
                         return FilledButton.tonal(
                           onPressed: !hasGrantSelection
                               ? null
@@ -147,7 +174,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                             margin: const EdgeInsets.symmetric(vertical: 16),
                             alignment: Alignment.center,
                             child: Text(
-                              l10n.grantPermissions,
+                              '${l10n.grantPermissions} ($selectedGroups/$selectedRequests)',
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: hasGrantSelection
