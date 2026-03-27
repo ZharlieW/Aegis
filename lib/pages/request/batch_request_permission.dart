@@ -93,14 +93,14 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                     ValueListenableBuilder<List<BatchPermissionGroupView>>(
                       valueListenable: widget.groupsNotifier,
                       builder: (context, groups, _) {
-                        final totalRequests = groups.fold<int>(
-                          0,
-                          (sum, g) => sum + g.count,
-                        );
+                        final stats =
+                            BatchPermissionSelectionStats.fromGroups(groups);
                         return Column(
                           children: [
                             Text(
-                              l10n.batchPermissionRequestsCount(totalRequests),
+                              l10n.batchPermissionRequestsCount(
+                                stats.totalRequests,
+                              ),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
@@ -150,14 +150,10 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                     ValueListenableBuilder<List<BatchPermissionGroupView>>(
                       valueListenable: widget.groupsNotifier,
                       builder: (context, groups, _) {
-                        final selectedGroups =
-                            groups.where((g) => g.selected).length;
-                        final selectedRequests = groups
-                            .where((g) => g.selected)
-                            .fold<int>(0, (sum, g) => sum + g.count);
-                        final hasGrantSelection = selectedGroups > 0;
+                        final stats =
+                            BatchPermissionSelectionStats.fromGroups(groups);
                         return FilledButton.tonal(
-                          onPressed: !hasGrantSelection
+                          onPressed: !stats.hasSelection
                               ? null
                               : () async {
                                   await widget.onApproveSelected();
@@ -174,10 +170,10 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                             margin: const EdgeInsets.symmetric(vertical: 16),
                             alignment: Alignment.center,
                             child: Text(
-                              '${l10n.grantPermissions} ($selectedGroups/$selectedRequests)',
+                              '${l10n.grantPermissions} (${stats.selectedGroups}/${stats.selectedRequests})',
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.w500,
-                                color: hasGrantSelection
+                                color: stats.hasSelection
                                     ? Colors.white
                                     : theme.colorScheme.onSurfaceVariant,
                               ),
