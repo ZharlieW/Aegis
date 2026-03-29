@@ -78,6 +78,16 @@ class _ClientQueueState {
     _notify();
   }
 
+  /// Sets [selected] for every pending group in this batch. Does not change
+  /// [alwaysAllow] (same semantics as calling [setGroupSelected] per key).
+  void setAllGroupsSelected(bool selected) {
+    if (_groups.isEmpty) return;
+    for (final g in _groups.values) {
+      g.selected = selected;
+    }
+    _notify();
+  }
+
   List<String> _collectAlwaysAllowKeys(
     Iterable<_PendingPermissionGroup> groups,
   ) {
@@ -198,6 +208,7 @@ class _ClientQueueState {
           onSetSelected: (methodKey, selected) {
             setGroupSelected(methodKey, selected);
           },
+          onSetAllSelected: setAllGroupsSelected,
           onSetAlwaysAllow: (methodKey, alwaysAllow) {
             setGroupAlwaysAllow(methodKey, alwaysAllow);
           },
@@ -291,6 +302,13 @@ class PermissionApprovalBatcher {
       methodKey: methodKey,
       description: description,
     );
+  }
+
+  /// Batch select/deselect every pending permission group for [clientPubkey].
+  /// Does not change per-group [alwaysAllow] flags (same as repeated
+  /// per-[methodKey] selection updates). No-op if there is no active queue.
+  void setAllGroupsSelected(String clientPubkey, bool selected) {
+    _queues[clientPubkey]?.setAllGroupsSelected(selected);
   }
 }
 

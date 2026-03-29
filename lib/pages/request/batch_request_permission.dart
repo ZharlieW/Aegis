@@ -13,6 +13,11 @@ class BatchRequestPermission extends StatefulWidget {
 
   /// Called by the dialog to update group selection state.
   final void Function(String methodKey, bool selected) onSetSelected;
+
+  /// Batch select/deselect all groups; must not alter [alwaysAllow] (same as
+  /// repeated [onSetSelected] per [methodKey]).
+  final void Function(bool selected) onSetAllSelected;
+
   final void Function(String methodKey, bool alwaysAllow) onSetAlwaysAllow;
 
   /// Called when user presses "Grant selected".
@@ -27,6 +32,7 @@ class BatchRequestPermission extends StatefulWidget {
     required this.groupsNotifier,
     this.allowDismiss = false,
     required this.onSetSelected,
+    required this.onSetAllSelected,
     required this.onSetAlwaysAllow,
     required this.onApproveSelected,
     required this.onRejectAll,
@@ -37,13 +43,6 @@ class BatchRequestPermission extends StatefulWidget {
 }
 
 class _BatchRequestPermissionState extends State<BatchRequestPermission> {
-  void _setAllSelected(bool selected) {
-    final groups = widget.groupsNotifier.value;
-    for (final group in groups) {
-      widget.onSetSelected(group.methodKey, selected);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -124,13 +123,15 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 TextButton.icon(
-                                  onPressed: () => _setAllSelected(true),
+                                  onPressed: () =>
+                                      widget.onSetAllSelected(true),
                                   icon: const Icon(Icons.select_all, size: 18),
                                   label: const Text('All'),
                                 ),
                                 const SizedBox(width: 8),
                                 TextButton.icon(
-                                  onPressed: () => _setAllSelected(false),
+                                  onPressed: () =>
+                                      widget.onSetAllSelected(false),
                                   icon: const Icon(Icons.deselect, size: 18),
                                   label: const Text('None'),
                                 ),
