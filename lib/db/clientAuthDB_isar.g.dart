@@ -47,48 +47,53 @@ const ClientAuthDBISARSchema = CollectionSchema(
       name: r'image',
       type: IsarType.string,
     ),
-    r'name': PropertySchema(
+    r'methodUsageStatsJson': PropertySchema(
       id: 6,
+      name: r'methodUsageStatsJson',
+      type: IsarType.string,
+    ),
+    r'name': PropertySchema(
+      id: 7,
       name: r'name',
       type: IsarType.string,
     ),
     r'pubkey': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'pubkey',
       type: IsarType.string,
     ),
     r'relay': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'relay',
       type: IsarType.string,
     ),
     r'remoteSignerPrivateKey': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'remoteSignerPrivateKey',
       type: IsarType.string,
     ),
     r'remoteSignerPubkey': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'remoteSignerPubkey',
       type: IsarType.string,
     ),
     r'scheme': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'scheme',
       type: IsarType.string,
     ),
     r'secret': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'secret',
       type: IsarType.string,
     ),
     r'server': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'server',
       type: IsarType.string,
     ),
     r'updateTimestamp': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'updateTimestamp',
       type: IsarType.long,
     )
@@ -127,6 +132,7 @@ int _clientAuthDBISAREstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.methodUsageStatsJson.length * 3;
   {
     final value = object.name;
     if (value != null) {
@@ -185,15 +191,16 @@ void _clientAuthDBISARSerialize(
   writer.writeLong(offsets[3], object.connectionType);
   writer.writeLong(offsets[4], object.createTimestamp);
   writer.writeString(offsets[5], object.image);
-  writer.writeString(offsets[6], object.name);
-  writer.writeString(offsets[7], object.pubkey);
-  writer.writeString(offsets[8], object.relay);
-  writer.writeString(offsets[9], object.remoteSignerPrivateKey);
-  writer.writeString(offsets[10], object.remoteSignerPubkey);
-  writer.writeString(offsets[11], object.scheme);
-  writer.writeString(offsets[12], object.secret);
-  writer.writeString(offsets[13], object.server);
-  writer.writeLong(offsets[14], object.updateTimestamp);
+  writer.writeString(offsets[6], object.methodUsageStatsJson);
+  writer.writeString(offsets[7], object.name);
+  writer.writeString(offsets[8], object.pubkey);
+  writer.writeString(offsets[9], object.relay);
+  writer.writeString(offsets[10], object.remoteSignerPrivateKey);
+  writer.writeString(offsets[11], object.remoteSignerPubkey);
+  writer.writeString(offsets[12], object.scheme);
+  writer.writeString(offsets[13], object.secret);
+  writer.writeString(offsets[14], object.server);
+  writer.writeLong(offsets[15], object.updateTimestamp);
 }
 
 ClientAuthDBISAR _clientAuthDBISARDeserialize(
@@ -208,15 +215,16 @@ ClientAuthDBISAR _clientAuthDBISARDeserialize(
     connectionType: reader.readLong(offsets[3]),
     createTimestamp: reader.readLongOrNull(offsets[4]),
     image: reader.readStringOrNull(offsets[5]),
-    name: reader.readStringOrNull(offsets[6]),
-    pubkey: reader.readString(offsets[7]),
-    relay: reader.readStringOrNull(offsets[8]),
-    remoteSignerPrivateKey: reader.readStringOrNull(offsets[9]),
-    remoteSignerPubkey: reader.readStringOrNull(offsets[10]),
-    scheme: reader.readStringOrNull(offsets[11]),
-    secret: reader.readStringOrNull(offsets[12]),
-    server: reader.readStringOrNull(offsets[13]),
-    updateTimestamp: reader.readLongOrNull(offsets[14]),
+    methodUsageStatsJson: reader.readStringOrNull(offsets[6]) ?? '{}',
+    name: reader.readStringOrNull(offsets[7]),
+    pubkey: reader.readString(offsets[8]),
+    relay: reader.readStringOrNull(offsets[9]),
+    remoteSignerPrivateKey: reader.readStringOrNull(offsets[10]),
+    remoteSignerPubkey: reader.readStringOrNull(offsets[11]),
+    scheme: reader.readStringOrNull(offsets[12]),
+    secret: reader.readStringOrNull(offsets[13]),
+    server: reader.readStringOrNull(offsets[14]),
+    updateTimestamp: reader.readLongOrNull(offsets[15]),
   );
   object.allowedMethods = reader.readStringList(offsets[0]) ?? [];
   object.id = id;
@@ -243,11 +251,11 @@ P _clientAuthDBISARDeserializeProp<P>(
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? '{}') as P;
     case 7:
-      return (reader.readString(offset)) as P;
-    case 8:
       return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
     case 9:
       return (reader.readStringOrNull(offset)) as P;
     case 10:
@@ -259,6 +267,8 @@ P _clientAuthDBISARDeserializeProp<P>(
     case 13:
       return (reader.readStringOrNull(offset)) as P;
     case 14:
+      return (reader.readStringOrNull(offset)) as P;
+    case 15:
       return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1112,6 +1122,142 @@ extension ClientAuthDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'image',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'methodUsageStatsJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'methodUsageStatsJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'methodUsageStatsJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'methodUsageStatsJson',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'methodUsageStatsJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'methodUsageStatsJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'methodUsageStatsJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'methodUsageStatsJson',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'methodUsageStatsJson',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterFilterCondition>
+      methodUsageStatsJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'methodUsageStatsJson',
         value: '',
       ));
     });
@@ -2485,6 +2631,20 @@ extension ClientAuthDBISARQuerySortBy
     });
   }
 
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByMethodUsageStatsJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodUsageStatsJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      sortByMethodUsageStatsJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodUsageStatsJson', Sort.desc);
+    });
+  }
+
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -2694,6 +2854,20 @@ extension ClientAuthDBISARQuerySortThenBy
     });
   }
 
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByMethodUsageStatsJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodUsageStatsJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy>
+      thenByMethodUsageStatsJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodUsageStatsJson', Sort.desc);
+    });
+  }
+
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -2863,6 +3037,14 @@ extension ClientAuthDBISARQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct>
+      distinctByMethodUsageStatsJson({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'methodUsageStatsJson',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ClientAuthDBISAR, ClientAuthDBISAR, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2974,6 +3156,13 @@ extension ClientAuthDBISARQueryProperty
   QueryBuilder<ClientAuthDBISAR, String?, QQueryOperations> imageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'image');
+    });
+  }
+
+  QueryBuilder<ClientAuthDBISAR, String, QQueryOperations>
+      methodUsageStatsJsonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'methodUsageStatsJson');
     });
   }
 

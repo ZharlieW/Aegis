@@ -537,6 +537,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get permissionsPageNoDeclaredPerms => '此应用在连接时未声明具体权限，将在使用时按需请求签名。';
 
   @override
+  String get permissionMethodUsageNever => '尚未使用';
+
+  @override
+  String permissionMethodUsageStats(Object time, int count) {
+    return '最近：$time · $count 次';
+  }
+
+  @override
   String get clientPubkey => '客户端公钥';
 
   @override

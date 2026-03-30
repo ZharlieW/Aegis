@@ -1174,6 +1174,18 @@ abstract class AppLocalizations {
   /// **'This app did not declare specific permissions when connecting; it will request signatures as needed when you use it.'**
   String get permissionsPageNoDeclaredPerms;
 
+  /// No description provided for @permissionMethodUsageNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never used'**
+  String get permissionMethodUsageNever;
+
+  /// No description provided for @permissionMethodUsageStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{time} · {count} times'**
+  String permissionMethodUsageStats(Object time, int count);
+
   /// No description provided for @clientPubkey.
   ///
   /// In en, this message translates to:

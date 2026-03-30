@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
@@ -6,6 +7,7 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/utils/account_manager.dart';
+import 'package:aegis/utils/method_usage_stats.dart';
 
 /// Page that shows only the permissions this app declared at connect (URI perms).
 /// If [ClientAuthDBISAR.allowedMethods] is empty, shows a short message instead of listing all possible capabilities.
@@ -22,11 +24,44 @@ class ApplicationPermissionsPage extends StatefulWidget {
 }
 
 class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage> {
+  ClientAuthDBISAR? _app;
+
+  @override
+  void initState() {
+    super.initState();
+    _app = widget.clientAuthDBISAR;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reloadFromDb());
+  }
+
+  Future<void> _reloadFromDb() async {
+    final w = widget.clientAuthDBISAR;
+    final fresh = await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
+    if (!mounted) return;
+    if (fresh != null) {
+      setState(() => _app = fresh);
+    }
+  }
+
+  String _usageLine(
+    AppLocalizations l10n,
+    MethodUsageEntry? entry,
+    String localeName,
+  ) {
+    if (entry == null || entry.count <= 0) {
+      return l10n.permissionMethodUsageNever;
+    }
+    final dt = DateTime.fromMillisecondsSinceEpoch(entry.lastUsedMs);
+    final timeStr = DateFormat.yMMMd(localeName).add_Hm().format(dt);
+    return l10n.permissionMethodUsageStats(timeStr, entry.count);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final app = widget.clientAuthDBISAR;
+    final app = _app ?? widget.clientAuthDBISAR;
+    final localeName = Localizations.localeOf(context).toString();
+    final usageStats = MethodUsageStats.parse(app.methodUsageStatsJson);
     final isManualEach = app.authMode == 1;
 
     return Scaffold(
@@ -76,7 +111,7 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                   updated.authMode = v ? 1 : 2;
                   await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
                   AccountManager.sharedInstance.updateApplicationMap(updated);
-                  if (mounted) setState(() {});
+                  await _reloadFromDb();
                 },
                 title: Text(
                   isManualEach ? l10n.authManualEach : l10n.authTrustFully,
@@ -104,6 +139,7 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                 (method) => _PermissionItem(
                   icon: _iconForMethod(method),
                   title: _titleForMethod(l10n, method),
+                  subtitle: _usageLine(l10n, usageStats[method], localeName),
                 ),
               ),
               const SizedBox(height: 40),
@@ -115,12 +151,13 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
   }
 
   /// Permissions to show: declared/used methods, always including get_public_key for connected apps
-  /// (clients always request get_public_key when connecting).
+  /// (clients always request get_public_key when connecting). Order: get_public_key → sign_event* → nip04* → nip44* → other.
   static List<String> _effectiveMethods(ClientAuthDBISAR app) {
     final list = List<String>.from(app.allowedMethods);
     if (!list.contains('get_public_key')) {
-      list.insert(0, 'get_public_key');
+      list.add('get_public_key');
     }
+    sortPermissionMethodsInPlace(list);
     return list;
   }
 
@@ -219,10 +256,12 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
 class _PermissionItem extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String subtitle;
 
   const _PermissionItem({
     required this.icon,
     required this.title,
+    required this.subtitle,
   });
 
   @override
@@ -242,6 +281,7 @@ class _PermissionItem extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             icon,
@@ -250,11 +290,23 @@ class _PermissionItem extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -215,6 +215,14 @@
   "viewPermissions": "View Permissions",
   "permissionsPageDescription": "This application can use the following capabilities with your Nostr account.",
   "permissionsPageNoDeclaredPerms": "This app did not declare specific permissions when connecting; it will request signatures as needed when you use it.",
+  "permissionMethodUsageNever": "Never used",
+  "permissionMethodUsageStats": "{time} · {count} times",
+  "@permissionMethodUsageStats": {
+    "placeholders": {
+      "time": {},
+      "count": {"type": "int"}
+    }
+  },
   "clientPubkey": "Client pubkey",
   "remove": "Remove",
   "removeAppConfirm": "Are you sure you want to remove all permissions from this application?",

@@ -537,6 +537,14 @@ class AppLocalizationsPl extends AppLocalizations {
   String get permissionsPageNoDeclaredPerms => 'This app did not declare specific permissions when connecting; it will request signatures as needed when you use it.';
 
   @override
+  String get permissionMethodUsageNever => 'Never used';
+
+  @override
+  String permissionMethodUsageStats(Object time, int count) {
+    return '$time · $count times';
+  }
+
+  @override
   String get clientPubkey => 'Klucz publiczny klienta';
 
   @override

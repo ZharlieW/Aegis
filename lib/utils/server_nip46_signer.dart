@@ -22,6 +22,7 @@ import 'package:aegis/utils/android_service_manager.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
+import 'package:aegis/utils/method_usage_stats.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
 
 class ClientRequest {
@@ -352,23 +353,35 @@ class ServerNIP46Signer {
     return name;
   }
 
-  /// When a method is successfully used, add it to the app's allowedMethods so the permissions page shows it.
+  /// Records per-method usage for the permissions page and adds new methods to [allowedMethods] when supported.
   Future<void> _addUsedMethodToApp(String clientPubkey, String method) async {
     if (method.isEmpty) return;
-    if (!ServerNIP46Signer.supportedNip46Methods.contains(method)) return;
     try {
       final account = Account.sharedInstance;
       final manager = AccountManager.sharedInstance;
-      ClientAuthDBISAR? app = account.authToNostrConnectInfo[clientPubkey] ??
+      final ClientAuthDBISAR? app = account.authToNostrConnectInfo[clientPubkey] ??
           manager.applicationMap[clientPubkey]?.value;
       if (app == null) return;
-      if (app.allowedMethods.contains(method)) return;
-      final updated = await ClientAuthDBISAR.searchFromDB(app.pubkey, app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey);
+
+      final updated = await ClientAuthDBISAR.searchFromDB(
+        app.pubkey,
+        app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey,
+      );
       if (updated == null) return;
-      if (updated.allowedMethods.contains(method)) return;
-      updated.allowedMethods = List<String>.from(updated.allowedMethods)..add(method);
-      updated.allowedMethods.sort((a, b) =>
-          ServerNIP46Signer.supportedNip46Methods.indexOf(a).compareTo(ServerNIP46Signer.supportedNip46Methods.indexOf(b)));
+
+      updated.methodUsageStatsJson =
+          MethodUsageStats.incrementJson(updated.methodUsageStatsJson, method);
+
+      if (ServerNIP46Signer.supportedNip46Methods.contains(method) &&
+          !updated.allowedMethods.contains(method)) {
+        updated.allowedMethods = List<String>.from(updated.allowedMethods)..add(method);
+        updated.allowedMethods.sort(
+          (a, b) => ServerNIP46Signer.supportedNip46Methods
+              .indexOf(a)
+              .compareTo(ServerNIP46Signer.supportedNip46Methods.indexOf(b)),
+        );
+      }
+
       await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
       AccountManager.sharedInstance.updateApplicationMap(updated);
     } catch (e) {

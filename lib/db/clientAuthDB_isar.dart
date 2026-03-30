@@ -78,6 +78,9 @@ class ClientAuthDBISAR {
   /// Auth mode: 1 = manual (approve each request), 2 = full trust (no further prompts).
   int authMode = 1;
 
+  /// JSON: NIP-46 methodKey -> { "lastUsedMs": int, "count": int } for permissions UI.
+  String methodUsageStatsJson = '{}';
+
   @ignore
   int? socketHashCode;
 
@@ -97,6 +100,7 @@ class ClientAuthDBISAR {
     this.updateTimestamp,
     List<String> allowedMethodsParam = const [],
     this.authMode = 1,
+    this.methodUsageStatsJson = '{}',
     required this.pubkey,
     required this.clientPubkey,
     required this.connectionType,
