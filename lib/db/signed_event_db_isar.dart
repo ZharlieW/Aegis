@@ -23,6 +23,10 @@ class SignedEventDBISAR {
   
   // Application pubkey
   late String? applicationPubkey;
+
+  /// Stable permission/method key (e.g. `get_public_key`, `nip04_encrypt`, `sign_event:0`).
+  /// Used for aggregations on the permissions page.
+  late String? methodKey;
   
   // User's pubkey who signed the event
   late String userPubkey;
@@ -42,11 +46,44 @@ class SignedEventDBISAR {
     required this.eventContent,
     this.applicationName,
     this.applicationPubkey,
+    this.methodKey,
     required this.userPubkey,
     required this.signedTimestamp,
     required this.status,
     this.metadata,
   });
+
+  /// Aggregation result for applicationPubkey + methodKey.
+  /// [lastUsedTimestamp] is milliseconds since epoch (same as [signedTimestamp]).
+  static Future<Map<String, Map<String, int>>> getUsageStatsByApplicationAndMethodKeys(
+    String userPubkey,
+    String applicationPubkey,
+    List<String> methodKeys,
+  ) async {
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    final keys = methodKeys.where((k) => k.isNotEmpty).toSet().toList()..sort();
+
+    final out = <String, Map<String, int>>{};
+    for (final key in keys) {
+      final base = isar.signedEventDBISARs
+          .filter()
+          .applicationPubkeyEqualTo(applicationPubkey)
+          .methodKeyEqualTo(key);
+
+      final filtered = _isDefaultUser(userPubkey)
+          ? base
+          : base.userPubkeyEqualTo(userPubkey);
+
+      final count = await filtered.count();
+      int lastUsed = 0;
+      if (count > 0) {
+        final latest = await filtered.sortBySignedTimestampDesc().findFirst();
+        lastUsed = latest?.signedTimestamp ?? 0;
+      }
+      out[key] = {'count': count, 'lastUsedTimestamp': lastUsed};
+    }
+    return out;
+  }
 
   static Future<SignedEventDBISAR?> searchFromDB(String userPubkey, String eventId) async {
     final isar = await DBISAR.sharedInstance.open(userPubkey);

@@ -47,18 +47,23 @@ const SignedEventDBISARSchema = CollectionSchema(
       name: r'metadata',
       type: IsarType.string,
     ),
-    r'signedTimestamp': PropertySchema(
+    r'methodKey': PropertySchema(
       id: 6,
+      name: r'methodKey',
+      type: IsarType.string,
+    ),
+    r'signedTimestamp': PropertySchema(
+      id: 7,
       name: r'signedTimestamp',
       type: IsarType.long,
     ),
     r'status': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'status',
       type: IsarType.long,
     ),
     r'userPubkey': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'userPubkey',
       type: IsarType.string,
     )
@@ -103,6 +108,12 @@ int _signedEventDBISAREstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.methodKey;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.userPubkey.length * 3;
   return bytesCount;
 }
@@ -119,9 +130,10 @@ void _signedEventDBISARSerialize(
   writer.writeString(offsets[3], object.eventId);
   writer.writeLong(offsets[4], object.eventKind);
   writer.writeString(offsets[5], object.metadata);
-  writer.writeLong(offsets[6], object.signedTimestamp);
-  writer.writeLong(offsets[7], object.status);
-  writer.writeString(offsets[8], object.userPubkey);
+  writer.writeString(offsets[6], object.methodKey);
+  writer.writeLong(offsets[7], object.signedTimestamp);
+  writer.writeLong(offsets[8], object.status);
+  writer.writeString(offsets[9], object.userPubkey);
 }
 
 SignedEventDBISAR _signedEventDBISARDeserialize(
@@ -137,9 +149,10 @@ SignedEventDBISAR _signedEventDBISARDeserialize(
     eventId: reader.readString(offsets[3]),
     eventKind: reader.readLong(offsets[4]),
     metadata: reader.readStringOrNull(offsets[5]),
-    signedTimestamp: reader.readLong(offsets[6]),
-    status: reader.readLong(offsets[7]),
-    userPubkey: reader.readString(offsets[8]),
+    methodKey: reader.readStringOrNull(offsets[6]),
+    signedTimestamp: reader.readLong(offsets[7]),
+    status: reader.readLong(offsets[8]),
+    userPubkey: reader.readString(offsets[9]),
   );
   object.id = id;
   return object;
@@ -165,10 +178,12 @@ P _signedEventDBISARDeserializeProp<P>(
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
       return (reader.readLong(offset)) as P;
     case 8:
+      return (reader.readLong(offset)) as P;
+    case 9:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1118,6 +1133,160 @@ extension SignedEventDBISARQueryFilter
   }
 
   QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'methodKey',
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'methodKey',
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'methodKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'methodKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'methodKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'methodKey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'methodKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'methodKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'methodKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'methodKey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'methodKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
+      methodKeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'methodKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterFilterCondition>
       signedTimestampEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1459,6 +1628,20 @@ extension SignedEventDBISARQuerySortBy
   }
 
   QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterSortBy>
+      sortByMethodKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterSortBy>
+      sortByMethodKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodKey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterSortBy>
       sortBySignedTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'signedTimestamp', Sort.asc);
@@ -1601,6 +1784,20 @@ extension SignedEventDBISARQuerySortThenBy
   }
 
   QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterSortBy>
+      thenByMethodKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterSortBy>
+      thenByMethodKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'methodKey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QAfterSortBy>
       thenBySignedTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'signedTimestamp', Sort.asc);
@@ -1690,6 +1887,13 @@ extension SignedEventDBISARQueryWhereDistinct
   }
 
   QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QDistinct>
+      distinctByMethodKey({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'methodKey', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, SignedEventDBISAR, QDistinct>
       distinctBySignedTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'signedTimestamp');
@@ -1756,6 +1960,13 @@ extension SignedEventDBISARQueryProperty
       metadataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'metadata');
+    });
+  }
+
+  QueryBuilder<SignedEventDBISAR, String?, QQueryOperations>
+      methodKeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'methodKey');
     });
   }
 

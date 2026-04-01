@@ -421,6 +421,7 @@ class ServerNIP46Signer {
     required String pubkey,
     String? customAppName,
     String? metadata,
+    String? methodKey,
   }) async {
     try {
       final account = Account.sharedInstance;
@@ -453,6 +454,7 @@ class ServerNIP46Signer {
         applicationPubkey: pubkey,
         status: 1,
         metadata: metadata,
+        methodKey: methodKey,
       );
     } catch (e) {
       AegisLogger.error('Failed to record signed event: $eventContent', e);
@@ -474,6 +476,7 @@ class ServerNIP46Signer {
           eventKind: 24133,
           eventContent: 'Connection',
           pubkey: event.pubkey,
+          methodKey: 'connect',
         );
         break;
 
@@ -486,6 +489,7 @@ class ServerNIP46Signer {
           eventKind: 24133,
           eventContent: 'Ping',
           pubkey: event.pubkey,
+          methodKey: 'ping',
         );
         break;
 
@@ -551,6 +555,7 @@ class ServerNIP46Signer {
               eventContent: 'get_public_key',
               pubkey: event.pubkey,
               customAppName: unusedApp.name,
+              methodKey: 'get_public_key',
             );
             await _addUsedMethodToApp(event.pubkey, 'get_public_key');
 
@@ -599,6 +604,7 @@ class ServerNIP46Signer {
                 eventContent: 'get_public_key',
                 pubkey: event.pubkey,
                 customAppName: newApp.name,
+                methodKey: 'get_public_key',
               );
               await _addUsedMethodToApp(event.pubkey, 'get_public_key');
 
@@ -708,6 +714,7 @@ class ServerNIP46Signer {
                   : 'Signed Event (Kind $eventKind)',
               pubkey: event.pubkey,
               metadata: contentStr,
+              methodKey: 'sign_event:$eventKind',
             );
             await _addUsedMethodToApp(event.pubkey, 'sign_event:$eventKind');
           } catch (e) {
@@ -747,6 +754,7 @@ class ServerNIP46Signer {
             eventKind: 4,
             eventContent: 'NIP-04 Encrypted Data',
             pubkey: event.pubkey,
+            methodKey: 'nip04_encrypt',
           );
           await _addUsedMethodToApp(event.pubkey, 'nip04_encrypt');
         }
@@ -783,6 +791,7 @@ class ServerNIP46Signer {
             eventKind: 4,
             eventContent: 'NIP-04 Decrypted Data',
             pubkey: event.pubkey,
+            methodKey: 'nip04_decrypt',
           );
           await _addUsedMethodToApp(event.pubkey, 'nip04_decrypt');
         }
@@ -822,6 +831,7 @@ class ServerNIP46Signer {
             eventKind: 4,
             eventContent: 'NIP-44 Decrypted Data',
             pubkey: event.pubkey,
+            methodKey: 'nip44_decrypt',
           );
           await _addUsedMethodToApp(event.pubkey, 'nip44_decrypt');
         }
@@ -862,6 +872,7 @@ class ServerNIP46Signer {
             eventKind: 4,
             eventContent: 'NIP-44 Encrypted Data',
             pubkey: event.pubkey,
+            methodKey: 'nip44_encrypt',
           );
           await _addUsedMethodToApp(event.pubkey, 'nip44_encrypt');
         }

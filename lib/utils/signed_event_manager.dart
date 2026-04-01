@@ -15,6 +15,7 @@ class SignedEventManager {
     required String eventContent,
     String? applicationName,
     String? applicationPubkey,
+    String? methodKey,
     int status = 1, // 1 = signed
     String? metadata,
   }) async {
@@ -36,6 +37,7 @@ class SignedEventManager {
       eventContent: eventContent,
       applicationName: applicationName,
       applicationPubkey: applicationPubkey,
+      methodKey: methodKey,
       userPubkey: userPubkey,
       signedTimestamp: DateTime.now().millisecondsSinceEpoch,
       status: status,
