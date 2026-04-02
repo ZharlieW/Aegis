@@ -8,6 +8,7 @@ import 'package:aegis/utils/permission_approval_batcher_models.dart';
 /// into a single user interaction (Amber-style).
 class BatchRequestPermission extends StatefulWidget {
   final String clientPubkey;
+  final String sourceName;
   final ValueNotifier<List<BatchPermissionGroupView>> groupsNotifier;
   final bool allowDismiss;
 
@@ -29,6 +30,7 @@ class BatchRequestPermission extends StatefulWidget {
   const BatchRequestPermission({
     super.key,
     required this.clientPubkey,
+    required this.sourceName,
     required this.groupsNotifier,
     this.allowDismiss = false,
     required this.onSetSelected,
@@ -43,6 +45,11 @@ class BatchRequestPermission extends StatefulWidget {
 }
 
 class _BatchRequestPermissionState extends State<BatchRequestPermission> {
+  String _shortPubkey(String pubkey) {
+    if (pubkey.length <= 12) return pubkey;
+    return '${pubkey.substring(0, 6)}:${pubkey.substring(pubkey.length - 6)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -73,11 +80,26 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
               ),
             ),
           ),
-          title: Text(
-            l10n.permissionRequest,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w400,
-            ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.permissionRequest,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${widget.sourceName} · ${_shortPubkey(widget.clientPubkey)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ),
         body: SafeArea(

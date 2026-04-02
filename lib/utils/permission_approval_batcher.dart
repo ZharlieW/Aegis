@@ -40,6 +40,16 @@ class _ClientQueueState {
 
   _ClientQueueState(this.clientPubkey, {required this.onQueueBecameIdle});
 
+  String _resolveSourceName() {
+    final app = Account.sharedInstance.authToNostrConnectInfo[clientPubkey] ??
+        AccountManager.sharedInstance.applicationMap[clientPubkey]?.value;
+    final name = app?.name?.trim();
+    if (name != null && name.isNotEmpty) {
+      return name;
+    }
+    return clientPubkey;
+  }
+
   bool get _isIdle => !_dialogShowing && _scheduledTimer == null && _groups.isEmpty;
 
   List<BatchPermissionGroupView> _buildViews() {
@@ -203,6 +213,7 @@ class _ClientQueueState {
         AegisNavigator.navigatorKey.currentContext,
         (_) => BatchRequestPermission(
           clientPubkey: clientPubkey,
+          sourceName: _resolveSourceName(),
           groupsNotifier: groupsNotifier,
           allowDismiss: false,
           onSetSelected: (methodKey, selected) {
