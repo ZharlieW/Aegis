@@ -545,6 +545,15 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
+  String get resetPermissions => 'Reset permissions';
+
+  @override
+  String get resetPermissionsConfirm => 'This clears saved permission types and \"always allow\" entries for this app. \"Read your public key\" will still be shown on this page for connected clients. Continue?';
+
+  @override
+  String get resetPermissionsSuccess => 'Permissions reset';
+
+  @override
   String get clientPubkey => 'Klienta publiskā atslēga';
 
   @override

@@ -124,6 +124,30 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _confirmResetPermissions(context, l10n),
+                  icon: Icon(
+                    Icons.restart_alt_outlined,
+                    size: 20,
+                    color: theme.colorScheme.error,
+                  ),
+                  label: Text(
+                    l10n.resetPermissions,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: theme.colorScheme.error.withValues(alpha: 0.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               Text(
                 _effectiveMethods(app).isEmpty
@@ -147,6 +171,48 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _confirmResetPermissions(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final dL10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(dL10n.resetPermissions),
+          content: Text(dL10n.resetPermissionsConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(dL10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(dL10n.confirm),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final w = widget.clientAuthDBISAR;
+    final fresh = await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
+    if (fresh == null) return;
+
+    fresh.allowedMethods = [];
+    await ClientAuthDBISAR.saveFromDB(fresh, isUpdate: true);
+    AccountManager.sharedInstance.updateApplicationMap(fresh);
+
+    if (!context.mounted) return;
+    await _reloadFromDb();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.resetPermissionsSuccess)),
     );
   }
 

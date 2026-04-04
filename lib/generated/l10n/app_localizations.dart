@@ -1186,6 +1186,24 @@ abstract class AppLocalizations {
   /// **'{time} · {count} times'**
   String permissionMethodUsageStats(Object time, int count);
 
+  /// No description provided for @resetPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset permissions'**
+  String get resetPermissions;
+
+  /// No description provided for @resetPermissionsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This clears saved permission types and \"always allow\" entries for this app. \"Read your public key\" will still be shown on this page for connected clients. Continue?'**
+  String get resetPermissionsConfirm;
+
+  /// No description provided for @resetPermissionsSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions reset'**
+  String get resetPermissionsSuccess;
+
   /// No description provided for @clientPubkey.
   ///
   /// In en, this message translates to:

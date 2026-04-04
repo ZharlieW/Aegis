@@ -545,6 +545,15 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get resetPermissions => '一键重置权限';
+
+  @override
+  String get resetPermissionsConfirm => '将清空已保存的权限类型与「总是允许」记录。已连接客户端仍会在本页显示「读取公钥」项。是否继续？';
+
+  @override
+  String get resetPermissionsSuccess => '权限已重置';
+
+  @override
   String get clientPubkey => '客户端公钥';
 
   @override

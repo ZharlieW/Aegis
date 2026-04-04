@@ -223,6 +223,9 @@
       "count": {"type": "int"}
     }
   },
+  "resetPermissions": "Reset permissions",
+  "resetPermissionsConfirm": "This clears saved permission types and \"always allow\" entries for this app. \"Read your public key\" will still be shown on this page for connected clients. Continue?",
+  "resetPermissionsSuccess": "Permissions reset",
   "clientPubkey": "Client pubkey",
   "remove": "Remove",
   "removeAppConfirm": "Are you sure you want to remove all permissions from this application?",
