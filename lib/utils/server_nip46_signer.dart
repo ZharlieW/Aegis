@@ -23,6 +23,7 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
+import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
 
 class ClientRequest {
@@ -45,31 +46,8 @@ class ServerNIP46Signer {
   /// Ordered list of NIP-46 capabilities for UI (e.g. permissions page). Matches Amber-style
   /// basicPermissions: get_public_key, nip04/nip44 encrypt/decrypt, sign_event by kind.
   /// Use "method" or "method:kind" (e.g. sign_event:0). Keep in sync with [handleClientRequest].
-  static const List<String> supportedNip46Methods = [
-    'get_public_key',
-    'nip04_encrypt',
-    'nip04_decrypt',
-    'nip44_decrypt',
-    'nip44_encrypt',
-    'sign_event:0',
-    'sign_event:1',
-    'sign_event:3',
-    'sign_event:4',
-    'sign_event:5',
-    'sign_event:6',
-    'sign_event:7',
-    'sign_event:9734',
-    'sign_event:9735',
-    'sign_event:10000',
-    'sign_event:10002',
-    'sign_event:10003',
-    'sign_event:10013',
-    'sign_event:31234',
-    'sign_event:30078',
-    'sign_event:22242',
-    'sign_event:27235',
-    'sign_event:30023',
-  ];
+  static const List<String> supportedNip46Methods =
+      Nip46MethodKey.supportedPermissionMethodKeys;
 
   String _subscriptionId = 'nip46-sub-${DateTime.now().millisecondsSinceEpoch}';
   String port = '8080';
@@ -372,13 +350,13 @@ class ServerNIP46Signer {
       updated.methodUsageStatsJson =
           MethodUsageStats.incrementJson(updated.methodUsageStatsJson, method);
 
-      if (ServerNIP46Signer.supportedNip46Methods.contains(method) &&
+      if (Nip46MethodKey.supportedPermissionMethodKeys.contains(method) &&
           !updated.allowedMethods.contains(method)) {
         updated.allowedMethods = List<String>.from(updated.allowedMethods)..add(method);
         updated.allowedMethods.sort(
-          (a, b) => ServerNIP46Signer.supportedNip46Methods
+          (a, b) => Nip46MethodKey.supportedPermissionMethodKeys
               .indexOf(a)
-              .compareTo(ServerNIP46Signer.supportedNip46Methods.indexOf(b)),
+              .compareTo(Nip46MethodKey.supportedPermissionMethodKeys.indexOf(b)),
         );
       }
 
@@ -634,27 +612,8 @@ class ServerNIP46Signer {
         break;
 
       case "sign_event":
-        // Describe this request as signing a Nostr event.
-        // Extract kind from event JSON to build a stable methodKey like `sign_event:<kind>`.
         String? signDescription;
-        int? eventKind;
-        final contentStrForKind = remoteRequest.params.isNotEmpty
-            ? remoteRequest.params[0]
-            : null;
-
-        try {
-          if (contentStrForKind is String) {
-            final decoded = jsonDecode(contentStrForKind);
-            if (decoded is Map) {
-              final kindVal = decoded['kind'];
-              if (kindVal is int) {
-                eventKind = kindVal;
-              } else if (kindVal is num) {
-                eventKind = kindVal.toInt();
-              }
-            }
-          }
-        } catch (_) {}
+        final eventKind = Nip46MethodKey.extractSignEventKind(remoteRequest.params);
 
         try {
           final ctx = AegisNavigator.navigatorKey.currentContext;
@@ -666,9 +625,8 @@ class ServerNIP46Signer {
           }
         } catch (_) {}
 
-        final methodKey = eventKind != null
-            ? 'sign_event:${eventKind.toString()}'
-            : 'sign_event';
+        final methodKey =
+            Nip46MethodKey.resolve(remoteRequest.method, remoteRequest.params);
 
         if (!await _requireApprovalForApp(
           event.pubkey,

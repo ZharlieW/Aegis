@@ -9,6 +9,7 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/connect.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
@@ -303,33 +304,41 @@ class RemoteRelayNip46Session {
   ) async {
     switch (req.method) {
       case 'connect':
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
         await _recordSignedEvent(
           eventId: req.id,
           eventKind: 24133,
           eventContent: 'Connection',
           pubkey: event.pubkey,
+          methodKey: methodKey,
         );
         return {'id': req.id, 'result': 'ack', 'error': ''};
 
       case 'ping':
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
         await _recordSignedEvent(
           eventId: req.id,
           eventKind: 24133,
           eventContent: 'Ping',
           pubkey: event.pubkey,
+          methodKey: methodKey,
         );
         return {'id': req.id, 'result': 'pong', 'error': ''};
 
       case 'get_public_key':
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
         await _recordSignedEvent(
           eventId: req.id,
           eventKind: 24133,
           eventContent: 'get_public_key',
           pubkey: event.pubkey,
+          methodKey: methodKey,
         );
         return {'id': req.id, 'result': userPubkey, 'error': ''};
 
       case 'sign_event': {
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
+        final eventKind = Nip46MethodKey.extractSignEventKind(req.params);
         final contentStr = req.params.isNotEmpty ? req.params[0] : null;
         if (contentStr == null || contentStr.isEmpty) {
           return {'id': req.id, 'result': '', 'error': 'missing event json'};
@@ -343,9 +352,10 @@ class RemoteRelayNip46Session {
           );
           await _recordSignedEvent(
             eventId: req.id,
-            eventKind: 24133,
-            eventContent: 'Signed event',
+            eventKind: eventKind ?? 24133,
+            eventContent: eventKind != null ? 'Signed Event (Kind $eventKind)' : 'Signed event',
             pubkey: event.pubkey,
+            methodKey: methodKey,
           );
           return {'id': req.id, 'result': signed, 'error': ''};
         } catch (e) {
@@ -376,6 +386,7 @@ class RemoteRelayNip46Session {
     required int eventKind,
     required String eventContent,
     required String pubkey,
+    String? methodKey,
   }) async {
     try {
       final app = AccountManager.sharedInstance.applicationMap[pubkey]?.value;
@@ -386,6 +397,7 @@ class RemoteRelayNip46Session {
         applicationName: app?.name ?? pubkey,
         applicationPubkey: pubkey,
         status: 1,
+        methodKey: methodKey,
       );
     } catch (e) {
       AegisLogger.error('RemoteRelayNip46Session: recordSignedEvent failed', e);
