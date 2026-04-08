@@ -11,6 +11,7 @@ import 'package:aegis/utils/connect.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
+import 'package:aegis/utils/permission_approval_batcher.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
@@ -363,9 +364,89 @@ class RemoteRelayNip46Session {
         }
       }
 
+      case 'nip04_encrypt': {
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: methodKey,
+          description: 'Encrypt data using NIP-04',
+        )) {
+          return {'id': req.id, 'result': '', 'error': 'unauthorized'};
+        }
+        if (req.params.length < 2 ||
+            req.params[0] == null ||
+            req.params[1] == null) {
+          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+        }
+        final result = await LocalNostrSigner.instance.encrypt(
+          req.params[0],
+          req.params[1],
+        );
+        if (result != null) {
+          await _recordSignedEvent(
+            eventId: req.id,
+            eventKind: 4,
+            eventContent: 'NIP-04 Encrypted Data',
+            pubkey: event.pubkey,
+            methodKey: methodKey,
+          );
+        }
+        return {'id': req.id, 'result': result ?? '', 'error': ''};
+      }
+
+      case 'nip04_decrypt': {
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: methodKey,
+          description: 'Decrypt data using NIP-04',
+        )) {
+          return {'id': req.id, 'result': '', 'error': 'unauthorized'};
+        }
+        if (req.params.length < 2 ||
+            req.params[0] == null ||
+            req.params[1] == null) {
+          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+        }
+        final result = await LocalNostrSigner.instance.decrypt(
+          req.params[0],
+          req.params[1],
+        );
+        if (result != null) {
+          await _recordSignedEvent(
+            eventId: req.id,
+            eventKind: 4,
+            eventContent: 'NIP-04 Decrypted Data',
+            pubkey: event.pubkey,
+            methodKey: methodKey,
+          );
+        }
+        return {'id': req.id, 'result': result ?? '', 'error': ''};
+      }
+
       default:
         return {'id': req.id, 'result': '', 'error': 'no ${req.method} method'};
     }
+  }
+
+  /// For manual authMode (1), shows a batch dialog; for full trust (2), returns true.
+  /// Returns false if denied or app is missing.
+  Future<bool> _requireApprovalForApp(
+    String clientPubkey, {
+    required String methodKey,
+    String? description,
+  }) async {
+    final app = Account.sharedInstance.authToNostrConnectInfo[clientPubkey] ??
+        AccountManager.sharedInstance.applicationMap[clientPubkey]?.value;
+    if (app == null) return false;
+    if (app.authMode == 2) return true; // full trust
+    if (app.allowedMethods.contains(methodKey)) return true;
+
+    return PermissionApprovalBatcher.instance.requestApproval(
+      clientPubkey: clientPubkey,
+      methodKey: methodKey,
+      description: description ?? methodKey,
+    );
   }
 
   /// If event JSON has no pubkey field, add current user pubkey so Rust signEvent can parse it.
