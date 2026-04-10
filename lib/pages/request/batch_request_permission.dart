@@ -193,7 +193,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                             margin: const EdgeInsets.symmetric(vertical: 16),
                             alignment: Alignment.center,
                             child: Text(
-                              '${l10n.grantPermissions} (${stats.selectedGroups}/${stats.selectedRequests})',
+                              '${l10n.grantPermissions} (${stats.selectedRequests}/${stats.totalRequests})',
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: stats.hasSelection
