@@ -23,6 +23,7 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
+import 'package:aegis/utils/nip46_error.dart';
 import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
 
@@ -636,6 +637,16 @@ class ServerNIP46Signer {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
           break;
         }
+        if (remoteRequest.params.isEmpty ||
+            remoteRequest.params[0] == null ||
+            remoteRequest.params[0]!.isEmpty) {
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": "",
+            "error": Nip46Error.invalidParams(remoteRequest.method),
+          };
+          break;
+        }
         String? contentStr = remoteRequest.params[0];
         if (contentStr != null && serverPrivate.isNotEmpty) {
           // For signing, we need user's private key, not remote signer private key
@@ -682,7 +693,7 @@ class ServerNIP46Signer {
           responseJson = {
             "id": remoteRequest.id,
             "result": nativeRes,
-            "error": null,
+            "error": '',
           };
         }
         break;
@@ -700,6 +711,16 @@ class ServerNIP46Signer {
           description: descNip04Enc,
         )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
+        if (remoteRequest.params.length < 2 ||
+            remoteRequest.params[0] == null ||
+            remoteRequest.params[1] == null) {
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": "",
+            "error": Nip46Error.invalidParams(remoteRequest.method),
+          };
           break;
         }
         String? result = await LocalNostrSigner.instance
@@ -737,6 +758,16 @@ class ServerNIP46Signer {
           description: descNip04Dec,
         )) {
           responseJson = {"id": remoteRequest.id, "result": "", "error": "unauthorized"};
+          break;
+        }
+        if (remoteRequest.params.length < 2 ||
+            remoteRequest.params[0] == null ||
+            remoteRequest.params[1] == null) {
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": "",
+            "error": Nip46Error.invalidParams(remoteRequest.method),
+          };
           break;
         }
         String? result = await LocalNostrSigner.instance
@@ -778,7 +809,14 @@ class ServerNIP46Signer {
         }
         if (serverPrivate.isEmpty ||
             remoteRequest.params[1] is! String ||
-            remoteRequest.params[0] is! String) break;
+            remoteRequest.params[0] is! String) {
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": "",
+            "error": Nip46Error.invalidParams(remoteRequest.method),
+          };
+          break;
+        }
         String? result = await LocalNostrSigner.instance.nip44Decrypt(
             serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);
 
@@ -818,7 +856,14 @@ class ServerNIP46Signer {
         }
         if (serverPrivate.isEmpty ||
             remoteRequest.params[1] is! String ||
-            remoteRequest.params[0] is! String) break;
+            remoteRequest.params[0] is! String) {
+          responseJson = {
+            "id": remoteRequest.id,
+            "result": "",
+            "error": Nip46Error.invalidParams(remoteRequest.method),
+          };
+          break;
+        }
 
         String? result = await LocalNostrSigner.instance.nip44Encrypt(
             serverPrivate, remoteRequest.params[1]!, remoteRequest.params[0]!);

@@ -9,6 +9,7 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/connect.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/nip46_error.dart';
 import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
@@ -342,7 +343,7 @@ class RemoteRelayNip46Session {
         final eventKind = Nip46MethodKey.extractSignEventKind(req.params);
         final contentStr = req.params.isNotEmpty ? req.params[0] : null;
         if (contentStr == null || contentStr.isEmpty) {
-          return {'id': req.id, 'result': '', 'error': 'missing event json'};
+          return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         try {
           // Some clients (e.g. Jumble) send event JSON without pubkey; Rust signEvent expects it.
@@ -376,7 +377,7 @@ class RemoteRelayNip46Session {
         if (req.params.length < 2 ||
             req.params[0] == null ||
             req.params[1] == null) {
-          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+          return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.encrypt(
           req.params[0],
@@ -406,7 +407,7 @@ class RemoteRelayNip46Session {
         if (req.params.length < 2 ||
             req.params[0] == null ||
             req.params[1] == null) {
-          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+          return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.decrypt(
           req.params[0],
@@ -437,7 +438,7 @@ class RemoteRelayNip46Session {
             req.params.length < 2 ||
             req.params[0] is! String ||
             req.params[1] is! String) {
-          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+          return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.nip44Encrypt(
           serverPrivate,
@@ -469,7 +470,7 @@ class RemoteRelayNip46Session {
             req.params.length < 2 ||
             req.params[0] is! String ||
             req.params[1] is! String) {
-          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+          return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.nip44Decrypt(
           serverPrivate,
