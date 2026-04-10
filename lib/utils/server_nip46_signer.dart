@@ -683,9 +683,9 @@ class ServerNIP46Signer {
                   : 'Signed Event (Kind $eventKind)',
               pubkey: event.pubkey,
               metadata: contentStr,
-              methodKey: 'sign_event:$eventKind',
+              methodKey: methodKey,
             );
-            await _addUsedMethodToApp(event.pubkey, 'sign_event:$eventKind');
+            await _addUsedMethodToApp(event.pubkey, methodKey);
           } catch (e) {
             AegisLogger.error('Failed to record signed event', e);
           }
@@ -913,6 +913,7 @@ class ServerNIP46Signer {
       secure: secure,
     );
   }
+
 
   /// Create a new bunker application with remote signer keypair
   /// Returns the created ClientAuthDBISAR or null if failed

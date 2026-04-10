@@ -9,6 +9,7 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/connect.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/method_usage_stats.dart';
 import 'package:aegis/utils/nip46_error.dart';
 import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
@@ -329,6 +330,7 @@ class RemoteRelayNip46Session {
 
       case 'get_public_key':
         final methodKey = Nip46MethodKey.resolve(req.method, req.params);
+        await _addUsedMethodToApp(event.pubkey, methodKey);
         await _recordSignedEvent(
           eventId: req.id,
           eventKind: 24133,
@@ -352,6 +354,7 @@ class RemoteRelayNip46Session {
             eventJson: eventJsonWithPubkey,
             privateKey: serverPrivate,
           );
+          await _addUsedMethodToApp(event.pubkey, methodKey);
           await _recordSignedEvent(
             eventId: req.id,
             eventKind: eventKind ?? 24133,
@@ -384,6 +387,7 @@ class RemoteRelayNip46Session {
           req.params[1],
         );
         if (result != null) {
+          await _addUsedMethodToApp(event.pubkey, methodKey);
           await _recordSignedEvent(
             eventId: req.id,
             eventKind: 4,
@@ -414,6 +418,7 @@ class RemoteRelayNip46Session {
           req.params[1],
         );
         if (result != null) {
+          await _addUsedMethodToApp(event.pubkey, methodKey);
           await _recordSignedEvent(
             eventId: req.id,
             eventKind: 4,
@@ -446,6 +451,7 @@ class RemoteRelayNip46Session {
           req.params[0]!,
         );
         if (result != null) {
+          await _addUsedMethodToApp(event.pubkey, methodKey);
           await _recordSignedEvent(
             eventId: req.id,
             eventKind: 4,
@@ -478,6 +484,7 @@ class RemoteRelayNip46Session {
           req.params[0]!,
         );
         if (result != null) {
+          await _addUsedMethodToApp(event.pubkey, methodKey);
           await _recordSignedEvent(
             eventId: req.id,
             eventKind: 4,
@@ -514,6 +521,40 @@ class RemoteRelayNip46Session {
     );
   }
 
+  /// Update method usage stats and sync allowed methods for permissions page.
+  Future<void> _addUsedMethodToApp(String clientPubkey, String methodKey) async {
+    if (methodKey.isEmpty) return;
+    try {
+      final app = Account.sharedInstance.authToNostrConnectInfo[clientPubkey] ??
+          AccountManager.sharedInstance.applicationMap[clientPubkey]?.value;
+      if (app == null) return;
+
+      final updated = await ClientAuthDBISAR.searchFromDB(
+        app.pubkey,
+        app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey,
+      );
+      if (updated == null) return;
+
+      updated.methodUsageStatsJson =
+          MethodUsageStats.incrementJson(updated.methodUsageStatsJson, methodKey);
+
+      if (Nip46MethodKey.supportedPermissionMethodKeys.contains(methodKey) &&
+          !updated.allowedMethods.contains(methodKey)) {
+        updated.allowedMethods = List<String>.from(updated.allowedMethods)..add(methodKey);
+        updated.allowedMethods.sort(
+          (a, b) => Nip46MethodKey.supportedPermissionMethodKeys
+              .indexOf(a)
+              .compareTo(Nip46MethodKey.supportedPermissionMethodKeys.indexOf(b)),
+        );
+      }
+
+      await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
+      AccountManager.sharedInstance.updateApplicationMap(updated);
+    } catch (e) {
+      AegisLogger.warning('RemoteRelayNip46Session: add used method failed', e);
+    }
+  }
+
   /// If event JSON has no pubkey field, add current user pubkey so Rust signEvent can parse it.
   static String _ensureEventJsonHasPubkey(String eventJson, String userPubkeyHex) {
     try {
@@ -526,6 +567,7 @@ class RemoteRelayNip46Session {
       return eventJson;
     }
   }
+
 
   Future<void> _recordSignedEvent({
     required String eventId,

@@ -25,11 +25,17 @@ class ApplicationPermissionsPage extends StatefulWidget {
 
 class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage> {
   ClientAuthDBISAR? _app;
+  ValueNotifier<ClientAuthDBISAR>? _appNotifier;
 
   @override
   void initState() {
     super.initState();
     _app = widget.clientAuthDBISAR;
+    final client = widget.clientAuthDBISAR;
+    final key = client.clientPubkey.isNotEmpty
+        ? client.clientPubkey
+        : (client.remoteSignerPubkey ?? '');
+    _appNotifier = AccountManager.sharedInstance.applicationMap[key];
     WidgetsBinding.instance.addPostFrameCallback((_) => _reloadFromDb());
   }
 
@@ -57,9 +63,21 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
 
   @override
   Widget build(BuildContext context) {
+    final notifier = _appNotifier;
+    if (notifier != null) {
+      return ValueListenableBuilder<ClientAuthDBISAR>(
+        valueListenable: notifier,
+        builder: (context, client, _) {
+          return _buildPage(context, client);
+        },
+      );
+    }
+    return _buildPage(context, _app ?? widget.clientAuthDBISAR);
+  }
+
+  Widget _buildPage(BuildContext context, ClientAuthDBISAR app) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final app = _app ?? widget.clientAuthDBISAR;
     final localeName = Localizations.localeOf(context).toString();
     final usageStats = MethodUsageStats.parse(app.methodUsageStatsJson);
     final isManualEach = app.authMode == 1;
