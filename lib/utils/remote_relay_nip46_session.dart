@@ -424,6 +424,70 @@ class RemoteRelayNip46Session {
         return {'id': req.id, 'result': result ?? '', 'error': ''};
       }
 
+      case 'nip44_encrypt': {
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: methodKey,
+          description: 'Encrypt data using NIP-44',
+        )) {
+          return {'id': req.id, 'result': '', 'error': 'unauthorized'};
+        }
+        if (serverPrivate.isEmpty ||
+            req.params.length < 2 ||
+            req.params[0] is! String ||
+            req.params[1] is! String) {
+          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+        }
+        final result = await LocalNostrSigner.instance.nip44Encrypt(
+          serverPrivate,
+          req.params[1]!,
+          req.params[0]!,
+        );
+        if (result != null) {
+          await _recordSignedEvent(
+            eventId: req.id,
+            eventKind: 4,
+            eventContent: 'NIP-44 Encrypted Data',
+            pubkey: event.pubkey,
+            methodKey: methodKey,
+          );
+        }
+        return {'id': req.id, 'result': result ?? '', 'error': ''};
+      }
+
+      case 'nip44_decrypt': {
+        final methodKey = Nip46MethodKey.resolve(req.method, req.params);
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: methodKey,
+          description: 'Decrypt data using NIP-44',
+        )) {
+          return {'id': req.id, 'result': '', 'error': 'unauthorized'};
+        }
+        if (serverPrivate.isEmpty ||
+            req.params.length < 2 ||
+            req.params[0] is! String ||
+            req.params[1] is! String) {
+          return {'id': req.id, 'result': '', 'error': 'invalid params'};
+        }
+        final result = await LocalNostrSigner.instance.nip44Decrypt(
+          serverPrivate,
+          req.params[1]!,
+          req.params[0]!,
+        );
+        if (result != null) {
+          await _recordSignedEvent(
+            eventId: req.id,
+            eventKind: 4,
+            eventContent: 'NIP-44 Decrypted Data',
+            pubkey: event.pubkey,
+            methodKey: methodKey,
+          );
+        }
+        return {'id': req.id, 'result': result ?? '', 'error': ''};
+      }
+
       default:
         return {'id': req.id, 'result': '', 'error': 'no ${req.method} method'};
     }
