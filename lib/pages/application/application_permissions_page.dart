@@ -5,6 +5,7 @@ import 'package:aegis/common/common_image.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
@@ -44,6 +45,10 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
     final fresh = await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
     if (!mounted) return;
     if (fresh != null) {
+      AccountManager.sharedInstance.updateApplicationMap(fresh);
+      if (fresh.clientPubkey.isNotEmpty) {
+        Account.sharedInstance.addAuthToNostrConnectInfo(fresh);
+      }
       setState(() => _app = fresh);
     }
   }
@@ -125,10 +130,27 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
               SwitchListTile(
                 value: isManualEach,
                 onChanged: (v) async {
-                  final updated = widget.clientAuthDBISAR;
-                  updated.authMode = v ? 1 : 2;
-                  await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
-                  AccountManager.sharedInstance.updateApplicationMap(updated);
+                  final w = widget.clientAuthDBISAR;
+                  final row =
+                      await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
+                  if (row == null || !context.mounted) return;
+                  row.authMode = v ? 1 : 2;
+                  // Manual mode: clear pre-granted method keys so prompts run again.
+                  // (Otherwise allowedMethods from auto mode keeps bypassing _requireApprovalForApp.)
+                  if (v) {
+                    row.allowedMethods = [];
+                  }
+                  await ClientAuthDBISAR.saveFromDB(row, isUpdate: true);
+                  // Re-read so we pass a new object instance: ValueNotifier skips
+                  // notifyListeners when value is set to the same reference as before.
+                  final synced =
+                      await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
+                  if (synced != null) {
+                    AccountManager.sharedInstance.updateApplicationMap(synced);
+                    if (synced.clientPubkey.isNotEmpty) {
+                      Account.sharedInstance.addAuthToNostrConnectInfo(synced);
+                    }
+                  }
                   await _reloadFromDb();
                 },
                 title: Text(
@@ -225,6 +247,9 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
     fresh.allowedMethods = [];
     await ClientAuthDBISAR.saveFromDB(fresh, isUpdate: true);
     AccountManager.sharedInstance.updateApplicationMap(fresh);
+    if (fresh.clientPubkey.isNotEmpty) {
+      Account.sharedInstance.addAuthToNostrConnectInfo(fresh);
+    }
 
     if (!context.mounted) return;
     await _reloadFromDb();

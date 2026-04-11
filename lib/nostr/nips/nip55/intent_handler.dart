@@ -314,7 +314,7 @@ class IntentHandler {
   }
   
   /// Add application to authorized list using AccountManager (same as NIP46)
-  static Future<void> _addAuthorizedApplication(String packageName, String? appName, {int authMode = 1}) async {
+  static Future<void> _addAuthorizedApplication(String packageName, String? appName, {int authMode = 2}) async {
     try {
       // Create a ClientAuthDBISAR entry for the intent-based application
       final timestamp = DateTime.now().millisecondsSinceEpoch;

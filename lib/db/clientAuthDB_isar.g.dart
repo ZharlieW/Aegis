@@ -210,7 +210,7 @@ ClientAuthDBISAR _clientAuthDBISARDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = ClientAuthDBISAR(
-    authMode: reader.readLongOrNull(offsets[1]) ?? 1,
+    authMode: reader.readLongOrNull(offsets[1]) ?? 2,
     clientPubkey: reader.readString(offsets[2]),
     connectionType: reader.readLong(offsets[3]),
     createTimestamp: reader.readLongOrNull(offsets[4]),

@@ -219,6 +219,9 @@ class Account {
             scheme: item.scheme,
             createTimestamp: item.createTimestamp,
             updateTimestamp: item.updateTimestamp,
+            allowedMethodsParam: item.allowedMethods,
+            authMode: item.authMode,
+            methodUsageStatsJson: item.methodUsageStatsJson,
           );
           AccountManager.sharedInstance.addApplicationMap(tempApp);
         } else {

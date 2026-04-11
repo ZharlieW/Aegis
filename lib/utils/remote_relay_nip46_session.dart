@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/nostr/nostr.dart' show Event, Filter, OKEvent;
 import 'package:aegis/nostr/nips/nip46/nostr_remote_request.dart';
 import 'package:aegis/nostr/signer/local_nostr_signer.dart';
+import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/connect.dart';
@@ -343,6 +345,23 @@ class RemoteRelayNip46Session {
       case 'sign_event': {
         final methodKey = Nip46MethodKey.resolve(req.method, req.params);
         final eventKind = Nip46MethodKey.extractSignEventKind(req.params);
+        String? signDescription;
+        try {
+          final ctx = AegisNavigator.navigatorKey.currentContext;
+          final l10n = ctx != null ? AppLocalizations.of(ctx) : null;
+          if (eventKind != null) {
+            signDescription = l10n?.permissionSignEventKind(eventKind.toString());
+          } else {
+            signDescription = l10n?.permissionSignEvents;
+          }
+        } catch (_) {}
+        if (!await _requireApprovalForApp(
+          event.pubkey,
+          methodKey: methodKey,
+          description: signDescription,
+        )) {
+          return {'id': req.id, 'result': '', 'error': 'unauthorized'};
+        }
         final contentStr = req.params.isNotEmpty ? req.params[0] : null;
         if (contentStr == null || contentStr.isEmpty) {
           return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};

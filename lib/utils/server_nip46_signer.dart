@@ -979,6 +979,8 @@ class ServerNIP46Signer {
         createTimestamp: newClient.createTimestamp,
         updateTimestamp: newClient.updateTimestamp,
         allowedMethodsParam: newClient.allowedMethods,
+        authMode: newClient.authMode,
+        methodUsageStatsJson: newClient.methodUsageStatsJson,
       );
       AccountManager.sharedInstance.addApplicationMap(tempApp);
 
@@ -1045,6 +1047,8 @@ class ServerNIP46Signer {
               createTimestamp: app.createTimestamp,
               updateTimestamp: app.updateTimestamp,
               allowedMethodsParam: app.allowedMethods,
+              authMode: app.authMode,
+              methodUsageStatsJson: app.methodUsageStatsJson,
             );
             AccountManager.sharedInstance.addApplicationMap(tempApp);
           }
