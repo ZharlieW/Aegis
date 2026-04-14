@@ -19,6 +19,13 @@ class Nip07Handlers {
     }
   }
 
+  static String _signEventMethodKeyFromEventMap(Map<String, dynamic> eventMap) {
+    final kind = eventMap['kind'];
+    if (kind is int) return 'sign_event:$kind';
+    if (kind is num) return 'sign_event:${kind.toInt()}';
+    return 'sign_event';
+  }
+
   static Future<Map<String, dynamic>> handleGetPublicKey(
     int id,
     String url,
@@ -45,6 +52,7 @@ class Nip07Handlers {
           eventContent: 'get_public_key',
           applicationName: title,
           applicationPubkey: applicationPubkey,
+          methodKey: 'get_public_key',
           status: 1,
           metadata: metadata,
         );
@@ -99,6 +107,7 @@ class Nip07Handlers {
         final eventId = signedEvent['id'] as String? ?? '';
         final eventKind = signedEvent['kind'] as int? ?? -1;
         final eventContent = signedEvent['content'] as String? ?? '';
+        final methodKey = _signEventMethodKeyFromEventMap(eventMap);
         if (eventKind != 22242) {
           final applicationPubkey = _applicationPubkeyFromUrl(url);
           final metadata = json.encode({
@@ -114,6 +123,7 @@ class Nip07Handlers {
                 : 'Signed Event (Kind $eventKind)',
             applicationName: title,
             applicationPubkey: applicationPubkey,
+            methodKey: methodKey,
             status: 1,
             metadata: metadata,
           );
@@ -156,6 +166,7 @@ class Nip07Handlers {
         eventContent: '$operation data',
         applicationName: title,
         applicationPubkey: applicationPubkey,
+        methodKey: operation,
         status: 1,
         metadata: metadata,
       );
