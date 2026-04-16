@@ -1,6 +1,7 @@
 import 'package:isar/isar.dart';
 
 import 'db_isar.dart';
+import 'remembered_permission_choice_isar.dart';
 
 part 'clientAuthDB_isar.g.dart';
 
@@ -168,6 +169,10 @@ class ClientAuthDBISAR {
 
     if (target != null) {
       await isar.writeTxn(() async {
+        await isar.rememberedPermissionChoiceDBISARs
+            .filter()
+            .clientPubkeyEqualTo(clientPubkey)
+            .deleteAll();
         await isar.clientAuthDBISARs.delete(target.id);
       });
     }
@@ -179,7 +184,16 @@ class ClientAuthDBISAR {
     
     final target = await isar.clientAuthDBISARs.get(id);
     if (target != null) {
+      final appKey = target.clientPubkey.isNotEmpty
+          ? target.clientPubkey
+          : (target.remoteSignerPubkey ?? '');
       await isar.writeTxn(() async {
+        if (appKey.isNotEmpty) {
+          await isar.rememberedPermissionChoiceDBISARs
+              .filter()
+              .clientPubkeyEqualTo(appKey)
+              .deleteAll();
+        }
         await isar.clientAuthDBISARs.delete(id);
       });
     }
@@ -197,6 +211,10 @@ class ClientAuthDBISAR {
     
     if (target != null) {
       await isar.writeTxn(() async {
+        await isar.rememberedPermissionChoiceDBISARs
+            .filter()
+            .clientPubkeyEqualTo(remoteSignerPubkey)
+            .deleteAll();
         await isar.clientAuthDBISARs.delete(target.id);
       });
     }
@@ -206,13 +224,12 @@ class ClientAuthDBISAR {
   static Future<void> deleteAllFromDB(String pubkey) async {
     final isar = await DBISAR.sharedInstance.open(pubkey);
     final allClients = await isar.clientAuthDBISARs.where().findAll();
-    
-    if (allClients.isNotEmpty) {
-      await isar.writeTxn(() async {
-        for (final client in allClients) {
-          await isar.clientAuthDBISARs.delete(client.id);
-        }
-      });
-    }
+
+    await isar.writeTxn(() async {
+      await isar.rememberedPermissionChoiceDBISARs.clear();
+      for (final client in allClients) {
+        await isar.clientAuthDBISARs.delete(client.id);
+      }
+    });
   }
 }

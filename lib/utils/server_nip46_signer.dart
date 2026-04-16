@@ -9,6 +9,7 @@ import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:aegis/navigator/navigator.dart';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/remembered_permission_choice_store.dart';
 import 'package:aegis/nostr/nostr.dart' show Event, Filter;
 import 'package:aegis/nostr/nips/nip46/nostr_remote_request.dart';
 import 'package:aegis/nostr/signer/local_nostr_signer.dart';
@@ -384,6 +385,15 @@ class ServerNIP46Signer {
     if (app == null) return false;
     if (app.authMode == 2) return true; // full trust
     if (app.allowedMethods.contains(methodKey)) return true;
+    final appKey =
+        app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey;
+    if (await RememberedPermissionChoiceStore.isValid(
+          userPubkey: app.pubkey,
+          clientPubkey: appKey,
+          methodKey: methodKey,
+        )) {
+      return true;
+    }
 
     return PermissionApprovalBatcher.instance.requestApproval(
       clientPubkey: clientPubkey,

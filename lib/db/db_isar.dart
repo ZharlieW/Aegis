@@ -8,6 +8,7 @@ import 'package:aegis/utils/logger.dart';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/db/remembered_permission_choice_isar.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
 
 class DBISAR {
@@ -23,6 +24,7 @@ class DBISAR {
     UserDBISARSchema,
     ClientAuthDBISARSchema,
     SignedEventDBISARSchema,
+    RememberedPermissionChoiceDBISARSchema,
     UserAppDBISARSchema,
   ];
 

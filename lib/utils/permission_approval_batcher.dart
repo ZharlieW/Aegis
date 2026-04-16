@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/remembered_permission_choice_isar.dart';
+import 'package:aegis/db/remembered_permission_choice_store.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/pages/request/batch_request_permission.dart';
 import 'package:aegis/utils/account.dart';
@@ -114,22 +116,18 @@ class _ClientQueueState {
     ClientAuthDBISAR app,
     List<String> toPersist,
   ) async {
-    // Persist always-allow method keys for this app.
-    // Only persist for groups selected in this confirmed batch.
-
     if (toPersist.isEmpty) return;
 
-    final updated = app;
-    updated.allowedMethods = List<String>.from(updated.allowedMethods);
+    final appKey =
+        app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey;
     for (final key in toPersist) {
-      if (!updated.allowedMethods.contains(key)) {
-        updated.allowedMethods.add(key);
-      }
+      await RememberedPermissionChoiceStore.upsert(
+        userPubkey: app.pubkey,
+        clientPubkey: appKey,
+        methodKey: key,
+        expiresAtMs: kRememberPermissionChoiceNoExpiryMs,
+      );
     }
-    updated.allowedMethods.sort();
-
-    await ClientAuthDBISAR.saveFromDB(updated, isUpdate: true);
-    AccountManager.sharedInstance.updateApplicationMap(updated);
   }
 
   Future<void> _completeAll({required bool approveSelected}) async {
@@ -308,6 +306,15 @@ class PermissionApprovalBatcher {
     if (app == null) return false;
     if (app.authMode == 2) return true;
     if (app.allowedMethods.contains(methodKey)) return true;
+    final appKey =
+        app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey;
+    if (await RememberedPermissionChoiceStore.isValid(
+          userPubkey: app.pubkey,
+          clientPubkey: appKey,
+          methodKey: methodKey,
+        )) {
+      return true;
+    }
 
     return _getQueue(clientPubkey).enqueueApproval(
       methodKey: methodKey,

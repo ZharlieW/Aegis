@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/remembered_permission_choice_store.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
@@ -139,6 +140,13 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                   // (Otherwise allowedMethods from auto mode keeps bypassing _requireApprovalForApp.)
                   if (v) {
                     row.allowedMethods = [];
+                    final appKey = row.clientPubkey.isNotEmpty
+                        ? row.clientPubkey
+                        : (row.remoteSignerPubkey ?? '');
+                    await RememberedPermissionChoiceStore.deleteAllForClient(
+                      userPubkey: row.pubkey,
+                      clientPubkey: appKey,
+                    );
                   }
                   await ClientAuthDBISAR.saveFromDB(row, isUpdate: true);
                   // Re-read so we pass a new object instance: ValueNotifier skips
@@ -245,6 +253,13 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
     if (fresh == null) return;
 
     fresh.allowedMethods = [];
+    final appKey = fresh.clientPubkey.isNotEmpty
+        ? fresh.clientPubkey
+        : (fresh.remoteSignerPubkey ?? '');
+    await RememberedPermissionChoiceStore.deleteAllForClient(
+      userPubkey: fresh.pubkey,
+      clientPubkey: appKey,
+    );
     await ClientAuthDBISAR.saveFromDB(fresh, isUpdate: true);
     AccountManager.sharedInstance.updateApplicationMap(fresh);
     if (fresh.clientPubkey.isNotEmpty) {

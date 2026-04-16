@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:aegis/db/clientAuthDB_isar.dart';
+import 'package:aegis/db/remembered_permission_choice_store.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/nostr/nostr.dart' show Event, Filter, OKEvent;
 import 'package:aegis/nostr/nips/nip46/nostr_remote_request.dart';
@@ -532,6 +533,15 @@ class RemoteRelayNip46Session {
     if (app == null) return false;
     if (app.authMode == 2) return true; // full trust
     if (app.allowedMethods.contains(methodKey)) return true;
+    final appKey =
+        app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey;
+    if (await RememberedPermissionChoiceStore.isValid(
+          userPubkey: app.pubkey,
+          clientPubkey: appKey,
+          methodKey: methodKey,
+        )) {
+      return true;
+    }
 
     return PermissionApprovalBatcher.instance.requestApproval(
       clientPubkey: clientPubkey,
