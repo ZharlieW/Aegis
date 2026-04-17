@@ -20,6 +20,8 @@ class BatchRequestPermission extends StatefulWidget {
   final void Function(bool selected) onSetAllSelected;
 
   final void Function(String methodKey, bool alwaysAllow) onSetAlwaysAllow;
+  final void Function(String methodKey, RememberChoiceTtl rememberTtl)
+      onSetRememberTtl;
 
   /// Called when user presses "Grant selected".
   final Future<void> Function() onApproveSelected;
@@ -36,6 +38,7 @@ class BatchRequestPermission extends StatefulWidget {
     required this.onSetSelected,
     required this.onSetAllSelected,
     required this.onSetAlwaysAllow,
+    required this.onSetRememberTtl,
     required this.onApproveSelected,
     required this.onRejectAll,
   });
@@ -149,6 +152,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                                   group: g,
                                   onSetSelected: widget.onSetSelected,
                                   onSetAlwaysAllow: widget.onSetAlwaysAllow,
+                                  onSetRememberTtl: widget.onSetRememberTtl,
                                 )),
                             const SizedBox(height: 12),
                           ],
@@ -230,11 +234,14 @@ class _PermissionTypeRow extends StatelessWidget {
   final BatchPermissionGroupView group;
   final void Function(String methodKey, bool selected) onSetSelected;
   final void Function(String methodKey, bool alwaysAllow) onSetAlwaysAllow;
+  final void Function(String methodKey, RememberChoiceTtl rememberTtl)
+      onSetRememberTtl;
 
   const _PermissionTypeRow({
     required this.group,
     required this.onSetSelected,
     required this.onSetAlwaysAllow,
+    required this.onSetRememberTtl,
   });
 
   @override
@@ -286,6 +293,31 @@ class _PermissionTypeRow extends StatelessWidget {
               style: theme.textTheme.bodyMedium,
             ),
           ),
+          if (group.alwaysAllow)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: DropdownButton<RememberChoiceTtl>(
+                value: group.rememberTtl,
+                items: const [
+                  DropdownMenuItem(
+                    value: RememberChoiceTtl.fiveMinutes,
+                    child: Text('Remember for 5 minutes'),
+                  ),
+                  DropdownMenuItem(
+                    value: RememberChoiceTtl.thirtyMinutes,
+                    child: Text('Remember for 30 minutes'),
+                  ),
+                  DropdownMenuItem(
+                    value: RememberChoiceTtl.permanent,
+                    child: Text('Remember permanently'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  onSetRememberTtl(group.methodKey, value);
+                },
+              ),
+            ),
         ],
       ),
     );

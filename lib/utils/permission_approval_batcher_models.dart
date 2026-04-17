@@ -1,10 +1,17 @@
 /// View model for one pending permission type inside the batch dialog.
+enum RememberChoiceTtl {
+  fiveMinutes,
+  thirtyMinutes,
+  permanent,
+}
+
 class BatchPermissionGroupView {
   final String methodKey;
   final String description;
   final int count;
   final bool selected;
   final bool alwaysAllow;
+  final RememberChoiceTtl rememberTtl;
 
   const BatchPermissionGroupView({
     required this.methodKey,
@@ -12,6 +19,7 @@ class BatchPermissionGroupView {
     required this.count,
     required this.selected,
     required this.alwaysAllow,
+    required this.rememberTtl,
   });
 }
 

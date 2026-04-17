@@ -85,4 +85,25 @@ class RememberedPermissionChoiceStore {
     });
   }
 
+  static Future<void> deleteExpiredForClient({
+    required String userPubkey,
+    required String clientPubkey,
+  }) async {
+    if (clientPubkey.isEmpty) return;
+    final isar = await DBISAR.sharedInstance.open(userPubkey);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final rows = await isar.rememberedPermissionChoiceDBISARs
+        .filter()
+        .clientPubkeyEqualTo(clientPubkey)
+        .findAll();
+    final expiredIds = rows
+        .where((row) => row.expiresAtMs <= now)
+        .map((row) => row.id)
+        .toList();
+    if (expiredIds.isEmpty) return;
+    await isar.writeTxn(() async {
+      await isar.rememberedPermissionChoiceDBISARs.deleteAll(expiredIds);
+    });
+  }
+
 }

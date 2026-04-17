@@ -18,6 +18,7 @@ class _PendingPermissionGroup {
   final List<Completer<bool>> completers = [];
   bool selected = true;
   bool alwaysAllow = false;
+  RememberChoiceTtl rememberTtl = RememberChoiceTtl.permanent;
 
   _PendingPermissionGroup({
     required this.methodKey,
@@ -62,6 +63,7 @@ class _ClientQueueState {
               count: g.count,
               selected: g.selected,
               alwaysAllow: g.alwaysAllow,
+              rememberTtl: g.rememberTtl,
             ))
         .toList();
   }
@@ -90,6 +92,13 @@ class _ClientQueueState {
     _notify();
   }
 
+  void setGroupRememberTtl(String methodKey, RememberChoiceTtl rememberTtl) {
+    final group = _groups[methodKey];
+    if (group == null) return;
+    group.rememberTtl = rememberTtl;
+    _notify();
+  }
+
   /// Sets [selected] for every pending group in this batch. Does not change
   /// [alwaysAllow] (same semantics as calling [setGroupSelected] per key).
   void setAllGroupsSelected(bool selected) {
@@ -100,13 +109,13 @@ class _ClientQueueState {
     _notify();
   }
 
-  List<String> _collectAlwaysAllowKeys(
+  Map<String, RememberChoiceTtl> _collectAlwaysAllowConfigs(
     Iterable<_PendingPermissionGroup> groups,
   ) {
-    final toPersist = <String>[];
+    final toPersist = <String, RememberChoiceTtl>{};
     for (final g in groups) {
       if (g.selected && g.alwaysAllow) {
-        toPersist.add(g.methodKey);
+        toPersist[g.methodKey] = g.rememberTtl;
       }
     }
     return toPersist;
@@ -114,18 +123,26 @@ class _ClientQueueState {
 
   Future<void> _persistAlwaysAllowIfNeeded(
     ClientAuthDBISAR app,
-    List<String> toPersist,
+    Map<String, RememberChoiceTtl> toPersist,
   ) async {
     if (toPersist.isEmpty) return;
 
     final appKey =
         app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey;
-    for (final key in toPersist) {
+    for (final entry in toPersist.entries) {
+      final ttlMs = switch (entry.value) {
+        RememberChoiceTtl.fiveMinutes => 5 * 60 * 1000,
+        RememberChoiceTtl.thirtyMinutes => 30 * 60 * 1000,
+        RememberChoiceTtl.permanent => 0,
+      };
+      final expiresAtMs = ttlMs == 0
+          ? kRememberPermissionChoiceNoExpiryMs
+          : DateTime.now().millisecondsSinceEpoch + ttlMs;
       await RememberedPermissionChoiceStore.upsert(
         userPubkey: app.pubkey,
         clientPubkey: appKey,
-        methodKey: key,
-        expiresAtMs: kRememberPermissionChoiceNoExpiryMs,
+        methodKey: entry.key,
+        expiresAtMs: expiresAtMs,
       );
     }
   }
@@ -152,7 +169,7 @@ class _ClientQueueState {
     // Persist "always allow" after user confirms.
     if (approveSelected && hasApp) {
       try {
-        final toPersist = _collectAlwaysAllowKeys(groupsSnapshot);
+        final toPersist = _collectAlwaysAllowConfigs(groupsSnapshot);
         await _persistAlwaysAllowIfNeeded(app, toPersist);
       } catch (e) {
         AegisLogger.warning('Failed to persist always-allow batch permission', e);
@@ -220,6 +237,9 @@ class _ClientQueueState {
           onSetAllSelected: setAllGroupsSelected,
           onSetAlwaysAllow: (methodKey, alwaysAllow) {
             setGroupAlwaysAllow(methodKey, alwaysAllow);
+          },
+          onSetRememberTtl: (methodKey, rememberTtl) {
+            setGroupRememberTtl(methodKey, rememberTtl);
           },
           onApproveSelected: () async {
             await _completeAll(approveSelected: true);
@@ -308,6 +328,10 @@ class PermissionApprovalBatcher {
     if (app.allowedMethods.contains(methodKey)) return true;
     final appKey =
         app.clientPubkey.isNotEmpty ? app.clientPubkey : clientPubkey;
+    await RememberedPermissionChoiceStore.deleteExpiredForClient(
+      userPubkey: app.pubkey,
+      clientPubkey: appKey,
+    );
     if (await RememberedPermissionChoiceStore.isValid(
           userPubkey: app.pubkey,
           clientPubkey: appKey,
