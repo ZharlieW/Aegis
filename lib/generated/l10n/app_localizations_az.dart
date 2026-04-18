@@ -753,6 +753,21 @@ class AppLocalizationsAz extends AppLocalizations {
   String get alwaysAllowThisPermission => 'Always approve this permission';
 
   @override
+  String get batchRememberDurationSection => 'Remember duration';
+
+  @override
+  String get batchRememberDurationHint => 'Expand to choose a duration. Selection applies when you approve.';
+
+  @override
+  String get batchRememberFiveMinutes => '5 minutes';
+
+  @override
+  String get batchRememberThirtyMinutes => '30 minutes';
+
+  @override
+  String get batchRememberPermanent => 'Permanent';
+
+  @override
   String batchPermissionRequestsCount(int count) {
     return '$count requests require approval';
   }

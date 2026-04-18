@@ -18,7 +18,7 @@ class _PendingPermissionGroup {
   final List<Completer<bool>> completers = [];
   bool selected = true;
   bool alwaysAllow = false;
-  RememberChoiceTtl rememberTtl = RememberChoiceTtl.permanent;
+  RememberChoiceTtl rememberTtl = RememberChoiceTtl.fiveMinutes;
 
   _PendingPermissionGroup({
     required this.methodKey,
@@ -89,6 +89,9 @@ class _ClientQueueState {
     final group = _groups[methodKey];
     if (group == null) return;
     group.alwaysAllow = alwaysAllow;
+    if (alwaysAllow) {
+      group.rememberTtl = RememberChoiceTtl.fiveMinutes;
+    }
     _notify();
   }
 

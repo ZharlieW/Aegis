@@ -247,6 +247,7 @@ class _PermissionTypeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -289,34 +290,70 @@ class _PermissionTypeRow extends StatelessWidget {
             dense: true,
             contentPadding: EdgeInsets.zero,
             title: Text(
-              AppLocalizations.of(context)!.alwaysAllowThisPermission,
+              l10n.alwaysAllowThisPermission,
               style: theme.textTheme.bodyMedium,
             ),
           ),
           if (group.alwaysAllow)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DropdownButton<RememberChoiceTtl>(
-                value: group.rememberTtl,
-                items: const [
-                  DropdownMenuItem(
-                    value: RememberChoiceTtl.fiveMinutes,
-                    child: Text('Remember for 5 minutes'),
-                  ),
-                  DropdownMenuItem(
-                    value: RememberChoiceTtl.thirtyMinutes,
-                    child: Text('Remember for 30 minutes'),
-                  ),
-                  DropdownMenuItem(
-                    value: RememberChoiceTtl.permanent,
-                    child: Text('Remember permanently'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  onSetRememberTtl(group.methodKey, value);
-                },
+            ExpansionTile(
+              initiallyExpanded: false,
+              tilePadding: EdgeInsets.zero,
+              title: Text(
+                l10n.batchRememberDurationSection,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              subtitle: Text(
+                _rememberTtlLabel(l10n, group.rememberTtl),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      l10n.batchRememberDurationHint,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+                RadioListTile<RememberChoiceTtl>(
+                  value: RememberChoiceTtl.fiveMinutes,
+                  groupValue: group.rememberTtl,
+                  onChanged: (v) {
+                    if (v == null) return;
+                    onSetRememberTtl(group.methodKey, v);
+                  },
+                  dense: true,
+                  title: Text(l10n.batchRememberFiveMinutes),
+                ),
+                RadioListTile<RememberChoiceTtl>(
+                  value: RememberChoiceTtl.thirtyMinutes,
+                  groupValue: group.rememberTtl,
+                  onChanged: (v) {
+                    if (v == null) return;
+                    onSetRememberTtl(group.methodKey, v);
+                  },
+                  dense: true,
+                  title: Text(l10n.batchRememberThirtyMinutes),
+                ),
+                RadioListTile<RememberChoiceTtl>(
+                  value: RememberChoiceTtl.permanent,
+                  groupValue: group.rememberTtl,
+                  onChanged: (v) {
+                    if (v == null) return;
+                    onSetRememberTtl(group.methodKey, v);
+                  },
+                  dense: true,
+                  title: Text(l10n.batchRememberPermanent),
+                ),
+              ],
             ),
         ],
       ),
@@ -324,3 +361,13 @@ class _PermissionTypeRow extends StatelessWidget {
   }
 }
 
+String _rememberTtlLabel(AppLocalizations l10n, RememberChoiceTtl ttl) {
+  switch (ttl) {
+    case RememberChoiceTtl.fiveMinutes:
+      return l10n.batchRememberFiveMinutes;
+    case RememberChoiceTtl.thirtyMinutes:
+      return l10n.batchRememberThirtyMinutes;
+    case RememberChoiceTtl.permanent:
+      return l10n.batchRememberPermanent;
+  }
+}

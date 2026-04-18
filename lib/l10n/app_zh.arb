@@ -314,6 +314,11 @@
   "permissionNip44Decrypt": "使用 NIP-44 解密数据",
   "permissionDecryptZapEvent": "解密私密打闪",
   "alwaysAllowThisPermission": "总是批准这类请求",
+  "batchRememberDurationSection": "记住时长",
+  "batchRememberDurationHint": "展开可选择时长，确认授权时生效。",
+  "batchRememberFiveMinutes": "5 分钟",
+  "batchRememberThirtyMinutes": "30 分钟",
+  "batchRememberPermanent": "永久",
   "batchPermissionRequestsCount": "需要授权 {count} 个请求",
   "@batchPermissionRequestsCount": {
     "placeholders": {

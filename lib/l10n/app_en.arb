@@ -314,6 +314,11 @@
   "permissionNip44Decrypt": "Decrypt data using NIP-44",
   "permissionDecryptZapEvent": "Decrypt private zaps",
   "alwaysAllowThisPermission": "Always approve this permission",
+  "batchRememberDurationSection": "Remember duration",
+  "batchRememberDurationHint": "Expand to choose a duration. Selection applies when you approve.",
+  "batchRememberFiveMinutes": "5 minutes",
+  "batchRememberThirtyMinutes": "30 minutes",
+  "batchRememberPermanent": "Permanent",
   "batchPermissionRequestsCount": "{count} requests require approval",
   "@batchPermissionRequestsCount": {
     "placeholders": {

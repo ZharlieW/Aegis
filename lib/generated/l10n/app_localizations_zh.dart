@@ -753,6 +753,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get alwaysAllowThisPermission => '总是批准这类请求';
 
   @override
+  String get batchRememberDurationSection => '记住时长';
+
+  @override
+  String get batchRememberDurationHint => '展开可选择时长，确认授权时生效。';
+
+  @override
+  String get batchRememberFiveMinutes => '5 分钟';
+
+  @override
+  String get batchRememberThirtyMinutes => '30 分钟';
+
+  @override
+  String get batchRememberPermanent => '永久';
+
+  @override
   String batchPermissionRequestsCount(int count) {
     return '需要授权 $count 个请求';
   }

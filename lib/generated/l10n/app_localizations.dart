@@ -1582,6 +1582,36 @@ abstract class AppLocalizations {
   /// **'Always approve this permission'**
   String get alwaysAllowThisPermission;
 
+  /// No description provided for @batchRememberDurationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember duration'**
+  String get batchRememberDurationSection;
+
+  /// No description provided for @batchRememberDurationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand to choose a duration. Selection applies when you approve.'**
+  String get batchRememberDurationHint;
+
+  /// No description provided for @batchRememberFiveMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'5 minutes'**
+  String get batchRememberFiveMinutes;
+
+  /// No description provided for @batchRememberThirtyMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'30 minutes'**
+  String get batchRememberThirtyMinutes;
+
+  /// No description provided for @batchRememberPermanent.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent'**
+  String get batchRememberPermanent;
+
   /// No description provided for @batchPermissionRequestsCount.
   ///
   /// In en, this message translates to:
