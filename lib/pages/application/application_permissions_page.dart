@@ -22,10 +22,12 @@ class ApplicationPermissionsPage extends StatefulWidget {
   });
 
   @override
-  State<ApplicationPermissionsPage> createState() => _ApplicationPermissionsPageState();
+  State<ApplicationPermissionsPage> createState() =>
+      _ApplicationPermissionsPageState();
 }
 
-class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage> {
+class _ApplicationPermissionsPageState
+    extends State<ApplicationPermissionsPage> {
   ClientAuthDBISAR? _app;
   ValueNotifier<ClientAuthDBISAR>? _appNotifier;
 
@@ -87,6 +89,7 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
     final localeName = Localizations.localeOf(context).toString();
     final usageStats = MethodUsageStats.parse(app.methodUsageStatsJson);
     final isManualEach = app.authMode == 1;
+    final permissionItems = _permissionItems(app);
 
     return Scaffold(
       appBar: AppBar(
@@ -132,8 +135,8 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                 value: isManualEach,
                 onChanged: (v) async {
                   final w = widget.clientAuthDBISAR;
-                  final row =
-                      await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
+                  final row = await ClientAuthDBISAR.searchFromDB(
+                      w.pubkey, w.clientPubkey);
                   if (row == null || !context.mounted) return;
                   row.authMode = v ? 1 : 2;
                   // Manual mode: clear pre-granted method keys so prompts run again.
@@ -151,8 +154,8 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                   await ClientAuthDBISAR.saveFromDB(row, isUpdate: true);
                   // Re-read so we pass a new object instance: ValueNotifier skips
                   // notifyListeners when value is set to the same reference as before.
-                  final synced =
-                      await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
+                  final synced = await ClientAuthDBISAR.searchFromDB(
+                      w.pubkey, w.clientPubkey);
                   if (synced != null) {
                     AccountManager.sharedInstance.updateApplicationMap(synced);
                     if (synced.clientPubkey.isNotEmpty) {
@@ -166,7 +169,9 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                   style: theme.textTheme.bodyMedium,
                 ),
                 subtitle: Text(
-                  isManualEach ? l10n.authManualEachHint : l10n.authTrustFullyHint,
+                  isManualEach
+                      ? l10n.authManualEachHint
+                      : l10n.authTrustFullyHint,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -198,7 +203,7 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
               ),
               const SizedBox(height: 24),
               Text(
-                _effectiveMethods(app).isEmpty
+                permissionItems.isEmpty
                     ? l10n.permissionsPageNoDeclaredPerms
                     : l10n.permissionsPageDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -207,11 +212,16 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 28),
-              ..._effectiveMethods(app).map(
-                (method) => _PermissionItem(
-                  icon: _iconForMethod(method),
-                  title: _titleForMethod(l10n, method),
-                  subtitle: _usageLine(l10n, usageStats[method], localeName),
+              ...permissionItems.map(
+                (item) => _PermissionItem(
+                  icon: _iconForMethod(item.method),
+                  title: _titleForMethod(l10n, item.method),
+                  subtitle:
+                      _usageLine(l10n, usageStats[item.method], localeName),
+                  sourceLabel: _sourceLabel(
+                    localeName: localeName,
+                    isDeclared: item.isDeclared,
+                  ),
                 ),
               ),
               const SizedBox(height: 40),
@@ -274,15 +284,23 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
     );
   }
 
-  /// Permissions to show: declared/used methods, always including get_public_key for connected apps
-  /// (clients always request get_public_key when connecting). Order: get_public_key → sign_event* → nip04* → nip44* → other.
-  static List<String> _effectiveMethods(ClientAuthDBISAR app) {
-    final list = List<String>.from(app.allowedMethods);
-    if (!list.contains('get_public_key')) {
-      list.add('get_public_key');
-    }
-    sortPermissionMethodsInPlace(list);
-    return list;
+  /// Permissions to show, with source labels:
+  /// - Declared at connect time (URI perms)
+  /// - Runtime-added after first approved usage
+  static List<_PermissionViewItem> _permissionItems(ClientAuthDBISAR app) {
+    final declaredSet = app.declaredMethods.toSet();
+    final allowedSet = app.allowedMethods.toSet();
+    allowedSet.add('get_public_key');
+
+    final sorted = allowedSet.toList();
+    sortPermissionMethodsInPlace(sorted);
+
+    return sorted
+        .map((method) => _PermissionViewItem(
+              method: method,
+              isDeclared: declaredSet.contains(method),
+            ))
+        .toList();
   }
 
   static IconData _iconForMethod(String method) {
@@ -330,6 +348,17 @@ class _ApplicationPermissionsPageState extends State<ApplicationPermissionsPage>
       default:
         return method;
     }
+  }
+
+  static String _sourceLabel({
+    required String localeName,
+    required bool isDeclared,
+  }) {
+    final isChinese = localeName.toLowerCase().startsWith('zh');
+    if (isChinese) {
+      return isDeclared ? '声明权限' : '运行时新增';
+    }
+    return isDeclared ? 'Declared permission' : 'Runtime added';
   }
 
   /// Human-readable title for sign_event by kind (matches Amber-style labels).
@@ -381,11 +410,13 @@ class _PermissionItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String sourceLabel;
 
   const _PermissionItem({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.sourceLabel,
   });
 
   @override
@@ -423,7 +454,24 @@ class _PermissionItem extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer
+                        .withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    sourceLabel,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
                 Text(
                   subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -437,4 +485,14 @@ class _PermissionItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PermissionViewItem {
+  final String method;
+  final bool isDeclared;
+
+  const _PermissionViewItem({
+    required this.method,
+    required this.isDeclared,
+  });
 }

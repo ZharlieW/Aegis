@@ -49,8 +49,10 @@ class ClientAuthDBISAR {
   Id id = Isar.autoIncrement;
   // remote signer pubkey
   late String pubkey; // user pubkey
-  late String? remoteSignerPubkey; // remote signer pubkey (nullable for backward compatibility)
-  late String? remoteSignerPrivateKey; // remote signer private key (nullable for backward compatibility)
+  late String?
+      remoteSignerPubkey; // remote signer pubkey (nullable for backward compatibility)
+  late String?
+      remoteSignerPrivateKey; // remote signer private key (nullable for backward compatibility)
   late String clientPubkey; // client pubkey
 
   // client image
@@ -75,6 +77,10 @@ class ClientAuthDBISAR {
   /// NIP-46 permissions granted at connect time (e.g. from URI perms or default full list).
   /// Empty means use signer default; non-empty is the list to show on permissions page (Amber-style).
   List<String> allowedMethods = [];
+
+  /// Snapshot of permissions explicitly declared by app at connect time.
+  /// Used by permissions UI to label source: declared vs runtime-added.
+  List<String> declaredMethods = [];
 
   /// Auth mode: 1 = manual (approve each request), 2 = full trust (no further prompts).
   /// New connections default to 2 (auto approve); user can enable manual mode in permissions UI.
@@ -101,6 +107,7 @@ class ClientAuthDBISAR {
     this.createTimestamp,
     this.updateTimestamp,
     List<String> allowedMethodsParam = const [],
+    List<String> declaredMethodsParam = const [],
     this.authMode = 2,
     this.methodUsageStatsJson = '{}',
     required this.pubkey,
@@ -109,9 +116,11 @@ class ClientAuthDBISAR {
     this.remoteSignerPubkey,
     this.remoteSignerPrivateKey,
     this.allRelays,
-  }) : allowedMethods = allowedMethodsParam;
+  })  : allowedMethods = allowedMethodsParam,
+        declaredMethods = declaredMethodsParam;
 
-  static Future<ClientAuthDBISAR?> searchFromDB(String pubkey, String clientPubkey) async {
+  static Future<ClientAuthDBISAR?> searchFromDB(
+      String pubkey, String clientPubkey) async {
     final isar = await DBISAR.sharedInstance.open(pubkey);
     final application = await isar.clientAuthDBISARs
         .filter()
@@ -127,8 +136,10 @@ class ClientAuthDBISAR {
     return list;
   }
 
-  static Future<void> saveFromDB(ClientAuthDBISAR client, {bool isUpdate = false}) async {
-    final existingClient = await searchFromDB(client.pubkey, client.clientPubkey);
+  static Future<void> saveFromDB(ClientAuthDBISAR client,
+      {bool isUpdate = false}) async {
+    final existingClient =
+        await searchFromDB(client.pubkey, client.clientPubkey);
 
     if (existingClient == null || isUpdate) {
       final isar = await DBISAR.sharedInstance.open(client.pubkey);
@@ -150,7 +161,8 @@ class ClientAuthDBISAR {
   }
 
   /// Update the updateTimestamp for an application when there's activity
-  static Future<void> updateActivityTimestamp(String pubkey, String clientPubkey) async {
+  static Future<void> updateActivityTimestamp(
+      String pubkey, String clientPubkey) async {
     final existingClient = await searchFromDB(pubkey, clientPubkey);
     if (existingClient != null) {
       existingClient.updateTimestamp = DateTime.now().millisecondsSinceEpoch;
@@ -181,7 +193,7 @@ class ClientAuthDBISAR {
   /// Delete application by ID (useful when clientPubkey is empty)
   static Future<void> deleteFromDBById(String pubkey, Id id) async {
     final isar = await DBISAR.sharedInstance.open(pubkey);
-    
+
     final target = await isar.clientAuthDBISARs.get(id);
     if (target != null) {
       final appKey = target.clientPubkey.isNotEmpty
@@ -200,15 +212,16 @@ class ClientAuthDBISAR {
   }
 
   /// Delete application by remote signer pubkey (useful when clientPubkey is empty)
-  static Future<void> deleteFromDBByRemoteSignerPubkey(String pubkey, String remoteSignerPubkey) async {
+  static Future<void> deleteFromDBByRemoteSignerPubkey(
+      String pubkey, String remoteSignerPubkey) async {
     final isar = await DBISAR.sharedInstance.open(pubkey);
-    
+
     final target = await isar.clientAuthDBISARs
         .filter()
         .pubkeyEqualTo(pubkey)
         .remoteSignerPubkeyEqualTo(remoteSignerPubkey)
         .findFirst();
-    
+
     if (target != null) {
       await isar.writeTxn(() async {
         await isar.rememberedPermissionChoiceDBISARs

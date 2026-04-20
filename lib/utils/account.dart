@@ -27,6 +27,7 @@ import 'package:aegis/utils/key_manager.dart';
 class AuthResult {
   final bool granted;
   final bool fullTrust;
+
   /// Optional method key that should be auto-approved in the future (per permission type).
   final String? rememberedMethodKey;
 
@@ -64,12 +65,14 @@ class Account {
   static String getPrivateKey(String nsec) => Nip19.decodePrivkey(nsec);
   static Keychain generateNewKeychain() => Keychain.generate();
   static String getPublicKey(String privkey) => Keychain.getPublicKey(privkey);
-  static String getNupPublicKey(String publicKey) => Nip19.encodePubkey(publicKey);
+  static String getNupPublicKey(String publicKey) =>
+      Nip19.encodePubkey(publicKey);
 
   void addObserver(AccountObservers observer) => _observers.add(observer);
   bool removeObserver(AccountObservers observer) => _observers.remove(observer);
 
-  bool isValidNostrConnectSchemeUri(String uri) => uri.isNotEmpty && uri.contains(NIP46_NOSTR_CONNECT_PROTOCOL);
+  bool isValidNostrConnectSchemeUri(String uri) =>
+      uri.isNotEmpty && uri.contains(NIP46_NOSTR_CONNECT_PROTOCOL);
 
   void _notify(void Function(AccountObservers) fn) {
     for (final observer in _observers) {
@@ -86,10 +89,10 @@ class Account {
 
   Future<void> logout() async {
     final pubkeyToDelete = _currentPubkey;
-    
+
     // Remove all applications from memory
     final clientList = await ClientAuthDBISAR.getAllFromDB(pubkeyToDelete);
-    for(final client in clientList){
+    for (final client in clientList) {
       AccountManager.sharedInstance.removeApplicationMap(client.clientPubkey);
     }
 
@@ -97,20 +100,21 @@ class Account {
     try {
       // Delete all applications
       await ClientAuthDBISAR.deleteAllFromDB(pubkeyToDelete);
-      
+
       // Delete all signed events
       await SignedEventDBISAR.deleteAllFromDB(pubkeyToDelete);
-      
+
       // Delete user data
       await UserDBISAR.deleteFromDB(pubkeyToDelete);
-      
+
       // Delete Keychain password
       await DBKeyManager.clearUserPrivkeyKey(pubkeyToDelete);
-      
+
       // Delete database files from disk
       await DBISAR.sharedInstance.deleteDatabaseFor(pubkeyToDelete);
     } catch (e) {
-      AegisLogger.error('Failed to clean up database for user: $pubkeyToDelete', e);
+      AegisLogger.error(
+          'Failed to clean up database for user: $pubkeyToDelete', e);
     }
 
     // Delete account from account manager
@@ -132,14 +136,15 @@ class Account {
       await LocalStorage.remove('pubkey');
       AegisNavigator.pushPage(
         AegisNavigator.navigatorKey.currentContext,
-            (context) => const Login(isLaunchLogin: true),
+        (context) => const Login(isLaunchLogin: true),
       );
     }
 
     _notify((o) => o.didLogout());
   }
 
-  Future<void> loginSuccess(String pubkey, String? privkey,{ bool isInit = false}) async {
+  Future<void> loginSuccess(String pubkey, String? privkey,
+      {bool isInit = false}) async {
     clear();
     _currentPubkey = pubkey;
 
@@ -159,7 +164,7 @@ class Account {
       }
     } else {
       _currentPrivkey = privkey;
-      
+
       // Use Keychain for password management
       // Check if password already exists in Keychain, if not generate new one
       String password;
@@ -172,20 +177,20 @@ class Account {
         password = await DBKeyManager.generateUserPrivkeyKey(pubkey);
       }
       final encrypted = encryptPrivateKey(hexToBytes(privkey), password);
-      
+
       user = UserDBISAR(
         pubkey: pubkey,
         encryptedPrivkey: bytesToHex(encrypted),
         defaultPassword: null, // No longer store password in database
       );
-      await DBISAR.sharedInstance.saveToDB(user.pubkey,user);
+      await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
     }
 
     final clientList = await ClientAuthDBISAR.getAllFromDB(user.pubkey);
-    
+
     // Process bunker applications with proper indexing and database updates
     await _processBunkerApplicationsWithDBUpdate(clientList);
-    
+
     // Add all applications to AccountManager
     // Use a set to track added keys to avoid duplicates
     final addedKeys = <String>{};
@@ -194,17 +199,20 @@ class Account {
       String mapKey;
       if (item.clientPubkey.isNotEmpty) {
         mapKey = item.clientPubkey;
-      } else if (item.remoteSignerPubkey != null && item.remoteSignerPubkey!.isNotEmpty) {
+      } else if (item.remoteSignerPubkey != null &&
+          item.remoteSignerPubkey!.isNotEmpty) {
         mapKey = item.remoteSignerPubkey!;
       } else {
         // Skip applications without valid key
         continue;
       }
-      
+
       // Only add if not already added
       if (!addedKeys.contains(mapKey)) {
         // If using remoteSignerPubkey as key, temporarily set it as clientPubkey for the map
-        if (item.clientPubkey.isEmpty && item.remoteSignerPubkey != null && item.remoteSignerPubkey!.isNotEmpty) {
+        if (item.clientPubkey.isEmpty &&
+            item.remoteSignerPubkey != null &&
+            item.remoteSignerPubkey!.isNotEmpty) {
           final tempApp = ClientAuthDBISAR(
             pubkey: item.pubkey,
             clientPubkey: mapKey, // Temporary key
@@ -220,6 +228,7 @@ class Account {
             createTimestamp: item.createTimestamp,
             updateTimestamp: item.updateTimestamp,
             allowedMethodsParam: item.allowedMethods,
+            declaredMethodsParam: item.declaredMethods,
             authMode: item.authMode,
             methodUsageStatsJson: item.methodUsageStatsJson,
           );
@@ -246,7 +255,7 @@ class Account {
       await ServerNIP46Signer.instance.start(port);
     }
 
-    if(isInit){
+    if (isInit) {
       await AccountManager.sharedInstance.initAccountList();
     }
     _notify((o) => o.didLoginSuccess());
@@ -257,9 +266,11 @@ class Account {
 
     if (pubkey != null) {
       await loginSuccess(pubkey, null);
-      AegisLogger.info("🔹 The session is automatically resumed after the user logs in. Procedure");
+      AegisLogger.info(
+          "🔹 The session is automatically resumed after the user logs in. Procedure");
     } else {
-      AegisLogger.info("🔹 No login information is detected. The user needs to log in again");
+      AegisLogger.info(
+          "🔹 No login information is detected. The user needs to log in again");
     }
   }
 
@@ -311,12 +322,14 @@ class Account {
         // Clear the password from database after successful migration
         user.defaultPassword = null;
         await DBISAR.sharedInstance.saveToDB(user.pubkey, user);
-        print('[Migration] Cleared password from database for user: ${user.pubkey}');
+        print(
+            '[Migration] Cleared password from database for user: ${user.pubkey}');
 
         // Get the migrated password from Keychain
         password = await DBKeyManager.getUserPrivkeyKey(user.pubkey);
       } catch (error) {
-        print('[Migration] Failed to migrate password for user: ${user.pubkey}, error: $error');
+        print(
+            '[Migration] Failed to migrate password for user: ${user.pubkey}, error: $error');
         // Fallback to database password (keep the old password in database)
         password = oldPassword;
       }
@@ -326,7 +339,8 @@ class Account {
     }
 
     if (password == null || password.isEmpty) {
-      throw Exception('Failed to get encryption password for user: ${user.pubkey}');
+      throw Exception(
+          'Failed to get encryption password for user: ${user.pubkey}');
     }
 
     return decryptPrivateKey(encryptedBytes, password);
@@ -337,32 +351,36 @@ class Account {
   }
 
   /// Process bunker applications with proper indexing and database updates
-  Future<void> _processBunkerApplicationsWithDBUpdate(List<ClientAuthDBISAR> clientList) async {
+  Future<void> _processBunkerApplicationsWithDBUpdate(
+      List<ClientAuthDBISAR> clientList) async {
     // Get all bunker applications
     final bunkerApplications = clientList
         .where((app) => app.connectionType == EConnectionType.bunker.toInt)
         .toList();
-    
+
     // Sort by creation timestamp to maintain consistent ordering
-    bunkerApplications.sort((a, b) => 
-        (a.createTimestamp ?? 0).compareTo(b.createTimestamp ?? 0));
-    
+    bunkerApplications.sort(
+        (a, b) => (a.createTimestamp ?? 0).compareTo(b.createTimestamp ?? 0));
+
     // Process each bunker application
     for (int i = 0; i < bunkerApplications.length; i++) {
       final item = bunkerApplications[i];
       final index = i + 1;
-      
+
       // Check if name needs to be updated
       if (_shouldUpdateApplicationName(item.name)) {
         final oldName = item.name;
         item.name = 'application #$index';
-        
+
         // Update database
         try {
           await ClientAuthDBISAR.saveFromDB(item, isUpdate: true);
-          AegisLogger.info('Updated bunker application name in DB: $oldName -> application #$index (${item.clientPubkey})');
+          AegisLogger.info(
+              'Updated bunker application name in DB: $oldName -> application #$index (${item.clientPubkey})');
         } catch (e) {
-          AegisLogger.error('Failed to update application name in database: ${item.clientPubkey}', e);
+          AegisLogger.error(
+              'Failed to update application name in database: ${item.clientPubkey}',
+              e);
         }
       }
     }
@@ -373,22 +391,22 @@ class Account {
     if (name == null || name.isEmpty) {
       return true;
     }
-    
+
     // Update if name is a pubkey (64 hex characters)
     if (name.length == 64 && RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(name)) {
       return true;
     }
-    
+
     // Update if name contains ':' (likely a pubkey with prefix)
     if (name.contains(':')) {
       return true;
     }
-    
+
     // Update if name is too long (likely a pubkey or complex identifier)
     if (name.length > 20) {
       return true;
     }
-    
+
     return false;
   }
 }

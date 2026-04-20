@@ -43,7 +43,8 @@ class NostrWalletConnectionParserHandler {
       print('⏫ scheme: $scheme');
       print('🌲 lud16: $lud16');
 
-      final relayList = relays.cast<String>().where((r) => r.startsWith('ws')).toList();
+      final relayList =
+          relays.cast<String>().where((r) => r.startsWith('ws')).toList();
       if (relayList.isEmpty) return null;
 
       int timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -60,6 +61,7 @@ class NostrWalletConnectionParserHandler {
         connectionType: EConnectionType.nostrconnect.toInt,
         allRelays: relayList,
         allowedMethodsParam: allowedMethods,
+        declaredMethodsParam: allowedMethods,
       );
     } catch (e) {
       print('Error parsing URI: $e');
@@ -99,13 +101,15 @@ class NostrWalletConnectionParserHandler {
     }
 
     if (collected.isEmpty) return [];
-    return collected.toList()..sort((a, b) => supported.indexOf(a).compareTo(supported.indexOf(b)));
+    return collected.toList()
+      ..sort((a, b) => supported.indexOf(a).compareTo(supported.indexOf(b)));
   }
 
   static Future<String?> signAndEncrypt(
-      String serverPrivate, String message,String clientPubkey) async {
+      String serverPrivate, String message, String clientPubkey) async {
     try {
-      return await LocalNostrSigner.instance.nip44Encrypt(serverPrivate, message,clientPubkey);
+      return await LocalNostrSigner.instance
+          .nip44Encrypt(serverPrivate, message, clientPubkey);
     } catch (e) {
       print('Error during encryption: $e');
       return null;
@@ -113,10 +117,10 @@ class NostrWalletConnectionParserHandler {
   }
 
   static void sendEvent(
-      String clientPubkey,
-      String subscriptionId,
-      String content,
-      ) async {
+    String clientPubkey,
+    String subscriptionId,
+    String content,
+  ) async {
     try {
       LocalNostrSigner instance = LocalNostrSigner.instance;
       final signEvent = Event.from(
@@ -128,7 +132,7 @@ class NostrWalletConnectionParserHandler {
         pubkey: instance.getPublicKey(clientPubkey) ?? '',
         privkey: instance.getPrivateKey(clientPubkey) ?? '',
       );
-      
+
       // Use Connect to send event
       final connect = Connect();
       // Find the relay URL for this client pubkey from account
@@ -164,7 +168,8 @@ class NostrWalletConnectionParserHandler {
 
     String serverPrivate = Account.sharedInstance.currentPrivkey;
 
-    final authEncrypted = await signAndEncrypt(serverPrivate, authResponse,connectInfo.clientPubkey);
+    final authEncrypted = await signAndEncrypt(
+        serverPrivate, authResponse, connectInfo.clientPubkey);
     if (authEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, authEncrypted);
     }
@@ -174,8 +179,8 @@ class NostrWalletConnectionParserHandler {
       'result': connectInfo.secret,
     });
 
-    final secretEncrypted =
-        await signAndEncrypt(serverPrivate, secretResponse,connectInfo.clientPubkey);
+    final secretEncrypted = await signAndEncrypt(
+        serverPrivate, secretResponse, connectInfo.clientPubkey);
     if (secretEncrypted != null) {
       sendEvent(connectInfo.clientPubkey, subscriptionId, secretEncrypted);
     }
@@ -185,4 +190,3 @@ class NostrWalletConnectionParserHandler {
     await UrlSchemeHandler.handleScheme(url);
   }
 }
-
