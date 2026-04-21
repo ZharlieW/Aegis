@@ -33,7 +33,8 @@ class _ClientQueueState {
   final void Function(String clientPubkey) onQueueBecameIdle;
 
   final ValueNotifier<List<BatchPermissionGroupView>> groupsNotifier =
-      ValueNotifier<List<BatchPermissionGroupView>>(<BatchPermissionGroupView>[]);
+      ValueNotifier<List<BatchPermissionGroupView>>(
+          <BatchPermissionGroupView>[]);
 
   final Map<String, _PendingPermissionGroup> _groups = {};
 
@@ -53,7 +54,8 @@ class _ClientQueueState {
     return clientPubkey;
   }
 
-  bool get _isIdle => !_dialogShowing && _scheduledTimer == null && _groups.isEmpty;
+  bool get _isIdle =>
+      !_dialogShowing && _scheduledTimer == null && _groups.isEmpty;
 
   List<BatchPermissionGroupView> _buildViews() {
     return _groups.values
@@ -175,7 +177,8 @@ class _ClientQueueState {
         final toPersist = _collectAlwaysAllowConfigs(groupsSnapshot);
         await _persistAlwaysAllowIfNeeded(app, toPersist);
       } catch (e) {
-        AegisLogger.warning('Failed to persist always-allow batch permission', e);
+        AegisLogger.warning(
+            'Failed to persist always-allow batch permission', e);
       }
     }
     _tryCleanupQueue();
@@ -285,7 +288,8 @@ class _ClientQueueState {
   }
 }
 
-/// Singleton that batches manual per-request authorization prompts.
+/// Singleton for NIP-46 manual approval UI. All per-request prompts should go
+/// through here so concurrent requests coalesce into [BatchRequestPermission].
 class PermissionApprovalBatcher {
   static final PermissionApprovalBatcher instance =
       PermissionApprovalBatcher._internal();
@@ -336,10 +340,10 @@ class PermissionApprovalBatcher {
       clientPubkey: appKey,
     );
     if (await RememberedPermissionChoiceStore.isValid(
-          userPubkey: app.pubkey,
-          clientPubkey: appKey,
-          methodKey: methodKey,
-        )) {
+      userPubkey: app.pubkey,
+      clientPubkey: appKey,
+      methodKey: methodKey,
+    )) {
       return true;
     }
 
@@ -356,4 +360,3 @@ class PermissionApprovalBatcher {
     _queues[clientPubkey]?.setAllGroupsSelected(selected);
   }
 }
-
