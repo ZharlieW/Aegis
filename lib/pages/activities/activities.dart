@@ -12,7 +12,7 @@ import 'event_detail_page.dart';
 class Activities extends StatefulWidget {
   final ClientAuthDBISAR? clientAuthDBISAR;
   final String? applicationPubkey; // For NIP-07 applications
-  
+
   const Activities({
     super.key,
     this.clientAuthDBISAR,
@@ -24,6 +24,7 @@ class Activities extends StatefulWidget {
 }
 
 class ActivitiesState extends State<Activities> {
+  List<SignedEventDBISAR> _allEvents = [];
   List<SignedEventDBISAR> _filteredEvents = [];
   bool _isLoading = true;
   bool _hasLoadError = false;
@@ -51,18 +52,23 @@ class ActivitiesState extends State<Activities> {
       List<SignedEventDBISAR> events;
 
       if (widget.clientAuthDBISAR != null) {
-        events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.clientAuthDBISAR!.clientPubkey);
-      } else if (widget.applicationPubkey != null && widget.applicationPubkey!.isNotEmpty) {
-        events = await SignedEventManager.sharedInstance.getSignedEventsByPubkey(widget.applicationPubkey!);
+        events = await SignedEventManager.sharedInstance
+            .getSignedEventsByPubkey(widget.clientAuthDBISAR!.clientPubkey);
+      } else if (widget.applicationPubkey != null &&
+          widget.applicationPubkey!.isNotEmpty) {
+        events = await SignedEventManager.sharedInstance
+            .getSignedEventsByPubkey(widget.applicationPubkey!);
       } else {
         events = await SignedEventManager.sharedInstance.getAllSignedEvents();
       }
 
       if (mounted) {
         setState(() {
+          _allEvents = events;
           _filteredEvents = events;
           _isLoading = false;
         });
+        _filterEvents(_searchController.text);
       }
     } catch (e) {
       if (mounted) {
@@ -71,13 +77,37 @@ class ActivitiesState extends State<Activities> {
           _hasLoadError = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.activitiesLoadFailed)),
+          SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.activitiesLoadFailed)),
         );
       }
     }
   }
 
+  void _filterEvents(String keyword) {
+    final query = keyword.trim().toLowerCase();
+    if (!mounted) return;
+    if (query.isEmpty) {
+      setState(() {
+        _filteredEvents = List<SignedEventDBISAR>.from(_allEvents);
+      });
+      return;
+    }
 
+    final filtered = _allEvents.where((event) {
+      final appName = (event.applicationName ?? '').toLowerCase();
+      final methodKey = (event.methodKey ?? '').toLowerCase();
+      final description = _getEventContent(event).toLowerCase();
+      return appName.contains(query) ||
+          methodKey.contains(query) ||
+          description.contains(query);
+    }).toList();
+
+    setState(() {
+      _filteredEvents = filtered;
+    });
+  }
 
   String _formatTimestamp(int timestamp) {
     return ToolKit.formatTimestamp(timestamp);
@@ -87,8 +117,10 @@ class ActivitiesState extends State<Activities> {
     final l10n = AppLocalizations.of(context)!;
     if (widget.clientAuthDBISAR != null) {
       return widget.clientAuthDBISAR?.name ?? l10n.activities;
-    } else if (widget.applicationPubkey != null && widget.applicationPubkey!.isNotEmpty) {
-      if (_filteredEvents.isNotEmpty && _filteredEvents.first.applicationName != null) {
+    } else if (widget.applicationPubkey != null &&
+        widget.applicationPubkey!.isNotEmpty) {
+      if (_filteredEvents.isNotEmpty &&
+          _filteredEvents.first.applicationName != null) {
         return _filteredEvents.first.applicationName!;
       }
       try {
@@ -107,14 +139,13 @@ class ActivitiesState extends State<Activities> {
       return event.eventContent;
     }
 
-    final kindDesc = SignedEventManager.sharedInstance.getEventKindDescription(event.eventKind);
+    final kindDesc = SignedEventManager.sharedInstance
+        .getEventKindDescription(event.eventKind);
     if (event.applicationName != null) {
       return '$kindDesc - ${event.applicationName}';
     }
     return kindDesc;
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +169,6 @@ class ActivitiesState extends State<Activities> {
       body: SafeArea(
         child: Column(
           children: [
-
             // Main content area
             Expanded(
               child: Container(
@@ -146,31 +176,50 @@ class ActivitiesState extends State<Activities> {
                 child: Column(
                   children: [
                     // Search bar
-                    // Container(
-                    //   margin: const EdgeInsets.all(16),
-                    //   decoration: BoxDecoration(
-                    //     color: Theme.of(context).colorScheme.surfaceContainer,
-                    //     borderRadius: BorderRadius.circular(12),
-                    //     border: Border.all(
-                    //       color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                    //     ),
-                    //   ),
-                    //   child: TextField(
-                    //     controller: _searchController,
-                    //     onChanged: _filterEvents,
-                    //     decoration: InputDecoration(
-                    //       hintText: 'Search events...',
-                    //       hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                    //       border: InputBorder.none,
-                    //       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    //       prefixIcon: Icon(
-                    //         Icons.search,
-                    //         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    //
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _filterEvents,
+                        decoration: InputDecoration(
+                          hintText: AppLocalizations.of(context)!.search,
+                          hintStyle: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          suffixIcon: _searchController.text.isEmpty
+                              ? null
+                              : IconButton(
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _filterEvents('');
+                                  },
+                                  icon: const Icon(Icons.close),
+                                ),
+                        ),
+                      ),
+                    ),
+
                     // Events list
                     Expanded(
                       child: _isLoading
@@ -200,8 +249,8 @@ class ActivitiesState extends State<Activities> {
           Text(
             l10n.activitiesLoadFailed,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
+                  color: Theme.of(context).colorScheme.error,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -228,15 +277,15 @@ class ActivitiesState extends State<Activities> {
           Text(
             AppLocalizations.of(context)!.noSignedEvents,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.signedEventsEmptyHint,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
           ),
         ],
       ),
@@ -260,10 +309,10 @@ class ActivitiesState extends State<Activities> {
   }
 
   Widget _buildEventItem(SignedEventDBISAR event) {
-
     return GestureDetector(
       onTap: () {
-        AegisNavigator.pushPage(context, (context) => EventDetailPage(event: event));
+        AegisNavigator.pushPage(
+            context, (context) => EventDetailPage(event: event));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -276,8 +325,7 @@ class ActivitiesState extends State<Activities> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14
-                ),
+                    fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -286,12 +334,12 @@ class ActivitiesState extends State<Activities> {
             Text(
               _formatTimestamp(event.signedTimestamp),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
         ),
       ),
     );
   }
-} 
+}
