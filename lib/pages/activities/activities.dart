@@ -29,6 +29,9 @@ class ActivitiesState extends State<Activities> {
   bool _isLoading = true;
   bool _hasLoadError = false;
   final TextEditingController _searchController = TextEditingController();
+  int? _statusFilter;
+  _ActivityTimeRange _timeRangeFilter = _ActivityTimeRange.all;
+  bool _sortNewestFirst = true;
 
   @override
   void initState() {
@@ -68,7 +71,7 @@ class ActivitiesState extends State<Activities> {
           _filteredEvents = events;
           _isLoading = false;
         });
-        _filterEvents(_searchController.text);
+        _applyFiltersAndSort();
       }
     } catch (e) {
       if (mounted) {
@@ -85,24 +88,32 @@ class ActivitiesState extends State<Activities> {
     }
   }
 
-  void _filterEvents(String keyword) {
-    final query = keyword.trim().toLowerCase();
+  void _applyFiltersAndSort() {
+    final query = _searchController.text.trim().toLowerCase();
     if (!mounted) return;
-    if (query.isEmpty) {
-      setState(() {
-        _filteredEvents = List<SignedEventDBISAR>.from(_allEvents);
-      });
-      return;
-    }
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final minTimestampMs = _timeRangeFilter.minTimestampMs(nowMs);
 
     final filtered = _allEvents.where((event) {
+      if (_statusFilter != null && event.status != _statusFilter) {
+        return false;
+      }
+      if (minTimestampMs != null && event.signedTimestamp < minTimestampMs) {
+        return false;
+      }
+      if (query.isEmpty) {
+        return true;
+      }
       final appName = (event.applicationName ?? '').toLowerCase();
       final methodKey = (event.methodKey ?? '').toLowerCase();
       final description = _getEventContent(event).toLowerCase();
       return appName.contains(query) ||
           methodKey.contains(query) ||
           description.contains(query);
-    }).toList();
+    }).toList()
+      ..sort((a, b) => _sortNewestFirst
+          ? b.signedTimestamp.compareTo(a.signedTimestamp)
+          : a.signedTimestamp.compareTo(b.signedTimestamp));
 
     setState(() {
       _filteredEvents = filtered;
@@ -190,7 +201,7 @@ class ActivitiesState extends State<Activities> {
                       ),
                       child: TextField(
                         controller: _searchController,
-                        onChanged: _filterEvents,
+                        onChanged: (_) => _applyFiltersAndSort(),
                         decoration: InputDecoration(
                           hintText: AppLocalizations.of(context)!.search,
                           hintStyle: TextStyle(
@@ -212,11 +223,112 @@ class ActivitiesState extends State<Activities> {
                               : IconButton(
                                   onPressed: () {
                                     _searchController.clear();
-                                    _filterEvents('');
+                                    _applyFiltersAndSort();
                                   },
                                   icon: const Icon(Icons.close),
                                 ),
                         ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int?>(
+                              value: _statusFilter,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.status,
+                                isDense: true,
+                                border: const OutlineInputBorder(),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                              ),
+                              items: const [
+                                DropdownMenuItem<int?>(
+                                  value: null,
+                                  child: Text('All'),
+                                ),
+                                DropdownMenuItem<int?>(
+                                  value: 1,
+                                  child: Text('Signed'),
+                                ),
+                                DropdownMenuItem<int?>(
+                                  value: 0,
+                                  child: Text('Pending'),
+                                ),
+                                DropdownMenuItem<int?>(
+                                  value: 2,
+                                  child: Text('Failed'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                _statusFilter = value;
+                                _applyFiltersAndSort();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonFormField<_ActivityTimeRange>(
+                              value: _timeRangeFilter,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Time Range',
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                              ),
+                              items: const [
+                                DropdownMenuItem<_ActivityTimeRange>(
+                                  value: _ActivityTimeRange.all,
+                                  child: Text('All'),
+                                ),
+                                DropdownMenuItem<_ActivityTimeRange>(
+                                  value: _ActivityTimeRange.last24Hours,
+                                  child: Text('24h'),
+                                ),
+                                DropdownMenuItem<_ActivityTimeRange>(
+                                  value: _ActivityTimeRange.last7Days,
+                                  child: Text('7d'),
+                                ),
+                                DropdownMenuItem<_ActivityTimeRange>(
+                                  value: _ActivityTimeRange.last30Days,
+                                  child: Text('30d'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value == null) return;
+                                _timeRangeFilter = value;
+                                _applyFiltersAndSort();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: _sortNewestFirst
+                                ? 'Newest first'
+                                : 'Oldest first',
+                            child: IconButton.filledTonal(
+                              onPressed: () {
+                                _sortNewestFirst = !_sortNewestFirst;
+                                _applyFiltersAndSort();
+                              },
+                              icon: Icon(
+                                _sortNewestFirst
+                                    ? Icons.arrow_downward
+                                    : Icons.arrow_upward,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -341,5 +453,27 @@ class ActivitiesState extends State<Activities> {
         ),
       ),
     );
+  }
+}
+
+enum _ActivityTimeRange {
+  all,
+  last24Hours,
+  last7Days,
+  last30Days,
+}
+
+extension on _ActivityTimeRange {
+  int? minTimestampMs(int nowMs) {
+    switch (this) {
+      case _ActivityTimeRange.all:
+        return null;
+      case _ActivityTimeRange.last24Hours:
+        return nowMs - const Duration(hours: 24).inMilliseconds;
+      case _ActivityTimeRange.last7Days:
+        return nowMs - const Duration(days: 7).inMilliseconds;
+      case _ActivityTimeRange.last30Days:
+        return nowMs - const Duration(days: 30).inMilliseconds;
+    }
   }
 }
