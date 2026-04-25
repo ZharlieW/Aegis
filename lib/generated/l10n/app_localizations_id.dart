@@ -385,6 +385,18 @@ class AppLocalizationsId extends AppLocalizations {
   String get connections => 'Koneksi';
 
   @override
+  String get lastReconnectAt => 'Last reconnect';
+
+  @override
+  String get neverReconnected => 'Never';
+
+  @override
+  String get reconnectNow => 'Reconnect now';
+
+  @override
+  String get reconnecting => 'Reconnecting...';
+
+  @override
   String get running => 'Berjalan';
 
   @override

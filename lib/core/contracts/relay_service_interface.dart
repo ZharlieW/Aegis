@@ -6,6 +6,7 @@ abstract class IRelayService {
   String get relayUrl;
   String get port;
   DateTime? get sessionStartTime;
+  DateTime? get lastReconnectTime;
   String get preferredPort;
   Future<void> setPreferredPort(String port);
 

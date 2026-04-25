@@ -385,6 +385,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get connections => 'Connexions';
 
   @override
+  String get lastReconnectAt => 'Last reconnect';
+
+  @override
+  String get neverReconnected => 'Never';
+
+  @override
+  String get reconnectNow => 'Reconnect now';
+
+  @override
+  String get reconnecting => 'Reconnecting...';
+
+  @override
   String get running => 'En cours';
 
   @override

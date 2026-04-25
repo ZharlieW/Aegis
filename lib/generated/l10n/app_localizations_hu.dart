@@ -385,6 +385,18 @@ class AppLocalizationsHu extends AppLocalizations {
   String get connections => 'Kapcsolatok';
 
   @override
+  String get lastReconnectAt => 'Last reconnect';
+
+  @override
+  String get neverReconnected => 'Never';
+
+  @override
+  String get reconnectNow => 'Reconnect now';
+
+  @override
+  String get reconnecting => 'Reconnecting...';
+
+  @override
   String get running => 'Fut';
 
   @override

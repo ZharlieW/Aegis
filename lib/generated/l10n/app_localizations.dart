@@ -874,6 +874,30 @@ abstract class AppLocalizations {
   /// **'Connections'**
   String get connections;
 
+  /// No description provided for @lastReconnectAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last reconnect'**
+  String get lastReconnectAt;
+
+  /// No description provided for @neverReconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get neverReconnected;
+
+  /// No description provided for @reconnectNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect now'**
+  String get reconnectNow;
+
+  /// No description provided for @reconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting...'**
+  String get reconnecting;
+
   /// No description provided for @running.
   ///
   /// In en, this message translates to:

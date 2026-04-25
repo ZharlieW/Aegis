@@ -24,6 +24,7 @@ class RelayService implements IRelayService {
   int _port = PlatformUtils.isDesktop ? 18081 : 8081;
   String? _relayUrl;
   DateTime? _sessionStartTime;
+  DateTime? _lastReconnectTime;
 
   @override
   String get preferredPort {
@@ -56,6 +57,10 @@ class RelayService implements IRelayService {
   /// Get the current session start time (if known)
   @override
   DateTime? get sessionStartTime => _sessionStartTime;
+
+  /// Get the latest successful reconnect timestamp
+  @override
+  DateTime? get lastReconnectTime => _lastReconnectTime;
 
   /// Ensure we have a session start timestamp when relay is confirmed running
   @override
@@ -220,10 +225,12 @@ class RelayService implements IRelayService {
         
         // Restart with saved configuration
         await start(host: currentHost, port: currentPort);
+        _lastReconnectTime = DateTime.now();
         AegisLogger.info("✅ Relay restarted");
       } else {
         // If not running, just start it
         await start();
+        _lastReconnectTime = DateTime.now();
         AegisLogger.info("✅ [RELAY_RESTART] Relay started successfully");
       }
     } catch (e) {

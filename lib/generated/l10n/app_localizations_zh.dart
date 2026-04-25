@@ -385,6 +385,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get connections => '连接数';
 
   @override
+  String get lastReconnectAt => '最近重连时间';
+
+  @override
+  String get neverReconnected => '从未';
+
+  @override
+  String get reconnectNow => '一键重连';
+
+  @override
+  String get reconnecting => '重连中...';
+
+  @override
   String get running => '运行中';
 
   @override

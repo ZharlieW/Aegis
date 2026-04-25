@@ -168,6 +168,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
   bool _isImporting = false;
   Map<String, dynamic>? _stats;
   DateTime? _sessionStartTime;
+  DateTime? _lastReconnectTime;
   Duration _currentSessionUptime = Duration.zero;
   Timer? _uptimeTimer;
   bool _showLogs = false;
@@ -385,6 +386,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       final relayUrl = await RelayService.instance.getUrl();
       final databaseSize = await RelayService.instance.getDatabaseSize();
       final stats = await RelayService.instance.getStats();
+      final lastReconnectTime = RelayService.instance.lastReconnectTime;
 
       DateTime? sessionStart;
       if (isRunning) {
@@ -403,6 +405,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           _stats = stats;
           _connectionCount = stats?['connections'] as int? ?? 0;
           _sessionStartTime = sessionStart;
+          _lastReconnectTime = lastReconnectTime;
           _currentSessionUptime = sessionStart != null
               ? DateTime.now().difference(sessionStart)
               : Duration.zero;
@@ -424,6 +427,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           _isLoading = false;
           _isRelayRunning = false;
           _sessionStartTime = null;
+          _lastReconnectTime = RelayService.instance.lastReconnectTime;
           _currentSessionUptime = Duration.zero;
           _stats = null;
         });
@@ -444,15 +448,6 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
     } else {
       return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} ${l10n.unitGB}';
     }
-  }
-
-  String _formatNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    }
-    return number.toString();
   }
 
   String _formatDuration(BuildContext context, int seconds) {
@@ -481,6 +476,16 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       return secs > 0 ? '${minutes}$m ${secs}$s' : '${minutes}$m';
     }
     return '${duration.inSeconds}$s';
+  }
+
+  String _formatDateTime(DateTime value) {
+    final y = value.year.toString().padLeft(4, '0');
+    final m = value.month.toString().padLeft(2, '0');
+    final d = value.day.toString().padLeft(2, '0');
+    final hh = value.hour.toString().padLeft(2, '0');
+    final mm = value.minute.toString().padLeft(2, '0');
+    final ss = value.second.toString().padLeft(2, '0');
+    return '$y-$m-$d $hh:$mm:$ss';
   }
 
   String _userFacingError(BuildContext context, Object e) {
@@ -973,6 +978,45 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context)!.lastReconnectAt,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    _lastReconnectTime == null
+                                        ? AppLocalizations.of(context)!.neverReconnected
+                                        : _formatDateTime(_lastReconnectTime!),
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton.icon(
+                                  onPressed: _isRestarting ? null : _handleRestartRelay,
+                                  icon: _isRestarting
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : const Icon(Icons.restart_alt),
+                                  label: Text(
+                                    _isRestarting
+                                        ? AppLocalizations.of(context)!.reconnecting
+                                        : AppLocalizations.of(context)!.reconnectNow,
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 16),
                               // Address Section
