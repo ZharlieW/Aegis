@@ -10,6 +10,7 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
+import 'package:aegis/utils/permission_reset_policy.dart';
 
 /// Page that shows only the permissions this app declared at connect (URI perms).
 /// If [ClientAuthDBISAR.allowedMethods] is empty, shows a short message instead of listing all possible capabilities.
@@ -262,13 +263,11 @@ class _ApplicationPermissionsPageState
     final fresh = await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);
     if (fresh == null) return;
 
-    fresh.allowedMethods = [];
-    final appKey = fresh.clientPubkey.isNotEmpty
-        ? fresh.clientPubkey
-        : (fresh.remoteSignerPubkey ?? '');
+    final resetPlan = PermissionResetPolicy.forApp(fresh);
+    fresh.allowedMethods = resetPlan.allowedMethods;
     await RememberedPermissionChoiceStore.deleteAllForClient(
       userPubkey: fresh.pubkey,
-      clientPubkey: appKey,
+      clientPubkey: resetPlan.appKey,
     );
     await ClientAuthDBISAR.saveFromDB(fresh, isUpdate: true);
     AccountManager.sharedInstance.updateApplicationMap(fresh);

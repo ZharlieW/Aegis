@@ -24,6 +24,7 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
+import 'package:aegis/utils/nip46_crypto_request_validator.dart';
 import 'package:aegis/utils/nip46_error.dart';
 import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
@@ -756,9 +757,9 @@ class ServerNIP46Signer {
           };
           break;
         }
-        if (remoteRequest.params.length < 2 ||
-            remoteRequest.params[0] == null ||
-            remoteRequest.params[1] == null) {
+        if (!Nip46CryptoRequestValidator.hasValidNip04Params(
+          remoteRequest.params,
+        )) {
           responseJson = {
             "id": remoteRequest.id,
             "result": "",
@@ -807,9 +808,9 @@ class ServerNIP46Signer {
           };
           break;
         }
-        if (remoteRequest.params.length < 2 ||
-            remoteRequest.params[0] == null ||
-            remoteRequest.params[1] == null) {
+        if (!Nip46CryptoRequestValidator.hasValidNip04Params(
+          remoteRequest.params,
+        )) {
           responseJson = {
             "id": remoteRequest.id,
             "result": "",
@@ -858,9 +859,10 @@ class ServerNIP46Signer {
           };
           break;
         }
-        if (serverPrivate.isEmpty ||
-            remoteRequest.params[1] is! String ||
-            remoteRequest.params[0] is! String) {
+        if (!Nip46CryptoRequestValidator.hasValidNip44Params(
+          serverPrivate: serverPrivate,
+          params: remoteRequest.params,
+        )) {
           responseJson = {
             "id": remoteRequest.id,
             "result": "",
@@ -909,9 +911,10 @@ class ServerNIP46Signer {
           };
           break;
         }
-        if (serverPrivate.isEmpty ||
-            remoteRequest.params[1] is! String ||
-            remoteRequest.params[0] is! String) {
+        if (!Nip46CryptoRequestValidator.hasValidNip44Params(
+          serverPrivate: serverPrivate,
+          params: remoteRequest.params,
+        )) {
           responseJson = {
             "id": remoteRequest.id,
             "result": "",

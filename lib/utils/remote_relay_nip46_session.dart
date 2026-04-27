@@ -14,6 +14,7 @@ import 'package:aegis/utils/connect.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
 import 'package:aegis/utils/nip46_error.dart';
+import 'package:aegis/utils/nip46_crypto_request_validator.dart';
 import 'package:aegis/utils/nip46_method_key.dart';
 import 'package:aegis/utils/nostr_wallet_connection_parser.dart';
 import 'package:aegis/utils/permission_approval_batcher.dart';
@@ -397,9 +398,7 @@ class RemoteRelayNip46Session {
         )) {
           return {'id': req.id, 'result': '', 'error': 'unauthorized'};
         }
-        if (req.params.length < 2 ||
-            req.params[0] == null ||
-            req.params[1] == null) {
+        if (!Nip46CryptoRequestValidator.hasValidNip04Params(req.params)) {
           return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.encrypt(
@@ -428,9 +427,7 @@ class RemoteRelayNip46Session {
         )) {
           return {'id': req.id, 'result': '', 'error': 'unauthorized'};
         }
-        if (req.params.length < 2 ||
-            req.params[0] == null ||
-            req.params[1] == null) {
+        if (!Nip46CryptoRequestValidator.hasValidNip04Params(req.params)) {
           return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.decrypt(
@@ -459,10 +456,10 @@ class RemoteRelayNip46Session {
         )) {
           return {'id': req.id, 'result': '', 'error': 'unauthorized'};
         }
-        if (serverPrivate.isEmpty ||
-            req.params.length < 2 ||
-            req.params[0] is! String ||
-            req.params[1] is! String) {
+        if (!Nip46CryptoRequestValidator.hasValidNip44Params(
+          serverPrivate: serverPrivate,
+          params: req.params,
+        )) {
           return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.nip44Encrypt(
@@ -492,10 +489,10 @@ class RemoteRelayNip46Session {
         )) {
           return {'id': req.id, 'result': '', 'error': 'unauthorized'};
         }
-        if (serverPrivate.isEmpty ||
-            req.params.length < 2 ||
-            req.params[0] is! String ||
-            req.params[1] is! String) {
+        if (!Nip46CryptoRequestValidator.hasValidNip44Params(
+          serverPrivate: serverPrivate,
+          params: req.params,
+        )) {
           return {'id': req.id, 'result': '', 'error': Nip46Error.invalidParams(req.method)};
         }
         final result = await LocalNostrSigner.instance.nip44Decrypt(
