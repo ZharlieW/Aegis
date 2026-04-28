@@ -1,6 +1,7 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/pages/settings/feedback_page.dart';
 import 'package:aegis/pages/settings/language_page.dart';
 import 'package:aegis/pages/settings/local_relay_info.dart';
 import 'package:aegis/pages/settings/settings.dart';
@@ -47,9 +48,9 @@ class ApplicationSidebar extends StatelessWidget {
               child: Text(
                 AppLocalizations.of(context)!.appSubtitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 24,
-                ),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 24,
+                    ),
               ),
             ),
             const Divider(height: 1),
@@ -95,6 +96,19 @@ class ApplicationSidebar extends StatelessWidget {
                   _buildLanguageTile(context),
                   _menuTile(
                     context,
+                    page: 'feedback',
+                    label: 'Feedback',
+                    icon: Icons.feedback_outlined,
+                    useIconImage: false,
+                    onTapCustom: useSplitLayout
+                        ? null
+                        : () => AegisNavigator.pushPage(
+                              context,
+                              (context) => const FeedbackPage(),
+                            ),
+                  ),
+                  _menuTile(
+                    context,
                     page: 'accounts',
                     label: AppLocalizations.of(context)!.accounts,
                     icon: Icons.person,
@@ -130,7 +144,8 @@ class ApplicationSidebar extends StatelessWidget {
                       onTap: () async {
                         final Uri uri =
                             Uri.parse('https://github.com/ZharlieW/Aegis');
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
                       },
                     ),
                   ),
@@ -227,8 +242,8 @@ class ApplicationSidebar extends StatelessWidget {
       trailing: Text(
         languageLabel,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
       ),
       onTap: () =>
           AegisNavigator.pushPage(context, (context) => const LanguagePage()),
@@ -340,13 +355,31 @@ class ApplicationDrawer extends StatelessWidget {
             trailing: Text(
               languageLabel,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
             onTap: () {
               Navigator.pop(context);
               AegisNavigator.pushPage(
                   context, (context) => const LanguagePage());
+            },
+          ),
+          ListTile(
+            title: Text(
+              'Feedback',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.feedback_outlined,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              AegisNavigator.pushPage(
+                context,
+                (context) => const FeedbackPage(),
+              );
             },
           ),
           ListTile(
@@ -361,8 +394,7 @@ class ApplicationDrawer extends StatelessWidget {
             ),
             onTap: () async {
               Navigator.pop(context);
-              final Uri uri =
-                  Uri.parse('https://github.com/ZharlieW/Aegis');
+              final Uri uri = Uri.parse('https://github.com/ZharlieW/Aegis');
               await launchUrl(uri, mode: LaunchMode.externalApplication);
             },
           ),

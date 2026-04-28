@@ -24,6 +24,7 @@ import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/pages/settings/settings.dart';
 import 'package:aegis/pages/settings/local_relay_info.dart';
+import 'package:aegis/pages/settings/feedback_page.dart';
 import 'package:aegis/pages/browser/browser_page.dart';
 import 'package:aegis/pages/activities/activities.dart';
 import 'package:aegis/pages/application/application_info.dart';
@@ -39,7 +40,6 @@ class Application extends StatefulWidget {
 }
 
 class ApplicationState extends State<Application> with AccountManagerObservers {
-
   static const double _splitLayoutBreakpoint = 900;
 
   bool isPortAvailable = true;
@@ -50,10 +50,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   // Current selected page in split layout (home, localRelay, accounts)
   String _currentPage = 'home';
-  
+
   // Selected segment for home page (0: NIP-46, 1: NIP-07)
   int _selectedSegment = 0;
-  
+
   // Theme mode for UI updates
   ThemeMode _currentThemeMode = ThemeMode.system;
 
@@ -88,10 +88,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   bool _isConnected(ClientAuthDBISAR client) {
     final timestamp = client.updateTimestamp ?? client.createTimestamp;
     if (timestamp == null) return false;
-    
+
     final now = DateTime.now().millisecondsSinceEpoch;
     final oneMinuteAgo = now - (60 * 1000); // 1 minute in milliseconds
-    
+
     return timestamp >= oneMinuteAgo;
   }
 
@@ -108,7 +108,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   /// Build initial letter icon
   Widget _buildInitialIcon(String name, double size) {
     final letter = _getFirstLetter(name);
-    
+
     return Container(
       width: size,
       height: size,
@@ -160,13 +160,13 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         setState(() {});
       }
     });
-    
 
     // On Android, periodically check relay status via isRelayRunning()
     if (PlatformUtils.isAndroid) {
       _androidRelayStatusNotifier = ValueNotifier<bool>(false);
       _checkAndroidRelayStatus(); // Initial check
-      _androidRelayStatusTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _androidRelayStatusTimer =
+          Timer.periodic(const Duration(seconds: 2), (_) {
         _checkAndroidRelayStatus();
       });
     }
@@ -202,7 +202,6 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -224,7 +223,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         ),
       );
     }
-    
+
     // Mobile layout with drawer
     return Scaffold(
       appBar: AppBar(
@@ -261,7 +260,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
               size: 20,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            onPressed: () => AegisNavigator.pushPage(context, (context) => const Settings()),
+            onPressed: () =>
+                AegisNavigator.pushPage(context, (context) => const Settings()),
             style: IconButton.styleFrom(
               minimumSize: const Size(48, 48),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -294,14 +294,16 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     }
     ThemeManager.setThemeMode(nextMode);
     if (mounted) {
-      CommonToast.instance.show(context, l10n.switchedTo(modeText), toastType: ToastType.normal);
+      CommonToast.instance.show(context, l10n.switchedTo(modeText),
+          toastType: ToastType.normal);
     }
   }
 
   // Build wide layout sidebar menu
   Widget _buildSideMenu(BuildContext context, {bool useSplitLayout = false}) {
     final l10n = AppLocalizations.of(context)!;
-    final languageLabel = _languageLabelForLocale(l10n, LocaleManager.currentLocale);
+    final languageLabel =
+        _languageLabelForLocale(l10n, LocaleManager.currentLocale);
     return ApplicationSidebar(
       currentPage: _currentPage,
       onPageSelected: (p) => setState(() => _currentPage = p),
@@ -316,47 +318,81 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   String _languageLabelForLocale(AppLocalizations l10n, Locale? locale) {
     if (locale == null) return '${l10n.language} (${l10n.english})';
-    if (locale.languageCode == 'zh' && locale.countryCode == 'TW') return l10n.traditionalChinese;
+    if (locale.languageCode == 'zh' && locale.countryCode == 'TW')
+      return l10n.traditionalChinese;
     switch (locale.languageCode) {
-      case 'en': return l10n.english;
-      case 'zh': return l10n.simplifiedChinese;
-      case 'ja': return l10n.japanese;
-      case 'ko': return l10n.korean;
-      case 'es': return l10n.spanish;
-      case 'fr': return l10n.french;
-      case 'de': return l10n.german;
-      case 'pt': return l10n.portuguese;
-      case 'ru': return l10n.russian;
-      case 'ar': return l10n.arabic;
-      case 'az': return l10n.azerbaijani;
-      case 'bg': return l10n.bulgarian;
-      case 'ca': return l10n.catalan;
-      case 'cs': return l10n.czech;
-      case 'da': return l10n.danish;
-      case 'el': return l10n.greek;
-      case 'et': return l10n.estonian;
-      case 'fa': return l10n.farsi;
-      case 'hi': return l10n.hindi;
-      case 'hu': return l10n.hungarian;
-      case 'id': return l10n.indonesian;
-      case 'it': return l10n.italian;
-      case 'lv': return l10n.latvian;
-      case 'nl': return l10n.dutch;
-      case 'pl': return l10n.polish;
-      case 'sv': return l10n.swedish;
-      case 'th': return l10n.thai;
-      case 'tr': return l10n.turkish;
-      case 'uk': return l10n.ukrainian;
-      case 'ur': return l10n.urdu;
-      case 'vi': return l10n.vietnamese;
-      default: return locale.toString();
+      case 'en':
+        return l10n.english;
+      case 'zh':
+        return l10n.simplifiedChinese;
+      case 'ja':
+        return l10n.japanese;
+      case 'ko':
+        return l10n.korean;
+      case 'es':
+        return l10n.spanish;
+      case 'fr':
+        return l10n.french;
+      case 'de':
+        return l10n.german;
+      case 'pt':
+        return l10n.portuguese;
+      case 'ru':
+        return l10n.russian;
+      case 'ar':
+        return l10n.arabic;
+      case 'az':
+        return l10n.azerbaijani;
+      case 'bg':
+        return l10n.bulgarian;
+      case 'ca':
+        return l10n.catalan;
+      case 'cs':
+        return l10n.czech;
+      case 'da':
+        return l10n.danish;
+      case 'el':
+        return l10n.greek;
+      case 'et':
+        return l10n.estonian;
+      case 'fa':
+        return l10n.farsi;
+      case 'hi':
+        return l10n.hindi;
+      case 'hu':
+        return l10n.hungarian;
+      case 'id':
+        return l10n.indonesian;
+      case 'it':
+        return l10n.italian;
+      case 'lv':
+        return l10n.latvian;
+      case 'nl':
+        return l10n.dutch;
+      case 'pl':
+        return l10n.polish;
+      case 'sv':
+        return l10n.swedish;
+      case 'th':
+        return l10n.thai;
+      case 'tr':
+        return l10n.turkish;
+      case 'uk':
+        return l10n.ukrainian;
+      case 'ur':
+        return l10n.urdu;
+      case 'vi':
+        return l10n.vietnamese;
+      default:
+        return locale.toString();
     }
   }
 
   // Build mobile drawer menu
   Widget _buildMobileDrawer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final languageLabel = _languageLabelForLocale(l10n, LocaleManager.currentLocale);
+    final languageLabel =
+        _languageLabelForLocale(l10n, LocaleManager.currentLocale);
     return ApplicationDrawer(
       appVersion: _appVersion,
       buildNumber: _buildNumber,
@@ -375,6 +411,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         return const BrowserPage();
       case 'accounts':
         return const Settings();
+      case 'feedback':
+        return const FeedbackPage();
       case 'home':
       default:
         return _buildMainContent(context);
@@ -442,7 +480,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       final app = notifier.value;
       return app.pubkey == Account.sharedInstance.currentPubkey &&
           (app.connectionType == EConnectionType.bunker.toInt ||
-           app.connectionType == EConnectionType.nostrconnect.toInt);
+              app.connectionType == EConnectionType.nostrconnect.toInt);
     }).toList();
   }
 
@@ -452,15 +490,20 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     return SingleChildScrollView(
       child: Column(
         children:
-        applicationList.map((ValueNotifier<ClientAuthDBISAR> dbNotifier) {
+            applicationList.map((ValueNotifier<ClientAuthDBISAR> dbNotifier) {
           return ValueListenableBuilder(
               valueListenable: dbNotifier,
               builder: (context, value, child) {
                 // Use updateTimestamp if available, otherwise fall back to createTimestamp
-                int timestamp = value.updateTimestamp ?? value.createTimestamp ?? DateTime.now().millisecondsSinceEpoch;
-                bool isBunker = value.connectionType == EConnectionType.bunker.toInt;
-                String connectType = isBunker ? EConnectionType.bunker.toStr : EConnectionType.nostrconnect.toStr;
-                
+                int timestamp = value.updateTimestamp ??
+                    value.createTimestamp ??
+                    DateTime.now().millisecondsSinceEpoch;
+                bool isBunker =
+                    value.connectionType == EConnectionType.bunker.toInt;
+                String connectType = isBunker
+                    ? EConnectionType.bunker.toStr
+                    : EConnectionType.nostrconnect.toStr;
+
                 // Check if application has activity within the last minute
                 bool isConnect = _isConnected(value);
 
@@ -492,7 +535,10 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outlineVariant
+                              .withOpacity(0.5),
                           width: 1,
                         ),
                       ),
@@ -550,7 +596,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                             Row(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.only(end: 8),
+                                  padding:
+                                      const EdgeInsetsDirectional.only(end: 8),
                                   child: Container(
                                     width: 8,
                                     height: 8,
@@ -563,9 +610,11 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                                   ),
                                 ),
                                 Text(
-                                  isConnect ? AppLocalizations.of(context)!.connected : AppLocalizations.of(context)!.disconnected,
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium,
+                                  isConnect
+                                      ? AppLocalizations.of(context)!.connected
+                                      : AppLocalizations.of(context)!
+                                          .disconnected,
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ],
                             ),
@@ -585,7 +634,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
   Widget _buildNIP07ApplicationList() {
     // Use cached future if available, otherwise create new one
     _nip07ApplicationsFuture ??= _loadNIP07Applications();
-    
+
     return FutureBuilder<Map<String, Map<String, dynamic>>>(
       key: const ValueKey('nip07_applications'),
       future: _nip07ApplicationsFuture,
@@ -593,18 +642,19 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (snapshot.hasError) {
           return Center(
             child: Text(
-              AppLocalizations.of(context)!.errorLoadingNip07Applications(snapshot.error.toString()),
+              AppLocalizations.of(context)!
+                  .errorLoadingNip07Applications(snapshot.error.toString()),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.error,
                   ),
             ),
           );
         }
-        
+
         final applications = snapshot.data ?? {};
         if (applications.isEmpty) {
           return Center(
@@ -637,11 +687,12 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
             ),
           );
         }
-        
+
         // Sort by last used timestamp (most recent first)
         final sortedApps = applications.values.toList()
-          ..sort((a, b) => (b['lastUsedTimestamp'] as int).compareTo(a['lastUsedTimestamp'] as int));
-        
+          ..sort((a, b) => (b['lastUsedTimestamp'] as int)
+              .compareTo(a['lastUsedTimestamp'] as int));
+
         return SingleChildScrollView(
           child: Column(
             children: [
@@ -652,13 +703,14 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       },
     );
   }
-  
+
   Widget _buildNIP07ApplicationItem(Map<String, dynamic> app) {
-    final applicationName = app['applicationName'] as String? ?? AppLocalizations.of(context)!.unknown;
+    final applicationName = app['applicationName'] as String? ??
+        AppLocalizations.of(context)!.unknown;
     final icon = app['icon'] as String?;
     final timestamp = app['lastUsedTimestamp'] as int? ?? 0;
     final applicationPubkey = app['applicationPubkey'] as String? ?? '';
-    
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -690,13 +742,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   Flexible(
                     child: Text(
                       applicationName,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
                       overflow: TextOverflow.ellipsis,
@@ -706,10 +753,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                   Flexible(
                     child: Text(
                       'NIP-07',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSecondaryContainer,
@@ -741,8 +785,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
                     ).setPaddingOnly(right: 8.0),
                     Text(
                       AppLocalizations.of(context)!.active,
-                      style:
-                          Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),
@@ -753,19 +796,20 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       ),
     );
   }
-  
+
   Future<Map<String, Map<String, dynamic>>> _loadNIP07Applications() async {
     try {
       final account = Account.sharedInstance;
       if (account.currentPubkey.isEmpty) {
         return {};
       }
-      
-      final applications = await SignedEventDBISAR.getUniqueApplicationsByConnectionType(
+
+      final applications =
+          await SignedEventDBISAR.getUniqueApplicationsByConnectionType(
         account.currentPubkey,
         'nip07',
       );
-      
+
       // Filter out non-web apps based on metadata
       // Check metadata for 'isWebApp' field or valid HTTP/HTTPS URL
       final webApps = <String, Map<String, dynamic>>{};
@@ -773,7 +817,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         final app = entry.value;
         final url = app['url'] as String? ?? '';
         final applicationPubkey = app['applicationPubkey'] as String? ?? '';
-        
+
         // Get the original event to check metadata
         final events = await SignedEventDBISAR.getByConnectionType(
           account.currentPubkey,
@@ -783,7 +827,7 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
           (e) => e.applicationPubkey == applicationPubkey,
           orElse: () => events.first,
         );
-        
+
         bool isWebApp = false;
         if (event.metadata != null && event.metadata!.isNotEmpty) {
           try {
@@ -795,28 +839,28 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
               isWebApp = false;
             } else {
               // If not specified, check if URL is valid HTTP/HTTPS
-              isWebApp = url.isNotEmpty && 
+              isWebApp = url.isNotEmpty &&
                   (url.startsWith('http://') || url.startsWith('https://')) &&
                   url != applicationPubkey;
             }
           } catch (e) {
             // If metadata parse fails, check URL
-            isWebApp = url.isNotEmpty && 
+            isWebApp = url.isNotEmpty &&
                 (url.startsWith('http://') || url.startsWith('https://')) &&
                 url != applicationPubkey;
           }
         } else {
           // No metadata, check URL
-          isWebApp = url.isNotEmpty && 
+          isWebApp = url.isNotEmpty &&
               (url.startsWith('http://') || url.startsWith('https://')) &&
               url != applicationPubkey;
         }
-        
+
         if (isWebApp) {
           webApps[entry.key] = app;
         }
       }
-      
+
       return webApps;
     } catch (e) {
       AegisLogger.error('Failed to load NIP-07 applications: $e');
@@ -910,7 +954,8 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
 
   Future<void> _showChangePortDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: RelayService.instance.preferredPort);
+    final controller =
+        TextEditingController(text: RelayService.instance.preferredPort);
     final result = await showDialog<String>(
       context: context,
       builder: (context) {
@@ -987,7 +1032,6 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
     }
   }
 
-
   @override
   void didRemoveApplicationMap() {
     // TODO: implement didRemoveApplicationMap
@@ -1011,6 +1055,4 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
       setState(() {});
     }
   }
-
-
 }
