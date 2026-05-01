@@ -1,7 +1,6 @@
 import 'package:aegis/common/common_tips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 enum FeedbackType { bug, enhancement }
 
@@ -17,7 +16,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final TextEditingController _bodyController = TextEditingController();
   FeedbackType _feedbackType = FeedbackType.bug;
 
-  bool get _canSend {
+  bool get _canCopy {
     return _titleController.text.trim().isNotEmpty &&
         _bodyController.text.trim().isNotEmpty;
   }
@@ -52,56 +51,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
     }
   }
 
-  String get _mailSubject {
-    final trimmedTitle = _titleController.text.trim();
-    if (trimmedTitle.isEmpty) {
-      return '[Aegis][$_feedbackTypeLabel]';
-    }
-    return '[Aegis][$_feedbackTypeLabel] $trimmedTitle';
-  }
-
-  String get _mailBody {
-    final userBody = _bodyController.text.trim();
-    if (userBody.isEmpty) {
-      return 'Type: $_feedbackTypeLabel\n\nDetails:\n';
-    }
-    return 'Type: $_feedbackTypeLabel\n\nDetails:\n$userBody';
-  }
-
   String get _copyText {
     return 'Type: $_feedbackTypeLabel\n'
         'Title: ${_titleController.text.trim()}\n\n'
         '${_bodyController.text.trim()}';
   }
 
-  Future<void> _sendFeedback() async {
-    final uri = Uri(
-      scheme: 'mailto',
-      queryParameters: <String, String>{
-        'subject': _mailSubject,
-        'body': _mailBody,
-      },
-    );
-
-    final launched = await launchUrl(uri);
-    if (!mounted) return;
-
-    if (launched) {
-      CommonTips.success(context, 'Email draft opened.');
-      return;
-    }
-
-    await _copyToClipboard(showSuccessText: false);
-    if (!mounted) return;
-    CommonTips.success(
-      context,
-      'Mail app unavailable. Feedback content copied to clipboard.',
-    );
-  }
-
-  Future<void> _copyToClipboard({bool showSuccessText = true}) async {
+  Future<void> _copyToClipboard() async {
     await Clipboard.setData(ClipboardData(text: _copyText));
-    if (!mounted || !showSuccessText) return;
+    if (!mounted) return;
     CommonTips.success(context, 'Feedback content copied.');
   }
 
@@ -160,25 +118,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _copyToClipboard,
-                      icon: const Icon(Icons.copy),
-                      label: const Text('Copy'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      key: const Key('feedback_send_button'),
-                      onPressed: _canSend ? _sendFeedback : null,
-                      icon: const Icon(Icons.send),
-                      label: const Text('Send'),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  key: const Key('feedback_copy_button'),
+                  onPressed: _canCopy ? _copyToClipboard : null,
+                  icon: const Icon(Icons.copy),
+                  label: const Text('Copy feedback'),
+                ),
               ),
             ],
           ),

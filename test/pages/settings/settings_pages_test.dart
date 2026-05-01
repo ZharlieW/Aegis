@@ -43,27 +43,27 @@ void main() {
     expect(find.text('No logs yet.'), findsOneWidget);
   });
 
-  testWidgets('Feedback send button enabled only when title and details filled',
+  testWidgets('Feedback copy button enabled only when title and details filled',
       (WidgetTester tester) async {
     await tester.pumpWidget(_wrapWithApp(const FeedbackPage()));
     await tester.pumpAndSettle();
 
-    final sendButtonFinder = find.byKey(const Key('feedback_send_button'));
-    dynamic sendButton = tester.widget(sendButtonFinder);
-    expect(sendButton.onPressed, isNull);
+    final copyButtonFinder = find.byKey(const Key('feedback_copy_button'));
+    dynamic copyButton = tester.widget(copyButtonFinder);
+    expect(copyButton.onPressed, isNull);
 
     await tester.enterText(
         find.widgetWithText(TextField, 'Title'), 'Crash on login');
     await tester.pumpAndSettle();
-    sendButton = tester.widget(sendButtonFinder);
-    expect(sendButton.onPressed, isNull);
+    copyButton = tester.widget(copyButtonFinder);
+    expect(copyButton.onPressed, isNull);
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Details'),
       'App crashes when tapping login button.',
     );
     await tester.pumpAndSettle();
-    sendButton = tester.widget(sendButtonFinder);
-    expect(sendButton.onPressed, isNotNull);
+    copyButton = tester.widget(copyButtonFinder);
+    expect(copyButton.onPressed, isNotNull);
   });
 }
