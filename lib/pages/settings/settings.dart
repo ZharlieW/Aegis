@@ -12,7 +12,6 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
-import 'package:aegis/pages/settings/feedback_page.dart';
 
 /// Dialog widget for logout confirmation
 class _LogoutDialog extends StatefulWidget {
@@ -364,26 +363,6 @@ class SettingsState extends State<Settings> with AccountObservers {
       ),
       child: Column(
         children: [
-          ListTile(
-            title: Text(
-              'Feedback',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: Icon(
-              Icons.feedback_outlined,
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () => AegisNavigator.pushPage(
-                context, (context) => const FeedbackPage()),
-          ),
-          Divider(
-            height: 1,
-            indent: 16,
-            endIndent: 16,
-            color:
-                Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
-          ),
           ListTile(
             title: Text(
               'App Logs',

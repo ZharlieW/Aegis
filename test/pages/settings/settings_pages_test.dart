@@ -1,5 +1,4 @@
 import 'package:aegis/pages/settings/app_logs_page.dart';
-import 'package:aegis/pages/settings/feedback_page.dart';
 import 'package:aegis/services/app_log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,29 +40,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No logs yet.'), findsOneWidget);
-  });
-
-  testWidgets('Feedback copy button enabled only when title and details filled',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapWithApp(const FeedbackPage()));
-    await tester.pumpAndSettle();
-
-    final copyButtonFinder = find.byKey(const Key('feedback_copy_button'));
-    dynamic copyButton = tester.widget(copyButtonFinder);
-    expect(copyButton.onPressed, isNull);
-
-    await tester.enterText(
-        find.widgetWithText(TextField, 'Title'), 'Crash on login');
-    await tester.pumpAndSettle();
-    copyButton = tester.widget(copyButtonFinder);
-    expect(copyButton.onPressed, isNull);
-
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Details'),
-      'App crashes when tapping login button.',
-    );
-    await tester.pumpAndSettle();
-    copyButton = tester.widget(copyButtonFinder);
-    expect(copyButton.onPressed, isNotNull);
   });
 }
