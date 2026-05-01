@@ -8,11 +8,11 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
-import 'package:aegis/utils/authorization_mode.dart';
-import 'package:aegis/utils/local_storage.dart';
 import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
+import 'package:aegis/pages/settings/app_logs_page.dart';
+import 'package:aegis/pages/settings/feedback_page.dart';
 
 /// Dialog widget for logout confirmation
 class _LogoutDialog extends StatefulWidget {
@@ -76,10 +76,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
           ),
           label: Text(
             l10n.cancel,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
           ),
@@ -106,10 +103,7 @@ class _LogoutDialogState extends State<_LogoutDialog> {
           ),
           label: Text(
             l10n.confirm,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: isConfirmValid
                       ? Theme.of(context).colorScheme.onPrimary
                       : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -129,8 +123,7 @@ class Settings extends StatefulWidget {
 }
 
 class SettingsState extends State<Settings> with AccountObservers {
-  Map<String,UserDBISAR> accountMap = {};
-  AuthorizationMode _authorizationMode = AuthorizationMode.full;
+  Map<String, UserDBISAR> accountMap = {};
 
   String get _getKeyToStr {
     Account instance = Account.sharedInstance;
@@ -151,13 +144,6 @@ class SettingsState extends State<Settings> with AccountObservers {
     super.initState();
     Account.sharedInstance.addObserver(this);
     getAccountList();
-    _loadAuthorizationMode();
-  }
-
-  Future<void> _loadAuthorizationMode() async {
-    await LocalStorage.init();
-    if (!mounted) return;
-    setState(() => _authorizationMode = getAuthorizationMode());
   }
 
   void getAccountList() async {
@@ -187,8 +173,10 @@ class SettingsState extends State<Settings> with AccountObservers {
                   children: [
                     // _buildAuthorizationModeSection(),
                     _accountView(),
+                    _buildSupportSection(),
                     ...accountMap.values.toList().map((account) {
-                      if(Account.sharedInstance.currentPubkey == account.pubkey){
+                      if (Account.sharedInstance.currentPubkey ==
+                          account.pubkey) {
                         return const SizedBox();
                       }
                       return Container(
@@ -205,7 +193,8 @@ class SettingsState extends State<Settings> with AccountObservers {
                           trailing: CommonImage(
                             iconName: 'change_icon.png',
                             size: 22,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           onTap: () => _switchAccount(account),
                         ),
@@ -233,86 +222,13 @@ class SettingsState extends State<Settings> with AccountObservers {
                 label: Text(
                   l10n.addAccount,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
                 ),
               ),
             ).setPadding(const EdgeInsets.fromLTRB(20, 0, 20, 20)),
-
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAuthorizationModeSection() {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.authorizationModeTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.authorizationModeDescription,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 12),
-          RadioListTile<AuthorizationMode>(
-            title: Text(
-              l10n.authorizationModeFull,
-              style: theme.textTheme.bodyLarge,
-            ),
-            subtitle: Text(
-              l10n.authorizationModeFullDescription,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            value: AuthorizationMode.full,
-            groupValue: _authorizationMode,
-            onChanged: (AuthorizationMode? value) {
-              if (value == null) return;
-              setState(() => _authorizationMode = value);
-              setAuthorizationMode(value);
-            },
-          ),
-          RadioListTile<AuthorizationMode>(
-            title: Text(
-              l10n.authorizationModeSelective,
-              style: theme.textTheme.bodyLarge,
-            ),
-            subtitle: Text(
-              l10n.authorizationModeSelectiveDescription,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            value: AuthorizationMode.selective,
-            groupValue: _authorizationMode,
-            onChanged: (AuthorizationMode? value) {
-              if (value == null) return;
-              setState(() => _authorizationMode = value);
-              setAuthorizationMode(value);
-            },
-          ),
-        ],
       ),
     );
   }
@@ -320,7 +236,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   Widget _accountView() {
     Account account = Account.sharedInstance;
     UserDBISAR? currentUser = accountMap[account.currentPubkey];
-    if(currentUser == null) return const SizedBox();
+    if (currentUser == null) return const SizedBox();
     String name = currentUser.username ?? 'Unnamed';
 
     return GestureDetector(
@@ -366,9 +282,11 @@ class SettingsState extends State<Settings> with AccountObservers {
                       initialName: name,
                       onConfirm: (newName) async {
                         currentUser.username = newName;
-                        await AccountManager.sharedInstance.saveAccount(currentUser);
+                        await AccountManager.sharedInstance
+                            .saveAccount(currentUser);
                         getAccountList();
-                        CommonTips.success(context, AppLocalizations.of(context)!.updateSuccessful);
+                        CommonTips.success(context,
+                            AppLocalizations.of(context)!.updateSuccessful);
                       },
                     );
                   },
@@ -437,6 +355,53 @@ class SettingsState extends State<Settings> with AccountObservers {
     );
   }
 
+  Widget _buildSupportSection() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(
+              'Feedback',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.feedback_outlined,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+                context, (context) => const FeedbackPage()),
+          ),
+          Divider(
+            height: 1,
+            indent: 16,
+            endIndent: 16,
+            color:
+                Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+          ),
+          ListTile(
+            title: Text(
+              'App Logs',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.list_alt_outlined,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+                context, (context) => const AppLogsPage()),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _switchAccount(UserDBISAR account) async {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -457,12 +422,9 @@ class SettingsState extends State<Settings> with AccountObservers {
               ),
               label: Text(
                 l10n.cancel,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
               ),
             ),
             ElevatedButton.icon(
@@ -479,12 +441,9 @@ class SettingsState extends State<Settings> with AccountObservers {
               ),
               label: Text(
                 l10n.confirm,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
               ),
             ),
           ],
@@ -522,12 +481,9 @@ class SettingsState extends State<Settings> with AccountObservers {
             ),
             label: Text(
               l10n.cancel,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
             ),
           ),
           ElevatedButton.icon(
@@ -545,12 +501,9 @@ class SettingsState extends State<Settings> with AccountObservers {
             ),
             label: Text(
               l10n.confirm,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
             ),
           ),
         ],

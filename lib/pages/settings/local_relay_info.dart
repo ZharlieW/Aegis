@@ -233,7 +233,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
 
   Future<void> _refreshConnectionCount() async {
     if (!_isRelayRunning) return;
-    
+
     try {
       final stats = await RelayService.instance.getStats();
       if (mounted && stats != null) {
@@ -522,25 +522,33 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       },
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      AegisLogger.info("Reconnect cancelled by user");
+      return;
+    }
 
     setState(() {
       _isRestarting = true;
     });
 
     try {
+      AegisLogger.info("Reconnect requested from local relay page");
       await RelayService.instance.restart();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.relayRestartedSuccess)),
+          SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.relayRestartedSuccess)),
         );
         await _loadRelayInfo();
       }
     } catch (e) {
-      AegisLogger.error("Failed to restart relay", e);
+      AegisLogger.error("Failed to restart relay from local relay page", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.relayRestartFailed(_userFacingError(context, e)))),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .relayRestartFailed(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -569,14 +577,18 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       if (success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.databaseClearedSuccess)),
+            SnackBar(
+                content:
+                    Text(AppLocalizations.of(context)!.databaseClearedSuccess)),
           );
           await _loadRelayInfo();
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.databaseClearFailed)),
+            SnackBar(
+                content:
+                    Text(AppLocalizations.of(context)!.databaseClearFailed)),
           );
         }
       }
@@ -584,7 +596,9 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to clear database", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(_userFacingError(context, e)))),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .errorWithMessage(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -690,7 +704,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.databaseExportedToIosHint(exportedPath)),
+                    content: Text(AppLocalizations.of(context)!
+                        .databaseExportedToIosHint(exportedPath)),
                     duration: const Duration(seconds: 7),
                   ),
                 );
@@ -722,7 +737,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.databaseExportedTo(exportedPath)),
+                    content: Text(AppLocalizations.of(context)!
+                        .databaseExportedTo(exportedPath)),
                     duration: const Duration(seconds: 5),
                   ),
                 );
@@ -732,7 +748,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
             // For Desktop, show path
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(AppLocalizations.of(context)!.databaseExportedZip(exportedPath)),
+                content: Text(AppLocalizations.of(context)!
+                    .databaseExportedZip(exportedPath)),
                 duration: const Duration(seconds: 5),
               ),
             );
@@ -741,7 +758,9 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.databaseExportFailed)),
+            SnackBar(
+                content:
+                    Text(AppLocalizations.of(context)!.databaseExportFailed)),
           );
         }
       }
@@ -749,7 +768,9 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to export database", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(_userFacingError(context, e)))),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .errorWithMessage(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -773,7 +794,7 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child:             Text(l10n.cancel),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -860,14 +881,18 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       if (success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.databaseImportedSuccess)),
+            SnackBar(
+                content: Text(
+                    AppLocalizations.of(context)!.databaseImportedSuccess)),
           );
           await _loadRelayInfo();
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.databaseImportFailed)),
+            SnackBar(
+                content:
+                    Text(AppLocalizations.of(context)!.databaseImportFailed)),
           );
         }
       }
@@ -875,7 +900,9 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
       AegisLogger.error("Failed to import database", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(_userFacingError(context, e)))),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .errorWithMessage(_userFacingError(context, e)))),
         );
       }
     } finally {
@@ -944,9 +971,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 children: [
                                   Text(
                                     AppLocalizations.of(context)!.status,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const Spacer(),
                                   Container(
@@ -965,7 +991,11 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                       ),
                                     ),
                                     child: Text(
-                                      _isRelayRunning ? AppLocalizations.of(context)!.running : AppLocalizations.of(context)!.stopped,
+                                      _isRelayRunning
+                                          ? AppLocalizations.of(context)!
+                                              .running
+                                          : AppLocalizations.of(context)!
+                                              .stopped,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -983,18 +1013,24 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               Row(
                                 children: [
                                   Text(
-                                    AppLocalizations.of(context)!.lastReconnectAt,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    AppLocalizations.of(context)!
+                                        .lastReconnectAt,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const Spacer(),
                                   Text(
                                     _lastReconnectTime == null
-                                        ? AppLocalizations.of(context)!.neverReconnected
+                                        ? AppLocalizations.of(context)!
+                                            .neverReconnected
                                         : _formatDateTime(_lastReconnectTime!),
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                         ),
                                   ),
                                 ],
@@ -1003,18 +1039,23 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               SizedBox(
                                 width: double.infinity,
                                 child: FilledButton.icon(
-                                  onPressed: _isRestarting ? null : _handleRestartRelay,
+                                  onPressed: _isRestarting
+                                      ? null
+                                      : _handleRestartRelay,
                                   icon: _isRestarting
                                       ? const SizedBox(
                                           width: 16,
                                           height: 16,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
                                         )
                                       : const Icon(Icons.restart_alt),
                                   label: Text(
                                     _isRestarting
-                                        ? AppLocalizations.of(context)!.reconnecting
-                                        : AppLocalizations.of(context)!.reconnectNow,
+                                        ? AppLocalizations.of(context)!
+                                            .reconnecting
+                                        : AppLocalizations.of(context)!
+                                            .reconnectNow,
                                   ),
                                 ),
                               ),
@@ -1024,9 +1065,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 children: [
                                   Text(
                                     AppLocalizations.of(context)!.address,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const Spacer(),
                                   GestureDetector(
@@ -1038,7 +1078,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                           .showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                              AppLocalizations.of(context)!.addressCopiedToClipboard),
+                                              AppLocalizations.of(context)!
+                                                  .addressCopiedToClipboard),
                                           duration: const Duration(seconds: 2),
                                         ),
                                       );
@@ -1075,9 +1116,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 children: [
                                   Text(
                                     AppLocalizations.of(context)!.protocol,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const Spacer(),
                                   _buildAddressModeSelector(),
@@ -1089,9 +1129,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 children: [
                                   Text(
                                     AppLocalizations.of(context)!.connections,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const Spacer(),
                                   Text(
@@ -1130,12 +1169,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             // SIZE Section
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      AppLocalizations.of(context)!.relayStatsSize,
+                                      AppLocalizations.of(context)!
+                                          .relayStatsSize,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -1176,12 +1217,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             if (_stats != null) ...[
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        AppLocalizations.of(context)!.relayStatsEvents,
+                                        AppLocalizations.of(context)!
+                                            .relayStatsEvents,
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
@@ -1222,12 +1265,14 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                             // UPTIME Section
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      AppLocalizations.of(context)!.relayStatsUptime,
+                                      AppLocalizations.of(context)!
+                                          .relayStatsUptime,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -1285,9 +1330,12 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               ),
                               trailing: Icon(
                                 Icons.chevron_right,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
-                              onTap: _isExporting ? null : _handleExportDatabase,
+                              onTap:
+                                  _isExporting ? null : _handleExportDatabase,
                             ),
                             // Import Data List Item
                             ListTile(
@@ -1297,9 +1345,12 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                               ),
                               trailing: Icon(
                                 Icons.chevron_right,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
-                              onTap: _isImporting ? null : _handleImportDatabase,
+                              onTap:
+                                  _isImporting ? null : _handleImportDatabase,
                             ),
                             // System Logs List Item
                             ListTile(
@@ -1308,8 +1359,12 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               trailing: Icon(
-                                _showLogs ? Icons.expand_less : Icons.expand_more,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                _showLogs
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                               onTap: _toggleLogs,
                             ),
@@ -1321,12 +1376,16 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                   minHeight: 200,
                                   maxHeight: 200,
                                 ),
-                                margin: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                                margin: const EdgeInsets.only(
+                                    bottom: 8, left: 8, right: 8),
                                 decoration: BoxDecoration(
                                   color: Colors.black87,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.3),
                                     width: 1.5,
                                   ),
                                   boxShadow: [
@@ -1342,12 +1401,15 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(24),
                                           child: Text(
-                                            AppLocalizations.of(context)!.noLogsAvailable,
+                                            AppLocalizations.of(context)!
+                                                .noLogsAvailable,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium
                                                 ?.copyWith(
-                                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
                                                 ),
                                           ),
                                         ),
@@ -1385,7 +1447,8 @@ class _LocalRelayInfoState extends State<LocalRelayInfo> {
                         onPressed: _isClearing ? null : _handleClearDatabase,
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                         ),
                         child: _isClearing
                             ? const SizedBox(

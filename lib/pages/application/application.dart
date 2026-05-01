@@ -23,9 +23,7 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/pages/settings/settings.dart';
-import 'package:aegis/pages/settings/app_logs_page.dart';
 import 'package:aegis/pages/settings/local_relay_info.dart';
-import 'package:aegis/pages/settings/feedback_page.dart';
 import 'package:aegis/pages/browser/browser_page.dart';
 import 'package:aegis/pages/activities/activities.dart';
 import 'package:aegis/pages/application/application_info.dart';
@@ -412,10 +410,6 @@ class ApplicationState extends State<Application> with AccountManagerObservers {
         return const BrowserPage();
       case 'accounts':
         return const Settings();
-      case 'feedback':
-        return const FeedbackPage();
-      case 'appLogs':
-        return const AppLogsPage();
       case 'home':
       default:
         return _buildMainContent(context);

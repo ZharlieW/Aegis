@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
+import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/permission_approval_batcher_models.dart';
 
 /// A batch permission dialog that groups multiple pending authorization requests
@@ -48,6 +49,21 @@ class BatchRequestPermission extends StatefulWidget {
 }
 
 class _BatchRequestPermissionState extends State<BatchRequestPermission> {
+  String get _safeSourceName {
+    final normalized = widget.sourceName.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (normalized.isEmpty) return 'unknown';
+    return normalized.length <= 40
+        ? normalized
+        : '${normalized.substring(0, 37)}...';
+  }
+
+  Future<void> _logAndReject({required String reason}) async {
+    AegisLogger.warning(
+      'Permission batch rejected ($reason) source=$_safeSourceName',
+    );
+    await widget.onRejectAll();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -57,7 +73,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
       canPop: widget.allowDismiss,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop && !widget.allowDismiss) {
-          await widget.onRejectAll();
+          await _logAndReject(reason: 'back');
           if (!mounted) return;
           AegisNavigator.pop(context);
         }
@@ -66,7 +82,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () async {
-              await widget.onRejectAll();
+              await _logAndReject(reason: 'close_button');
               if (!mounted) return;
               AegisNavigator.pop(context);
             },
@@ -198,7 +214,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                     const SizedBox(height: 12),
                     FilledButton.tonal(
                       onPressed: () async {
-                        await widget.onRejectAll();
+                        await _logAndReject(reason: 'reject_button');
                         if (!mounted) return;
                         AegisNavigator.pop(context);
                       },
@@ -255,7 +271,8 @@ class _PermissionTypeRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+        border:
+            Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

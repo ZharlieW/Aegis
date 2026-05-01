@@ -1,8 +1,6 @@
 import 'package:aegis/common/common_image.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/navigator/navigator.dart';
-import 'package:aegis/pages/settings/app_logs_page.dart';
-import 'package:aegis/pages/settings/feedback_page.dart';
 import 'package:aegis/pages/settings/language_page.dart';
 import 'package:aegis/pages/settings/local_relay_info.dart';
 import 'package:aegis/pages/settings/settings.dart';
@@ -95,32 +93,6 @@ class ApplicationSidebar extends StatelessWidget {
                   ),
                   _buildThemeSettingsTile(context),
                   _buildLanguageTile(context),
-                  _menuTile(
-                    context,
-                    page: 'feedback',
-                    label: 'Feedback',
-                    icon: Icons.feedback_outlined,
-                    useIconImage: false,
-                    onTapCustom: useSplitLayout
-                        ? null
-                        : () => AegisNavigator.pushPage(
-                              context,
-                              (context) => const FeedbackPage(),
-                            ),
-                  ),
-                  _menuTile(
-                    context,
-                    page: 'appLogs',
-                    label: 'App Logs',
-                    icon: Icons.list_alt_outlined,
-                    useIconImage: false,
-                    onTapCustom: useSplitLayout
-                        ? null
-                        : () => AegisNavigator.pushPage(
-                              context,
-                              (context) => const AppLogsPage(),
-                            ),
-                  ),
                   _menuTile(
                     context,
                     page: 'accounts',
@@ -376,42 +348,6 @@ class ApplicationDrawer extends StatelessWidget {
               Navigator.pop(context);
               AegisNavigator.pushPage(
                   context, (context) => const LanguagePage());
-            },
-          ),
-          ListTile(
-            title: Text(
-              'App Logs',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: Icon(
-              Icons.list_alt_outlined,
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              AegisNavigator.pushPage(
-                context,
-                (context) => const AppLogsPage(),
-              );
-            },
-          ),
-          ListTile(
-            title: Text(
-              'Feedback',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            trailing: Icon(
-              Icons.feedback_outlined,
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              AegisNavigator.pushPage(
-                context,
-                (context) => const FeedbackPage(),
-              );
             },
           ),
           ListTile(

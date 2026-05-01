@@ -17,8 +17,27 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final TextEditingController _bodyController = TextEditingController();
   FeedbackType _feedbackType = FeedbackType.bug;
 
+  bool get _canSend {
+    return _titleController.text.trim().isNotEmpty &&
+        _bodyController.text.trim().isNotEmpty;
+  }
+
+  void _onTextChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController.addListener(_onTextChanged);
+    _bodyController.addListener(_onTextChanged);
+  }
+
   @override
   void dispose() {
+    _titleController.removeListener(_onTextChanged);
+    _bodyController.removeListener(_onTextChanged);
     _titleController.dispose();
     _bodyController.dispose();
     super.dispose();
@@ -153,7 +172,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _sendFeedback,
+                      key: const Key('feedback_send_button'),
+                      onPressed: _canSend ? _sendFeedback : null,
                       icon: const Icon(Icons.send),
                       label: const Text('Send'),
                     ),
