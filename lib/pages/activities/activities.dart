@@ -145,6 +145,43 @@ class ActivitiesState extends State<Activities> {
     return l10n.activities;
   }
 
+  MenuStyle _activityFilterMenuStyle(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return MenuStyle(
+      shape: WidgetStatePropertyAll<OutlinedBorder>(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      elevation: const WidgetStatePropertyAll<double>(4),
+      backgroundColor:
+          WidgetStatePropertyAll<Color>(colorScheme.surfaceContainerHigh),
+      shadowColor: WidgetStatePropertyAll<Color>(
+        colorScheme.shadow.withValues(alpha: 0.2),
+      ),
+    );
+  }
+
+  InputDecorationTheme _activityFilterInputTheme(BuildContext context) {
+    final outline = Theme.of(context).colorScheme.outline;
+    return InputDecorationTheme(
+      isDense: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: outline.withValues(alpha: 0.6)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: outline.withValues(alpha: 0.6)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    );
+  }
+
   String _getEventContent(SignedEventDBISAR event) {
     if (event.eventContent.isNotEmpty) {
       return event.eventContent;
@@ -234,79 +271,72 @@ class ActivitiesState extends State<Activities> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 4),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<int?>(
-                              value: _statusFilter,
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)!.status,
-                                isDense: true,
-                                border: const OutlineInputBorder(),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                              items: const [
-                                DropdownMenuItem<int?>(
+                            child: DropdownMenu<int?>(
+                              initialSelection: _statusFilter,
+                              enableSearch: false,
+                              expandedInsets: EdgeInsets.zero,
+                              label: Text(AppLocalizations.of(context)!.status),
+                              menuStyle: _activityFilterMenuStyle(context),
+                              inputDecorationTheme:
+                                  _activityFilterInputTheme(context),
+                              dropdownMenuEntries: const [
+                                DropdownMenuEntry<int?>(
                                   value: null,
-                                  child: Text('All'),
+                                  label: 'All',
                                 ),
-                                DropdownMenuItem<int?>(
+                                DropdownMenuEntry<int?>(
                                   value: 1,
-                                  child: Text('Signed'),
+                                  label: 'Signed',
                                 ),
-                                DropdownMenuItem<int?>(
+                                DropdownMenuEntry<int?>(
                                   value: 0,
-                                  child: Text('Pending'),
+                                  label: 'Pending',
                                 ),
-                                DropdownMenuItem<int?>(
+                                DropdownMenuEntry<int?>(
                                   value: 2,
-                                  child: Text('Failed'),
+                                  label: 'Failed',
                                 ),
                               ],
-                              onChanged: (value) {
-                                _statusFilter = value;
+                              onSelected: (int? value) {
+                                setState(() => _statusFilter = value);
                                 _applyFiltersAndSort();
                               },
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: DropdownButtonFormField<_ActivityTimeRange>(
-                              value: _timeRangeFilter,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Time Range',
-                                isDense: true,
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                              items: const [
-                                DropdownMenuItem<_ActivityTimeRange>(
+                            child: DropdownMenu<_ActivityTimeRange>(
+                              initialSelection: _timeRangeFilter,
+                              enableSearch: false,
+                              expandedInsets: EdgeInsets.zero,
+                              label: const Text('Time Range'),
+                              menuStyle: _activityFilterMenuStyle(context),
+                              inputDecorationTheme:
+                                  _activityFilterInputTheme(context),
+                              dropdownMenuEntries: const [
+                                DropdownMenuEntry<_ActivityTimeRange>(
                                   value: _ActivityTimeRange.all,
-                                  child: Text('All'),
+                                  label: 'All',
                                 ),
-                                DropdownMenuItem<_ActivityTimeRange>(
+                                DropdownMenuEntry<_ActivityTimeRange>(
                                   value: _ActivityTimeRange.last24Hours,
-                                  child: Text('24h'),
+                                  label: '24h',
                                 ),
-                                DropdownMenuItem<_ActivityTimeRange>(
+                                DropdownMenuEntry<_ActivityTimeRange>(
                                   value: _ActivityTimeRange.last7Days,
-                                  child: Text('7d'),
+                                  label: '7d',
                                 ),
-                                DropdownMenuItem<_ActivityTimeRange>(
+                                DropdownMenuEntry<_ActivityTimeRange>(
                                   value: _ActivityTimeRange.last30Days,
-                                  child: Text('30d'),
+                                  label: '30d',
                                 ),
                               ],
-                              onChanged: (value) {
+                              onSelected: (_ActivityTimeRange? value) {
                                 if (value == null) return;
-                                _timeRangeFilter = value;
+                                setState(() => _timeRangeFilter = value);
                                 _applyFiltersAndSort();
                               },
                             ),
