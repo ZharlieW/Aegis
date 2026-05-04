@@ -2067,6 +2067,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.'**
   String get signPolicyManualDescription;
+
+  /// Semantics label for the FAB on the home screen that opens the Add Application flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Add connection'**
+  String get addConnection;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

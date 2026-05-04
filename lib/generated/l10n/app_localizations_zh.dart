@@ -1812,4 +1812,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get activitiesLoadFailed => '載入活動失敗';
+
+  @override
+  String get addConnection => 'Add connection';
 }

@@ -1000,4 +1000,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get signPolicyManualDescription => 'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.';
+
+  @override
+  String get addConnection => 'Add connection';
 }

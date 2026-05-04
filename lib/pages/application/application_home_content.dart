@@ -77,44 +77,49 @@ class ApplicationHomeContent extends StatelessWidget {
   }
 
   Widget _buildFab(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (selectedSegment == 1) {
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context)!.addConnection,
+      child: GestureDetector(
+        key: const Key('add_application_fab'),
+        onTap: () {
+          if (selectedSegment == 1) {
+            AegisNavigator.pushPage(
+              context,
+              (context) => const BrowserPage(),
+            );
+            return;
+          }
+          final account = Account.sharedInstance;
+          final isEmpty = account.currentPubkey.isEmpty ||
+              account.currentPrivkey.isEmpty;
           AegisNavigator.pushPage(
             context,
-            (context) => const BrowserPage(),
+            (context) =>
+                isEmpty ? const Login() : const AddApplication(),
           );
-          return;
-        }
-        final account = Account.sharedInstance;
-        final isEmpty = account.currentPubkey.isEmpty ||
-            account.currentPrivkey.isEmpty;
-        AegisNavigator.pushPage(
-          context,
-          (context) =>
-              isEmpty ? const Login() : const AddApplication(),
-        );
-      },
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          borderRadius: BorderRadius.circular(56),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha((0.14 * 255).round()),
-              offset: const Offset(0, 4),
-              blurRadius: 8,
-              spreadRadius: 1,
+        },
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(56),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha((0.14 * 255).round()),
+                offset: const Offset(0, 4),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Center(
+            child: CommonImage(
+              iconName: 'add_icon.png',
+              size: 36,
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
             ),
-          ],
-        ),
-        child: Center(
-          child: CommonImage(
-            iconName: 'add_icon.png',
-            size: 36,
-            color: Theme.of(context).colorScheme.onSecondaryContainer,
           ),
         ),
       ),

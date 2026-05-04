@@ -409,5 +409,9 @@
   "signPolicyBasic": "Basic",
   "signPolicyBasicDescription": "Brief wait to combine requests; you can use Always allow and Remember duration; remembered approvals still apply.",
   "signPolicyManual": "Manual",
-  "signPolicyManualDescription": "Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch."
+  "signPolicyManualDescription": "Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.",
+  "addConnection": "Add connection",
+  "@addConnection": {
+    "description": "Semantics label for the FAB on the home screen that opens the Add Application flow."
+  }
 }
