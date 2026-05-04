@@ -11,6 +11,7 @@ import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/permission_approval_batcher_models.dart';
+import 'package:aegis/utils/sign_policy.dart';
 
 class _PendingPermissionGroup {
   final String methodKey;
@@ -207,7 +208,7 @@ class _ClientQueueState {
 
     if (!_dialogShowing) {
       _scheduledTimer?.cancel();
-      _scheduledTimer = Timer(const Duration(milliseconds: 200), () async {
+      _scheduledTimer = Timer(signPolicyBatchDebounce(), () async {
         // Double-check queue wasn't cleared while waiting.
         if (_groups.isEmpty) {
           _scheduledTimer = null;
@@ -236,6 +237,7 @@ class _ClientQueueState {
           clientPubkey: clientPubkey,
           sourceName: _resolveSourceName(),
           groupsNotifier: groupsNotifier,
+          allowRememberShortcuts: signPolicyShowsRememberShortcuts(),
           allowDismiss: false,
           onSetSelected: (methodKey, selected) {
             setGroupSelected(methodKey, selected);
@@ -266,7 +268,7 @@ class _ClientQueueState {
         // open another batch dialog so requests don't get stuck.
         if (_groups.isNotEmpty) {
           _scheduledTimer?.cancel();
-          _scheduledTimer = Timer(const Duration(milliseconds: 50), () async {
+          _scheduledTimer = Timer(signPolicyBetweenDialogs(), () async {
             if (_groups.isNotEmpty) {
               await _showDialog();
             } else {
@@ -339,12 +341,14 @@ class PermissionApprovalBatcher {
       userPubkey: app.pubkey,
       clientPubkey: appKey,
     );
-    if (await RememberedPermissionChoiceStore.isValid(
-      userPubkey: app.pubkey,
-      clientPubkey: appKey,
-      methodKey: methodKey,
-    )) {
-      return true;
+    if (getSignPolicy() != SignPolicy.manual) {
+      if (await RememberedPermissionChoiceStore.isValid(
+        userPubkey: app.pubkey,
+        clientPubkey: appKey,
+        methodKey: methodKey,
+      )) {
+        return true;
+      }
     }
 
     return _getQueue(clientPubkey).enqueueApproval(

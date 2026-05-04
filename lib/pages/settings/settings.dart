@@ -12,6 +12,7 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
+import 'package:aegis/utils/sign_policy.dart';
 
 /// Dialog widget for logout confirmation
 class _LogoutDialog extends StatefulWidget {
@@ -123,6 +124,7 @@ class Settings extends StatefulWidget {
 
 class SettingsState extends State<Settings> with AccountObservers {
   Map<String, UserDBISAR> accountMap = {};
+  SignPolicy _signPolicy = SignPolicy.basic;
 
   String get _getKeyToStr {
     Account instance = Account.sharedInstance;
@@ -141,6 +143,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   @override
   void initState() {
     super.initState();
+    _signPolicy = getSignPolicy();
     Account.sharedInstance.addObserver(this);
     getAccountList();
   }
@@ -172,6 +175,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                   children: [
                     // _buildAuthorizationModeSection(),
                     _accountView(),
+                    _buildSignPolicySection(),
                     _buildSupportSection(),
                     ...accountMap.values.toList().map((account) {
                       if (Account.sharedInstance.currentPubkey ==
@@ -350,6 +354,72 @@ class SettingsState extends State<Settings> with AccountObservers {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSignPolicySection() {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Text(
+              l10n.signPolicyTitle,
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+            child: Text(
+              l10n.signPolicyDescription,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          RadioListTile<SignPolicy>(
+            dense: true,
+            title: Text(l10n.signPolicyBasic),
+            subtitle: Text(
+              l10n.signPolicyBasicDescription,
+              style: theme.textTheme.bodySmall,
+            ),
+            value: SignPolicy.basic,
+            groupValue: _signPolicy,
+            onChanged: (v) async {
+              if (v == null) return;
+              await setSignPolicy(v);
+              if (!mounted) return;
+              setState(() => _signPolicy = v);
+            },
+          ),
+          RadioListTile<SignPolicy>(
+            dense: true,
+            title: Text(l10n.signPolicyManual),
+            subtitle: Text(
+              l10n.signPolicyManualDescription,
+              style: theme.textTheme.bodySmall,
+            ),
+            value: SignPolicy.manual,
+            groupValue: _signPolicy,
+            onChanged: (v) async {
+              if (v == null) return;
+              await setSignPolicy(v);
+              if (!mounted) return;
+              setState(() => _signPolicy = v);
+            },
+          ),
+          const SizedBox(height: 4),
+        ],
       ),
     );
   }

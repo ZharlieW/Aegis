@@ -11,6 +11,9 @@ class BatchRequestPermission extends StatefulWidget {
   final String clientPubkey;
   final String sourceName;
   final ValueNotifier<List<BatchPermissionGroupView>> groupsNotifier;
+
+  /// When false (manual sign policy), hides "always allow" and remember duration.
+  final bool allowRememberShortcuts;
   final bool allowDismiss;
 
   /// Called by the dialog to update group selection state.
@@ -35,6 +38,7 @@ class BatchRequestPermission extends StatefulWidget {
     required this.clientPubkey,
     required this.sourceName,
     required this.groupsNotifier,
+    this.allowRememberShortcuts = true,
     this.allowDismiss = false,
     required this.onSetSelected,
     required this.onSetAllSelected,
@@ -166,6 +170,8 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
                             ),
                             ...groups.map((g) => _PermissionTypeRow(
                                   group: g,
+                                  allowRememberShortcuts:
+                                      widget.allowRememberShortcuts,
                                   onSetSelected: widget.onSetSelected,
                                   onSetAlwaysAllow: widget.onSetAlwaysAllow,
                                   onSetRememberTtl: widget.onSetRememberTtl,
@@ -248,6 +254,7 @@ class _BatchRequestPermissionState extends State<BatchRequestPermission> {
 
 class _PermissionTypeRow extends StatelessWidget {
   final BatchPermissionGroupView group;
+  final bool allowRememberShortcuts;
   final void Function(String methodKey, bool selected) onSetSelected;
   final void Function(String methodKey, bool alwaysAllow) onSetAlwaysAllow;
   final void Function(String methodKey, RememberChoiceTtl rememberTtl)
@@ -255,6 +262,7 @@ class _PermissionTypeRow extends StatelessWidget {
 
   const _PermissionTypeRow({
     required this.group,
+    required this.allowRememberShortcuts,
     required this.onSetSelected,
     required this.onSetAlwaysAllow,
     required this.onSetRememberTtl,
@@ -301,77 +309,79 @@ class _PermissionTypeRow extends StatelessWidget {
               ),
             ],
           ),
-          SwitchListTile(
-            value: group.alwaysAllow,
-            onChanged: (v) => onSetAlwaysAllow(group.methodKey, v),
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              l10n.alwaysAllowThisPermission,
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
-          if (group.alwaysAllow)
-            ExpansionTile(
-              initiallyExpanded: false,
-              tilePadding: EdgeInsets.zero,
+          if (allowRememberShortcuts) ...[
+            SwitchListTile(
+              value: group.alwaysAllow,
+              onChanged: (v) => onSetAlwaysAllow(group.methodKey, v),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
               title: Text(
-                l10n.batchRememberDurationSection,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                l10n.alwaysAllowThisPermission,
+                style: theme.textTheme.bodyMedium,
               ),
-              subtitle: Text(
-                _rememberTtlLabel(l10n, group.rememberTtl),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+            ),
+            if (group.alwaysAllow)
+              ExpansionTile(
+                initiallyExpanded: false,
+                tilePadding: EdgeInsets.zero,
+                title: Text(
+                  l10n.batchRememberDurationSection,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      l10n.batchRememberDurationHint,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                subtitle: Text(
+                  _rememberTtlLabel(l10n, group.rememberTtl),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        l10n.batchRememberDurationHint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                RadioListTile<RememberChoiceTtl>(
-                  value: RememberChoiceTtl.fiveMinutes,
-                  groupValue: group.rememberTtl,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    onSetRememberTtl(group.methodKey, v);
-                  },
-                  dense: true,
-                  title: Text(l10n.batchRememberFiveMinutes),
-                ),
-                RadioListTile<RememberChoiceTtl>(
-                  value: RememberChoiceTtl.thirtyMinutes,
-                  groupValue: group.rememberTtl,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    onSetRememberTtl(group.methodKey, v);
-                  },
-                  dense: true,
-                  title: Text(l10n.batchRememberThirtyMinutes),
-                ),
-                RadioListTile<RememberChoiceTtl>(
-                  value: RememberChoiceTtl.permanent,
-                  groupValue: group.rememberTtl,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    onSetRememberTtl(group.methodKey, v);
-                  },
-                  dense: true,
-                  title: Text(l10n.batchRememberPermanent),
-                ),
-              ],
-            ),
+                  RadioListTile<RememberChoiceTtl>(
+                    value: RememberChoiceTtl.fiveMinutes,
+                    groupValue: group.rememberTtl,
+                    onChanged: (v) {
+                      if (v == null) return;
+                      onSetRememberTtl(group.methodKey, v);
+                    },
+                    dense: true,
+                    title: Text(l10n.batchRememberFiveMinutes),
+                  ),
+                  RadioListTile<RememberChoiceTtl>(
+                    value: RememberChoiceTtl.thirtyMinutes,
+                    groupValue: group.rememberTtl,
+                    onChanged: (v) {
+                      if (v == null) return;
+                      onSetRememberTtl(group.methodKey, v);
+                    },
+                    dense: true,
+                    title: Text(l10n.batchRememberThirtyMinutes),
+                  ),
+                  RadioListTile<RememberChoiceTtl>(
+                    value: RememberChoiceTtl.permanent,
+                    groupValue: group.rememberTtl,
+                    onChanged: (v) {
+                      if (v == null) return;
+                      onSetRememberTtl(group.methodKey, v);
+                    },
+                    dense: true,
+                    title: Text(l10n.batchRememberPermanent),
+                  ),
+                ],
+              ),
+          ],
         ],
       ),
     );

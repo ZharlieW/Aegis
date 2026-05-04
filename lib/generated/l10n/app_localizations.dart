@@ -2031,6 +2031,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose which permissions to grant each time an app connects.'**
   String get authorizationModeSelectiveDescription;
+
+  /// No description provided for @signPolicyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign policy'**
+  String get signPolicyTitle;
+
+  /// No description provided for @signPolicyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How Aegis shows approval prompts for remote signing (NIP-46).'**
+  String get signPolicyDescription;
+
+  /// No description provided for @signPolicyBasic.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic'**
+  String get signPolicyBasic;
+
+  /// No description provided for @signPolicyBasicDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Brief wait to combine requests; you can use Always allow and Remember duration; remembered approvals still apply.'**
+  String get signPolicyBasicDescription;
+
+  /// No description provided for @signPolicyManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get signPolicyManual;
+
+  /// No description provided for @signPolicyManualDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.'**
+  String get signPolicyManualDescription;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

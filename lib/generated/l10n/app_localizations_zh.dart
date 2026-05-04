@@ -982,6 +982,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get authorizationModeSelectiveDescription => '每次有新应用连接时，逐项选择它可以使用的功能。';
+
+  @override
+  String get signPolicyTitle => '签名策略';
+
+  @override
+  String get signPolicyDescription => '远程签名（NIP-46）时如何弹出授权确认。';
+
+  @override
+  String get signPolicyBasic => '标准';
+
+  @override
+  String get signPolicyBasicDescription => '短暂合并连续请求后再弹窗；可使用「始终允许」与「记住时长」；已记住的授权仍会生效。';
+
+  @override
+  String get signPolicyManual => '手动';
+
+  @override
+  String get signPolicyManualDescription => '立即弹出授权界面；不提供「记住」类快捷选项；忽略基于时间的「记住授权」，每次批次都需你明确确认。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

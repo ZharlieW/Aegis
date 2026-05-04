@@ -982,4 +982,22 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get authorizationModeSelectiveDescription => 'Choose which permissions to grant each time an app connects.';
+
+  @override
+  String get signPolicyTitle => 'Sign policy';
+
+  @override
+  String get signPolicyDescription => 'How Aegis shows approval prompts for remote signing (NIP-46).';
+
+  @override
+  String get signPolicyBasic => 'Basic';
+
+  @override
+  String get signPolicyBasicDescription => 'Brief wait to combine requests; you can use Always allow and Remember duration; remembered approvals still apply.';
+
+  @override
+  String get signPolicyManual => 'Manual';
+
+  @override
+  String get signPolicyManualDescription => 'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.';
 }
