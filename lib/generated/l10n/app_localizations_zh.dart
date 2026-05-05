@@ -1000,6 +1000,63 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get signPolicyManualDescription => '立即弹出授权界面；不提供「记住」类快捷选项；忽略基于时间的「记住授权」，每次批次都需你明确确认。';
+
+  @override
+  String get securityTitle => '安全';
+
+  @override
+  String get securityDescription => '设置本机 PIN（4–6 位数字），用于确认查看账号备份与切换账号。仅保存在本设备。';
+
+  @override
+  String get appPinEnterTitle => '输入应用 PIN';
+
+  @override
+  String get appPinLabel => 'PIN';
+
+  @override
+  String get appPinHint => '4–6 位数字';
+
+  @override
+  String get appPinInvalid => 'PIN 须为 4–6 位数字。';
+
+  @override
+  String get appPinWrong => 'PIN 错误。';
+
+  @override
+  String get appPinMismatch => '两次输入不一致。';
+
+  @override
+  String get appPinSet => '保存 PIN';
+
+  @override
+  String get appPinChange => '修改 PIN';
+
+  @override
+  String get appPinRemove => '移除 PIN';
+
+  @override
+  String get appPinSetSuccess => '已保存 PIN。';
+
+  @override
+  String get appPinChangeSuccess => '已更新 PIN。';
+
+  @override
+  String get appPinRemoveSuccess => '已移除 PIN。';
+
+  @override
+  String get appPinCurrentWrong => '当前 PIN 不正确。';
+
+  @override
+  String get appPinCurrent => '当前 PIN';
+
+  @override
+  String get appPinNew => '新 PIN';
+
+  @override
+  String get appPinConfirmLabel => '确认 PIN';
+
+  @override
+  String get appPinEnabledStatus => '已启用应用 PIN';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

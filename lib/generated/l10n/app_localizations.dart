@@ -2067,6 +2067,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.'**
   String get signPolicyManualDescription;
+
+  /// No description provided for @securityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get securityTitle;
+
+  /// No description provided for @securityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a device PIN (4–6 digits) to confirm viewing account backup and switching accounts. Stored only on this device.'**
+  String get securityDescription;
+
+  /// No description provided for @appPinEnterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter app PIN'**
+  String get appPinEnterTitle;
+
+  /// No description provided for @appPinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN'**
+  String get appPinLabel;
+
+  /// No description provided for @appPinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'4–6 digits'**
+  String get appPinHint;
+
+  /// No description provided for @appPinInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN must be 4–6 digits.'**
+  String get appPinInvalid;
+
+  /// No description provided for @appPinWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect PIN.'**
+  String get appPinWrong;
+
+  /// No description provided for @appPinMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'PINs do not match.'**
+  String get appPinMismatch;
+
+  /// No description provided for @appPinSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Save PIN'**
+  String get appPinSet;
+
+  /// No description provided for @appPinChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change PIN'**
+  String get appPinChange;
+
+  /// No description provided for @appPinRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove PIN'**
+  String get appPinRemove;
+
+  /// No description provided for @appPinSetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN saved.'**
+  String get appPinSetSuccess;
+
+  /// No description provided for @appPinChangeSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN updated.'**
+  String get appPinChangeSuccess;
+
+  /// No description provided for @appPinRemoveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN removed.'**
+  String get appPinRemoveSuccess;
+
+  /// No description provided for @appPinCurrentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN is incorrect.'**
+  String get appPinCurrentWrong;
+
+  /// No description provided for @appPinCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN'**
+  String get appPinCurrent;
+
+  /// No description provided for @appPinNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New PIN'**
+  String get appPinNew;
+
+  /// No description provided for @appPinConfirmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm PIN'**
+  String get appPinConfirmLabel;
+
+  /// No description provided for @appPinEnabledStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'App PIN is enabled'**
+  String get appPinEnabledStatus;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

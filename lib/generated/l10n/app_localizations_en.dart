@@ -1000,4 +1000,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signPolicyManualDescription => 'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.';
+
+  @override
+  String get securityTitle => 'Security';
+
+  @override
+  String get securityDescription => 'Set a device PIN (4–6 digits) to confirm viewing account backup and switching accounts. Stored only on this device.';
+
+  @override
+  String get appPinEnterTitle => 'Enter app PIN';
+
+  @override
+  String get appPinLabel => 'PIN';
+
+  @override
+  String get appPinHint => '4–6 digits';
+
+  @override
+  String get appPinInvalid => 'PIN must be 4–6 digits.';
+
+  @override
+  String get appPinWrong => 'Incorrect PIN.';
+
+  @override
+  String get appPinMismatch => 'PINs do not match.';
+
+  @override
+  String get appPinSet => 'Save PIN';
+
+  @override
+  String get appPinChange => 'Change PIN';
+
+  @override
+  String get appPinRemove => 'Remove PIN';
+
+  @override
+  String get appPinSetSuccess => 'PIN saved.';
+
+  @override
+  String get appPinChangeSuccess => 'PIN updated.';
+
+  @override
+  String get appPinRemoveSuccess => 'PIN removed.';
+
+  @override
+  String get appPinCurrentWrong => 'Current PIN is incorrect.';
+
+  @override
+  String get appPinCurrent => 'Current PIN';
+
+  @override
+  String get appPinNew => 'New PIN';
+
+  @override
+  String get appPinConfirmLabel => 'Confirm PIN';
+
+  @override
+  String get appPinEnabledStatus => 'App PIN is enabled';
 }
