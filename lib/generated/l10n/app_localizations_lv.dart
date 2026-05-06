@@ -1057,4 +1057,52 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get appPinEnabledStatus => 'App PIN is enabled';
+
+  @override
+  String get relaysHubTitle => 'Relays';
+
+  @override
+  String get relaysHubActiveTab => 'Active';
+
+  @override
+  String get relaysHubDefaultsTab => 'Default profile';
+
+  @override
+  String get relaysHubActiveEmpty => 'No managed relay connections yet. They appear here when the app opens WebSocket connections.';
+
+  @override
+  String get relaysHubStatusConnecting => 'Connecting';
+
+  @override
+  String get relaysHubStatusConnected => 'Connected';
+
+  @override
+  String get relaysHubStatusClosing => 'Closing';
+
+  @override
+  String get relaysHubStatusDisconnected => 'Disconnected';
+
+  @override
+  String get relaysHubStatusUnknown => 'Unknown';
+
+  @override
+  String get relaysHubReconnect => 'Reconnect';
+
+  @override
+  String get relaysHubDefaultsDescription => 'Saved relay URLs for your default profile list (device only). Duplicate URLs are merged.';
+
+  @override
+  String get relaysHubDefaultsEmpty => 'No default relays. Add a wss:// or ws:// URL below.';
+
+  @override
+  String get relaysHubAddRelay => 'Add relay';
+
+  @override
+  String get relaysHubEditRelay => 'Edit relay';
+
+  @override
+  String get relaysHubRelayUrlHint => 'Relay URL';
+
+  @override
+  String get relaysHubInvalidUrl => 'Enter a valid WebSocket URL (ws:// or wss:// with a host).';
 }

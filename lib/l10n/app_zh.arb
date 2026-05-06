@@ -428,5 +428,21 @@
   "appPinCurrent": "当前 PIN",
   "appPinNew": "新 PIN",
   "appPinConfirmLabel": "确认 PIN",
-  "appPinEnabledStatus": "已启用应用 PIN"
+  "appPinEnabledStatus": "已启用应用 PIN",
+  "relaysHubTitle": "中继",
+  "relaysHubActiveTab": "当前连接",
+  "relaysHubDefaultsTab": "默认资料中继",
+  "relaysHubActiveEmpty": "暂无由本应用管理的 WebSocket 中继连接；有连接建立后会显示在这里。",
+  "relaysHubStatusConnecting": "连接中",
+  "relaysHubStatusConnected": "已连接",
+  "relaysHubStatusClosing": "关闭中",
+  "relaysHubStatusDisconnected": "已断开",
+  "relaysHubStatusUnknown": "未知",
+  "relaysHubReconnect": "重新连接",
+  "relaysHubDefaultsDescription": "保存在本机的默认资料中继列表（去重）。实际发布到 Nostr 需在客户端中使用此列表。",
+  "relaysHubDefaultsEmpty": "暂无默认中继。请在下方添加 wss:// 或 ws:// 地址。",
+  "relaysHubAddRelay": "添加中继",
+  "relaysHubEditRelay": "编辑中继",
+  "relaysHubRelayUrlHint": "中继地址",
+  "relaysHubInvalidUrl": "请输入有效的 WebSocket 地址（含主机的 ws:// 或 wss://）。"
 }

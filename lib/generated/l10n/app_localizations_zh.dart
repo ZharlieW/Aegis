@@ -1057,6 +1057,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appPinEnabledStatus => '已启用应用 PIN';
+
+  @override
+  String get relaysHubTitle => '中继';
+
+  @override
+  String get relaysHubActiveTab => '当前连接';
+
+  @override
+  String get relaysHubDefaultsTab => '默认资料中继';
+
+  @override
+  String get relaysHubActiveEmpty => '暂无由本应用管理的 WebSocket 中继连接；有连接建立后会显示在这里。';
+
+  @override
+  String get relaysHubStatusConnecting => '连接中';
+
+  @override
+  String get relaysHubStatusConnected => '已连接';
+
+  @override
+  String get relaysHubStatusClosing => '关闭中';
+
+  @override
+  String get relaysHubStatusDisconnected => '已断开';
+
+  @override
+  String get relaysHubStatusUnknown => '未知';
+
+  @override
+  String get relaysHubReconnect => '重新连接';
+
+  @override
+  String get relaysHubDefaultsDescription => '保存在本机的默认资料中继列表（去重）。实际发布到 Nostr 需在客户端中使用此列表。';
+
+  @override
+  String get relaysHubDefaultsEmpty => '暂无默认中继。请在下方添加 wss:// 或 ws:// 地址。';
+
+  @override
+  String get relaysHubAddRelay => '添加中继';
+
+  @override
+  String get relaysHubEditRelay => '编辑中继';
+
+  @override
+  String get relaysHubRelayUrlHint => '中继地址';
+
+  @override
+  String get relaysHubInvalidUrl => '请输入有效的 WebSocket 地址（含主机的 ws:// 或 wss://）。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

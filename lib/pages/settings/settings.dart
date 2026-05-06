@@ -12,6 +12,7 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
+import 'package:aegis/pages/settings/relays_hub_page.dart';
 import 'package:aegis/pages/settings/security_page.dart';
 import 'package:aegis/utils/pin_gate.dart';
 import 'package:aegis/utils/sign_policy.dart';
@@ -455,6 +456,21 @@ class SettingsState extends State<Settings> with AccountObservers {
             onTap: () => AegisNavigator.pushPage(
               context,
               (context) => const SecurityPage(),
+            ),
+          ),
+          ListTile(
+            title: Text(
+              l10n.relaysHubTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.hub_outlined,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+              context,
+              (context) => const RelaysHubPage(),
             ),
           ),
           ListTile(

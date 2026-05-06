@@ -428,5 +428,21 @@
   "appPinCurrent": "Current PIN",
   "appPinNew": "New PIN",
   "appPinConfirmLabel": "Confirm PIN",
-  "appPinEnabledStatus": "App PIN is enabled"
+  "appPinEnabledStatus": "App PIN is enabled",
+  "relaysHubTitle": "Relays",
+  "relaysHubActiveTab": "Active",
+  "relaysHubDefaultsTab": "Default profile",
+  "relaysHubActiveEmpty": "No managed relay connections yet. They appear here when the app opens WebSocket connections.",
+  "relaysHubStatusConnecting": "Connecting",
+  "relaysHubStatusConnected": "Connected",
+  "relaysHubStatusClosing": "Closing",
+  "relaysHubStatusDisconnected": "Disconnected",
+  "relaysHubStatusUnknown": "Unknown",
+  "relaysHubReconnect": "Reconnect",
+  "relaysHubDefaultsDescription": "Saved relay URLs for your default profile list (device only). Duplicate URLs are merged.",
+  "relaysHubDefaultsEmpty": "No default relays. Add a wss:// or ws:// URL below.",
+  "relaysHubAddRelay": "Add relay",
+  "relaysHubEditRelay": "Edit relay",
+  "relaysHubRelayUrlHint": "Relay URL",
+  "relaysHubInvalidUrl": "Enter a valid WebSocket URL (ws:// or wss:// with a host)."
 }

@@ -2181,6 +2181,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App PIN is enabled'**
   String get appPinEnabledStatus;
+
+  /// No description provided for @relaysHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Relays'**
+  String get relaysHubTitle;
+
+  /// No description provided for @relaysHubActiveTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get relaysHubActiveTab;
+
+  /// No description provided for @relaysHubDefaultsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Default profile'**
+  String get relaysHubDefaultsTab;
+
+  /// No description provided for @relaysHubActiveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No managed relay connections yet. They appear here when the app opens WebSocket connections.'**
+  String get relaysHubActiveEmpty;
+
+  /// No description provided for @relaysHubStatusConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get relaysHubStatusConnecting;
+
+  /// No description provided for @relaysHubStatusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get relaysHubStatusConnected;
+
+  /// No description provided for @relaysHubStatusClosing.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing'**
+  String get relaysHubStatusClosing;
+
+  /// No description provided for @relaysHubStatusDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get relaysHubStatusDisconnected;
+
+  /// No description provided for @relaysHubStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get relaysHubStatusUnknown;
+
+  /// No description provided for @relaysHubReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get relaysHubReconnect;
+
+  /// No description provided for @relaysHubDefaultsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved relay URLs for your default profile list (device only). Duplicate URLs are merged.'**
+  String get relaysHubDefaultsDescription;
+
+  /// No description provided for @relaysHubDefaultsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No default relays. Add a wss:// or ws:// URL below.'**
+  String get relaysHubDefaultsEmpty;
+
+  /// No description provided for @relaysHubAddRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add relay'**
+  String get relaysHubAddRelay;
+
+  /// No description provided for @relaysHubEditRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit relay'**
+  String get relaysHubEditRelay;
+
+  /// No description provided for @relaysHubRelayUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay URL'**
+  String get relaysHubRelayUrlHint;
+
+  /// No description provided for @relaysHubInvalidUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid WebSocket URL (ws:// or wss:// with a host).'**
+  String get relaysHubInvalidUrl;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
