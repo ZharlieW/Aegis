@@ -1162,6 +1162,78 @@ abstract class AppLocalizations {
   /// **'Open with an app that supports Aegis URL scheme to log in'**
   String get urlSchemeLoginHint;
 
+  /// No description provided for @urlSchemeLoginPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste connection link'**
+  String get urlSchemeLoginPageTitle;
+
+  /// No description provided for @urlSchemeLoginPageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a Nostr Connect (nostrconnect://), Aegis (aegis://), or NostrSigner (nostrsigner://) URI. You can copy it from the client app or webpage.'**
+  String get urlSchemeLoginPageSubtitle;
+
+  /// No description provided for @urlSchemeLoginFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection URI'**
+  String get urlSchemeLoginFieldLabel;
+
+  /// No description provided for @urlSchemeLoginPasteFromClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste from clipboard'**
+  String get urlSchemeLoginPasteFromClipboard;
+
+  /// No description provided for @urlSchemeLoginConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get urlSchemeLoginConnect;
+
+  /// No description provided for @urlSchemeLoginEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter or paste a connection URI first.'**
+  String get urlSchemeLoginEmpty;
+
+  /// No description provided for @urlSchemeLoginClipboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Clipboard is empty or has no text.'**
+  String get urlSchemeLoginClipboardEmpty;
+
+  /// No description provided for @urlSchemeLoginInvalidUri.
+  ///
+  /// In en, this message translates to:
+  /// **'This text is not a valid URL.'**
+  String get urlSchemeLoginInvalidUri;
+
+  /// No description provided for @urlSchemeLoginUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported link. Use nostrconnect://, aegis://, or nostrsigner://.'**
+  String get urlSchemeLoginUnsupported;
+
+  /// No description provided for @urlSchemeLoginBunkerIsForClients.
+  ///
+  /// In en, this message translates to:
+  /// **'bunker:// links are for Nostr clients, not the signer. Use a nostrconnect:// URI from the client instead.'**
+  String get urlSchemeLoginBunkerIsForClients;
+
+  /// No description provided for @urlSchemeLoginSuccessScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. Follow any prompts in the other app if needed.'**
+  String get urlSchemeLoginSuccessScheme;
+
+  /// No description provided for @urlSchemeLoginSuccessNostrConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the client to finish login over the relay. You can leave this page.'**
+  String get urlSchemeLoginSuccessNostrConnect;
+
   /// No description provided for @name.
   ///
   /// In en, this message translates to:

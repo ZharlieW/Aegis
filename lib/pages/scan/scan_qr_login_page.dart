@@ -5,9 +5,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
-import 'package:aegis/utils/launch_scheme_utils.dart';
 import 'package:aegis/utils/logger.dart';
-import 'package:aegis/utils/remote_relay_nip46_session.dart';
+import 'package:aegis/utils/nostr_login_uri_handler.dart';
 import 'package:aegis/widgets/scan_frame_overlay.dart';
 
 class ScanQrLoginPage extends StatefulWidget {
@@ -144,65 +143,34 @@ class _ScanQrLoginPageState extends State<ScanQrLoginPage> {
     final url = raw.trim();
     AegisLogger.info('🔍 ScanQrLoginPage detected QR content: $url');
 
-    Uri? uri;
-    try {
-      uri = Uri.parse(url);
-    } catch (e) {
-      _onError('Invalid QR code content');
-      return;
-    }
+    final l10n = AppLocalizations.of(context)!;
+    final outcome = await NostrLoginUriHandler.handle(url);
+    if (!mounted) return;
 
-    if (uri.scheme == 'aegis' || uri.scheme == 'nostrsigner') {
-      await _handleSchemeUrl(url);
-    } else if (uri.scheme == 'nostrconnect') {
-      // Supports format: nostrconnect://<client_pubkey>?relay=wss://...&secret=...&name=...&url=...&image=...
-      await _handleNostrConnect(url);
-    } else {
-      _onError('Unsupported QR code, expected Aegis or Nostr Connect URL.');
-    }
-  }
-
-  Future<void> _handleSchemeUrl(String url) async {
-    try {
-      await LaunchSchemeUtils.handleSchemeData(url);
-      if (!mounted) return;
-      CommonTips.success(
-        context,
-        'Login request sent, please follow prompts if any.',
-      );
-      Navigator.of(context).pop();
-    } catch (e) {
-      AegisLogger.error('Failed to handle scheme QR', e);
-      _onError('Failed to handle QR scheme URL.');
-    }
-  }
-
-  Future<void> _handleNostrConnect(String url) async {
-    try {
-      // Start one-time remote relay NIP-46 session: connect to relay from QR,
-      // subscribe for kind 24133 (p = current user), handle connect/get_public_key.
-      final started = await RemoteRelayNip46Session.startFromNostrConnectUri(url);
-      if (!mounted) return;
-      if (!started) {
-        final reason = RemoteRelayNip46Session.lastFailureReason;
-        final message = reason == 'not_logged_in'
-            ? AppLocalizations.of(context)!.nostrConnectLoginFirst
-            : AppLocalizations.of(context)!.nostrConnectStartFailed;
-        if (reason == 'not_logged_in') {
-          _showNotLoggedInDialog(message);
-        } else {
-          _onError(message);
-        }
+    switch (outcome.kind) {
+      case NostrLoginUriOutcomeKind.success:
+        final scheme = Uri.tryParse(url)?.scheme.toLowerCase();
+        final msg = scheme == 'nostrconnect'
+            ? l10n.urlSchemeLoginSuccessNostrConnect
+            : l10n.urlSchemeLoginSuccessScheme;
+        CommonTips.success(context, msg);
+        Navigator.of(context).pop();
         return;
-      }
-      CommonTips.success(
-        context,
-        'Waiting for the app to finish login via remote relay. You can close this page.',
-      );
-      Navigator.of(context).pop();
-    } catch (e) {
-      AegisLogger.error('Failed to handle nostrconnect QR', e);
-      _onError('Failed to handle Nostr Connect QR.');
+      case NostrLoginUriOutcomeKind.invalid:
+        _onError(l10n.urlSchemeLoginInvalidUri);
+        return;
+      case NostrLoginUriOutcomeKind.unsupported:
+        _onError(l10n.urlSchemeLoginUnsupported);
+        return;
+      case NostrLoginUriOutcomeKind.bunkerNotApplicable:
+        _onError(l10n.urlSchemeLoginBunkerIsForClients);
+        return;
+      case NostrLoginUriOutcomeKind.notLoggedIn:
+        _showNotLoggedInDialog(l10n.nostrConnectLoginFirst);
+        return;
+      case NostrLoginUriOutcomeKind.error:
+        _onError(l10n.nostrConnectStartFailed);
+        return;
     }
   }
 

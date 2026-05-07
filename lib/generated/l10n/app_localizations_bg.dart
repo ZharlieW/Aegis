@@ -531,6 +531,42 @@ class AppLocalizationsBg extends AppLocalizations {
   String get urlSchemeLoginHint => 'Отворете с приложение, поддържащо URL схемата на Aegis за вход';
 
   @override
+  String get urlSchemeLoginPageTitle => 'Paste connection link';
+
+  @override
+  String get urlSchemeLoginPageSubtitle => 'Paste a Nostr Connect (nostrconnect://), Aegis (aegis://), or NostrSigner (nostrsigner://) URI. You can copy it from the client app or webpage.';
+
+  @override
+  String get urlSchemeLoginFieldLabel => 'Connection URI';
+
+  @override
+  String get urlSchemeLoginPasteFromClipboard => 'Paste from clipboard';
+
+  @override
+  String get urlSchemeLoginConnect => 'Connect';
+
+  @override
+  String get urlSchemeLoginEmpty => 'Enter or paste a connection URI first.';
+
+  @override
+  String get urlSchemeLoginClipboardEmpty => 'Clipboard is empty or has no text.';
+
+  @override
+  String get urlSchemeLoginInvalidUri => 'This text is not a valid URL.';
+
+  @override
+  String get urlSchemeLoginUnsupported => 'Unsupported link. Use nostrconnect://, aegis://, or nostrsigner://.';
+
+  @override
+  String get urlSchemeLoginBunkerIsForClients => 'bunker:// links are for Nostr clients, not the signer. Use a nostrconnect:// URI from the client instead.';
+
+  @override
+  String get urlSchemeLoginSuccessScheme => 'Request sent. Follow any prompts in the other app if needed.';
+
+  @override
+  String get urlSchemeLoginSuccessNostrConnect => 'Waiting for the client to finish login over the relay. You can leave this page.';
+
+  @override
   String get name => 'Име';
 
   @override
