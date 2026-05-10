@@ -3,6 +3,7 @@ import 'package:aegis/utils/connect.dart';
 import 'package:aegis/utils/default_profile_relays_store.dart';
 import 'package:aegis/utils/local_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Relays overview: live connections from [Connect] + editable default profile relay list.
 class RelaysHubPage extends StatefulWidget {
@@ -78,21 +79,6 @@ class _ActiveRelaysTabState extends State<_ActiveRelaysTab> {
     super.dispose();
   }
 
-  String _statusLabel(AppLocalizations l10n, int status) {
-    switch (status) {
-      case 0:
-        return l10n.relaysHubStatusConnecting;
-      case 1:
-        return l10n.relaysHubStatusConnected;
-      case 2:
-        return l10n.relaysHubStatusClosing;
-      case 3:
-        return l10n.relaysHubStatusDisconnected;
-      default:
-        return l10n.relaysHubStatusUnknown;
-    }
-  }
-
   Future<void> _reconnectOne(String url) async {
     final entry = Connect.sharedInstance.webSockets[url];
     if (entry == null) return;
@@ -134,25 +120,37 @@ class _ActiveRelaysTabState extends State<_ActiveRelaysTab> {
         final e = entries[i];
         final url = e.key;
         final socket = e.value;
-        final status = socket.connectStatus;
         final kinds = socket.relayKinds;
+        final status = _relayStatusFor(url);
         return Card(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SelectableText(
-                  url,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: SelectableText(
+                        url,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _copyRelayUrl(context, url),
+                      icon: const Icon(Icons.copy, size: 20),
+                      tooltip: l10n.copiedToClipboard,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _statusLabel(l10n, status),
+                  _relayStatusLabel(status),
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: status == 1
+                    color: status == _RelayConnectionStatus.connected
                         ? theme.colorScheme.primary
                         : theme.colorScheme.onSurfaceVariant,
                   ),
@@ -206,11 +204,22 @@ class _DefaultProfileRelaysTab extends StatefulWidget {
 class _DefaultProfileRelaysTabState extends State<_DefaultProfileRelaysTab> {
   List<String> _urls = [];
   bool _loading = true;
+  late ConnectStatusCallBack _listener;
 
   @override
   void initState() {
     super.initState();
+    _listener = (relay, status, kinds) {
+      if (mounted) setState(() {});
+    };
+    Connect.sharedInstance.addConnectStatusListener(_listener);
     _load();
+  }
+
+  @override
+  void dispose() {
+    Connect.sharedInstance.removeConnectStatusListener(_listener);
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -324,11 +333,25 @@ class _DefaultProfileRelaysTabState extends State<_DefaultProfileRelaysTab> {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, i) {
                     final url = _urls[i];
+                    final status = _relayStatusFor(url);
                     return ListTile(
                       title: SelectableText(url),
+                      subtitle: Text(
+                        _relayStatusLabel(status),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: status == _RelayConnectionStatus.connected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          IconButton(
+                            icon: const Icon(Icons.copy_outlined),
+                            tooltip: l10n.copiedToClipboard,
+                            onPressed: () => _copyRelayUrl(context, url),
+                          ),
                           IconButton(
                             icon: const Icon(Icons.edit_outlined),
                             onPressed: () => _addOrEdit(index: i),
@@ -362,4 +385,40 @@ class _DefaultProfileRelaysTabState extends State<_DefaultProfileRelaysTab> {
       ],
     );
   }
+}
+
+enum _RelayConnectionStatus {
+  connected,
+  disconnected,
+  unknown,
+}
+
+_RelayConnectionStatus _relayStatusFor(String url) {
+  final socket = Connect.sharedInstance.webSockets[url];
+  if (socket == null) {
+    return _RelayConnectionStatus.unknown;
+  }
+  return socket.connectStatus == 1
+      ? _RelayConnectionStatus.connected
+      : _RelayConnectionStatus.disconnected;
+}
+
+String _relayStatusLabel(_RelayConnectionStatus status) {
+  switch (status) {
+    case _RelayConnectionStatus.connected:
+      return '已连接';
+    case _RelayConnectionStatus.disconnected:
+      return '未连接';
+    case _RelayConnectionStatus.unknown:
+      return '未知';
+  }
+}
+
+Future<void> _copyRelayUrl(BuildContext context, String url) async {
+  final l10n = AppLocalizations.of(context)!;
+  await Clipboard.setData(ClipboardData(text: url));
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(l10n.copiedToClipboard)),
+  );
 }
