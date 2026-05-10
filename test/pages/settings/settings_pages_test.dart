@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  Widget _wrapWithApp(Widget child) {
+  Widget wrapWithApp(Widget child) {
     return MaterialApp(home: child);
   }
 
@@ -14,7 +14,7 @@ void main() {
 
   testWidgets('AppLogsPage shows empty state when no logs exist',
       (WidgetTester tester) async {
-    await tester.pumpWidget(_wrapWithApp(const AppLogsPage()));
+    await tester.pumpWidget(wrapWithApp(const AppLogsPage()));
     await tester.pumpAndSettle();
 
     expect(find.text('No logs yet.'), findsOneWidget);
@@ -27,7 +27,7 @@ void main() {
       summary: 'Test reconnect failure',
     );
 
-    await tester.pumpWidget(_wrapWithApp(const AppLogsPage()));
+    await tester.pumpWidget(wrapWithApp(const AppLogsPage()));
     await tester.pumpAndSettle();
 
     expect(find.text('Test reconnect failure'), findsOneWidget);
@@ -40,5 +40,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No logs yet.'), findsOneWidget);
+  });
+
+  testWidgets('AppLogsPage combines level and summary filters',
+      (WidgetTester tester) async {
+    AppLogService.instance.add(
+      level: AppLogLevel.warning,
+      summary: 'Network retry scheduled',
+    );
+    AppLogService.instance.add(
+      level: AppLogLevel.error,
+      summary: 'Network request failed',
+    );
+    AppLogService.instance.add(
+      level: AppLogLevel.error,
+      summary: 'Database write failed',
+    );
+
+    await tester.pumpWidget(wrapWithApp(const AppLogsPage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'ERROR'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Network request failed'), findsOneWidget);
+    expect(find.text('Database write failed'), findsOneWidget);
+    expect(find.text('Network retry scheduled'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'network');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Network request failed'), findsOneWidget);
+    expect(find.text('Database write failed'), findsNothing);
+    expect(find.text('Network retry scheduled'), findsNothing);
   });
 }
