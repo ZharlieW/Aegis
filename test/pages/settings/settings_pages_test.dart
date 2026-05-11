@@ -46,14 +46,17 @@ void main() {
       (WidgetTester tester) async {
     AppLogService.instance.add(
       level: AppLogLevel.warning,
+      source: AppLogSource.relay,
       summary: 'Network retry scheduled',
     );
     AppLogService.instance.add(
       level: AppLogLevel.error,
+      source: AppLogSource.browser,
       summary: 'Network request failed',
     );
     AppLogService.instance.add(
       level: AppLogLevel.error,
+      source: AppLogSource.nip46,
       summary: 'Database write failed',
     );
 
@@ -68,6 +71,13 @@ void main() {
     expect(find.text('Network retry scheduled'), findsNothing);
 
     await tester.enterText(find.byType(TextField), 'network');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Network request failed'), findsOneWidget);
+    expect(find.text('Database write failed'), findsNothing);
+    expect(find.text('Network retry scheduled'), findsNothing);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'BROWSER'));
     await tester.pumpAndSettle();
 
     expect(find.text('Network request failed'), findsOneWidget);

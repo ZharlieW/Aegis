@@ -11,6 +11,7 @@ class AppLogsPage extends StatefulWidget {
 class _AppLogsPageState extends State<AppLogsPage> {
   List<AppLogEntry> _logs = const <AppLogEntry>[];
   AppLogLevel? _selectedLevel;
+  AppLogSource? _selectedSource;
   final TextEditingController _summaryFilterController =
       TextEditingController();
 
@@ -100,18 +101,35 @@ class _AppLogsPageState extends State<AppLogsPage> {
     }
   }
 
+  String _sourceText(AppLogSource source) {
+    switch (source) {
+      case AppLogSource.nip55:
+        return 'NIP55';
+      case AppLogSource.nip46:
+        return 'NIP46';
+      case AppLogSource.browser:
+        return 'BROWSER';
+      case AppLogSource.relay:
+        return 'RELAY';
+      case AppLogSource.general:
+        return 'GENERAL';
+    }
+  }
+
   List<AppLogEntry> get _filteredLogs {
     final query = _summaryFilterController.text.trim().toLowerCase();
-    if (_selectedLevel == null && query.isEmpty) {
+    if (_selectedLevel == null && _selectedSource == null && query.isEmpty) {
       return _logs;
     }
 
     return _logs.where((log) {
       final matchesLevel =
           _selectedLevel == null || log.level == _selectedLevel;
+      final matchesSource =
+          _selectedSource == null || log.source == _selectedSource;
       final matchesSummary =
           query.isEmpty || log.summary.toLowerCase().contains(query);
-      return matchesLevel && matchesSummary;
+      return matchesLevel && matchesSource && matchesSummary;
     }).toList(growable: false);
   }
 
@@ -169,6 +187,24 @@ class _AppLogsPageState extends State<AppLogsPage> {
                 ),
             ],
           ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              ChoiceChip(
+                label: const Text('ALL SOURCES'),
+                selected: _selectedSource == null,
+                onSelected: (_) => setState(() => _selectedSource = null),
+              ),
+              for (final source in AppLogSource.values)
+                ChoiceChip(
+                  label: Text(_sourceText(source)),
+                  selected: _selectedSource == source,
+                  onSelected: (_) => setState(() => _selectedSource = source),
+                ),
+            ],
+          ),
         ],
       ),
     );
@@ -193,12 +229,25 @@ class _AppLogsPageState extends State<AppLogsPage> {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(_formatTime(item.timestamp)),
-          trailing: Text(
-            _typeText(item.level),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: _typeColor(context, item.level),
-                  fontWeight: FontWeight.w700,
-                ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _typeText(item.level),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: _typeColor(context, item.level),
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Chip(
+                label: Text(_sourceText(item.source)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
           ),
         );
       },
