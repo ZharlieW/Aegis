@@ -1162,6 +1162,78 @@ abstract class AppLocalizations {
   /// **'Open with an app that supports Aegis URL scheme to log in'**
   String get urlSchemeLoginHint;
 
+  /// No description provided for @urlSchemeLoginPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste connection link'**
+  String get urlSchemeLoginPageTitle;
+
+  /// No description provided for @urlSchemeLoginPageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a Nostr Connect (nostrconnect://), Aegis (aegis://), or NostrSigner (nostrsigner://) URI. You can copy it from the client app or webpage.'**
+  String get urlSchemeLoginPageSubtitle;
+
+  /// No description provided for @urlSchemeLoginFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection URI'**
+  String get urlSchemeLoginFieldLabel;
+
+  /// No description provided for @urlSchemeLoginPasteFromClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste from clipboard'**
+  String get urlSchemeLoginPasteFromClipboard;
+
+  /// No description provided for @urlSchemeLoginConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get urlSchemeLoginConnect;
+
+  /// No description provided for @urlSchemeLoginEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter or paste a connection URI first.'**
+  String get urlSchemeLoginEmpty;
+
+  /// No description provided for @urlSchemeLoginClipboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Clipboard is empty or has no text.'**
+  String get urlSchemeLoginClipboardEmpty;
+
+  /// No description provided for @urlSchemeLoginInvalidUri.
+  ///
+  /// In en, this message translates to:
+  /// **'This text is not a valid URL.'**
+  String get urlSchemeLoginInvalidUri;
+
+  /// No description provided for @urlSchemeLoginUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported link. Use nostrconnect://, aegis://, or nostrsigner://.'**
+  String get urlSchemeLoginUnsupported;
+
+  /// No description provided for @urlSchemeLoginBunkerIsForClients.
+  ///
+  /// In en, this message translates to:
+  /// **'bunker:// links are for Nostr clients, not the signer. Use a nostrconnect:// URI from the client instead.'**
+  String get urlSchemeLoginBunkerIsForClients;
+
+  /// No description provided for @urlSchemeLoginSuccessScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. Follow any prompts in the other app if needed.'**
+  String get urlSchemeLoginSuccessScheme;
+
+  /// No description provided for @urlSchemeLoginSuccessNostrConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the client to finish login over the relay. You can leave this page.'**
+  String get urlSchemeLoginSuccessNostrConnect;
+
   /// No description provided for @name.
   ///
   /// In en, this message translates to:
@@ -2068,11 +2140,215 @@ abstract class AppLocalizations {
   /// **'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.'**
   String get signPolicyManualDescription;
 
-  /// Semantics label for the FAB on the home screen that opens the Add Application flow.
+  /// No description provided for @securityTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add connection'**
-  String get addConnection;
+  /// **'Security'**
+  String get securityTitle;
+
+  /// No description provided for @securityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a device PIN (4–6 digits) to confirm viewing account backup and switching accounts. Stored only on this device.'**
+  String get securityDescription;
+
+  /// No description provided for @appPinEnterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter app PIN'**
+  String get appPinEnterTitle;
+
+  /// No description provided for @appPinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN'**
+  String get appPinLabel;
+
+  /// No description provided for @appPinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'4–6 digits'**
+  String get appPinHint;
+
+  /// No description provided for @appPinInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN must be 4–6 digits.'**
+  String get appPinInvalid;
+
+  /// No description provided for @appPinWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect PIN.'**
+  String get appPinWrong;
+
+  /// No description provided for @appPinMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'PINs do not match.'**
+  String get appPinMismatch;
+
+  /// No description provided for @appPinSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Save PIN'**
+  String get appPinSet;
+
+  /// No description provided for @appPinChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change PIN'**
+  String get appPinChange;
+
+  /// No description provided for @appPinRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove PIN'**
+  String get appPinRemove;
+
+  /// No description provided for @appPinSetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN saved.'**
+  String get appPinSetSuccess;
+
+  /// No description provided for @appPinChangeSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN updated.'**
+  String get appPinChangeSuccess;
+
+  /// No description provided for @appPinRemoveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN removed.'**
+  String get appPinRemoveSuccess;
+
+  /// No description provided for @appPinCurrentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN is incorrect.'**
+  String get appPinCurrentWrong;
+
+  /// No description provided for @appPinCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN'**
+  String get appPinCurrent;
+
+  /// No description provided for @appPinNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New PIN'**
+  String get appPinNew;
+
+  /// No description provided for @appPinConfirmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm PIN'**
+  String get appPinConfirmLabel;
+
+  /// No description provided for @appPinEnabledStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'App PIN is enabled'**
+  String get appPinEnabledStatus;
+
+  /// No description provided for @relaysHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Relays'**
+  String get relaysHubTitle;
+
+  /// No description provided for @relaysHubActiveTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get relaysHubActiveTab;
+
+  /// No description provided for @relaysHubDefaultsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Default profile'**
+  String get relaysHubDefaultsTab;
+
+  /// No description provided for @relaysHubActiveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No managed relay connections yet. They appear here when the app opens WebSocket connections.'**
+  String get relaysHubActiveEmpty;
+
+  /// No description provided for @relaysHubStatusConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get relaysHubStatusConnecting;
+
+  /// No description provided for @relaysHubStatusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get relaysHubStatusConnected;
+
+  /// No description provided for @relaysHubStatusClosing.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing'**
+  String get relaysHubStatusClosing;
+
+  /// No description provided for @relaysHubStatusDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get relaysHubStatusDisconnected;
+
+  /// No description provided for @relaysHubStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get relaysHubStatusUnknown;
+
+  /// No description provided for @relaysHubReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get relaysHubReconnect;
+
+  /// No description provided for @relaysHubDefaultsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved relay URLs for your default profile list (device only). Duplicate URLs are merged.'**
+  String get relaysHubDefaultsDescription;
+
+  /// No description provided for @relaysHubDefaultsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No default relays. Add a wss:// or ws:// URL below.'**
+  String get relaysHubDefaultsEmpty;
+
+  /// No description provided for @relaysHubAddRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add relay'**
+  String get relaysHubAddRelay;
+
+  /// No description provided for @relaysHubEditRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit relay'**
+  String get relaysHubEditRelay;
+
+  /// No description provided for @relaysHubRelayUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay URL'**
+  String get relaysHubRelayUrlHint;
+
+  /// No description provided for @relaysHubInvalidUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid WebSocket URL (ws:// or wss:// with a host).'**
+  String get relaysHubInvalidUrl;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

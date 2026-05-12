@@ -1,4 +1,5 @@
 import 'package:aegis/db/signed_event_db_isar.dart';
+import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/logger.dart';
@@ -19,7 +20,9 @@ class SignedEventManager {
     if (value == null) return fallback;
     final trimmed = value.trim();
     if (trimmed.isEmpty) return fallback;
-    if (trimmed.length <= prefix + suffix) return '${trimmed.substring(0, 2)}***';
+    if (trimmed.length <= prefix + suffix) {
+      return '${trimmed.substring(0, 2)}***';
+    }
     final start = trimmed.substring(0, prefix);
     final end = trimmed.substring(trimmed.length - suffix);
     return '$start...$end';
@@ -46,11 +49,14 @@ class SignedEventManager {
   }) async {
     final account = Account.sharedInstance;
     if (account.currentPubkey.isEmpty) {
-      AegisLogger.warning('[SignedEventManager] Skip recordSignedEvent: user not logged in');
+      AegisLogger.warning(
+          '[SignedEventManager] Skip recordSignedEvent: user not logged in');
       return;
     }
 
-    final userPubkey = AccountManager.sharedInstance.applicationMap[applicationPubkey]?.value.pubkey ?? account.currentPubkey;
+    final userPubkey = AccountManager
+            .sharedInstance.applicationMap[applicationPubkey]?.value.pubkey ??
+        account.currentPubkey;
 
     AegisLogger.debug(
       '[SignedEventManager] Recording event kind=$eventKind '
@@ -76,24 +82,32 @@ class SignedEventManager {
 
     try {
       await SignedEventDBISAR.saveFromDB(event);
-      AegisLogger.info('[SignedEventManager] Event recorded successfully eventId=${_maskValue(eventId)}');
+      AegisLogger.info(
+          '[SignedEventManager] Event recorded successfully eventId=${_maskValue(eventId)}');
     } catch (e) {
-      AegisLogger.error('[SignedEventManager] Failed to record eventId=${_maskValue(eventId)}', e);
+      AegisLogger.error(
+          '[SignedEventManager] Failed to record eventId=${_maskValue(eventId)}',
+          e);
       rethrow;
     }
   }
 
-  Future<void> _cleanupOldEventsForApplication(String userPubkey, String applicationPubkey) async {
+  Future<void> _cleanupOldEventsForApplication(
+      String userPubkey, String applicationPubkey) async {
     try {
-      final eventCount = await SignedEventDBISAR.getEventCountByApplicationPubkey(userPubkey, applicationPubkey);
-      
+      final eventCount =
+          await SignedEventDBISAR.getEventCountByApplicationPubkey(
+              userPubkey, applicationPubkey);
+
       if (eventCount > 50) {
         AegisLogger.info(
           '[SignedEventManager] Cleaning up old events '
           'applicationPubkey=${_maskValue(applicationPubkey)} '
           '(current: $eventCount, keeping latest 50)',
         );
-        await SignedEventDBISAR.deleteOldEventsForApplication(userPubkey, applicationPubkey, keepCount: 50);
+        await SignedEventDBISAR.deleteOldEventsForApplication(
+            userPubkey, applicationPubkey,
+            keepCount: 50);
       } else {
         AegisLogger.debug(
           '[SignedEventManager] No cleanup needed '
@@ -113,27 +127,34 @@ class SignedEventManager {
   Future<List<SignedEventDBISAR>> getAllSignedEvents() async {
     final account = Account.sharedInstance;
     if (account.currentPubkey.isEmpty) {
-      AegisLogger.warning('[SignedEventManager] Skip getAllSignedEvents: user not logged in');
+      AegisLogger.warning(
+          '[SignedEventManager] Skip getAllSignedEvents: user not logged in');
       return [];
     }
     final userPubkey = account.currentPubkey;
 
-    AegisLogger.debug('[SignedEventManager] Getting events for user=${_maskValue(userPubkey)}');
-    
+    AegisLogger.debug(
+        '[SignedEventManager] Getting events for user=${_maskValue(userPubkey)}');
+
     try {
       final events = await SignedEventDBISAR.getAllFromDB(userPubkey);
-      AegisLogger.info('[SignedEventManager] Found ${events.length} events for current user');
+      AegisLogger.info(
+          '[SignedEventManager] Found ${events.length} events for current user');
       return events;
     } catch (e) {
-      AegisLogger.error('[SignedEventManager] Failed to get events for user=${_maskValue(userPubkey)}', e);
+      AegisLogger.error(
+          '[SignedEventManager] Failed to get events for user=${_maskValue(userPubkey)}',
+          e);
       return [];
     }
   }
 
-  Future<List<SignedEventDBISAR>> getSignedEventsByPubkey(String applicationPubkey) async {
+  Future<List<SignedEventDBISAR>> getSignedEventsByPubkey(
+      String applicationPubkey) async {
     final account = Account.sharedInstance;
     if (account.currentPubkey.isEmpty) {
-      AegisLogger.warning('[SignedEventManager] Skip getSignedEventsByPubkey: user not logged in');
+      AegisLogger.warning(
+          '[SignedEventManager] Skip getSignedEventsByPubkey: user not logged in');
       return [];
     }
     final userPubkey = account.currentPubkey;
@@ -142,9 +163,10 @@ class SignedEventManager {
       '[SignedEventManager] Getting events for applicationPubkey=${_maskValue(applicationPubkey)} '
       'user=${_maskValue(userPubkey)}',
     );
-    
+
     try {
-      final events = await SignedEventDBISAR.getByApplicationPubkey(userPubkey, applicationPubkey);
+      final events = await SignedEventDBISAR.getByApplicationPubkey(
+          userPubkey, applicationPubkey);
       AegisLogger.info(
         '[SignedEventManager] Found ${events.length} events for '
         'applicationPubkey=${_maskValue(applicationPubkey)}',
@@ -160,31 +182,64 @@ class SignedEventManager {
     }
   }
 
+  Future<List<SignedEventDBISAR>> getRecentEventsForApplication(
+    ClientAuthDBISAR client, {
+    int limit = 5,
+  }) async {
+    final events = await getAllSignedEvents();
+    final pubkeyCandidates = <String>{
+      if (client.clientPubkey.trim().isNotEmpty) client.clientPubkey.trim(),
+      if ((client.remoteSignerPubkey ?? '').trim().isNotEmpty)
+        client.remoteSignerPubkey!.trim(),
+    };
+    final appName = (client.name ?? '').trim().toLowerCase();
+
+    final filtered = events.where((event) {
+      final eventApplicationPubkey = (event.applicationPubkey ?? '').trim();
+      if (eventApplicationPubkey.isNotEmpty &&
+          pubkeyCandidates.contains(eventApplicationPubkey)) {
+        return true;
+      }
+
+      final eventApplicationName = (event.applicationName ?? '').trim();
+      return appName.isNotEmpty &&
+          eventApplicationName.toLowerCase() == appName;
+    }).toList()
+      ..sort((a, b) => b.signedTimestamp.compareTo(a.signedTimestamp));
+
+    if (filtered.length <= limit) return filtered;
+    return filtered.take(limit).toList(growable: false);
+  }
+
   Future<void> cleanupOnStartup() async {
     final account = Account.sharedInstance;
     if (account.currentPubkey.isEmpty) {
-      AegisLogger.warning('[SignedEventManager] Skip cleanupOnStartup: user not logged in');
+      AegisLogger.warning(
+          '[SignedEventManager] Skip cleanupOnStartup: user not logged in');
       return;
     }
     final userPubkey = account.currentPubkey;
 
-    AegisLogger.info('[SignedEventManager] Starting startup cleanup for user=${_maskValue(userPubkey)}');
-    
+    AegisLogger.info(
+        '[SignedEventManager] Starting startup cleanup for user=${_maskValue(userPubkey)}');
+
     try {
       final allEvents = await getAllSignedEvents();
       final applicationPubkeys = allEvents
-          .where((event) => event.applicationPubkey != null && event.applicationPubkey!.isNotEmpty)
+          .where((event) =>
+              event.applicationPubkey != null &&
+              event.applicationPubkey!.isNotEmpty)
           .map((event) => event.applicationPubkey!)
           .toSet();
-      
+
       AegisLogger.info(
         '[SignedEventManager] Found ${applicationPubkeys.length} applications for startup cleanup',
       );
-      
+
       for (final applicationPubkey in applicationPubkeys) {
         await _cleanupOldEventsForApplication(userPubkey, applicationPubkey);
       }
-      
+
       AegisLogger.info('[SignedEventManager] Startup cleanup completed');
     } catch (e) {
       AegisLogger.error('[SignedEventManager] Failed to cleanup on startup', e);
@@ -194,28 +249,32 @@ class SignedEventManager {
   Future<void> periodicCleanup() async {
     final account = Account.sharedInstance;
     if (account.currentPubkey.isEmpty) {
-      AegisLogger.warning('[SignedEventManager] Skip periodicCleanup: user not logged in');
+      AegisLogger.warning(
+          '[SignedEventManager] Skip periodicCleanup: user not logged in');
       return;
     }
     final userPubkey = account.currentPubkey;
 
-    AegisLogger.info('[SignedEventManager] Starting periodic cleanup for user=${_maskValue(userPubkey)}');
-    
+    AegisLogger.info(
+        '[SignedEventManager] Starting periodic cleanup for user=${_maskValue(userPubkey)}');
+
     try {
       final allEvents = await getAllSignedEvents();
       final applicationPubkeys = allEvents
-          .where((event) => event.applicationPubkey != null && event.applicationPubkey!.isNotEmpty)
+          .where((event) =>
+              event.applicationPubkey != null &&
+              event.applicationPubkey!.isNotEmpty)
           .map((event) => event.applicationPubkey!)
           .toSet();
-      
+
       AegisLogger.info(
         '[SignedEventManager] Found ${applicationPubkeys.length} applications for periodic cleanup',
       );
-      
+
       for (final applicationPubkey in applicationPubkeys) {
         await _cleanupOldEventsForApplication(userPubkey, applicationPubkey);
       }
-      
+
       AegisLogger.info('[SignedEventManager] Periodic cleanup completed');
     } catch (e) {
       AegisLogger.error('[SignedEventManager] Failed periodic cleanup', e);
@@ -334,4 +393,4 @@ class SignedEventManager {
         return 'Unknown Event Kind ($eventKind)';
     }
   }
-} 
+}

@@ -7,6 +7,7 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
 import 'package:aegis/utils/napp_update_manager.dart';
+import 'package:aegis/utils/browser_history_store.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'napp_model.dart';
 import 'webview_page.dart';
@@ -103,6 +104,7 @@ class _BrowserPageState extends State<BrowserPage> {
   List<NAppModel> _filteredNappList = [];
   String _searchQuery = '';
   Set<String> _favoriteIds = {};
+  List<String> _historyUrls = const <String>[];
   bool _isLoading = true;
   bool _hasLoadError = false;
 
@@ -111,7 +113,14 @@ class _BrowserPageState extends State<BrowserPage> {
     super.initState();
     _loadNappList();
     _loadFavorites();
+    _loadHistory();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _loadHistory() async {
+    final urls = await BrowserHistoryStore.load();
+    if (!mounted) return;
+    setState(() => _historyUrls = urls);
   }
 
   Future<void> _loadNappList() async {
@@ -123,11 +132,11 @@ class _BrowserPageState extends State<BrowserPage> {
       if (!isImported) {
         // First time: import preset apps from JSON file
         try {
-          final String jsonString = await rootBundle.loadString('lib/assets/napp_list.json');
+          final String jsonString =
+              await rootBundle.loadString('lib/assets/napp_list.json');
           final List<dynamic> jsonList = jsonDecode(jsonString);
-          final List<Map<String, dynamic>> apps = jsonList
-              .map((item) => item as Map<String, dynamic>)
-              .toList();
+          final List<Map<String, dynamic>> apps =
+              jsonList.map((item) => item as Map<String, dynamic>).toList();
 
           await UserAppDBISAR.importPresetApps(apps);
           AegisLogger.info('Imported ${apps.length} preset apps to database');
@@ -170,42 +179,45 @@ class _BrowserPageState extends State<BrowserPage> {
     try {
       // Get list of unapplied update files
       final unappliedUpdates = await NappUpdateManager.getUnappliedUpdates();
-      
+
       if (unappliedUpdates.isEmpty) {
         AegisLogger.info('No incremental updates to apply');
         return;
       }
-      
+
       AegisLogger.info('Found ${unappliedUpdates.length} unapplied update(s)');
-      
+
       // Apply each update file in order
       for (final updateFile in unappliedUpdates) {
         try {
           final version = NappUpdateManager.parseUpdateVersion(updateFile);
           if (version == null) {
-            AegisLogger.warning('Failed to parse version from update file: $updateFile');
+            AegisLogger.warning(
+                'Failed to parse version from update file: $updateFile');
             continue;
           }
-          
-          AegisLogger.info('Applying incremental update: $updateFile (version: $version)');
-          
+
+          AegisLogger.info(
+              'Applying incremental update: $updateFile (version: $version)');
+
           // Get apps from update file
           final apps = await NappUpdateManager.getAppsFromUpdate(updateFile);
-          
+
           if (apps.isEmpty) {
             AegisLogger.warning('Update file $updateFile contains no apps');
             // Still mark as applied to avoid retrying
             await NappUpdateManager.markVersionApplied(version);
             continue;
           }
-          
+
           // Apply the incremental update
           await UserAppDBISAR.applyIncrementalUpdate(apps);
-          
+
           // Mark version as applied
           await NappUpdateManager.markVersionApplied(version);
-          
-          AegisLogger.info('Successfully applied update $version (${apps.length} app(s))');
+
+          AegisLogger.info(
+              'Successfully applied update $version (${apps.length} app(s))');
         } catch (e) {
           AegisLogger.error('Failed to apply update file $updateFile: $e');
           // Continue with next update even if one fails
@@ -230,7 +242,7 @@ class _BrowserPageState extends State<BrowserPage> {
         // Ignore parse errors
       }
     }
-    
+
     Map<String, dynamic> metadata = {};
     if (dbApp.metadataJson != null && dbApp.metadataJson!.isNotEmpty) {
       try {
@@ -239,7 +251,7 @@ class _BrowserPageState extends State<BrowserPage> {
         // Ignore parse errors
       }
     }
-    
+
     return NAppModel(
       id: dbApp.appId,
       url: dbApp.url,
@@ -252,17 +264,18 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   /// Convert NAppModel to UserAppDBISAR
-  UserAppDBISAR _convertToDBApp(NAppModel app, {bool isPreset = false, bool isFavorite = false}) {
+  UserAppDBISAR _convertToDBApp(NAppModel app,
+      {bool isPreset = false, bool isFavorite = false}) {
     String? platformsJson;
     if (app.platforms != null && app.platforms!.isNotEmpty) {
       platformsJson = jsonEncode(app.platforms);
     }
-    
+
     String? metadataJson;
     if (app.metadata.isNotEmpty) {
       metadataJson = jsonEncode(app.metadata);
     }
-    
+
     return UserAppDBISAR(
       appId: app.id,
       url: app.url,
@@ -457,7 +470,8 @@ class _BrowserPageState extends State<BrowserPage> {
     }).toList();
 
     final allApps = _filteredNappList.where((napp) {
-      return !_favoriteIds.contains(napp.id) && !_favoriteIds.contains(napp.url);
+      return !_favoriteIds.contains(napp.id) &&
+          !_favoriteIds.contains(napp.url);
     }).toList();
 
     return SingleChildScrollView(
@@ -465,12 +479,17 @@ class _BrowserPageState extends State<BrowserPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // FAVORITES section
+          if (_historyUrls.isNotEmpty) ...[
+            _buildSectionHeader('Recent', Icons.history),
+            _buildHistoryList(context),
+          ],
           if (favorites.isNotEmpty) ...[
             _buildSectionHeader(l10n.favorites, Icons.push_pin),
             _buildAppGrid(context, favorites, l10n),
           ],
           // ALL APPS section (always show so that "Add App" tile is visible when list is empty)
-          _buildSectionHeader(l10n.allApps, null, topPadding: favorites.isNotEmpty ? 4 : null),
+          _buildSectionHeader(l10n.allApps, null,
+              topPadding: favorites.isNotEmpty ? 4 : null),
           _buildAppGrid(context, allApps, l10n, showAddButton: true),
           const SizedBox(height: 16),
         ],
@@ -478,7 +497,63 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData? icon, {double? topPadding}) {
+  Widget _buildHistoryList(BuildContext context) {
+    return SizedBox(
+      height: 84,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: _historyUrls.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final url = _historyUrls[index];
+          final uri = Uri.tryParse(url);
+          final label = uri?.host.isNotEmpty == true ? uri!.host : url;
+          return SizedBox(
+            width: 176,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => _openWebView(url, label),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      url,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData? icon,
+      {double? topPadding}) {
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -508,7 +583,9 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildAppGrid(BuildContext context, List<NAppModel> apps, AppLocalizations l10n, {bool showAddButton = false}) {
+  Widget _buildAppGrid(
+      BuildContext context, List<NAppModel> apps, AppLocalizations l10n,
+      {bool showAddButton = false}) {
     if (apps.isEmpty && !showAddButton) {
       return const SizedBox.shrink();
     }
@@ -589,7 +666,8 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Widget _buildNappGridItem(NAppModel napp) {
-    final isFavorite = _favoriteIds.contains(napp.id) || _favoriteIds.contains(napp.url);
+    final isFavorite =
+        _favoriteIds.contains(napp.id) || _favoriteIds.contains(napp.url);
 
     return Semantics(
       label: napp.name,
@@ -597,88 +675,92 @@ class _BrowserPageState extends State<BrowserPage> {
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
-        if (napp.url.isNotEmpty) {
-          AegisNavigator.pushPage(
-            context,
-            (context) => WebViewPage(
-              url: napp.url,
-              title: napp.name,
-            ),
-          ).then((_) {
-            // Reload favorites when returning from webview page
-            _loadFavorites();
-          });
-        }
-      },
-      onLongPress: () {
-        _showDeleteDialog(napp);
-      },
+          if (napp.url.isNotEmpty) {
+            _openWebView(napp.url, napp.name);
+          }
+        },
+        onLongPress: () {
+          _showDeleteDialog(napp);
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // App Icon
             Stack(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: _buildNappIcon(napp),
-                ),
-              ),
-              // Favorite indicator
-              if (isFavorite)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.push_pin,
-                      size: 12,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _buildNappIcon(napp),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // App Name
-          Text(
-            napp.name,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-          // const SizedBox(height: 2),
-          // // Category
-          // Text(
-          //   napp.description,
-          //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          //         fontSize: 11,
-          //         color: Theme.of(context).colorScheme.onSurfaceVariant,
-          //       ),
-          //   maxLines: 1,
-          //   overflow: TextOverflow.ellipsis,
-          //   textAlign: TextAlign.center,
-          // ),
+                // Favorite indicator
+                if (isFavorite)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.push_pin,
+                        size: 12,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // App Name
+            Text(
+              napp.name,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            // const SizedBox(height: 2),
+            // // Category
+            // Text(
+            //   napp.description,
+            //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            //         fontSize: 11,
+            //         color: Theme.of(context).colorScheme.onSurfaceVariant,
+            //       ),
+            //   maxLines: 1,
+            //   overflow: TextOverflow.ellipsis,
+            //   textAlign: TextAlign.center,
+            // ),
           ],
         ),
       ),
     );
+  }
+
+  void _openWebView(String url, String title) {
+    AegisNavigator.pushPage(
+      context,
+      (context) => WebViewPage(
+        url: url,
+        title: title,
+      ),
+    ).then((_) {
+      _loadFavorites();
+      _loadHistory();
+    });
   }
 
   Widget _buildNappIcon(NAppModel napp) {
@@ -764,7 +846,7 @@ class _BrowserPageState extends State<BrowserPage> {
       // Load favorite apps from database
       final favoriteApps = await UserAppDBISAR.getFavoriteApps();
       final favoriteUrls = favoriteApps.map((app) => app.url).toSet();
-      
+
       if (mounted) {
         setState(() {
           _favoriteIds = favoriteUrls;
@@ -774,7 +856,6 @@ class _BrowserPageState extends State<BrowserPage> {
       AegisLogger.error('Failed to load favorites: $e');
     }
   }
-
 
   Future<void> _showAddAppDialog() async {
     final result = await showDialog<Map<String, String>>(
@@ -802,9 +883,9 @@ class _BrowserPageState extends State<BrowserPage> {
       try {
         final faviconUrl = '$baseUrl$path';
         final response = await http.head(Uri.parse(faviconUrl)).timeout(
-          const Duration(seconds: 3),
-        );
-        
+              const Duration(seconds: 3),
+            );
+
         if (response.statusCode == 200) {
           AegisLogger.info('Found favicon at: $faviconUrl');
           return faviconUrl;
@@ -882,8 +963,12 @@ class _BrowserPageState extends State<BrowserPage> {
       }
 
       // Extract domain from URL for app name and icon
-      final appName = name.isNotEmpty ? name : (uri.host.isNotEmpty ? uri.host : l10n.webApp);
-      final appId = uri.host.isNotEmpty ? uri.host.replaceAll('.', '_') : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
+      final appName = name.isNotEmpty
+          ? name
+          : (uri.host.isNotEmpty ? uri.host : l10n.webApp);
+      final appId = uri.host.isNotEmpty
+          ? uri.host.replaceAll('.', '_')
+          : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
 
       // Try to get favicon URL
       final iconUrl = await _getFaviconUrl(uri);
@@ -901,7 +986,8 @@ class _BrowserPageState extends State<BrowserPage> {
       // Convert to database model and save (isPreset=false for user-added apps)
       final dbApp = _convertToDBApp(newApp, isPreset: false);
       await UserAppDBISAR.saveFromDB(dbApp);
-      AegisLogger.info('Successfully saved user-added app to database: ${newApp.name}');
+      AegisLogger.info(
+          'Successfully saved user-added app to database: ${newApp.name}');
 
       // Reload list from database to maintain proper sorting (newest first)
       if (mounted) {
@@ -988,4 +1074,3 @@ class _BrowserPageState extends State<BrowserPage> {
     }
   }
 }
-

@@ -531,6 +531,42 @@ class AppLocalizationsZh extends AppLocalizations {
   String get urlSchemeLoginHint => '请使用支持 Aegis URL  scheme 的应用打开以登录';
 
   @override
+  String get urlSchemeLoginPageTitle => 'Paste connection link';
+
+  @override
+  String get urlSchemeLoginPageSubtitle => 'Paste a Nostr Connect (nostrconnect://), Aegis (aegis://), or NostrSigner (nostrsigner://) URI. You can copy it from the client app or webpage.';
+
+  @override
+  String get urlSchemeLoginFieldLabel => 'Connection URI';
+
+  @override
+  String get urlSchemeLoginPasteFromClipboard => 'Paste from clipboard';
+
+  @override
+  String get urlSchemeLoginConnect => 'Connect';
+
+  @override
+  String get urlSchemeLoginEmpty => 'Enter or paste a connection URI first.';
+
+  @override
+  String get urlSchemeLoginClipboardEmpty => 'Clipboard is empty or has no text.';
+
+  @override
+  String get urlSchemeLoginInvalidUri => 'This text is not a valid URL.';
+
+  @override
+  String get urlSchemeLoginUnsupported => 'Unsupported link. Use nostrconnect://, aegis://, or nostrsigner://.';
+
+  @override
+  String get urlSchemeLoginBunkerIsForClients => 'bunker:// links are for Nostr clients, not the signer. Use a nostrconnect:// URI from the client instead.';
+
+  @override
+  String get urlSchemeLoginSuccessScheme => 'Request sent. Follow any prompts in the other app if needed.';
+
+  @override
+  String get urlSchemeLoginSuccessNostrConnect => 'Waiting for the client to finish login over the relay. You can leave this page.';
+
+  @override
   String get name => '名称';
 
   @override
@@ -1000,6 +1036,111 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get signPolicyManualDescription => '立即弹出授权界面；不提供「记住」类快捷选项；忽略基于时间的「记住授权」，每次批次都需你明确确认。';
+
+  @override
+  String get securityTitle => '安全';
+
+  @override
+  String get securityDescription => '设置本机 PIN（4–6 位数字），用于确认查看账号备份与切换账号。仅保存在本设备。';
+
+  @override
+  String get appPinEnterTitle => '输入应用 PIN';
+
+  @override
+  String get appPinLabel => 'PIN';
+
+  @override
+  String get appPinHint => '4–6 位数字';
+
+  @override
+  String get appPinInvalid => 'PIN 须为 4–6 位数字。';
+
+  @override
+  String get appPinWrong => 'PIN 错误。';
+
+  @override
+  String get appPinMismatch => '两次输入不一致。';
+
+  @override
+  String get appPinSet => '保存 PIN';
+
+  @override
+  String get appPinChange => '修改 PIN';
+
+  @override
+  String get appPinRemove => '移除 PIN';
+
+  @override
+  String get appPinSetSuccess => '已保存 PIN。';
+
+  @override
+  String get appPinChangeSuccess => '已更新 PIN。';
+
+  @override
+  String get appPinRemoveSuccess => '已移除 PIN。';
+
+  @override
+  String get appPinCurrentWrong => '当前 PIN 不正确。';
+
+  @override
+  String get appPinCurrent => '当前 PIN';
+
+  @override
+  String get appPinNew => '新 PIN';
+
+  @override
+  String get appPinConfirmLabel => '确认 PIN';
+
+  @override
+  String get appPinEnabledStatus => '已启用应用 PIN';
+
+  @override
+  String get relaysHubTitle => '中继';
+
+  @override
+  String get relaysHubActiveTab => '当前连接';
+
+  @override
+  String get relaysHubDefaultsTab => '默认资料中继';
+
+  @override
+  String get relaysHubActiveEmpty => '暂无由本应用管理的 WebSocket 中继连接；有连接建立后会显示在这里。';
+
+  @override
+  String get relaysHubStatusConnecting => '连接中';
+
+  @override
+  String get relaysHubStatusConnected => '已连接';
+
+  @override
+  String get relaysHubStatusClosing => '关闭中';
+
+  @override
+  String get relaysHubStatusDisconnected => '已断开';
+
+  @override
+  String get relaysHubStatusUnknown => '未知';
+
+  @override
+  String get relaysHubReconnect => '重新连接';
+
+  @override
+  String get relaysHubDefaultsDescription => '保存在本机的默认资料中继列表（去重）。实际发布到 Nostr 需在客户端中使用此列表。';
+
+  @override
+  String get relaysHubDefaultsEmpty => '暂无默认中继。请在下方添加 wss:// 或 ws:// 地址。';
+
+  @override
+  String get relaysHubAddRelay => '添加中继';
+
+  @override
+  String get relaysHubEditRelay => '编辑中继';
+
+  @override
+  String get relaysHubRelayUrlHint => '中继地址';
+
+  @override
+  String get relaysHubInvalidUrl => '请输入有效的 WebSocket 地址（含主机的 ws:// 或 wss://）。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

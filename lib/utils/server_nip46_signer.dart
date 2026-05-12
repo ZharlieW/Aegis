@@ -21,6 +21,7 @@ import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/android_service_manager.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
+import 'package:aegis/services/app_log_service.dart';
 import 'package:aegis/services/nip46_bunker_url.dart';
 import 'package:aegis/services/nip46_key_resolver.dart';
 import 'package:aegis/utils/method_usage_stats.dart';
@@ -281,6 +282,11 @@ class ServerNIP46Signer {
             'Failed to decrypt NIP-46 request from ${event.pubkey}');
         return;
       }
+      AppLogService.instance.add(
+        level: AppLogLevel.info,
+        source: AppLogSource.nip46,
+        summary: 'NIP-46 request received: ${remoteRequest.method}',
+      );
 
       // Process the remote request
       // Pass serverPrivate (remote signer private key) and find user pubkey for signing operations
@@ -517,7 +523,7 @@ class ServerNIP46Signer {
 
         // Default to full trust: no initial connect authorization popup.
         // Users can still enable manual approvals from the permissions page.
-        final authMode = 2;
+        const authMode = 2;
 
         // Find unused application by remote signer pubkey (from event p tag)
         // The remote signer pubkey should be in the event's p tag

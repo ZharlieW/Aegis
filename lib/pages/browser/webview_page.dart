@@ -7,6 +7,8 @@ import 'package:aegis/utils/logger.dart';
 import 'package:aegis/db/user_app_db_isar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/browser/nip07_handlers.dart';
+import 'package:aegis/services/app_log_service.dart';
+import 'package:aegis/utils/browser_history_store.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
@@ -59,6 +61,7 @@ class _WebViewPageState extends State<WebViewPage> {
             setState(() {
               _currentUrl = url;
             });
+            await BrowserHistoryStore.add(url);
             // Update navigation state
             if (!mounted) return;
             final canGoBack = await _controller.canGoBack();
@@ -90,14 +93,14 @@ class _WebViewPageState extends State<WebViewPage> {
       // Get current user's public key
       final account = Account.sharedInstance;
       final publicKey = account.currentPubkey;
-      
+
       if (publicKey.isEmpty) {
         AegisLogger.warning('No user logged in, NIP-07 will not be available');
         return;
       }
 
       // Inject NIP-07 JavaScript code
-      final nip07Code = '''
+      const nip07Code = '''
         (function() {
           if (window.nostr) {
             console.log('NIP-07 already exists');
@@ -273,6 +276,11 @@ class _WebViewPageState extends State<WebViewPage> {
       final method = data['method'] as String;
       final id = data['id'] as int;
       final params = data['params'];
+      AppLogService.instance.add(
+        level: AppLogLevel.info,
+        source: AppLogSource.browser,
+        summary: 'Browser NIP-07 request: $method',
+      );
 
       final result = await Nip07Handlers.handle(
         method,
@@ -284,7 +292,8 @@ class _WebViewPageState extends State<WebViewPage> {
 
       if (!mounted) return;
       final responseJson = json.encode(result);
-      await _controller.runJavaScript('window.handleNostrResponse($responseJson);');
+      await _controller
+          .runJavaScript('window.handleNostrResponse($responseJson);');
     } catch (e) {
       AegisLogger.error('❌ Error handling Nostr message: $e');
       if (!mounted) return;
@@ -296,14 +305,16 @@ class _WebViewPageState extends State<WebViewPage> {
           'error': e.toString(),
         });
         if (!mounted) return;
-        await _controller.runJavaScript('window.handleNostrResponse($errorResponse);');
+        await _controller
+            .runJavaScript('window.handleNostrResponse($errorResponse);');
       } catch (_) {
         if (!mounted) return;
         final errorResponse = json.encode({
           'id': 0,
           'error': e.toString(),
         });
-        await _controller.runJavaScript('window.handleNostrResponse($errorResponse);');
+        await _controller
+            .runJavaScript('window.handleNostrResponse($errorResponse);');
       }
     }
   }
@@ -348,7 +359,7 @@ class _WebViewPageState extends State<WebViewPage> {
     try {
       final currentUrl = _currentUrl ?? widget.url;
       final app = await UserAppDBISAR.getByUrl(currentUrl);
-      
+
       if (mounted) {
         setState(() {
           _isFavorite = app?.isFavorite ?? false;
@@ -374,9 +385,9 @@ class _WebViewPageState extends State<WebViewPage> {
       try {
         final faviconUrl = '$baseUrl$path';
         final response = await http.head(Uri.parse(faviconUrl)).timeout(
-          const Duration(seconds: 3),
-        );
-        
+              const Duration(seconds: 3),
+            );
+
         if (response.statusCode == 200) {
           AegisLogger.info('Found favicon at: $faviconUrl');
           return faviconUrl;
@@ -396,7 +407,7 @@ class _WebViewPageState extends State<WebViewPage> {
     try {
       final currentUrl = _currentUrl ?? widget.url;
       final app = await UserAppDBISAR.getByUrl(currentUrl);
-      
+
       if (app != null) {
         // App exists in database, toggle favorite status
         await UserAppDBISAR.toggleFavorite(currentUrl, !_isFavorite);
@@ -407,19 +418,19 @@ class _WebViewPageState extends State<WebViewPage> {
           AegisLogger.error('Invalid URL: $currentUrl');
           return;
         }
-        
-        final appId = uri.host.isNotEmpty 
-            ? uri.host.replaceAll('.', '_') 
+
+        final appId = uri.host.isNotEmpty
+            ? uri.host.replaceAll('.', '_')
             : 'user_app_${DateTime.now().millisecondsSinceEpoch}';
-        final appName = uri.host.isNotEmpty 
-            ? uri.host 
-            : widget.title.isNotEmpty 
-                ? widget.title 
+        final appName = uri.host.isNotEmpty
+            ? uri.host
+            : widget.title.isNotEmpty
+                ? widget.title
                 : 'Web App';
-        
+
         // Try to get favicon URL
         final iconUrl = await _getFaviconUrl(uri);
-        
+
         final newApp = UserAppDBISAR(
           appId: appId,
           url: currentUrl,
@@ -431,10 +442,10 @@ class _WebViewPageState extends State<WebViewPage> {
           isFavorite: !_isFavorite,
           isPreset: false,
         );
-        
+
         await UserAppDBISAR.saveFromDB(newApp);
       }
-      
+
       if (mounted) {
         setState(() {
           _isFavorite = !_isFavorite;
@@ -444,7 +455,6 @@ class _WebViewPageState extends State<WebViewPage> {
       AegisLogger.error('Failed to toggle favorite: $e');
     }
   }
-
 
   Future<void> _reload() async {
     if (!mounted) return;
@@ -460,7 +470,8 @@ class _WebViewPageState extends State<WebViewPage> {
           color: Theme.of(context).colorScheme.surface,
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              color:
+                  Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
               width: 0.5,
             ),
           ),
@@ -472,13 +483,13 @@ class _WebViewPageState extends State<WebViewPage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back),
+                  icon: const Icon(Icons.arrow_back),
                   onPressed: _canGoBack ? _handleBackButton : null,
                   iconSize: 24,
                   tooltip: l10n.goBack,
                 ),
                 IconButton(
-                  icon: Icon(Icons.arrow_forward),
+                  icon: const Icon(Icons.arrow_forward),
                   onPressed: _canGoForward ? _handleForwardButton : null,
                   iconSize: 24,
                   tooltip: l10n.goForward,
@@ -490,13 +501,13 @@ class _WebViewPageState extends State<WebViewPage> {
                   tooltip: _isFavorite ? l10n.unfavorite : l10n.favorite,
                 ),
                 IconButton(
-                  icon: Icon(Icons.refresh),
+                  icon: const Icon(Icons.refresh),
                   onPressed: _reload,
                   iconSize: 24,
                   tooltip: l10n.reload,
                 ),
                 IconButton(
-                  icon: Icon(Icons.close),
+                  icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),
                   iconSize: 24,
                   tooltip: l10n.exit,
@@ -533,4 +544,3 @@ class _WebViewPageState extends State<WebViewPage> {
     );
   }
 }
-

@@ -531,6 +531,42 @@ class AppLocalizationsTr extends AppLocalizations {
   String get urlSchemeLoginHint => 'Giriş yapmak için Aegis URL scheme destekleyen bir uygulamayla aç.';
 
   @override
+  String get urlSchemeLoginPageTitle => 'Paste connection link';
+
+  @override
+  String get urlSchemeLoginPageSubtitle => 'Paste a Nostr Connect (nostrconnect://), Aegis (aegis://), or NostrSigner (nostrsigner://) URI. You can copy it from the client app or webpage.';
+
+  @override
+  String get urlSchemeLoginFieldLabel => 'Connection URI';
+
+  @override
+  String get urlSchemeLoginPasteFromClipboard => 'Paste from clipboard';
+
+  @override
+  String get urlSchemeLoginConnect => 'Connect';
+
+  @override
+  String get urlSchemeLoginEmpty => 'Enter or paste a connection URI first.';
+
+  @override
+  String get urlSchemeLoginClipboardEmpty => 'Clipboard is empty or has no text.';
+
+  @override
+  String get urlSchemeLoginInvalidUri => 'This text is not a valid URL.';
+
+  @override
+  String get urlSchemeLoginUnsupported => 'Unsupported link. Use nostrconnect://, aegis://, or nostrsigner://.';
+
+  @override
+  String get urlSchemeLoginBunkerIsForClients => 'bunker:// links are for Nostr clients, not the signer. Use a nostrconnect:// URI from the client instead.';
+
+  @override
+  String get urlSchemeLoginSuccessScheme => 'Request sent. Follow any prompts in the other app if needed.';
+
+  @override
+  String get urlSchemeLoginSuccessNostrConnect => 'Waiting for the client to finish login over the relay. You can leave this page.';
+
+  @override
   String get name => 'Ad';
 
   @override
@@ -1002,5 +1038,107 @@ class AppLocalizationsTr extends AppLocalizations {
   String get signPolicyManualDescription => 'Opens the approval screen immediately; no remember shortcuts in the dialog; time-based remembered approvals are ignored so you confirm each batch.';
 
   @override
-  String get addConnection => 'Add connection';
+  String get securityTitle => 'Security';
+
+  @override
+  String get securityDescription => 'Set a device PIN (4–6 digits) to confirm viewing account backup and switching accounts. Stored only on this device.';
+
+  @override
+  String get appPinEnterTitle => 'Enter app PIN';
+
+  @override
+  String get appPinLabel => 'PIN';
+
+  @override
+  String get appPinHint => '4–6 digits';
+
+  @override
+  String get appPinInvalid => 'PIN must be 4–6 digits.';
+
+  @override
+  String get appPinWrong => 'Incorrect PIN.';
+
+  @override
+  String get appPinMismatch => 'PINs do not match.';
+
+  @override
+  String get appPinSet => 'Save PIN';
+
+  @override
+  String get appPinChange => 'Change PIN';
+
+  @override
+  String get appPinRemove => 'Remove PIN';
+
+  @override
+  String get appPinSetSuccess => 'PIN saved.';
+
+  @override
+  String get appPinChangeSuccess => 'PIN updated.';
+
+  @override
+  String get appPinRemoveSuccess => 'PIN removed.';
+
+  @override
+  String get appPinCurrentWrong => 'Current PIN is incorrect.';
+
+  @override
+  String get appPinCurrent => 'Current PIN';
+
+  @override
+  String get appPinNew => 'New PIN';
+
+  @override
+  String get appPinConfirmLabel => 'Confirm PIN';
+
+  @override
+  String get appPinEnabledStatus => 'App PIN is enabled';
+
+  @override
+  String get relaysHubTitle => 'Relays';
+
+  @override
+  String get relaysHubActiveTab => 'Active';
+
+  @override
+  String get relaysHubDefaultsTab => 'Default profile';
+
+  @override
+  String get relaysHubActiveEmpty => 'No managed relay connections yet. They appear here when the app opens WebSocket connections.';
+
+  @override
+  String get relaysHubStatusConnecting => 'Connecting';
+
+  @override
+  String get relaysHubStatusConnected => 'Connected';
+
+  @override
+  String get relaysHubStatusClosing => 'Closing';
+
+  @override
+  String get relaysHubStatusDisconnected => 'Disconnected';
+
+  @override
+  String get relaysHubStatusUnknown => 'Unknown';
+
+  @override
+  String get relaysHubReconnect => 'Reconnect';
+
+  @override
+  String get relaysHubDefaultsDescription => 'Saved relay URLs for your default profile list (device only). Duplicate URLs are merged.';
+
+  @override
+  String get relaysHubDefaultsEmpty => 'No default relays. Add a wss:// or ws:// URL below.';
+
+  @override
+  String get relaysHubAddRelay => 'Add relay';
+
+  @override
+  String get relaysHubEditRelay => 'Edit relay';
+
+  @override
+  String get relaysHubRelayUrlHint => 'Relay URL';
+
+  @override
+  String get relaysHubInvalidUrl => 'Enter a valid WebSocket URL (ws:// or wss:// with a host).';
 }

@@ -4,10 +4,10 @@ import 'bunker_application_name_page.dart';
 import 'package:aegis/navigator/navigator.dart';
 
 import 'package:aegis/common/common_image.dart';
-import 'package:aegis/common/common_tips.dart';
 import 'package:aegis/common/common_appbar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/scan/scan_qr_login_page.dart';
+import 'package:aegis/pages/application/url_scheme_login_page.dart';
 
 class AddApplication extends StatefulWidget {
   const AddApplication({super.key});
@@ -59,9 +59,9 @@ class AddApplicationState extends State<AddApplication> {
                       ),
                       _cardWidget(
                         onTap: () {
-                          CommonTips.error(
+                          AegisNavigator.pushPage(
                             context,
-                            AppLocalizations.of(context)!.urlSchemeLoginHint,
+                            (context) => const UrlSchemeLoginPage(),
                           );
                         },
                         iconName: 'clipboard_icon.png',

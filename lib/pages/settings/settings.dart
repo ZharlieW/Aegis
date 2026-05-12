@@ -12,6 +12,10 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
+import 'package:aegis/pages/settings/browser_history_page.dart';
+import 'package:aegis/pages/settings/relays_hub_page.dart';
+import 'package:aegis/pages/settings/security_page.dart';
+import 'package:aegis/utils/pin_gate.dart';
 import 'package:aegis/utils/sign_policy.dart';
 
 /// Dialog widget for logout confirmation
@@ -199,7 +203,11 @@ class SettingsState extends State<Settings> with AccountObservers {
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
-                          onTap: () => _switchAccount(account),
+                          onTap: () async {
+                            if (!await requireAppPinIfSet(context)) return;
+                            if (!context.mounted) return;
+                            _switchAccount(account);
+                          },
                         ),
                       );
                     }),
@@ -243,7 +251,9 @@ class SettingsState extends State<Settings> with AccountObservers {
     String name = currentUser.username ?? 'Unnamed';
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        if (!await requireAppPinIfSet(context)) return;
+        if (!context.mounted) return;
         AegisNavigator.pushPage(context, (context) => const AccountBackup());
       },
       child: Container(
@@ -425,6 +435,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   }
 
   Widget _buildSupportSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       decoration: BoxDecoration(
@@ -433,6 +444,36 @@ class SettingsState extends State<Settings> with AccountObservers {
       ),
       child: Column(
         children: [
+          ListTile(
+            title: Text(
+              l10n.securityTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.lock_outline,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+              context,
+              (context) => const SecurityPage(),
+            ),
+          ),
+          ListTile(
+            title: Text(
+              l10n.relaysHubTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.hub_outlined,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+              context,
+              (context) => const RelaysHubPage(),
+            ),
+          ),
           ListTile(
             title: Text(
               'App Logs',
@@ -445,6 +486,21 @@ class SettingsState extends State<Settings> with AccountObservers {
             ),
             onTap: () => AegisNavigator.pushPage(
                 context, (context) => const AppLogsPage()),
+          ),
+          ListTile(
+            title: Text(
+              'Browser History',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.history,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+              context,
+              (context) => const BrowserHistoryPage(),
+            ),
           ),
         ],
       ),

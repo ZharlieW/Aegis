@@ -10,6 +10,10 @@ class AppLogsPage extends StatefulWidget {
 
 class _AppLogsPageState extends State<AppLogsPage> {
   List<AppLogEntry> _logs = const <AppLogEntry>[];
+  AppLogLevel? _selectedLevel;
+  AppLogSource? _selectedSource;
+  final TextEditingController _summaryFilterController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -21,6 +25,12 @@ class _AppLogsPageState extends State<AppLogsPage> {
     setState(() {
       _logs = AppLogService.instance.getAll().toList(growable: false);
     });
+  }
+
+  @override
+  void dispose() {
+    _summaryFilterController.dispose();
+    super.dispose();
   }
 
   void _clearLogs() {
@@ -91,8 +101,163 @@ class _AppLogsPageState extends State<AppLogsPage> {
     }
   }
 
+  String _sourceText(AppLogSource source) {
+    switch (source) {
+      case AppLogSource.nip55:
+        return 'NIP55';
+      case AppLogSource.nip46:
+        return 'NIP46';
+      case AppLogSource.browser:
+        return 'BROWSER';
+      case AppLogSource.relay:
+        return 'RELAY';
+      case AppLogSource.general:
+        return 'GENERAL';
+    }
+  }
+
+  List<AppLogEntry> get _filteredLogs {
+    final query = _summaryFilterController.text.trim().toLowerCase();
+    if (_selectedLevel == null && _selectedSource == null && query.isEmpty) {
+      return _logs;
+    }
+
+    return _logs.where((log) {
+      final matchesLevel =
+          _selectedLevel == null || log.level == _selectedLevel;
+      final matchesSource =
+          _selectedSource == null || log.source == _selectedSource;
+      final matchesSummary =
+          query.isEmpty || log.summary.toLowerCase().contains(query);
+      return matchesLevel && matchesSource && matchesSummary;
+    }).toList(growable: false);
+  }
+
+  Widget _buildFilters(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _summaryFilterController,
+            onChanged: (_) => setState(() {}),
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: 'Search summary',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _summaryFilterController.text.isEmpty
+                  ? null
+                  : IconButton(
+                      onPressed: () {
+                        _summaryFilterController.clear();
+                        setState(() {});
+                      },
+                      icon: const Icon(Icons.clear),
+                      tooltip: 'Clear search',
+                    ),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              ChoiceChip(
+                label: const Text('ALL'),
+                selected: _selectedLevel == null,
+                onSelected: (_) => setState(() => _selectedLevel = null),
+              ),
+              for (final level in AppLogLevel.values)
+                ChoiceChip(
+                  label: Text(_typeText(level)),
+                  selected: _selectedLevel == level,
+                  selectedColor:
+                      _typeColor(context, level).withValues(alpha: 0.18),
+                  labelStyle: TextStyle(
+                    color: _selectedLevel == level
+                        ? _typeColor(context, level)
+                        : colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  onSelected: (_) => setState(() => _selectedLevel = level),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              ChoiceChip(
+                label: const Text('ALL SOURCES'),
+                selected: _selectedSource == null,
+                onSelected: (_) => setState(() => _selectedSource = null),
+              ),
+              for (final source in AppLogSource.values)
+                ChoiceChip(
+                  label: Text(_sourceText(source)),
+                  selected: _selectedSource == source,
+                  onSelected: (_) => setState(() => _selectedSource = source),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogList(BuildContext context, List<AppLogEntry> logs) {
+    if (logs.isEmpty) {
+      return const Center(
+        child: Text('No matching logs.'),
+      );
+    }
+
+    return ListView.separated(
+      itemCount: logs.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final item = logs[index];
+        return ListTile(
+          title: Text(
+            item.summary,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(_formatTime(item.timestamp)),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _typeText(item.level),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: _typeColor(context, item.level),
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Chip(
+                label: Text(_sourceText(item.source)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filteredLogs = _filteredLogs;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('App Logs'),
@@ -113,27 +278,12 @@ class _AppLogsPageState extends State<AppLogsPage> {
           ? const Center(
               child: Text('No logs yet.'),
             )
-          : ListView.separated(
-              itemCount: _logs.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final item = _logs[index];
-                return ListTile(
-                  title: Text(
-                    item.summary,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(_formatTime(item.timestamp)),
-                  trailing: Text(
-                    _typeText(item.level),
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: _typeColor(context, item.level),
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                );
-              },
+          : Column(
+              children: [
+                _buildFilters(context),
+                const Divider(height: 1),
+                Expanded(child: _buildLogList(context, filteredLogs)),
+              ],
             ),
     );
   }
