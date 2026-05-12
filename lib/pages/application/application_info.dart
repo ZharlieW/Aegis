@@ -10,10 +10,12 @@ import 'package:aegis/navigator/navigator.dart';
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
+import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/utils/app_icon_loader.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/activities/activities.dart';
+import 'package:aegis/pages/activities/event_detail_page.dart';
 import 'package:aegis/pages/application/application_permissions_page.dart';
 import 'package:aegis/pages/application/edit_bunker_socket_info.dart';
 
@@ -26,9 +28,14 @@ class ApplicationInfo extends StatefulWidget {
 }
 
 class ApplicationInfoState extends State<ApplicationInfo> {
+  static const int _recentOperationLimit = 5;
+
   String _bunkerUrl = '';
   bool _showSecureBunkerUrl = false;
   ValueNotifier<ClientAuthDBISAR>? _appNotifier;
+  List<SignedEventDBISAR> _recentEvents = const <SignedEventDBISAR>[];
+  bool _recentEventsLoading = true;
+  bool _recentEventsLoadFailed = false;
 
   @override
   void initState() {
@@ -49,6 +56,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
         : (client.remoteSignerPubkey ?? '');
     _appNotifier = AccountManager.sharedInstance.applicationMap[key];
     await _updateBunkerUrl();
+    await _loadRecentOperations(client);
   }
 
   ClientAuthDBISAR get _currentClient {
@@ -74,6 +82,36 @@ class ApplicationInfoState extends State<ApplicationInfo> {
     if (mounted) {
       setState(() {
         _bunkerUrl = url;
+      });
+    }
+  }
+
+  Future<void> _loadRecentOperations([ClientAuthDBISAR? client]) async {
+    final targetClient = client ?? _currentClient;
+    if (mounted) {
+      setState(() {
+        _recentEventsLoading = true;
+        _recentEventsLoadFailed = false;
+      });
+    }
+
+    try {
+      final events =
+          await SignedEventManager.sharedInstance.getRecentEventsForApplication(
+        targetClient,
+        limit: _recentOperationLimit,
+      );
+      if (!mounted) return;
+      setState(() {
+        _recentEvents = events;
+        _recentEventsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _recentEvents = const <SignedEventDBISAR>[];
+        _recentEventsLoading = false;
+        _recentEventsLoadFailed = true;
       });
     }
   }
@@ -208,6 +246,7 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                 content: client.clientPubkey,
                 onTap: () => ToolKit.copyKey(context, client.clientPubkey),
               ),
+              _recentOperationsWidget(client),
               const SizedBox(
                 height: 40,
               ),
@@ -315,7 +354,9 @@ class ApplicationInfoState extends State<ApplicationInfo> {
                             await ServerNIP46Signer.instance
                                 .updateSubscription();
 
-                            CommonTips.success(context, AppLocalizations.of(context)!.removeSuccess);
+                            if (!context.mounted) return;
+                            CommonTips.success(context,
+                                AppLocalizations.of(context)!.removeSuccess);
                             AegisNavigator.popToRoot(context);
                           },
                           style: ButtonStyle(
@@ -491,6 +532,129 @@ class ApplicationInfoState extends State<ApplicationInfo> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _recentOperationsWidget(ClientAuthDBISAR client) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 8, bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '最近 $_recentOperationLimit 条',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  AegisNavigator.pushPage(
+                    context,
+                    (context) => Activities(clientAuthDBISAR: client),
+                  );
+                },
+                icon: const Icon(Icons.history, size: 18),
+                label: Text(AppLocalizations.of(context)!.activities),
+              ),
+              IconButton(
+                onPressed: () => _loadRecentOperations(client),
+                icon: const Icon(Icons.refresh, size: 20),
+                tooltip: 'Refresh',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_recentEventsLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_recentEventsLoadFailed)
+            Text(
+              AppLocalizations.of(context)!.activitiesLoadFailed,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            )
+          else if (_recentEvents.isEmpty)
+            Text(
+              '暂无最近操作',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            )
+          else
+            Column(
+              children: _recentEvents
+                  .map((event) => _recentOperationItem(event))
+                  .toList(growable: false),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recentOperationItem(SignedEventDBISAR event) {
+    final theme = Theme.of(context);
+    final content = event.eventContent.isNotEmpty
+        ? event.eventContent
+        : SignedEventManager.sharedInstance
+            .getEventKindDescription(event.eventKind);
+    final methodKey = event.methodKey;
+    return InkWell(
+      onTap: () {
+        AegisNavigator.pushPage(
+          context,
+          (context) => EventDetailPage(event: event),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    content,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (methodKey != null && methodKey.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      methodKey,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              ToolKit.formatTimestamp(event.signedTimestamp),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
