@@ -30,8 +30,8 @@ android {
         applicationId "com.aegis.app"
         minSdk 26
         targetSdk 36
-        versionCode 7
-        versionName "0.3.9"
+        versionCode 10
+        versionName "0.5.1"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
