@@ -12,6 +12,7 @@ import 'package:aegis/utils/tool_kit.dart';
 import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
+import 'package:aegis/pages/settings/browser_history_page.dart';
 import 'package:aegis/pages/settings/relays_hub_page.dart';
 import 'package:aegis/pages/settings/security_page.dart';
 import 'package:aegis/utils/pin_gate.dart';
@@ -485,6 +486,21 @@ class SettingsState extends State<Settings> with AccountObservers {
             ),
             onTap: () => AegisNavigator.pushPage(
                 context, (context) => const AppLogsPage()),
+          ),
+          ListTile(
+            title: Text(
+              'Browser History',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.history,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+              context,
+              (context) => const BrowserHistoryPage(),
+            ),
           ),
         ],
       ),

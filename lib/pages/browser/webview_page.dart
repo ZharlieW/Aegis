@@ -8,6 +8,7 @@ import 'package:aegis/db/user_app_db_isar.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/browser/nip07_handlers.dart';
 import 'package:aegis/services/app_log_service.dart';
+import 'package:aegis/utils/browser_history_store.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
@@ -60,6 +61,7 @@ class _WebViewPageState extends State<WebViewPage> {
             setState(() {
               _currentUrl = url;
             });
+            await BrowserHistoryStore.add(url);
             // Update navigation state
             if (!mounted) return;
             final canGoBack = await _controller.canGoBack();
