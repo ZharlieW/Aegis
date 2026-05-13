@@ -1,3 +1,4 @@
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
 import 'package:aegis/services/app_log_service.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Widget wrapWithApp(Widget child) {
-    return MaterialApp(home: child);
+    return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: child,
+    );
   }
 
   setUp(() {

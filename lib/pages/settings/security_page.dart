@@ -130,9 +130,9 @@ class _SecurityPageState extends State<SecurityPage> {
                 return;
               }
               await AppPinService.instance.setPin(n);
-              if (!context.mounted) return;
-              Navigator.pop(ctx);
-              if (!context.mounted) return;
+              if (!mounted) return;
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (!mounted) return;
               CommonTips.success(context, l10n.appPinChangeSuccess);
               await _refresh();
             },
@@ -155,14 +155,22 @@ class _SecurityPageState extends State<SecurityPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.appPinRemove),
-        content: TextField(
-          controller: oldC,
-          obscureText: true,
-          keyboardType: TextInputType.number,
-          maxLength: 6,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(labelText: l10n.appPinCurrent),
-          autofocus: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.appPinRemoveConfirm),
+            const SizedBox(height: 12),
+            TextField(
+              controller: oldC,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(labelText: l10n.appPinCurrent),
+              autofocus: true,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -179,9 +187,9 @@ class _SecurityPageState extends State<SecurityPage> {
                 return;
               }
               await AppPinService.instance.clearPin();
-              if (!context.mounted) return;
-              Navigator.pop(ctx);
-              if (!context.mounted) return;
+              if (!mounted) return;
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (!mounted) return;
               CommonTips.success(context, l10n.appPinRemoveSuccess);
               await _refresh();
             },

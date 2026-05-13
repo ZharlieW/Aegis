@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:aegis/common/common_image.dart';
+import 'package:aegis/common/destructive_confirmation_dialog.dart';
 import 'package:aegis/db/clientAuthDB_isar.dart';
 import 'package:aegis/db/remembered_permission_choice_store.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
@@ -237,27 +238,13 @@ class _ApplicationPermissionsPageState
     BuildContext context,
     AppLocalizations l10n,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showDestructiveConfirmationDialog(
       context: context,
-      builder: (ctx) {
-        final dL10n = AppLocalizations.of(ctx)!;
-        return AlertDialog(
-          title: Text(dL10n.resetPermissions),
-          content: Text(dL10n.resetPermissionsConfirm),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(dL10n.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(dL10n.confirm),
-            ),
-          ],
-        );
-      },
+      title: l10n.resetPermissions,
+      message: l10n.resetPermissionsConfirm,
+      confirmLabel: l10n.resetPermissions,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final w = widget.clientAuthDBISAR;
     final fresh = await ClientAuthDBISAR.searchFromDB(w.pubkey, w.clientPubkey);

@@ -2206,6 +2206,12 @@ abstract class AppLocalizations {
   /// **'Remove PIN'**
   String get appPinRemove;
 
+  /// No description provided for @appPinRemoveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Removing the app PIN disables local PIN confirmation for protected actions on this device. Continue?'**
+  String get appPinRemoveConfirm;
+
   /// No description provided for @appPinSetSuccess.
   ///
   /// In en, this message translates to:
@@ -2253,6 +2259,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App PIN is enabled'**
   String get appPinEnabledStatus;
+
+  /// No description provided for @appLogsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Logs'**
+  String get appLogsTitle;
+
+  /// No description provided for @clearLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear logs'**
+  String get clearLogs;
+
+  /// No description provided for @clearLogsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove all app logs from the list. This action cannot be undone.'**
+  String get clearLogsConfirm;
+
+  /// No description provided for @logsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs cleared.'**
+  String get logsCleared;
 
   /// No description provided for @relaysHubTitle.
   ///

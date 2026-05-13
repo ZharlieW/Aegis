@@ -1071,6 +1071,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appPinRemove => '移除 PIN';
 
   @override
+  String get appPinRemoveConfirm => '移除应用 PIN 后，本设备上的受保护操作将不再需要 PIN 确认。是否继续？';
+
+  @override
   String get appPinSetSuccess => '已保存 PIN。';
 
   @override
@@ -1093,6 +1096,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appPinEnabledStatus => '已启用应用 PIN';
+
+  @override
+  String get appLogsTitle => '应用日志';
+
+  @override
+  String get clearLogs => '清除日志';
+
+  @override
+  String get clearLogsConfirm => '将从列表中移除所有应用日志。此操作不可撤销。';
+
+  @override
+  String get logsCleared => '日志已清除。';
 
   @override
   String get relaysHubTitle => '中继';

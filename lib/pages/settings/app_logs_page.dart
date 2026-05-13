@@ -1,3 +1,5 @@
+import 'package:aegis/common/destructive_confirmation_dialog.dart';
+import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'package:aegis/services/app_log_service.dart';
 import 'package:flutter/material.dart';
 
@@ -34,32 +36,23 @@ class _AppLogsPageState extends State<AppLogsPage> {
   }
 
   void _clearLogs() {
+    final l10n = AppLocalizations.of(context)!;
     AppLogService.instance.clear();
     _reload();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logs cleared.')),
+      SnackBar(content: Text(l10n.logsCleared)),
     );
   }
 
   Future<void> _confirmClearLogs() async {
-    final confirmed = await showDialog<bool>(
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDestructiveConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear logs'),
-        content: const Text('This will remove all app logs from the list.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
+      title: l10n.clearLogs,
+      message: l10n.clearLogsConfirm,
+      confirmLabel: l10n.clear,
     );
-    if (confirmed == true) {
+    if (confirmed) {
       _clearLogs();
     }
   }
@@ -260,7 +253,7 @@ class _AppLogsPageState extends State<AppLogsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('App Logs'),
+        title: Text(AppLocalizations.of(context)!.appLogsTitle),
         actions: [
           IconButton(
             onPressed: _reload,
@@ -270,7 +263,7 @@ class _AppLogsPageState extends State<AppLogsPage> {
           IconButton(
             onPressed: _logs.isEmpty ? null : _confirmClearLogs,
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Clear logs',
+            tooltip: AppLocalizations.of(context)!.clearLogs,
           ),
         ],
       ),

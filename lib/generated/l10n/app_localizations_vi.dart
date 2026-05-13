@@ -1071,6 +1071,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get appPinRemove => 'Remove PIN';
 
   @override
+  String get appPinRemoveConfirm => 'Removing the app PIN disables local PIN confirmation for protected actions on this device. Continue?';
+
+  @override
   String get appPinSetSuccess => 'PIN saved.';
 
   @override
@@ -1093,6 +1096,18 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get appPinEnabledStatus => 'App PIN is enabled';
+
+  @override
+  String get appLogsTitle => 'App Logs';
+
+  @override
+  String get clearLogs => 'Clear logs';
+
+  @override
+  String get clearLogsConfirm => 'This will remove all app logs from the list. This action cannot be undone.';
+
+  @override
+  String get logsCleared => 'Logs cleared.';
 
   @override
   String get relaysHubTitle => 'Relays';
