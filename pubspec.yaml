@@ -115,6 +115,7 @@ flutter:
     - assets/audio/
     - assets/certs/
     - lib/assets/preset_apps.json
+    - lib/assets/browser_bookmarks.json
     - lib/assets/napp_list.json
     - lib/assets/napp_updates/
 

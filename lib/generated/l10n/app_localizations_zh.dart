@@ -209,6 +209,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser => '浏览器';
 
   @override
+  String get browserBookmarksTitle => '书签';
+
+  @override
   String get theme => '主题';
 
   @override

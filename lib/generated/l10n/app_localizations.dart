@@ -550,6 +550,12 @@ abstract class AppLocalizations {
   /// **'Browser'**
   String get browser;
 
+  /// No description provided for @browserBookmarksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get browserBookmarksTitle;
+
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:

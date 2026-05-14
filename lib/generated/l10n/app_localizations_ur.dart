@@ -209,6 +209,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get browser => 'براؤزر';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'تھیم';
 
   @override

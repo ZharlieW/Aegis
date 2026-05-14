@@ -209,6 +209,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get browser => 'Navigateur';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Thème';
 
   @override

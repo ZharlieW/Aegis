@@ -209,6 +209,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get browser => 'Navegador';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Tema';
 
   @override

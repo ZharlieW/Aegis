@@ -12,6 +12,23 @@ import 'package:aegis/generated/l10n/app_localizations.dart';
 import 'napp_model.dart';
 import 'webview_page.dart';
 
+class _BrowserBookmark {
+  const _BrowserBookmark({
+    required this.name,
+    required this.url,
+  });
+
+  final String name;
+  final String url;
+
+  factory _BrowserBookmark.fromJson(Map<String, dynamic> json) {
+    return _BrowserBookmark(
+      name: (json['name'] ?? '').toString(),
+      url: (json['url'] ?? '').toString(),
+    );
+  }
+}
+
 class _AddAppDialog extends StatefulWidget {
   @override
   State<_AddAppDialog> createState() => _AddAppDialogState();
@@ -105,16 +122,39 @@ class _BrowserPageState extends State<BrowserPage> {
   String _searchQuery = '';
   Set<String> _favoriteIds = {};
   List<String> _historyUrls = const <String>[];
+  List<_BrowserBookmark> _bookmarks = const <_BrowserBookmark>[];
   bool _isLoading = true;
   bool _hasLoadError = false;
 
   @override
   void initState() {
     super.initState();
+    _loadBookmarks();
     _loadNappList();
     _loadFavorites();
     _loadHistory();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _loadBookmarks() async {
+    try {
+      final jsonString =
+          await rootBundle.loadString('lib/assets/browser_bookmarks.json');
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! List) return;
+      final bookmarks = decoded
+          .whereType<Map<String, dynamic>>()
+          .map(_BrowserBookmark.fromJson)
+          .where((bookmark) =>
+              bookmark.name.isNotEmpty &&
+              (bookmark.url.startsWith('https://') ||
+                  bookmark.url.startsWith('http://')))
+          .toList(growable: false);
+      if (!mounted) return;
+      setState(() => _bookmarks = bookmarks);
+    } catch (e) {
+      AegisLogger.error('Failed to load browser bookmarks: $e');
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -478,6 +518,10 @@ class _BrowserPageState extends State<BrowserPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_bookmarks.isNotEmpty) ...[
+            _buildSectionHeader(l10n.browserBookmarksTitle, Icons.bookmark),
+            _buildBookmarkList(context),
+          ],
           // FAVORITES section
           if (_historyUrls.isNotEmpty) ...[
             _buildSectionHeader('Recent', Icons.history),
@@ -493,6 +537,88 @@ class _BrowserPageState extends State<BrowserPage> {
           _buildAppGrid(context, allApps, l10n, showAddButton: true),
           const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBookmarkList(BuildContext context) {
+    return SizedBox(
+      height: 84,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: _bookmarks.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final bookmark = _bookmarks[index];
+          final uri = Uri.tryParse(bookmark.url);
+          final host = uri?.host ?? bookmark.url;
+          return SizedBox(
+            width: 156,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => _openWebView(bookmark.url, bookmark.name),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.bookmark,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            bookmark.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            host,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

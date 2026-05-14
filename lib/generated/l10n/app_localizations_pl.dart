@@ -209,6 +209,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get browser => 'Przeglądarka';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Motyw';
 
   @override

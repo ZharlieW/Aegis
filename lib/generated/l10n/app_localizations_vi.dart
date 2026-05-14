@@ -209,6 +209,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser => 'Trình duyệt';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Giao diện';
 
   @override

@@ -71,6 +71,7 @@
   "localRelay": "Local Relay",
   "remote": "Remote",
   "browser": "Browser",
+  "browserBookmarksTitle": "Bookmarks",
   "theme": "Theme",
   "github": "Github",
   "version": "Version",

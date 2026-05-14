@@ -209,6 +209,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get browser => 'Brauzer';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Mövzu';
 
   @override

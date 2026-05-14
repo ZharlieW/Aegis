@@ -209,6 +209,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get browser => 'Prohlížeč';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Motiv';
 
   @override

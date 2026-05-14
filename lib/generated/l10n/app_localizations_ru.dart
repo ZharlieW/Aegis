@@ -209,6 +209,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get browser => 'Браузер';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Тема';
 
   @override

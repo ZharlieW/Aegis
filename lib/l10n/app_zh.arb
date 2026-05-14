@@ -71,6 +71,7 @@
   "localRelay": "本地 Relay",
   "remote": "远程",
   "browser": "浏览器",
+  "browserBookmarksTitle": "书签",
   "theme": "主题",
   "github": "Github",
   "version": "版本",

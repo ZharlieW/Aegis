@@ -209,6 +209,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser => 'المتصفح';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'المظهر';
 
   @override

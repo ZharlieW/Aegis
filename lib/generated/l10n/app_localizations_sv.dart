@@ -209,6 +209,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get browser => 'Webbläsare';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Tema';
 
   @override

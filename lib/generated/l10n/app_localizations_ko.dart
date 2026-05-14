@@ -209,6 +209,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser => '브라우저';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => '테마';
 
   @override

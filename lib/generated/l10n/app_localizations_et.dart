@@ -209,6 +209,9 @@ class AppLocalizationsEt extends AppLocalizations {
   String get browser => 'Brauser';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Teema';
 
   @override

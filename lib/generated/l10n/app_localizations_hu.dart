@@ -209,6 +209,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get browser => 'Böngésző';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Téma';
 
   @override

@@ -209,6 +209,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get browser => 'مرورگر';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'تم';
 
   @override

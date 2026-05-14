@@ -209,6 +209,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get browser => 'Πρόγραμμα περιήγησης';
 
   @override
+  String get browserBookmarksTitle => 'Bookmarks';
+
+  @override
   String get theme => 'Θέμα';
 
   @override
