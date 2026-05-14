@@ -1110,6 +1110,44 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logsCleared => '日志已清除。';
 
   @override
+  String get profileEditTitle => '编辑资料';
+
+  @override
+  String get profileNameLabel => '名称';
+
+  @override
+  String get profileAboutLabel => '简介';
+
+  @override
+  String get profilePictureLabel => '头像 URL';
+
+  @override
+  String get profilePublishRelayHint => '将发布 kind 0 资料事件到默认资料中继；未设置默认中继时使用当前已连接中继。';
+
+  @override
+  String get profilePublish => '发布资料';
+
+  @override
+  String get profilePublishing => '发布中...';
+
+  @override
+  String get profilePictureInvalid => '请输入有效的 http:// 或 https:// 头像 URL。';
+
+  @override
+  String get profilePublishInvalidSignature => '签名后的资料事件无效。';
+
+  @override
+  String get profilePublishNoRelays => '当前没有可用的已连接中继。';
+
+  @override
+  String get profilePublishSuccess => '资料已发布。';
+
+  @override
+  String profilePublishFailed(String message) {
+    return '发布资料失败：$message';
+  }
+
+  @override
   String get relaysHubTitle => '中继';
 
   @override
@@ -1968,7 +2006,4 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get activitiesLoadFailed => '載入活動失敗';
-
-  @override
-  String get addConnection => 'Add connection';
 }

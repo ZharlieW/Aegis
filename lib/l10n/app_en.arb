@@ -446,6 +446,23 @@
   "clearLogs": "Clear logs",
   "clearLogsConfirm": "This will remove all app logs from the list. This action cannot be undone.",
   "logsCleared": "Logs cleared.",
+  "profileEditTitle": "Edit profile",
+  "profileNameLabel": "Name",
+  "profileAboutLabel": "About",
+  "profilePictureLabel": "Picture URL",
+  "profilePublishRelayHint": "Publishes a kind 0 metadata event to your default profile relays, or current connected relays if no defaults are set.",
+  "profilePublish": "Publish profile",
+  "profilePublishing": "Publishing...",
+  "profilePictureInvalid": "Enter a valid http:// or https:// picture URL.",
+  "profilePublishInvalidSignature": "Signed profile event is invalid.",
+  "profilePublishNoRelays": "No connected relay is available.",
+  "profilePublishSuccess": "Profile published.",
+  "profilePublishFailed": "Failed to publish profile: {message}",
+  "@profilePublishFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
   "relaysHubTitle": "Relays",
   "relaysHubActiveTab": "Active",
   "relaysHubDefaultsTab": "Default profile",

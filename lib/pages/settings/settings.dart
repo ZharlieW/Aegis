@@ -13,6 +13,7 @@ import 'package:aegis/pages/login/login.dart';
 import 'package:aegis/pages/settings/account_backup.dart';
 import 'package:aegis/pages/settings/app_logs_page.dart';
 import 'package:aegis/pages/settings/browser_history_page.dart';
+import 'package:aegis/pages/settings/profile_edit_page.dart';
 import 'package:aegis/pages/settings/relays_hub_page.dart';
 import 'package:aegis/pages/settings/security_page.dart';
 import 'package:aegis/utils/pin_gate.dart';
@@ -444,6 +445,24 @@ class SettingsState extends State<Settings> with AccountObservers {
       ),
       child: Column(
         children: [
+          ListTile(
+            title: Text(
+              l10n.profileEditTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            trailing: Icon(
+              Icons.person_outline,
+              size: 22,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => AegisNavigator.pushPage(
+              context,
+              (context) => ProfileEditPage(
+                initialName:
+                    accountMap[Account.sharedInstance.currentPubkey]?.username,
+              ),
+            ),
+          ),
           ListTile(
             title: Text(
               l10n.securityTitle,

@@ -2284,6 +2284,78 @@ abstract class AppLocalizations {
   /// **'Logs cleared.'**
   String get logsCleared;
 
+  /// No description provided for @profileEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditTitle;
+
+  /// No description provided for @profileNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get profileNameLabel;
+
+  /// No description provided for @profileAboutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get profileAboutLabel;
+
+  /// No description provided for @profilePictureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture URL'**
+  String get profilePictureLabel;
+
+  /// No description provided for @profilePublishRelayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishes a kind 0 metadata event to your default profile relays, or current connected relays if no defaults are set.'**
+  String get profilePublishRelayHint;
+
+  /// No description provided for @profilePublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish profile'**
+  String get profilePublish;
+
+  /// No description provided for @profilePublishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishing...'**
+  String get profilePublishing;
+
+  /// No description provided for @profilePictureInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid http:// or https:// picture URL.'**
+  String get profilePictureInvalid;
+
+  /// No description provided for @profilePublishInvalidSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed profile event is invalid.'**
+  String get profilePublishInvalidSignature;
+
+  /// No description provided for @profilePublishNoRelays.
+  ///
+  /// In en, this message translates to:
+  /// **'No connected relay is available.'**
+  String get profilePublishNoRelays;
+
+  /// No description provided for @profilePublishSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile published.'**
+  String get profilePublishSuccess;
+
+  /// No description provided for @profilePublishFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to publish profile: {message}'**
+  String profilePublishFailed(String message);
+
   /// No description provided for @relaysHubTitle.
   ///
   /// In en, this message translates to:

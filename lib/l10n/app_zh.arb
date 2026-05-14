@@ -434,6 +434,23 @@
   "clearLogs": "清除日志",
   "clearLogsConfirm": "将从列表中移除所有应用日志。此操作不可撤销。",
   "logsCleared": "日志已清除。",
+  "profileEditTitle": "编辑资料",
+  "profileNameLabel": "名称",
+  "profileAboutLabel": "简介",
+  "profilePictureLabel": "头像 URL",
+  "profilePublishRelayHint": "将发布 kind 0 资料事件到默认资料中继；未设置默认中继时使用当前已连接中继。",
+  "profilePublish": "发布资料",
+  "profilePublishing": "发布中...",
+  "profilePictureInvalid": "请输入有效的 http:// 或 https:// 头像 URL。",
+  "profilePublishInvalidSignature": "签名后的资料事件无效。",
+  "profilePublishNoRelays": "当前没有可用的已连接中继。",
+  "profilePublishSuccess": "资料已发布。",
+  "profilePublishFailed": "发布资料失败：{message}",
+  "@profilePublishFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
   "relaysHubTitle": "中继",
   "relaysHubActiveTab": "当前连接",
   "relaysHubDefaultsTab": "默认资料中继",

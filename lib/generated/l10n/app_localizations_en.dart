@@ -1110,6 +1110,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logsCleared => 'Logs cleared.';
 
   @override
+  String get profileEditTitle => 'Edit profile';
+
+  @override
+  String get profileNameLabel => 'Name';
+
+  @override
+  String get profileAboutLabel => 'About';
+
+  @override
+  String get profilePictureLabel => 'Picture URL';
+
+  @override
+  String get profilePublishRelayHint => 'Publishes a kind 0 metadata event to your default profile relays, or current connected relays if no defaults are set.';
+
+  @override
+  String get profilePublish => 'Publish profile';
+
+  @override
+  String get profilePublishing => 'Publishing...';
+
+  @override
+  String get profilePictureInvalid => 'Enter a valid http:// or https:// picture URL.';
+
+  @override
+  String get profilePublishInvalidSignature => 'Signed profile event is invalid.';
+
+  @override
+  String get profilePublishNoRelays => 'No connected relay is available.';
+
+  @override
+  String get profilePublishSuccess => 'Profile published.';
+
+  @override
+  String profilePublishFailed(String message) {
+    return 'Failed to publish profile: $message';
+  }
+
+  @override
   String get relaysHubTitle => 'Relays';
 
   @override
