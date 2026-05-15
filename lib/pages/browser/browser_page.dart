@@ -164,7 +164,6 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Future<void> _loadNappList() async {
-    final l10n = AppLocalizations.of(context)!;
     if (mounted) setState(() => _hasLoadError = false);
     try {
       final isImported = await UserAppDBISAR.isPresetAppsImported();
@@ -203,6 +202,7 @@ class _BrowserPageState extends State<BrowserPage> {
       if (mounted) {
         setState(() => _hasLoadError = true);
         _applyFilter();
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.nappListLoadFailed)),
         );
