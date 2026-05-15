@@ -212,6 +212,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browserBookmarksTitle => '书签';
 
   @override
+  String get browserRecentTitle => '最近';
+
+  @override
+  String browserBookmarkOpenLabel(String name) {
+    return '打开书签 $name';
+  }
+
+  @override
+  String browserHistoryOpenLabel(String name) {
+    return '打开最近站点 $name';
+  }
+
+  @override
   String get theme => '主题';
 
   @override
@@ -1125,6 +1138,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profilePictureLabel => '头像 URL';
 
   @override
+  String get profilePictureHint => 'https://example.com/avatar.png';
+
+  @override
   String get profilePublishRelayHint => '将发布 kind 0 资料事件到默认资料中继；未设置默认中继时使用当前已连接中继。';
 
   @override
@@ -1141,6 +1157,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profilePublishNoRelays => '当前没有可用的已连接中继。';
+
+  @override
+  String get profileRelayRejected => '中继拒绝了事件';
+
+  @override
+  String get profilePublishTimedOut => '发布到中继超时';
 
   @override
   String get profilePublishSuccess => '资料已发布。';

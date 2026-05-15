@@ -135,7 +135,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       if (relays.isEmpty) {
         throw Exception(l10n.profilePublishNoRelays);
       }
-      await _sendAndWaitForOk(event, relays);
+      await _sendAndWaitForOk(event, relays, l10n);
       if (!mounted) return;
       CommonTips.success(context, l10n.profilePublishSuccess);
     } catch (e, stackTrace) {
@@ -150,7 +150,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  Future<void> _sendAndWaitForOk(Event event, List<String> relays) async {
+  Future<void> _sendAndWaitForOk(
+    Event event,
+    List<String> relays,
+    AppLocalizations l10n,
+  ) async {
     final completer = Completer<void>();
     Connect.sharedInstance.sendEvent(
       event,
@@ -162,14 +166,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           completer.complete();
         } else {
           completer.completeError(
-            Exception(ok.message.isEmpty ? 'Relay rejected event' : ok.message),
+            Exception(
+                ok.message.isEmpty ? l10n.profileRelayRejected : ok.message),
           );
         }
       },
     );
     await completer.future.timeout(
       const Duration(seconds: Connect.timeout + 2),
-      onTimeout: () => throw TimeoutException('Relay publish timed out'),
+      onTimeout: () => throw TimeoutException(l10n.profilePublishTimedOut),
     );
   }
 
@@ -188,6 +193,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             TextField(
               controller: _nameController,
               textInputAction: TextInputAction.next,
+              keyboardType: TextInputType.name,
               decoration: InputDecoration(
                 labelText: l10n.profileNameLabel,
                 border: const OutlineInputBorder(),
@@ -211,7 +217,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
                 labelText: l10n.profilePictureLabel,
-                hintText: 'https://example.com/avatar.png',
+                hintText: l10n.profilePictureHint,
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -223,17 +229,27 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _isPublishing ? null : _publishProfile,
-              icon: _isPublishing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.publish_outlined),
-              label: Text(
-                _isPublishing ? l10n.profilePublishing : l10n.profilePublish,
+            Semantics(
+              button: true,
+              enabled: !_isPublishing,
+              label: l10n.profilePublish,
+              child: Tooltip(
+                message: l10n.profilePublish,
+                child: FilledButton.icon(
+                  onPressed: _isPublishing ? null : _publishProfile,
+                  icon: _isPublishing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.publish_outlined),
+                  label: Text(
+                    _isPublishing
+                        ? l10n.profilePublishing
+                        : l10n.profilePublish,
+                  ),
+                ),
               ),
             ),
           ],

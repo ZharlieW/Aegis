@@ -556,6 +556,24 @@ abstract class AppLocalizations {
   /// **'Bookmarks'**
   String get browserBookmarksTitle;
 
+  /// No description provided for @browserRecentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get browserRecentTitle;
+
+  /// No description provided for @browserBookmarkOpenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open bookmark {name}'**
+  String browserBookmarkOpenLabel(String name);
+
+  /// No description provided for @browserHistoryOpenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open recent site {name}'**
+  String browserHistoryOpenLabel(String name);
+
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:
@@ -2314,6 +2332,12 @@ abstract class AppLocalizations {
   /// **'Picture URL'**
   String get profilePictureLabel;
 
+  /// No description provided for @profilePictureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com/avatar.png'**
+  String get profilePictureHint;
+
   /// No description provided for @profilePublishRelayHint.
   ///
   /// In en, this message translates to:
@@ -2349,6 +2373,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No connected relay is available.'**
   String get profilePublishNoRelays;
+
+  /// No description provided for @profileRelayRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay rejected event'**
+  String get profileRelayRejected;
+
+  /// No description provided for @profilePublishTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay publish timed out'**
+  String get profilePublishTimedOut;
 
   /// No description provided for @profilePublishSuccess.
   ///

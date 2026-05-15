@@ -212,6 +212,19 @@ class AppLocalizationsEl extends AppLocalizations {
   String get browserBookmarksTitle => 'Bookmarks';
 
   @override
+  String get browserRecentTitle => 'Recent';
+
+  @override
+  String browserBookmarkOpenLabel(String name) {
+    return 'Open bookmark $name';
+  }
+
+  @override
+  String browserHistoryOpenLabel(String name) {
+    return 'Open recent site $name';
+  }
+
+  @override
   String get theme => 'Θέμα';
 
   @override
@@ -1125,6 +1138,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get profilePictureLabel => 'Picture URL';
 
   @override
+  String get profilePictureHint => 'https://example.com/avatar.png';
+
+  @override
   String get profilePublishRelayHint => 'Publishes a kind 0 metadata event to your default profile relays, or current connected relays if no defaults are set.';
 
   @override
@@ -1141,6 +1157,12 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get profilePublishNoRelays => 'No connected relay is available.';
+
+  @override
+  String get profileRelayRejected => 'Relay rejected event';
+
+  @override
+  String get profilePublishTimedOut => 'Relay publish timed out';
 
   @override
   String get profilePublishSuccess => 'Profile published.';

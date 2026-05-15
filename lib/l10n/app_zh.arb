@@ -72,6 +72,19 @@
   "remote": "远程",
   "browser": "浏览器",
   "browserBookmarksTitle": "书签",
+  "browserRecentTitle": "最近",
+  "browserBookmarkOpenLabel": "打开书签 {name}",
+  "@browserBookmarkOpenLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "browserHistoryOpenLabel": "打开最近站点 {name}",
+  "@browserHistoryOpenLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "theme": "主题",
   "github": "Github",
   "version": "版本",
@@ -439,12 +452,15 @@
   "profileNameLabel": "名称",
   "profileAboutLabel": "简介",
   "profilePictureLabel": "头像 URL",
+  "profilePictureHint": "https://example.com/avatar.png",
   "profilePublishRelayHint": "将发布 kind 0 资料事件到默认资料中继；未设置默认中继时使用当前已连接中继。",
   "profilePublish": "发布资料",
   "profilePublishing": "发布中...",
   "profilePictureInvalid": "请输入有效的 http:// 或 https:// 头像 URL。",
   "profilePublishInvalidSignature": "签名后的资料事件无效。",
   "profilePublishNoRelays": "当前没有可用的已连接中继。",
+  "profileRelayRejected": "中继拒绝了事件",
+  "profilePublishTimedOut": "发布到中继超时",
   "profilePublishSuccess": "资料已发布。",
   "profilePublishFailed": "发布资料失败：{message}",
   "@profilePublishFailed": {
