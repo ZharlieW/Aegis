@@ -997,6 +997,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get continueButton => 'Продовжити';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Назад';
 
   @override

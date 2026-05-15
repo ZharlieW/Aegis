@@ -2050,6 +2050,12 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get continueButton;
 
+  /// No description provided for @addConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add connection'**
+  String get addConnection;
+
   /// No description provided for @goBack.
   ///
   /// In en, this message translates to:

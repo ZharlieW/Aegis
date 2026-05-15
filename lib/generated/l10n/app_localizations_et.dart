@@ -997,6 +997,9 @@ class AppLocalizationsEt extends AppLocalizations {
   String get continueButton => 'Jätka';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Tagasi';
 
   @override

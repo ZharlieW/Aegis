@@ -997,6 +997,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get continueButton => 'Devam';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Geri';
 
   @override

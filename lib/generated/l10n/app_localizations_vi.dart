@@ -997,6 +997,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get continueButton => 'Tiếp tục';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Quay lại';
 
   @override

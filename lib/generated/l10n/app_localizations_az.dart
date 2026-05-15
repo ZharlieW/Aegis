@@ -997,6 +997,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get continueButton => 'Davam et';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Geri';
 
   @override

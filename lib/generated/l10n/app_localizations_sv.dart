@@ -997,6 +997,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get continueButton => 'Fortsätt';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Tillbaka';
 
   @override

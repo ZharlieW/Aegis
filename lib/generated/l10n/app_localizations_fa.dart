@@ -997,6 +997,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get continueButton => 'ادامه';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'بازگشت';
 
   @override

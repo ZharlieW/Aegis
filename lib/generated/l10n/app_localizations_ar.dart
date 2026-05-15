@@ -997,6 +997,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get continueButton => 'متابعة';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'رجوع';
 
   @override

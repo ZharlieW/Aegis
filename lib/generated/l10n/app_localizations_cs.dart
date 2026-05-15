@@ -997,6 +997,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get continueButton => 'Pokračovat';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Zpět';
 
   @override

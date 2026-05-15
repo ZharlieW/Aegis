@@ -997,6 +997,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get continueButton => 'Tovább';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Vissza';
 
   @override

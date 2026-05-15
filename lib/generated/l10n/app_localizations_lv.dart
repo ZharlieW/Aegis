@@ -997,6 +997,9 @@ class AppLocalizationsLv extends AppLocalizations {
   String get continueButton => 'Turpināt';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Atpakaļ';
 
   @override

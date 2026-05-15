@@ -997,6 +997,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get continueButton => 'Fortsæt';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Tilbage';
 
   @override

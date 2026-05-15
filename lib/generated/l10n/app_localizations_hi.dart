@@ -997,6 +997,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get continueButton => 'जारी रखें';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'वापस';
 
   @override

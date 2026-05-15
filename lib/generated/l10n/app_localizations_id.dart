@@ -997,6 +997,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get continueButton => 'Lanjutkan';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Kembali';
 
   @override

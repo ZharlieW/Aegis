@@ -997,6 +997,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get continueButton => '続ける';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => '戻る';
 
   @override

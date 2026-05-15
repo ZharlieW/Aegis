@@ -997,6 +997,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get continueButton => '继续';
 
   @override
+  String get addConnection => '添加连接';
+
+  @override
   String get goBack => '后退';
 
   @override

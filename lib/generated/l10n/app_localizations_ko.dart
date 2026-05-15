@@ -997,6 +997,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get continueButton => '계속';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => '뒤로';
 
   @override

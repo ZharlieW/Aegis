@@ -405,6 +405,7 @@
   "pleaseSelectApplication": "请选择一个应用",
   "orEnterCustomName": "或输入自定义名称",
   "continueButton": "继续",
+  "addConnection": "添加连接",
   "goBack": "后退",
   "goForward": "前进",
   "favorite": "收藏",

@@ -997,6 +997,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get continueButton => 'Doorgaan';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Terug';
 
   @override

@@ -417,6 +417,7 @@
   "pleaseSelectApplication": "Please select an application",
   "orEnterCustomName": "Or enter a custom name",
   "continueButton": "Continue",
+  "addConnection": "Add connection",
   "goBack": "Go Back",
   "goForward": "Go Forward",
   "favorite": "Favorite",

@@ -997,6 +997,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get continueButton => 'ดำเนินการต่อ';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'กลับ';
 
   @override

@@ -997,6 +997,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get continueButton => 'Weiter';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'Zurück';
 
   @override

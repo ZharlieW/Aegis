@@ -997,6 +997,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get continueButton => 'جاری رکھیں';
 
   @override
+  String get addConnection => 'Add connection';
+
+  @override
   String get goBack => 'واپس';
 
   @override
