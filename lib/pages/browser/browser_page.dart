@@ -130,10 +130,16 @@ class _BrowserPageState extends State<BrowserPage> {
   void initState() {
     super.initState();
     _loadBookmarks();
-    _loadNappList();
-    _loadFavorites();
-    _loadHistory();
+    _loadInitialData();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _loadInitialData() async {
+    await _loadNappList();
+    if (!mounted) return;
+    await _loadFavorites();
+    if (!mounted) return;
+    await _loadHistory();
   }
 
   Future<void> _loadBookmarks() async {
