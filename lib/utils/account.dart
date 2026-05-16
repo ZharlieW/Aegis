@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:aegis/utils/account_manager.dart';
 import 'package:aegis/utils/relay_service.dart';
+import 'package:aegis/utils/remote_session_audio_coordinator.dart';
 import 'package:aegis/utils/server_nip46_signer.dart';
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/platform_utils.dart';
@@ -72,6 +73,8 @@ class Account {
   }
 
   Future<void> logout() async {
+    await RemoteSessionAudioCoordinator.instance.stopMonitoring();
+
     final pubkeyToDelete = _currentPubkey;
 
     // Remove all applications from memory
@@ -129,6 +132,8 @@ class Account {
 
   Future<void> loginSuccess(String pubkey, String? privkey,
       {bool isInit = false}) async {
+    await RemoteSessionAudioCoordinator.instance.stopMonitoring();
+
     clear();
     _currentPubkey = pubkey;
 
@@ -237,6 +242,7 @@ class Account {
       await AndroidServiceManager.startService(port: port);
     } else {
       await ServerNIP46Signer.instance.start(port);
+      RemoteSessionAudioCoordinator.instance.startMonitoring();
     }
 
     if (isInit) {

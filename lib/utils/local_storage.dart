@@ -32,14 +32,20 @@ class LocalStorage {
   static dynamic get(String key) {
     if (_prefs == null) throw Exception("LocalStorage not initialized");
 
-    final value = _prefs!.getString(key);
+    final value = _prefs!.get(key);
     if (value == null) return null;
 
-    try {
-      return jsonDecode(value);
-    } catch (_) {
-      return value;
+    if (value is String) {
+      final trimmed = value.trimLeft();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return jsonDecode(value);
+        } catch (_) {
+          return value;
+        }
+      }
     }
+    return value;
   }
 
   static Future<bool> remove(String key) async {

@@ -112,8 +112,7 @@ class Assets {
   static const String assetsCertsPrivatekey = 'assets/certs/privatekey.pem';
   static const String assetsNappList = 'lib/assets/napp_list.json';
   static const String assetsPresetApps = 'lib/assets/preset_apps.json';
-  static const String audio63bfeedb233d5546 =
-      'assets/audio/63bfeedb233d5546.mp3';
+  static const String audioSoftPulse = 'assets/audio/soft_pulse.mp3';
   static const String browserBrowserPage =
       'lib/pages/browser/browser_page.dart';
   static const String browserNappModel = 'lib/pages/browser/napp_model.dart';

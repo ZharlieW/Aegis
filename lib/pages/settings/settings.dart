@@ -16,7 +16,11 @@ import 'package:aegis/pages/settings/browser_history_page.dart';
 import 'package:aegis/pages/settings/profile_edit_page.dart';
 import 'package:aegis/pages/settings/relays_hub_page.dart';
 import 'package:aegis/pages/settings/security_page.dart';
+import 'package:aegis/utils/background_audio_manager.dart';
 import 'package:aegis/utils/pin_gate.dart';
+import 'package:aegis/utils/platform_utils.dart';
+import 'package:aegis/utils/remote_session_audio_coordinator.dart';
+import 'package:aegis/utils/remote_session_audio_settings.dart';
 import 'package:aegis/utils/sign_policy.dart';
 
 /// Dialog widget for logout confirmation
@@ -130,6 +134,10 @@ class Settings extends StatefulWidget {
 class SettingsState extends State<Settings> with AccountObservers {
   Map<String, UserDBISAR> accountMap = {};
   SignPolicy _signPolicy = SignPolicy.basic;
+  bool _ambientSoundEnabled = true;
+  String _ambientSoundId = BackgroundAudioManager.defaultSoundId;
+  double _ambientSoundVolume = BackgroundAudioManager.defaultVolume;
+  bool _isPreviewingAmbientSound = false;
 
   String get _getKeyToStr {
     Account instance = Account.sharedInstance;
@@ -149,8 +157,15 @@ class SettingsState extends State<Settings> with AccountObservers {
   void initState() {
     super.initState();
     _signPolicy = getSignPolicy();
+    _loadAmbientSoundSettings();
     Account.sharedInstance.addObserver(this);
     getAccountList();
+  }
+
+  void _loadAmbientSoundSettings() {
+    _ambientSoundEnabled = RemoteSessionAudioSettings.enabled;
+    _ambientSoundId = RemoteSessionAudioSettings.soundId;
+    _ambientSoundVolume = RemoteSessionAudioSettings.volume;
   }
 
   void getAccountList() async {
@@ -181,6 +196,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                     // _buildAuthorizationModeSection(),
                     _accountView(),
                     _buildSignPolicySection(),
+                    _buildRemoteSessionAudioSection(),
                     _buildSupportSection(),
                     ...accountMap.values.toList().map((account) {
                       if (Account.sharedInstance.currentPubkey ==
@@ -346,7 +362,7 @@ class SettingsState extends State<Settings> with AccountObservers {
                   onTap: () {
                     showDialog(
                       context: context,
-                      builder: (BuildContext context) => _LogoutDialog(),
+                      builder: (BuildContext context) => const _LogoutDialog(),
                     );
                   },
                   child: SizedBox(
@@ -433,6 +449,167 @@ class SettingsState extends State<Settings> with AccountObservers {
         ],
       ),
     );
+  }
+
+  Widget _buildRemoteSessionAudioSection() {
+    if (!PlatformUtils.isIOS) return const SizedBox();
+
+    final theme = Theme.of(context);
+    final sound = BackgroundAudioManager().soundForId(_ambientSoundId);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Text(
+              'Remote Session Ambient Sound',
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+            child: Text(
+              'Play quiet ambient sound during active remote signing sessions.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          SwitchListTile(
+            dense: true,
+            title: const Text('Enable Ambient Sound'),
+            subtitle: const Text(
+              'Aegis only plays sound when a remote app is connected.',
+            ),
+            value: _ambientSoundEnabled,
+            onChanged: _setAmbientSoundEnabled,
+          ),
+          ListTile(
+            dense: true,
+            title: const Text('Sound'),
+            subtitle: Text(sound.name),
+            trailing: const Icon(Icons.music_note_outlined),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: Row(
+              children: [
+                Text(
+                  'Volume',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const Spacer(),
+                Text(
+                  '${(_ambientSoundVolume * 100).round()}%',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Slider(
+            value: _ambientSoundVolume,
+            min: 0.05,
+            max: 0.25,
+            divisions: 20,
+            label: '${(_ambientSoundVolume * 100).round()}%',
+            onChanged: (value) async {
+              setState(() => _ambientSoundVolume = value);
+              await RemoteSessionAudioSettings.setVolume(value);
+              await BackgroundAudioManager().setVolume(value);
+            },
+            onChangeEnd: (_) {
+              RemoteSessionAudioCoordinator.instance.refresh();
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: _toggleAmbientSoundPreview,
+                icon: Icon(
+                  _isPreviewingAmbientSound
+                      ? Icons.stop_outlined
+                      : Icons.play_arrow_outlined,
+                ),
+                label: Text(_isPreviewingAmbientSound ? 'Stop' : 'Preview'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setAmbientSoundEnabled(bool enabled) async {
+    if (!enabled) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Disable ambient sound?'),
+            content: const Text(
+              'If you disable ambient sound, Aegis may need to stay open '
+              'during remote signing sessions.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Disable'),
+              ),
+            ],
+          );
+        },
+      );
+      if (confirmed != true) return;
+    }
+
+    await RemoteSessionAudioSettings.setEnabled(enabled);
+    await RemoteSessionAudioSettings.setDisclosureSeen(true);
+    if (!enabled) {
+      await BackgroundAudioManager().stopAmbientSound();
+    }
+    await RemoteSessionAudioCoordinator.instance.refresh();
+
+    if (!mounted) return;
+    setState(() => _ambientSoundEnabled = enabled);
+  }
+
+  Future<void> _toggleAmbientSoundPreview() async {
+    if (_isPreviewingAmbientSound) {
+      await BackgroundAudioManager().stopAmbientSound();
+      await RemoteSessionAudioCoordinator.instance.refresh();
+      if (!mounted) return;
+      setState(() => _isPreviewingAmbientSound = false);
+      return;
+    }
+
+    setState(() => _isPreviewingAmbientSound = true);
+    await BackgroundAudioManager().playAmbientSound(
+      soundId: _ambientSoundId,
+      volume: _ambientSoundVolume,
+    );
+
+    Future.delayed(const Duration(seconds: 6), () async {
+      if (!mounted || !_isPreviewingAmbientSound) return;
+      await BackgroundAudioManager().stopAmbientSound();
+      await RemoteSessionAudioCoordinator.instance.refresh();
+      if (!mounted) return;
+      setState(() => _isPreviewingAmbientSound = false);
+    });
   }
 
   Widget _buildSupportSection() {
