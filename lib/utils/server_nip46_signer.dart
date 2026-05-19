@@ -18,6 +18,7 @@ import 'package:aegis/utils/connect.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:nostr_rust/src/rust/api/relay.dart' as rust_relay;
 import 'package:aegis/utils/local_tls_proxy_manager_rust.dart';
+import 'package:aegis/utils/namecoin/sign_time_gate.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/android_service_manager.dart';
 import 'package:aegis/generated/l10n/app_localizations.dart';
@@ -702,6 +703,24 @@ class ServerNIP46Signer {
               "id": remoteRequest.id,
               "result": "",
               "error": "No private key found for signing",
+            };
+            break;
+          }
+
+          // Sign-time `.bit` NIP-05 verification (Namecoin). Only
+          // touches kind:0 events whose `nip05` field ends in `.bit`;
+          // everything else short-circuits. Fail-open on network
+          // errors — the gate returns true unless the user explicitly
+          // cancels a mismatch warning.
+          final bitGateOk = await BitSignTimeGate().mayProceed(
+            eventJson: contentStr,
+            signingPubkey: userPubkey,
+          );
+          if (!bitGateOk) {
+            responseJson = {
+              "id": remoteRequest.id,
+              "result": "",
+              "error": "user cancelled: .bit identity mismatch",
             };
             break;
           }

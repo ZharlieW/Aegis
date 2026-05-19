@@ -17,6 +17,7 @@ import 'package:aegis/pages/settings/profile_edit_page.dart';
 import 'package:aegis/pages/settings/relays_hub_page.dart';
 import 'package:aegis/pages/settings/security_page.dart';
 import 'package:aegis/utils/background_audio_manager.dart';
+import 'package:aegis/utils/namecoin/sign_time_gate.dart';
 import 'package:aegis/utils/pin_gate.dart';
 import 'package:aegis/utils/platform_utils.dart';
 import 'package:aegis/utils/remote_session_audio_coordinator.dart';
@@ -135,6 +136,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   Map<String, UserDBISAR> accountMap = {};
   SignPolicy _signPolicy = SignPolicy.basic;
   bool _ambientSoundEnabled = true;
+  bool _bitSignVerifyEnabled = true;
   String _ambientSoundId = BackgroundAudioManager.defaultSoundId;
   double _ambientSoundVolume = BackgroundAudioManager.defaultVolume;
   bool _isPreviewingAmbientSound = false;
@@ -157,6 +159,7 @@ class SettingsState extends State<Settings> with AccountObservers {
   void initState() {
     super.initState();
     _signPolicy = getSignPolicy();
+    _bitSignVerifyEnabled = isBitSignTimeVerifyEnabled();
     _loadAmbientSoundSettings();
     Account.sharedInstance.addObserver(this);
     getAccountList();
@@ -443,6 +446,26 @@ class SettingsState extends State<Settings> with AccountObservers {
               await setSignPolicy(v);
               if (!mounted) return;
               setState(() => _signPolicy = v);
+            },
+          ),
+          const Divider(height: 1),
+          // English-only by design — maintainers can lift these into
+          // l10n once they're sure they want the feature surfaced this
+          // way. See lib/utils/namecoin/sign_time_gate.dart.
+          SwitchListTile(
+            dense: true,
+            title: const Text('Verify .bit identity at sign time'),
+            subtitle: const Text(
+              'When signing a profile event that claims a Namecoin .bit '
+              'NIP-05, resolve it on-chain and warn before signing if '
+              'the record points at a different key. Fails open on '
+              'network errors — signing is never blocked offline.',
+            ),
+            value: _bitSignVerifyEnabled,
+            onChanged: (v) async {
+              await setBitSignTimeVerifyEnabled(v);
+              if (!mounted) return;
+              setState(() => _bitSignVerifyEnabled = v);
             },
           ),
           const SizedBox(height: 4),
