@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 import 'package:aegis/utils/logger.dart';
 import 'package:aegis/utils/local_storage.dart';
+import 'package:aegis/utils/namecoin/sign_time_gate.dart';
 import 'package:aegis/db/userDB_isar.dart';
 import 'package:aegis/db/db_isar.dart';
 import 'package:aegis/db/signed_event_db_isar.dart';
@@ -319,7 +320,25 @@ class NIP55Handler {
       if (currentPrivkey.isEmpty) {
         throw Exception('No current user private key available');
       }
-      
+
+      // Sign-time `.bit` NIP-05 verification (Namecoin). No-op unless
+      // this is a kind:0 event whose `nip05` ends in `.bit`. Fail-open
+      // on network errors.
+      final currentPubkey =
+          (LocalStorage.get('pubkey') as String?) ?? '';
+      if (currentPubkey.isNotEmpty) {
+        final bitGateOk = await BitSignTimeGate().mayProceed(
+          eventJson: eventJson,
+          signingPubkey: currentPubkey,
+        );
+        if (!bitGateOk) {
+          return {
+            'error': 'user cancelled: .bit identity mismatch',
+            'id': requestId,
+          };
+        }
+      }
+
       // Sign the event using Rust
       final signedEventJson = await rust_api.signEvent(
         eventJson: eventJson,

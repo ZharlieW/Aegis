@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:aegis/utils/account.dart';
 import 'package:aegis/utils/logger.dart';
+import 'package:aegis/utils/namecoin/sign_time_gate.dart';
 import 'package:aegis/utils/signed_event_manager.dart';
 import 'package:nostr_rust/src/rust/api/nostr.dart' as rust_api;
 
@@ -97,6 +98,18 @@ class Nip07Handlers {
       }
 
       final eventJson = json.encode(eventMap);
+
+      // Sign-time `.bit` NIP-05 verification (Namecoin). No-op unless
+      // this is a kind:0 event whose `nip05` ends in `.bit`. Fail-open
+      // on network errors.
+      final bitGateOk = await BitSignTimeGate().mayProceed(
+        eventJson: eventJson,
+        signingPubkey: publicKey,
+      );
+      if (!bitGateOk) {
+        return {'id': id, 'error': 'user cancelled: .bit identity mismatch'};
+      }
+
       final signedEventJson = await rust_api.signEvent(
         eventJson: eventJson,
         privateKey: privateKey,
